@@ -9,3 +9,6 @@ dist
 [Pp]ackages
 *.suo
 *.user
+
+Runtime/runtime*
+Runtime/emsdk*

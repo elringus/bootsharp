@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<linker>
+    <!-- The type is used by the JS runtime to invoke entry point and initialize the runtime. -->
+    <!-- We're not using this type in the project, so it have to be explicitly linked to avoid being trimmed. -->
+    <assembly fullname="Microsoft.AspNetCore.Components.WebAssembly">
+        <type fullname="Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime"/>
+    </assembly>
+</linker>
