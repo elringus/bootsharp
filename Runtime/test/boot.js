@@ -1,6 +1,6 @@
 ﻿const assert = require("assert");
 const { boot, terminate, getBootStatus, BootStatus } = require("../dist/dotnet");
-const { bootExample } = require("../example/example");
+const { bootTest } = require("./project");
 
 describe("boot", () => {
     it("is in standby by default", () => {
@@ -29,13 +29,13 @@ describe("boot", () => {
         await assert.rejects(boot(data), { message: "Foo.dll assembly data is invalid." });
     });
     it("throws when attempting to boot while already booted", async () => {
-        await bootExample();
-        await assert.rejects(bootExample, { message: "Invalid boot status. Expected: Standby. Actual: Booted." });
+        await bootTest();
+        await assert.rejects(bootTest, { message: "Invalid boot status. Expected: Standby. Actual: Booted." });
         terminate();
     });
     it("throws when attempting to boot while booting", async () => {
-        const promise = bootExample();
-        await assert.rejects(bootExample, { message: "Invalid boot status. Expected: Standby. Actual: Booting." });
+        const promise = bootTest();
+        await assert.rejects(bootTest, { message: "Invalid boot status. Expected: Standby. Actual: Booting." });
         await promise;
         terminate();
     });
@@ -43,12 +43,12 @@ describe("boot", () => {
         assert.throws(terminate, { message: "Invalid boot status. Expected: Booted. Actual: Standby." });
     });
     it("boots when in standby", async () => {
-        await bootExample();
+        await bootTest();
         assert.deepStrictEqual(getBootStatus(), BootStatus.Booted);
         terminate();
     });
     it("terminates when booted", async () => {
-        await bootExample();
+        await bootTest();
         terminate();
         assert.deepStrictEqual(getBootStatus(), BootStatus.Standby);
     });
