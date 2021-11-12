@@ -1,3 +1,4 @@
+# https://github.com/dotnet/runtime/blob/release/6.0/src/mono/wasm/emscripten-version.txt
 cd ..
 rm -rf emsdk
 mkdir emsdk
