@@ -3,6 +3,8 @@ const path = require("path");
 const fs = require("fs");
 const assert = require("assert");
 
+exports.bootTest = bootTest;
+
 async function bootTest() {
     const bootData = {
         entryAssemblyName: "Test.dll",
@@ -39,5 +41,3 @@ function loadAssembly(assemblyPath) {
         data: fs.readFileSync(assemblyPath)
     };
 }
-
-exports.bootTest = bootTest;
