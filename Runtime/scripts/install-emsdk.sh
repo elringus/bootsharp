@@ -7,4 +7,4 @@ cd emsdk
 ./emsdk update
 ./emsdk install 2.0.23
 ./emsdk activate 2.0.23
-read -p "Press Enter key to exit..."
+read -r -p "Press Enter key to exit..."
