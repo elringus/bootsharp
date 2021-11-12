@@ -3,7 +3,7 @@ printf "Removing previous installation...\n"
 rm -rf runtime
 mkdir runtime
 printf "Downloading the runtime sources...\n"
-# The branch modifies emscripten compilation flags to support UMD.
+# The fork modifies emscripten compilation flags to support UMD.
 curl -L https://github.com/Elringus/DotNetUMD/archive/release/6.0.tar.gz | tar xz -C "./runtime" --strip-components=1
 printf "Compiling native modules. Initial run will take a while...\n"
 source ./emsdk/emsdk_env.sh
