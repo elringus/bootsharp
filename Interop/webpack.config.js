@@ -14,6 +14,7 @@ module.exports = () => ({
     output: {
         filename: "Microsoft.JSInterop.js",
         library: { type: "umd" },
-        globalObject: "this"
+        globalObject: "this",
+        clean: true
     }
 });

@@ -1,6 +1,6 @@
 {
   "name": "dotnet-js-interop",
-  "version": "6.0.4",
+  "version": "6.0.5",
   "description": "Clone of `@microsoft/dotnet-js-interop` repacked as UMD library.",
   "keywords": ["csharp", "C#", "dotnet", ".NET", "interop", "UMD"],
   "types": "dist/Microsoft.JSInterop.d.ts",
