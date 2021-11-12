@@ -2,8 +2,8 @@
 const dotnet = require("../dist/dotnet");
 const { bootTest } = require("./project");
 
-const invoke = (name, ...args) => dotnet.invoke("Test", name, args);
-const invokeAsync = (name, ...args) => dotnet.invokeAsync("Test", name, args);
+const invoke = (name, ...args) => dotnet.invoke("Test", name, ...args);
+const invokeAsync = (name, ...args) => dotnet.invokeAsync("Test", name, ...args);
 
 describe("interop", () => {
     before(bootTest);
