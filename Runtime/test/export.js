@@ -1,8 +1,8 @@
 ﻿const assert = require("assert");
 const dotnet = require("../dist/dotnet");
 
-describe("globals", () => {
-    describe("default runtime export", () => {
+describe("export", () => {
+    describe("runtime default", () => {
         it("is defined after import", () => {
             assert(dotnet.BootStatus);
             assert(dotnet.getBootStatus);
