@@ -4,8 +4,9 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net6.0</TargetFramework>
         <LangVersion>10</LangVersion>
-        <PublishTrimmed>true</PublishTrimmed>
         <RunAOTCompilation>false</RunAOTCompilation>
+        <PublishTrimmed>true</PublishTrimmed>
+        <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
         <WasmGenerateAppBundle>false</WasmGenerateAppBundle>
         <InvariantGlobalization>true</InvariantGlobalization>
     </PropertyGroup>
