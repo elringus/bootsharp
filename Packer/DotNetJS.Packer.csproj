@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>8.0</LangVersion>
+        <PackageId>DotNetJS.Packer</PackageId>
+        <Version>0.0.1</Version>
+        <Authors>Elringus</Authors>
+        <PackageDescription>MSBuild task to pack .NET assemblies into single-file UMD JavaScript library.</PackageDescription>
+        <RepositoryUrl>https://github.com/Elringus/DotNetJS</RepositoryUrl>
+        <!-- Change the default location where NuGet will put the build output. -->
+        <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
+        <!-- Suppresses the warnings about the package not having assemblies in lib/*/.dll. -->
+        <NoPackageAnalysis>true</NoPackageAnalysis>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="build\*" PackagePath="build\"/>
+        <Content Include="buildMultiTargeting\*" PackagePath="buildMultiTargeting\"/>
+        <Content Include="runtime\*" PackagePath="runtime\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Build.Framework" Version="17.0.0"/>
+        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.0.0"/>
+    </ItemGroup>
+
+</Project>

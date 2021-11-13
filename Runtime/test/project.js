@@ -30,8 +30,8 @@ function findAssemblies() {
 }
 
 function resolveAssembliesDirectory() {
-    const dirPath = path.resolve("test/project/bin/Release/net6.0/publish/wwwroot/_framework");
-    assert(fs.existsSync(dirPath), "Missing test assemblies. Run compile-test script.");
+    const dirPath = path.resolve("test/project/bin/Release/net6.0/browser-wasm/publish");
+    assert(fs.existsSync(dirPath), "Missing test assemblies. Run 'scripts/compile-test.sh'.");
     return dirPath;
 }
 

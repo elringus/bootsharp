@@ -1,18 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <OutputType>Exe</OutputType>
         <TargetFramework>net6.0</TargetFramework>
         <LangVersion>10</LangVersion>
-        <!-- Invariant flag is required, as ICU data is not bundled with the runtime. -->
+        <PublishTrimmed>true</PublishTrimmed>
+        <RunAOTCompilation>false</RunAOTCompilation>
+        <WasmGenerateAppBundle>false</WasmGenerateAppBundle>
         <InvariantGlobalization>true</InvariantGlobalization>
-        <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
-        <BlazorEnableCompression>false</BlazorEnableCompression>
     </PropertyGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="LinkerConfig.xml">
-            <LogicalName>$(MSBuildProjectName).xml</LogicalName>
-        </EmbeddedResource>
+        <TrimmerRootDescriptor Include="Linker.xml"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0"/>
     </ItemGroup>
 
