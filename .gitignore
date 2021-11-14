@@ -3,6 +3,7 @@
 
 node_modules
 dist
+.nyc_output
 
 [Bb]in
 [Oo]bj

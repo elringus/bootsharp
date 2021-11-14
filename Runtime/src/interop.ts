@@ -136,7 +136,7 @@ function receiveByteArray(id, data): void {
 
 function retrieveByteArray() {
     if (transferredArray === null)
-        throw new Error("Byte array not available for transfer");
+        throw new Error("Byte array not available for transfer.");
     return wasm.BINDING.js_typed_array_to_array(transferredArray);
 }
 

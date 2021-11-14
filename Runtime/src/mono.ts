@@ -14,9 +14,7 @@ export function initializeMono(assemblies: Assembly[]): void {
 }
 
 export async function callEntryPoint(assemblyName: string): Promise<any> {
-    const emptyArray = [[]];
-    try { await wasm.BINDING.call_assembly_entry_point(assemblyName, emptyArray, "m"); }
-    catch (error) { console.error(error); }
+    await wasm.BINDING.call_assembly_entry_point(assemblyName, [[]], "m");
 }
 
 function loadAssembly(assembly: Assembly): void {
