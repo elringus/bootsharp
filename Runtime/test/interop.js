@@ -103,7 +103,7 @@ describe("interop", () => {
         const stream = invoke("StreamFromDotNet");
         await assert.rejects(stream.arrayBuffer(), { message: "Streaming from .NET is not supported." });
 
-        // TODO: Port streaming from dotnet to pure JS (Microsoft implementation is using DOM lib).
+        // TODO: Port streaming from .NET to pure JS (Microsoft implementation is using DOM lib).
         // https://github.com/dotnet/aspnetcore/blob/release/6.0/src/Components/Web.JS/src/GlobalExports.ts#L80
         // https://github.com/dotnet/aspnetcore/blob/release/6.0/src/Components/Web.JS/src/StreamingInterop.ts#L24
         // dotnet-interop-js.js DotNetStream::arrayBuffer (Response is from DOM lib).
