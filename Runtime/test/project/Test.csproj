@@ -4,22 +4,19 @@
         <TargetFramework>net6.0</TargetFramework>
         <LangVersion>10</LangVersion>
         <RunAOTCompilation>false</RunAOTCompilation>
-        <PublishTrimmed>false</PublishTrimmed>
+        <PublishTrimmed>true</PublishTrimmed>
         <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
         <InvariantGlobalization>true</InvariantGlobalization>
         <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
         <BlazorEnableCompression>false</BlazorEnableCompression>
     </PropertyGroup>
 
-    <Target Name="RemoveBuiltinModule" AfterTargets="PrepareForILLink">
+    <Target Name="ReplaceWasm" AfterTargets="WasmTriggerPublishApp">
         <ItemGroup>
             <WasmNativeAsset Remove="@(WasmNativeAsset)" Condition="%(Extension) == '.wasm'"/>
+            <WasmNativeAsset Include="../../runtime/artifacts/bin/native/net6.0-Browser-Release-wasm/dotnet.wasm"/>
         </ItemGroup>
     </Target>
-
-    <ItemGroup>
-        <WasmNativeAsset Include="../../runtime/artifacts/bin/native/net6.0-Browser-Release-wasm/dotnet.wasm"/>
-    </ItemGroup>
 
     <ItemGroup>
         <TrimmerRootDescriptor Include="Linker.xml"/>
