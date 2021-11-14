@@ -24,6 +24,7 @@ describe("export", () => {
             assert(blazor.endInvokeDotNetFromJS);
             assert(blazor.receiveByteArray);
             assert(blazor.retrieveByteArray);
+            assert(blazor.getJSDataStreamChunk);
         });
     });
     describe("emscripten module", () => {

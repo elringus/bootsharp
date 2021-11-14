@@ -54,7 +54,9 @@ function assignBlazorGlobals(): void {
             endInvokeDotNetFromJS: endInvokeDotNetFromJS,
             receiveByteArray: receiveByteArray,
             retrieveByteArray: retrieveByteArray,
-            dotNetCriticalError: logDotNetError
+            dotNetCriticalError: logDotNetError,
+            // https://github.com/dotnet/aspnetcore/blob/release/6.0/src/Components/Web.JS/src/GlobalExports.ts#L79
+            getJSDataStreamChunk: (data, pos, size) => new Uint8Array(data.buffer, data.byteOffset + pos, size)
         }
     };
 }
