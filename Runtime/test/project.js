@@ -4,13 +4,18 @@ const fs = require("fs");
 const assert = require("assert");
 
 exports.bootTest = bootTest;
+exports.getBootData = getBootData;
 
 async function bootTest() {
-    const bootData = {
+    const bootData = getBootData();
+    await dotnet.boot(bootData);
+}
+
+function getBootData() {
+    return {
         entryAssemblyName: "Test.dll",
         assemblies: loadAssemblies()
     };
-    await dotnet.boot(bootData);
 }
 
 function loadAssemblies() {

@@ -10,7 +10,8 @@
   "types": "dist/dotnet.d.ts",
   "scripts": {
     "build": "webpack --mode production",
-    "test": "mocha",
+    "test": "mocha --exclude **/bench.js",
+    "bench": "mocha test/bench.js --timeout -1",
     "cover": "nyc -x **/bin npm run test",
     "publish": "npm publish"
   },
