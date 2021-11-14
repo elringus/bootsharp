@@ -62,20 +62,17 @@ public static class Program
     }
 
     [JSInvokable]
-    public static void StartStream ()
+    public static async Task StreamFromJSAsync (IJSStreamReference streamRef)
     {
-        Task.Run(StreamAsync);
-
-        static async void StreamAsync ()
-        {
-            var inRef = await js.InvokeAsync<IJSStreamReference>("sendStream");
-            await using var inStream = await inRef.OpenReadStreamAsync(maxAllowedSize: 10_000_000);
-            var buffer = new byte[inStream.Length];
-            await inStream.ReadAsync(buffer);
-            await using var outStream = new MemoryStream(buffer);
-            var outRef = new DotNetStreamReference(outStream, false);
-            await js.InvokeVoidAsync("receiveStream", outRef);
-        }
+        await using var stream = await streamRef.OpenReadStreamAsync();
+        await using var memoryStream = new MemoryStream();
+        await stream.CopyToAsync(memoryStream);
+        var buffer = memoryStream.ToArray();
+        for (var i = 0; i < buffer.Length; i++)
+            if (buffer[i] != i % 256)
+                throw new Exception($"Failure at index {i}.");
+        if (buffer.Length != 100_000)
+            throw new Exception($"Got a stream of length {buffer.Length}, expected a length of 100,000.");
     }
 
     [JSInvokable]
@@ -88,6 +85,12 @@ public static class Program
 
     [JSInvokable]
     public static string Throw (string message) => throw new Exception(message);
+
+    [JSInvokable]
+    public static async Task InvokeOnJSObjectAsync (IJSObjectReference obj, string function, params object[] args)
+    {
+        await obj.InvokeVoidAsync(function, args);
+    }
 }
 
 public class Instance

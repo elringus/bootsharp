@@ -3,6 +3,7 @@
 // Copy of Microsoft.JSInterop.js, with the following changes:
 // 1. Replaced `window` with `global` (webpack resolves to the correct global).
 // 2. Removed `import` statement (cuasing warnings when packing with other UMD libraries).
+// 3. Removed `Blob` case in createJSStreamReference (Blob is from DOM lib).
 
 export var DotNet;
 (function (DotNet) {
@@ -136,35 +137,28 @@ export var DotNet;
     /**
      * Creates a JavaScript data reference that can be passed to .NET via interop calls.
      *
-     * @param streamReference The ArrayBufferView or Blob used to create the JavaScript stream reference.
+     * @param buffer The ArrayBufferView used to create the JavaScript stream reference.
      * @returns The JavaScript data reference (this will be the same instance as the given object).
      * @throws Error if the given value is not an Object or doesn't have a valid byteLength.
      */
-    function createJSStreamReference(streamReference) {
+    function createJSStreamReference(buffer) {
         let length = -1;
-        // If we're given a raw Array Buffer, we interpret it as a `Uint8Array` as
-        // ArrayBuffers' aren't directly readable.
-        if (streamReference instanceof ArrayBuffer) {
-            streamReference = new Uint8Array(streamReference);
-        }
-        if (streamReference instanceof Blob) {
-            length = streamReference.size;
-        } else if (streamReference.buffer instanceof ArrayBuffer) {
-            if (streamReference.byteLength === undefined) {
-                throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}' as it doesn't have a byteLength.`);
+        if (buffer.buffer instanceof ArrayBuffer) {
+            if (buffer.byteLength === undefined) {
+                throw new Error(`Cannot create a JSStreamReference from the value '${buffer}' as it doesn't have a byteLength.`);
             }
-            length = streamReference.byteLength;
+            length = buffer.byteLength;
         } else {
-            throw new Error("Supplied value is not a typed array or blob.");
+            throw new Error("Supplied value is not a typed array.");
         }
         const result = {
             [jsStreamReferenceLengthKey]: length
         };
         try {
-            const jsObjectReference = createJSObjectReference(streamReference);
+            const jsObjectReference = createJSObjectReference(buffer);
             result[jsObjectIdKey] = jsObjectReference[jsObjectIdKey];
         } catch {
-            throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}'.`);
+            throw new Error(`Cannot create a JSStreamReference from the value '${buffer}'.`);
         }
         return result;
     }

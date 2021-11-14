@@ -9,6 +9,10 @@ describe("export", () => {
             assert(dotnet.boot);
             assert(dotnet.terminate);
             assert(dotnet.invoke);
+            assert(dotnet.invokeAsync);
+            assert(dotnet.createObjectReference);
+            assert(dotnet.disposeObjectReference);
+            assert(dotnet.createStreamReference);
         });
     });
     // Below globals are required for emscripten and blazor internals.

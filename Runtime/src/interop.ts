@@ -20,8 +20,10 @@ export function initializeInterop(): void {
 }
 
 export const invoke: <T>(assembly: string, method: string, ...args: any[]) => T = DotNet.invokeMethod;
-
 export const invokeAsync: <T>(assembly: string, method: string, ...args: any[]) => Promise<T> = DotNet.invokeMethodAsync;
+export const createObjectReference: (object: any) => any = DotNet.createJSObjectReference;
+export const disposeObjectReference: (objectReference: any) => void = DotNet.disposeJSObjectReference;
+export const createStreamReference: (buffer: ArrayBuffer) => any = DotNet.createJSStreamReference;
 
 function bindMethods(): void {
     invokeDotNet = bindStaticMethod("Microsoft.AspNetCore.Components.WebAssembly",

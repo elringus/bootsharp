@@ -45,13 +45,13 @@ describe("interop", () => {
     it("can find method by alias", () => {
         assert.deepStrictEqual(invoke("EchoAlias", "foo"), "foo");
     });
-    it("can interop with instance", () => {
+    it("can interop with dotnet instance", () => {
         const instance = invoke("CreateInstance");
         assert.doesNotThrow(() => instance.invokeMethod("SetVar", "foo"));
         assert.deepStrictEqual(instance.invokeMethod("GetVar"), "foo");
         assert.doesNotThrow(() => instance.dispose());
     });
-    it("can send instance to dotnet", () => {
+    it("can send dotnet instance back", () => {
         const instance1 = invoke("CreateInstance");
         const instance2 = invoke("CreateInstance");
         instance1.invokeMethod("SetVar", "bar");
@@ -59,6 +59,15 @@ describe("interop", () => {
         assert.deepStrictEqual(instance2.invokeMethod("GetVar"), "bar");
         instance1.dispose();
         instance2.dispose();
+    });
+    it("can interop with js instance", async () => {
+        const instance = {
+            setField(value) { this.field = value; }
+        };
+        const ref = dotnet.createObjectReference(instance);
+        await invokeAsync("InvokeOnJSObjectAsync", ref, "setField", ["nya"]);
+        assert.deepStrictEqual(instance.field, "nya");
+        assert.doesNotThrow(() => dotnet.disposeObjectReference(ref));
     });
     it("can send and receive raw bytes", () => {
         global.receiveBytes = bytes => new TextDecoder().decode(bytes);
@@ -79,18 +88,11 @@ describe("interop", () => {
     it("can catch dotnet exceptions", () => {
         assert.throws(() => invoke("Throw", "bar"), /Error: System.Exception: bar/);
     });
-    // TODO: Figure how to test async streaming without blocking the thread.
-    // it("can stream", async () => {
-    //     let received, resolve;
-    //     global.sendStream = () => new Uint8Array(10000000);
-    //     global.receiveStream = async ref => {
-    //         received = await ref.arrayBuffer();
-    //         resolve();
-    //     };
-    //     invoke("StartStream");
-    //     await new Promise(r => resolve = r);
-    //     assert.deepStrictEqual(received.length, 10000000);
-    // });
+    it("can stream from js", async () => {
+        const array = new Uint8Array(100000).map((_, i) => i % 256);
+        const stream = dotnet.createStreamReference(array);
+        await assert.doesNotReject(() => invokeAsync("StreamFromJSAsync", stream));
+    });
     // TODO: Test unmarshalled interop.
     // https://docs.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/call-javascript-from-dotnet#unmarshalled-javascript-interop
 });
