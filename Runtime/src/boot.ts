@@ -3,6 +3,7 @@ import { initializeInterop } from "./interop";
 import { Assembly, initializeMono, callEntryPoint } from "./mono";
 
 export interface BootData {
+    wasmBinary: Uint8Array;
     assemblies: Assembly[];
     entryAssemblyName: string;
 }
@@ -23,7 +24,7 @@ export function getBootStatus(): BootStatus {
 export async function boot(data: BootData): Promise<void> {
     validateBootData(data);
     transitionBootStatus(BootStatus.Standby, BootStatus.Booting);
-    await initializeWasm();
+    await initializeWasm(data.wasmBinary);
     initializeMono(data.assemblies);
     initializeInterop();
     await callEntryPoint(data.entryAssemblyName);
@@ -46,10 +47,8 @@ function transitionBootStatus(from: BootStatus, to: BootStatus): void {
 function validateBootData(data: BootData): void {
     if (data == null)
         throw new Error("Boot data is missing.");
-    if (data.assemblies.length == 0)
-        throw new Error("Boot assemblies are missing.");
-    if (!data.assemblies.some(a => a.name == data.entryAssemblyName))
-        throw new Error("Entry assembly is not found.");
+    if (data.wasmBinary == null || data.wasmBinary.length == 0)
+        throw new Error("Wasm binary is missing.");
     for (const assembly of data.assemblies)
         if (assembly.data == null || assembly.data.length == 0)
             throw new Error(`${assembly.name} assembly data is invalid.`);

@@ -1,19 +1,37 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
         <TargetFramework>net6.0</TargetFramework>
         <LangVersion>10</LangVersion>
         <RunAOTCompilation>false</RunAOTCompilation>
-        <PublishTrimmed>true</PublishTrimmed>
-        <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
-        <WasmGenerateAppBundle>false</WasmGenerateAppBundle>
+        <PublishTrimmed>false</PublishTrimmed>
+        <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
         <InvariantGlobalization>true</InvariantGlobalization>
+        <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
+        <BlazorEnableCompression>false</BlazorEnableCompression>
     </PropertyGroup>
+
+    <Target Name="RemoveBuiltinModule" AfterTargets="PrepareForILLink">
+        <ItemGroup>
+            <WasmNativeAsset Remove="@(WasmNativeAsset)" Condition="%(Extension) == '.wasm'"/>
+        </ItemGroup>
+    </Target>
+
+    <ItemGroup>
+        <WasmNativeAsset Include="../../runtime/artifacts/bin/native/net6.0-Browser-Release-wasm/dotnet.wasm"/>
+    </ItemGroup>
 
     <ItemGroup>
         <TrimmerRootDescriptor Include="Linker.xml"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0"/>
     </ItemGroup>
+
+    <Target Name="MoveAssemblies" AfterTargets="Publish">
+        <ItemGroup>
+            <FilesToMove Include="$(OutDir)/**/publish/**/_framework/*.dll;$(OutDir)/**/publish/**/_framework/*.wasm"/>
+        </ItemGroup>
+        <RemoveDir Directories="$(OutDir)/publish/js"/>
+        <Move SourceFiles="@(FilesToMove)" DestinationFolder="$(OutDir)/publish/js"/>
+    </Target>
 
 </Project>
