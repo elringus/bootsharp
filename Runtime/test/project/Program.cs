@@ -96,6 +96,12 @@ public static class Program
     public static string Throw (string message) => throw new Exception(message);
 
     [JSInvokable]
+    public static IJSObjectReference GetAndReturnJSObject ()
+    {
+        return js.Invoke<IJSObjectReference>("getObject");
+    }
+
+    [JSInvokable]
     public static async Task InvokeOnJSObjectAsync (IJSObjectReference obj, string function, params object[] args)
     {
         await obj.InvokeVoidAsync(function, args);

@@ -60,13 +60,19 @@ describe("interop", () => {
         instance1.dispose();
         instance2.dispose();
     });
-    it("can interop with js instance", async () => {
-        const instance = {
+    it("can return and receive js object", () => {
+        const expected = dotnet.createObjectReference({ foo: "bar" });
+        global.getObject = () => expected;
+        const actual = invoke("GetAndReturnJSObject");
+        assert.deepStrictEqual(actual, expected);
+    });
+    it("can interop with js object", async () => {
+        const obj = {
             setField(value) { this.field = value; }
         };
-        const ref = dotnet.createObjectReference(instance);
+        const ref = dotnet.createObjectReference(obj);
         await invokeAsync("InvokeOnJSObjectAsync", ref, "setField", ["nya"]);
-        assert.deepStrictEqual(instance.field, "nya");
+        assert.deepStrictEqual(obj.field, "nya");
         assert.doesNotThrow(() => dotnet.disposeObjectReference(ref));
     });
     it("can send and receive raw bytes", () => {

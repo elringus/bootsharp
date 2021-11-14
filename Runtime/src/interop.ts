@@ -23,7 +23,7 @@ export const invoke: <T>(assembly: string, method: string, ...args: any[]) => T 
 export const invokeAsync: <T>(assembly: string, method: string, ...args: any[]) => Promise<T> = DotNet.invokeMethodAsync;
 export const createObjectReference: (object: any) => any = DotNet.createJSObjectReference;
 export const disposeObjectReference: (objectReference: any) => void = DotNet.disposeJSObjectReference;
-export const createStreamReference: (buffer: ArrayBuffer) => any = DotNet.createJSStreamReference;
+export const createStreamReference: (buffer: Uint8Array | any) => any = DotNet.createJSStreamReference;
 
 function bindMethods(): void {
     invokeDotNet = bindStaticMethod("Microsoft.AspNetCore.Components.WebAssembly",
@@ -54,7 +54,6 @@ function assignBlazorGlobals(): void {
             endInvokeDotNetFromJS: endInvokeDotNetFromJS,
             receiveByteArray: receiveByteArray,
             retrieveByteArray: retrieveByteArray,
-            dotNetCriticalError: logDotNetError,
             // https://github.com/dotnet/aspnetcore/blob/release/6.0/src/Components/Web.JS/src/GlobalExports.ts#L79
             getJSDataStreamChunk: (data, pos, size) => new Uint8Array(data.buffer, data.byteOffset + pos, size)
         }
@@ -72,33 +71,18 @@ function invokeJSFromDotNet(callInfo, arg0, arg1, arg2): any {
     const callArgs = readHeapObject(callInfo, 8);
     const targetId = readHeapUint64(callInfo, 20);
 
-    if (callArgs !== null) {
-        const callHandle = readHeapUint64(callInfo, 12);
-        if (callHandle !== 0) {
-            DotNet.jsCallDispatcher.beginInvokeJSFromDotNet(callHandle, functionId, callArgs, resultType, targetId);
-            return 0;
-        } else {
-            const resultJson = DotNet.jsCallDispatcher.invokeJSFromDotNet(functionId, callArgs, resultType, targetId)!;
-            return resultJson === null ? 0 : wasm.BINDING.js_string_to_mono_string(resultJson);
-        }
+    if (callArgs == null) {
+        const func = DotNet.jsCallDispatcher.findJSFunction(functionId, targetId);
+        return func.call(null, arg0, arg1, arg2);
     }
 
-    const func = DotNet.jsCallDispatcher.findJSFunction(functionId, targetId);
-    const result = func.call(null, arg0, arg1, arg2);
-
-    switch (resultType) {
-        case DotNet.JSCallResultType.Default:
-            return result;
-        case DotNet.JSCallResultType.JSObjectReference:
-            return DotNet.createJSObjectReference(result).__jsObjectId;
-        case DotNet.JSCallResultType.JSStreamReference:
-            const streamReference = DotNet.createJSStreamReference(result);
-            const resultJson = JSON.stringify(streamReference);
-            return wasm.BINDING.js_string_to_mono_string(resultJson);
-        case DotNet.JSCallResultType.JSVoidResult:
-            return null;
-        default:
-            throw new Error(`Invalid JS call result type '${resultType}'.`);
+    const callHandle = readHeapUint64(callInfo, 12);
+    if (callHandle !== 0) {
+        DotNet.jsCallDispatcher.beginInvokeJSFromDotNet(callHandle, functionId, callArgs, resultType, targetId);
+        return 0;
+    } else {
+        const resultJson = DotNet.jsCallDispatcher.invokeJSFromDotNet(functionId, callArgs, resultType, targetId)!;
+        return resultJson === null ? 0 : wasm.BINDING.js_string_to_mono_string(resultJson);
     }
 }
 
@@ -111,8 +95,6 @@ function invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, args
 
 function beginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson) {
     assertHeapNotLocked();
-    if (!dotNetObjectId && !assemblyName)
-        throw new Error("Either assemblyName or dotNetObjectId must have a non null value.");
     const assemblyNameOrObjectId: string = dotNetObjectId ? dotNetObjectId.toString() : assemblyName;
     beginInvokeDotNet(callId ? callId.toString() : null, assemblyNameOrObjectId, methodIdentifier, argsJson);
 }
@@ -136,7 +118,7 @@ function receiveByteArray(id, data): void {
 
 function retrieveByteArray() {
     if (transferredArray === null)
-        throw new Error("Byte array not available for transfer.");
+        throw new Error("Byte array is not available for transfer.");
     return wasm.BINDING.js_typed_array_to_array(transferredArray);
 }
 
@@ -198,9 +180,4 @@ function readHeapUint64(baseAddress, fieldOffset?): number {
 
 function getArrayDataPointer<T>(array): number {
     return <number><any>array + 12;
-}
-
-function logDotNetError(error): void {
-    const message = wasm.BINDING.conv_string(error);
-    console.error(message);
 }
