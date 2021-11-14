@@ -76,6 +76,15 @@ public static class Program
     }
 
     [JSInvokable]
+    public static DotNetStreamReference StreamFromDotNet ()
+    {
+        var data = new byte[100000];
+        for (var i = 0; i < data.Length; i++)
+            data[i] = (byte)(i % 256);
+        return new DotNetStreamReference(new MemoryStream(data));
+    }
+
+    [JSInvokable]
     public static string CatchException ()
     {
         try { js.InvokeVoid("throw"); }

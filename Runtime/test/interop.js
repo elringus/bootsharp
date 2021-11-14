@@ -89,9 +89,22 @@ describe("interop", () => {
         assert.throws(() => invoke("Throw", "bar"), /Error: System.Exception: bar/);
     });
     it("can stream from js", async () => {
-        const array = new Uint8Array(100000).map((_, i) => i % 256);
+        const array = new Uint8Array(100000).map((_, index) => index % 256);
         const stream = dotnet.createStreamReference(array);
         await assert.doesNotReject(() => invokeAsync("StreamFromJSAsync", stream));
+    });
+    it("can't stream from dotnet", async () => {
+        const stream = invoke("StreamFromDotNet");
+        await assert.rejects(stream.arrayBuffer(), { message: "Streaming from .NET is not supported." });
+
+        // TODO: Port streaming from dotnet to pure JS (Microsoft implementation is using DOM lib).
+        // https://github.com/dotnet/aspnetcore/blob/release/6.0/src/Components/Web.JS/src/GlobalExports.ts#L80
+        // https://github.com/dotnet/aspnetcore/blob/release/6.0/src/Components/Web.JS/src/StreamingInterop.ts#L24
+        // dotnet-interop-js.js DotNetStream::arrayBuffer (Response is from DOM lib).
+
+        // const data = new Uint8Array(await stream.arrayBuffer());
+        // assert.deepStrictEqual(data.length, 100000);
+        // assert(data.every((value, index) => value === index % 256));
     });
     // TODO: Test unmarshalled interop.
     // https://docs.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/call-javascript-from-dotnet#unmarshalled-javascript-interop

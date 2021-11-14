@@ -4,6 +4,7 @@
 // 1. Replaced `window` with `global` (webpack resolves to the correct global).
 // 2. Removed `import` statement (cuasing warnings when packing with other UMD libraries).
 // 3. Removed `Blob` case in createJSStreamReference (Blob is from DOM lib).
+// 4. Throw on DotNetStream::arrayBuffer (Response is from DOM lib).
 
 export var DotNet;
 (function (DotNet) {
@@ -453,6 +454,7 @@ export var DotNet;
          * Note there is a JavaScript limit on the size of the ArrayBuffer equal to approximately 2GB.
          */
         async arrayBuffer() {
+            throw Error("Streaming from .NET is not supported.");
             return new Response(await this.stream()).arrayBuffer();
         }
     }
