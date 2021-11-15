@@ -16,19 +16,13 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0"/>
     </ItemGroup>
 
-    <Target Name="ReplaceWasm" AfterTargets="WasmBuildApp">
+    <Target Name="PublishJS" AfterTargets="Publish">
         <ItemGroup>
-            <WasmNativeAsset Remove="@(WasmNativeAsset)" Condition="%(Extension) == '.wasm'"/>
-            <WasmNativeAsset Include="../../runtime/artifacts/bin/native/net6.0-Browser-Release-wasm/dotnet.wasm"/>
-        </ItemGroup>
-    </Target>
-
-    <Target Name="MoveAssemblies" AfterTargets="Publish">
-        <ItemGroup>
-            <FilesToMove Include="$(OutDir)/**/publish/**/_framework/*.dll;$(OutDir)/**/publish/**/_framework/*.wasm"/>
+            <FilesToMove Include="$(OutDir)/**/publish/**/_framework/*.dll"/>
+            <FilesToMove Include="../../runtime/artifacts/bin/native/net6.0-Browser-Release-wasm/dotnet.wasm"/>
         </ItemGroup>
         <RemoveDir Directories="$(OutDir)/publish/js"/>
-        <Move SourceFiles="@(FilesToMove)" DestinationFolder="$(OutDir)/publish/js"/>
+        <Copy SourceFiles="@(FilesToMove)" DestinationFolder="$(OutDir)/publish/js"/>
     </Target>
 
 </Project>
