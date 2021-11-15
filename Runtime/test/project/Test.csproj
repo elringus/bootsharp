@@ -4,12 +4,17 @@
         <TargetFramework>net6.0</TargetFramework>
         <LangVersion>10</LangVersion>
         <RunAOTCompilation>false</RunAOTCompilation>
-        <PublishTrimmed>true</PublishTrimmed>
+        <PublishTrimmed>false</PublishTrimmed>
         <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
         <InvariantGlobalization>true</InvariantGlobalization>
         <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
         <BlazorEnableCompression>false</BlazorEnableCompression>
     </PropertyGroup>
+
+    <ItemGroup>
+        <TrimmerRootDescriptor Include="Linker.xml"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0"/>
+    </ItemGroup>
 
     <Target Name="ReplaceWasm" AfterTargets="WasmBuildApp">
         <ItemGroup>
@@ -17,11 +22,6 @@
             <WasmNativeAsset Include="../../runtime/artifacts/bin/native/net6.0-Browser-Release-wasm/dotnet.wasm"/>
         </ItemGroup>
     </Target>
-
-    <ItemGroup>
-        <TrimmerRootDescriptor Include="Linker.xml"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0"/>
-    </ItemGroup>
 
     <Target Name="MoveAssemblies" AfterTargets="Publish">
         <ItemGroup>
