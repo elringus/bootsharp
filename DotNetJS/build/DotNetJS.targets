@@ -1,0 +1,16 @@
+<Project>
+
+    <PropertyGroup>
+        <PublishTrimmed>true</PublishTrimmed>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
+        <BlazorEnableCompression>false</BlazorEnableCompression>
+    </PropertyGroup>
+
+    <UsingTask TaskName="DotNetJS.Packer.PackUMD" AssemblyFile="$(MSBuildThisFileDirectory)../tasks/Packer.dll"/>
+
+    <Target Name="PublishJS" AfterTargets="Publish">
+        <PackUMD OutDir="$(OutDir)"/>
+    </Target>
+
+</Project>

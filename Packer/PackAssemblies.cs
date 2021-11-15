@@ -6,25 +6,26 @@ using Microsoft.Build.Utilities;
 
 namespace DotNetJS.Packer
 {
-    public class PackAssemblies : Task
+    public class PackUMD : Task
     {
-        [Required]
-        [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-        public string PublishUrl { get; set; }
+        [Required, SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+        public string OutDir { get; set; }
 
         public override bool Execute ()
         {
             var dlls = CollectAssemblies();
-            CleanPublishDirectory();
+            // CleanPublishDirectory();
             foreach (var dll in dlls)
-                File.WriteAllBytes(dll.Name, dll.Bytes);
+                Log.LogMessage(MessageImportance.High, dll.Name);
+            Log.LogMessage(MessageImportance.High, $"OutDir: {OutDir}");
             return true;
         }
 
         private List<Assembly> CollectAssemblies ()
         {
             var dlls = new List<Assembly>();
-            foreach (var path in Directory.GetFiles(PublishUrl, "*.dll"))
+            var publishDir = Path.Combine(OutDir, "publish/wwwroot/_framework");
+            foreach (var path in Directory.GetFiles(publishDir, "*.dll"))
                 dlls.Add(CreateAssembly(path));
             return dlls;
         }
@@ -38,8 +39,8 @@ namespace DotNetJS.Packer
 
         private void CleanPublishDirectory ()
         {
-            Directory.Delete(PublishUrl, true);
-            Directory.CreateDirectory(PublishUrl);
+            Directory.Delete(OutDir, true);
+            Directory.CreateDirectory(OutDir);
         }
     }
 }

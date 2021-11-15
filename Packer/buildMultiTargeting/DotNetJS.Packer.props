@@ -1,3 +1,0 @@
-<Project>
-  <Import Project="..\build\DotNetJS.Packer.props" />
-</Project>
