@@ -4,7 +4,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <LangVersion>10</LangVersion>
         <RunAOTCompilation>false</RunAOTCompilation>
-        <PublishTrimmed>false</PublishTrimmed>
+        <PublishTrimmed>true</PublishTrimmed>
         <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
         <InvariantGlobalization>true</InvariantGlobalization>
         <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
