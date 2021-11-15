@@ -12,7 +12,7 @@
     "build": "webpack --mode production",
     "test": "mocha --exclude **/bench.js",
     "cover": "nyc -x **/bin npm run test",
-    "bench": "mocha test/bench.js --timeout -1",
+    "bench": "mocha test/bench.js --timeout 0",
     "publish": "npm publish"
   },
   "devDependencies": {
