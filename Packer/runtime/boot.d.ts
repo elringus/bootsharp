@@ -1,5 +1,6 @@
 import { Assembly } from "./mono";
 export interface BootData {
+    wasmBinary: Uint8Array;
     assemblies: Assembly[];
     entryAssemblyName: string;
 }
