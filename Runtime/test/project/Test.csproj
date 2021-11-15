@@ -11,7 +11,7 @@
         <BlazorEnableCompression>false</BlazorEnableCompression>
     </PropertyGroup>
 
-    <Target Name="ReplaceWasm" AfterTargets="WasmTriggerPublishApp">
+    <Target Name="ReplaceWasm" AfterTargets="WasmBuildApp">
         <ItemGroup>
             <WasmNativeAsset Remove="@(WasmNativeAsset)" Condition="%(Extension) == '.wasm'"/>
             <WasmNativeAsset Include="../../runtime/artifacts/bin/native/net6.0-Browser-Release-wasm/dotnet.wasm"/>
