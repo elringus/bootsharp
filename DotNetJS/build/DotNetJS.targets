@@ -17,7 +17,10 @@
     <UsingTask TaskName="DotNetJS.Packer.PackUMD" AssemblyFile="$(MSBuildThisFileDirectory)../tasks/Packer.dll"/>
 
     <Target Name="PublishJS" AfterTargets="Publish">
-        <PackUMD BaseDir="$(BaseOutputPath)" OutDir="$(OutDir)" JSDir="$(MSBuildThisFileDirectory)../js"/>
+        <PackUMD BaseDir="$(BaseOutputPath)"
+                 OutDir="$(OutDir)"
+                 JSDir="$(MSBuildThisFileDirectory)../js"
+                 EntryAssemblyName="$(AssemblyName)"/>
     </Target>
 
 </Project>

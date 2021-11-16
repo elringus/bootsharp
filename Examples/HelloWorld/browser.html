@@ -1,0 +1,18 @@
+<meta charset="UTF-8">
+
+<script src="Project/bin/HelloWorld.js"></script>
+
+<script>
+    
+    // This function is invoked by DotNet.
+    window.getName = () => navigator.userAgent;
+
+    window.onload = async function () {
+        // Booting the DotNet runtime and invoking entry point.
+        await HelloWorld.boot();
+        // Invoking 'GetName()' method from DotNet.
+        const guestName = HelloWorld.invoke("GetName");
+        console.log(`Welcome, ${guestName}!`);
+    };
+    
+</script>

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Microsoft.Build.Framework;
@@ -14,16 +15,43 @@ namespace DotNetJS.Packer
         public string OutDir { get; set; }
         [Required, SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
         public string JSDir { get; set; }
+        [Required, SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+        public string EntryAssemblyName { get; set; }
 
         public override bool Execute ()
         {
-            var dlls = CollectAssemblies();
+            var libraryJS = GetDotNetJS() + GenerateModuleJS();
             CleanPublishDirectory();
-            foreach (var dll in dlls)
-                Log.LogMessage(MessageImportance.High, dll.Name);
-            foreach (var path in Directory.GetFiles(JSDir))
-                Log.LogMessage(MessageImportance.High, path);
+            PublishLibrary(libraryJS);
+            CopyDotNetMap();
             return true;
+        }
+
+        private string GetDotNetJS ()
+        {
+            var path = Path.Combine(JSDir, "dotnet.js");
+            return File.ReadAllText(path);
+        }
+
+        private string GenerateModuleJS ()
+        {
+            var assemblies = CollectAssemblies();
+            var wasmBase64 = GetWasmBase64();
+            return UMD.GenerateJS(EntryAssemblyName, wasmBase64, assemblies);
+        }
+
+        private void CleanPublishDirectory ()
+        {
+            Directory.Delete(BaseDir, true);
+            Directory.CreateDirectory(BaseDir);
+        }
+
+        private void PublishLibrary (string libraryJS)
+        {
+            var name = Path.GetFileNameWithoutExtension(EntryAssemblyName);
+            var path = Path.Combine(BaseDir, name + ".js");
+            File.WriteAllText(path, libraryJS);
+            Log.LogMessage(MessageImportance.High, $"JavaScript UMD library is published as {path}.");
         }
 
         private List<Assembly> CollectAssemblies ()
@@ -38,14 +66,23 @@ namespace DotNetJS.Packer
         private Assembly CreateAssembly (string path)
         {
             var name = Path.GetFileName(path);
-            var bytes = File.ReadAllBytes(path);
-            return new Assembly { Name = name, Bytes = bytes };
+            var binary = File.ReadAllBytes(path);
+            var base64 = Convert.ToBase64String(binary);
+            return new Assembly { Name = name, Base64 = base64 };
         }
 
-        private void CleanPublishDirectory ()
+        private string GetWasmBase64 ()
         {
-            Directory.Delete(BaseDir, true);
-            Directory.CreateDirectory(BaseDir);
+            var path = Path.Combine(JSDir, "dotnet.wasm");
+            var binary = File.ReadAllBytes(path);
+            return Convert.ToBase64String(binary);
+        }
+
+        private void CopyDotNetMap ()
+        {
+            var source = Path.Combine(JSDir, "dotnet.js.map");
+            var destination = Path.Combine(BaseDir, "dotnet.js.map");
+            File.Copy(source, destination);
         }
     }
 }
