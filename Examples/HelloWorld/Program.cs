@@ -4,7 +4,7 @@ using Microsoft.JSInterop;
 
 // Namespace is used as the name for both the generated .js file
 // and main export object of the UMD library.
-namespace HelloBrowser
+namespace HelloWorld
 {
     public static class Program
     {
@@ -12,9 +12,9 @@ namespace HelloBrowser
         public static void Main ()
         {
             // Invoking 'getName()' function from JavaScript.
-            var browserName = JS.Invoke<string>("getName");
-            // Writing to browser console.
-            Console.WriteLine($"Hello {browserName}, DotNet here!");
+            var hostName = JS.Invoke<string>("getName");
+            // Writing to JavaScript console output.
+            Console.WriteLine($"Hello {hostName}, DotNet here!");
         }
 
         [JSInvokable] // The method is invoked from JavaScript.

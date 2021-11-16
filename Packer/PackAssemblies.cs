@@ -9,15 +9,20 @@ namespace DotNetJS.Packer
     public class PackUMD : Task
     {
         [Required, SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+        public string BaseDir { get; set; }
+        [Required, SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
         public string OutDir { get; set; }
+        [Required, SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+        public string JSDir { get; set; }
 
         public override bool Execute ()
         {
             var dlls = CollectAssemblies();
-            // CleanPublishDirectory();
+            CleanPublishDirectory();
             foreach (var dll in dlls)
                 Log.LogMessage(MessageImportance.High, dll.Name);
-            Log.LogMessage(MessageImportance.High, $"OutDir: {OutDir}");
+            foreach (var path in Directory.GetFiles(JSDir))
+                Log.LogMessage(MessageImportance.High, path);
             return true;
         }
 
@@ -39,8 +44,8 @@ namespace DotNetJS.Packer
 
         private void CleanPublishDirectory ()
         {
-            Directory.Delete(OutDir, true);
-            Directory.CreateDirectory(OutDir);
+            Directory.Delete(BaseDir, true);
+            Directory.CreateDirectory(BaseDir);
         }
     }
 }

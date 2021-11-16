@@ -1,6 +1,7 @@
 ﻿const assert = require("assert");
 const { boot, terminate, getBootStatus, BootStatus } = require("../dist/dotnet");
-const { bootTest } = require("./project");
+const { bootTest, getBootData } = require("./project");
+const { Base64 } = require("js-base64");
 
 describe("boot", () => {
     it("is in standby by default", () => {
@@ -15,12 +16,12 @@ describe("boot", () => {
     });
     it("throws when assembly data is not assigned", async () => {
         const assembly = { name: "Foo.dll" };
-        const data = { wasmBinary: new Uint8Array(1), assemblies: [assembly], entryAssemblyName: "Foo.dll" };
+        const data = { wasm: new Uint8Array(1), assemblies: [assembly], entryAssemblyName: "Foo.dll" };
         await assert.rejects(boot(data), { message: "Foo.dll assembly data is invalid." });
     });
     it("throws when assembly data length is zero", async () => {
         const assembly = { name: "Foo.dll", data: new Uint8Array(0) };
-        const data = { wasmBinary: new Uint8Array(1), assemblies: [assembly], entryAssemblyName: "Foo.dll" };
+        const data = { wasm: new Uint8Array(1), assemblies: [assembly], entryAssemblyName: "Foo.dll" };
         await assert.rejects(boot(data), { message: "Foo.dll assembly data is invalid." });
     });
     it("throws when attempting to boot while already booted", async () => {
@@ -46,5 +47,14 @@ describe("boot", () => {
         await bootTest();
         terminate();
         assert.deepStrictEqual(getBootStatus(), BootStatus.Standby);
+    });
+    it("can boot with base64 binaries", async () => {
+        const data = getBootData();
+        data.wasm = Base64.fromUint8Array(data.wasm);
+        for (let i = 0; i < data.assemblies.length; i++)
+            data.assemblies[i].data = Base64.fromUint8Array(data.assemblies[i].data);
+        await boot(data);
+        assert.deepStrictEqual(getBootStatus(), BootStatus.Booted);
+        terminate();
     });
 });

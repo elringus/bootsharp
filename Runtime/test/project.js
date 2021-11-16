@@ -13,7 +13,7 @@ async function bootTest() {
 
 function getBootData() {
     return {
-        wasmBinary: loadWasmBinary(),
+        wasm: loadWasmBinary(),
         assemblies: loadAssemblies(),
         entryAssemblyName: "Test.dll"
     };

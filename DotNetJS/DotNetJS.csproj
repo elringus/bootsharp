@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <PackageId>DotNetJS</PackageId>
-        <Version>0.0.17</Version>
+        <Version>0.0.23</Version>
         <Authors>Elringus</Authors>
         <PackageDescription>Compile .NET into single-file UMD JavaScript library.</PackageDescription>
         <RepositoryUrl>https://github.com/Elringus/DotNetJS</RepositoryUrl>
@@ -12,20 +12,24 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Update="build/**" Pack="true" PackagePath="%(Identity)" />
-        <Content Include="runtime/**" Pack="true" PackagePath="runtime/" />
+        <None Update="build/**" Pack="true" PackagePath="%(Identity)"/>
+        <Content Include="js/**" Pack="true" PackagePath="%(Identity)"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0"/>
     </ItemGroup>
 
     <Target Name="GetTasksOutputDlls" BeforeTargets="CoreCompile">
         <MSBuild Projects="../Packer/Packer.csproj" Targets="Publish;PublishItemsOutputGroup" Properties="Configuration=Release">
-            <Output TaskParameter="TargetOutputs" ItemName="_TasksProjectOutputs" />
+            <Output TaskParameter="TargetOutputs" ItemName="_TasksProjectOutputs"/>
         </MSBuild>
         <ItemGroup>
-            <Content Include="@(_TasksProjectOutputs)" Condition="'%(_TasksProjectOutputs.Extension)' == '.dll'" Pack="true" PackagePath="tasks/%(_TasksProjectOutputs.TargetPath)" KeepMetadata="Pack;PackagePath" />
+            <Content Include="@(_TasksProjectOutputs)"
+                     Condition="'%(_TasksProjectOutputs.Extension)' == '.dll'"
+                     Pack="true"
+                     PackagePath="tasks/%(_TasksProjectOutputs.TargetPath)"
+                     KeepMetadata="Pack;PackagePath"/>
         </ItemGroup>
     </Target>
 
