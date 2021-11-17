@@ -22,19 +22,20 @@ namespace DotNetJS.Packer
         };
         await dotnet.boot(bootData);
     };
-    exports.invoke = (name, ...args) => dotnet.invoke('%LIBRARY%', name, ...args);
-    exports.invokeAsync = (name, ...args) => dotnet.invokeAsync('%LIBRARY%', name, ...args);
+    exports.invoke = (name, ...args) => dotnet.invoke('%INVOKE%', name, ...args);
+    exports.invokeAsync = (name, ...args) => dotnet.invokeAsync('%INVOKE%', name, ...args);
 }));";
 
         private const string assemblyTemplate = "{ name: '%NAME%', data: '%DATA%' }";
 
-        public static string GenerateJS (string entryName, string wasmBase64, IEnumerable<Assembly> assemblies)
+        public static string GenerateJS (string libraryName, string entryName, string wasmBase64, IEnumerable<Assembly> assemblies)
         {
-            var libraryName = Path.GetFileNameWithoutExtension(entryName);
+            var invokeAssemblyName = Path.GetFileNameWithoutExtension(entryName);
             var dlls = string.Join(",", assemblies.Select(GenerateAssembly));
             return moduleTemplate
                 .Replace("%ENTRY%", entryName)
                 .Replace("%LIBRARY%", libraryName)
+                .Replace("%INVOKE%", invokeAssemblyName)
                 .Replace("%WASM%", wasmBase64)
                 .Replace("%DLLS%", dlls);
         }

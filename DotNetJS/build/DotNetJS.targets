@@ -21,7 +21,9 @@
         <PackUMD BaseDir="$(BaseOutputPath)"
                  OutDir="$(OutDir)"
                  JSDir="$(MSBuildThisFileDirectory)../js"
-                 EntryAssemblyName="$(AssemblyName)"/>
+                 EntryAssemblyName="$(AssemblyName)"
+                 LibraryName="$(LibraryName)"
+                 Clean="$(Clean)"/>
     </Target>
 
 </Project>

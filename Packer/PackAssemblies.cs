@@ -17,11 +17,15 @@ namespace DotNetJS.Packer
         public string JSDir { get; set; }
         [Required, SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
         public string EntryAssemblyName { get; set; }
+        [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+        public string LibraryName { get; set; }
+        [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+        public bool Clean { get; set; } = true;
 
         public override bool Execute ()
         {
             var libraryJS = GetDotNetJS() + GenerateModuleJS();
-            CleanPublishDirectory();
+            if (Clean) CleanPublishDirectory();
             PublishLibrary(libraryJS);
             CopyDotNetMap();
             return true;
@@ -35,9 +39,10 @@ namespace DotNetJS.Packer
 
         private string GenerateModuleJS ()
         {
-            var assemblies = CollectAssemblies();
+            var libraryName = BuildLibraryName();
             var wasmBase64 = GetWasmBase64();
-            return UMD.GenerateJS(EntryAssemblyName, wasmBase64, assemblies);
+            var assemblies = CollectAssemblies();
+            return UMD.GenerateJS(libraryName, EntryAssemblyName, wasmBase64, assemblies);
         }
 
         private void CleanPublishDirectory ()
@@ -48,7 +53,7 @@ namespace DotNetJS.Packer
 
         private void PublishLibrary (string libraryJS)
         {
-            var name = Path.GetFileNameWithoutExtension(EntryAssemblyName);
+            var name = BuildLibraryName();
             var path = Path.Combine(BaseDir, name + ".js");
             File.WriteAllText(path, libraryJS);
             Log.LogMessage(MessageImportance.High, $"JavaScript UMD library is published at {path}.");
@@ -82,7 +87,14 @@ namespace DotNetJS.Packer
         {
             var source = Path.Combine(JSDir, "dotnet.js.map");
             var destination = Path.Combine(BaseDir, "dotnet.js.map");
-            File.Copy(source, destination);
+            File.Copy(source, destination, true);
+        }
+
+        private string BuildLibraryName ()
+        {
+            if (!string.IsNullOrWhiteSpace(LibraryName))
+                return LibraryName;
+            return Path.GetFileNameWithoutExtension(EntryAssemblyName);
         }
     }
 }
