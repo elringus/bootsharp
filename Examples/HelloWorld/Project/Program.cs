@@ -18,6 +18,6 @@ namespace HelloWorld
         }
 
         [JSInvokable] // The method is invoked from JavaScript.
-        public static string GetName () => AppDomain.CurrentDomain.SetupInformation.TargetFrameworkName;
+        public static string GetName () => "DotNet";
     }
 }
