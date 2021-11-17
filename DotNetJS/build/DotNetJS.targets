@@ -1,6 +1,7 @@
 <Project>
 
     <PropertyGroup>
+        <Configuration>Release</Configuration>
         <RunAOTCompilation>false</RunAOTCompilation>
         <PublishTrimmed>true</PublishTrimmed>
         <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>

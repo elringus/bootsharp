@@ -11,9 +11,9 @@ namespace DotNetJS.Packer
     if (typeof define === 'function' && define.amd)
         define(['exports', 'dotnet'], factory);
     else if (typeof exports === 'object' && typeof exports.nodeName !== 'string')
-        factory(exports, global.dotnet);
+        factory(module.exports, { boot: module.exports.boot, invoke: module.exports.invoke, invokeAsync: module.exports.invokeAsync });
     else factory((root.%LIBRARY% = {}), root.dotnet);
-}(typeof self !== 'undefined' ? self : this, async function (exports, dotnet) {
+}(typeof self !== 'undefined' ? self : this, function (exports, dotnet) {
     exports.boot = async function () {
         const bootData = {
             wasm: '%WASM%',
@@ -28,12 +28,12 @@ namespace DotNetJS.Packer
 
         private const string assemblyTemplate = "{ name: '%NAME%', data: '%DATA%' }";
 
-        public static string GenerateJS (string entryDll, string wasmBase64, IEnumerable<Assembly> assemblies)
+        public static string GenerateJS (string entryName, string wasmBase64, IEnumerable<Assembly> assemblies)
         {
-            var libraryName = Path.GetFileNameWithoutExtension(entryDll);
+            var libraryName = Path.GetFileNameWithoutExtension(entryName);
             var dlls = string.Join(",", assemblies.Select(GenerateAssembly));
             return moduleTemplate
-                .Replace("%ENTRY%", entryDll)
+                .Replace("%ENTRY%", entryName)
                 .Replace("%LIBRARY%", libraryName)
                 .Replace("%WASM%", wasmBase64)
                 .Replace("%DLLS%", dlls);

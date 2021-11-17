@@ -1,3 +1,6 @@
+<!-- Example on consuming the library as global script. -->
+<!-- Open the .html file in a web browser to test. -->
+
 <meta charset="UTF-8">
 
 Open console (Ctrl+Shift+I) to see the output.
@@ -5,7 +8,7 @@ Open console (Ctrl+Shift+I) to see the output.
 <script src="Project/bin/HelloWorld.js"></script>
 
 <script>
-    
+
     // This function is invoked by DotNet.
     window.getName = () => navigator.appName;
 
@@ -14,7 +17,7 @@ Open console (Ctrl+Shift+I) to see the output.
         await HelloWorld.boot();
         // Invoking 'GetName()' method from DotNet.
         const guestName = HelloWorld.invoke("GetName");
-        console.log(`Welcome, ${guestName}!`);
+        console.log(`Welcome, ${guestName}! Enjoy your global space.`);
     };
-    
+
 </script>
