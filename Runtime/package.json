@@ -1,6 +1,6 @@
 {
   "name": "dotnet-runtime",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "JavaScript runtime for .NET",
   "keywords": ["csharp", "C#", "dotnet", ".NET", "mono", "runtime", "wasm", "WebAssembly", "interop", "UMD"],
   "repository": "https://github.com/Elringus/DotNetJS",
@@ -12,8 +12,7 @@
     "build": "webpack --mode production",
     "test": "mocha --exclude **/bench.js",
     "cover": "nyc -x **/bin npm run test",
-    "bench": "mocha test/bench.js --timeout 0",
-    "publish": "npm publish"
+    "bench": "mocha test/bench.js --timeout 0"
   },
   "devDependencies": {
     "typescript": "^4.4.4",
