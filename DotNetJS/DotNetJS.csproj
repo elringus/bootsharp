@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <PackageId>DotNetJS</PackageId>
-        <Version>0.0.39</Version>
+        <Version>0.0.40</Version>
         <Authors>Elringus</Authors>
         <PackageDescription>Compile .NET into single-file UMD JavaScript library.</PackageDescription>
         <RepositoryUrl>https://github.com/Elringus/DotNetJS</RepositoryUrl>
@@ -14,7 +14,8 @@
 
     <ItemGroup>
         <None Update="build/**" Pack="true" PackagePath="%(Identity)"/>
-        <Content Include="js/**" Pack="true" PackagePath="%(Identity)"/>
+        <Content Include="../Runtime/runtime/artifacts/bin/native/net6.0-Browser-Release-wasm/dotnet.wasm" Pack="true" PackagePath="js/dotnet.wasm"/>
+        <Content Include="../Runtime/dist/**" Pack="true" PackagePath="js/"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -26,11 +27,12 @@
             <Output TaskParameter="TargetOutputs" ItemName="_TasksProjectOutputs"/>
         </MSBuild>
         <ItemGroup>
-            <Content Include="@(_TasksProjectOutputs)"
-                     Condition="'%(_TasksProjectOutputs.Extension)' == '.dll'"
-                     Pack="true"
-                     PackagePath="tasks/%(_TasksProjectOutputs.TargetPath)"
-                     KeepMetadata="Pack;PackagePath"/>
+            <Content
+                    Include="@(_TasksProjectOutputs)"
+                    Condition="'%(_TasksProjectOutputs.Extension)' == '.dll'"
+                    Pack="true"
+                    PackagePath="tasks/%(_TasksProjectOutputs.TargetPath)"
+                    KeepMetadata="Pack;PackagePath"/>
         </ItemGroup>
     </Target>
 
