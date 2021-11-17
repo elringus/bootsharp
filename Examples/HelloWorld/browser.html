@@ -1,11 +1,13 @@
 <meta charset="UTF-8">
 
+Open console (Ctrl+Shift+I) to see the output.
+
 <script src="Project/bin/HelloWorld.js"></script>
 
 <script>
     
     // This function is invoked by DotNet.
-    window.getName = () => navigator.userAgent;
+    window.getName = () => navigator.appName;
 
     window.onload = async function () {
         // Booting the DotNet runtime and invoking entry point.

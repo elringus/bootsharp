@@ -11,7 +11,7 @@ namespace DotNetJS.Packer
     if (typeof define === 'function' && define.amd)
         define(['exports', 'dotnet'], factory);
     else if (typeof exports === 'object' && typeof exports.nodeName !== 'string')
-        factory(exports, require('dotnet'));
+        factory(exports, global.dotnet);
     else factory((root.%LIBRARY% = {}), root.dotnet);
 }(typeof self !== 'undefined' ? self : this, async function (exports, dotnet) {
     exports.boot = async function () {
@@ -22,8 +22,8 @@ namespace DotNetJS.Packer
         };
         await dotnet.boot(bootData);
     };
-    exports.invoke = (method, ...args) => dotnet.invoke(%LIBRARY%, method, ...args);
-    exports.invokeAsync = (name, ...args) => dotnet.invokeAsync(%LIBRARY%, name, ...args);
+    exports.invoke = (name, ...args) => dotnet.invoke('%LIBRARY%', name, ...args);
+    exports.invokeAsync = (name, ...args) => dotnet.invokeAsync('%LIBRARY%', name, ...args);
 }));";
 
         private const string assemblyTemplate = "{ name: '%NAME%', data: '%DATA%' }";

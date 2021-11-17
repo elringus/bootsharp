@@ -51,7 +51,7 @@ namespace DotNetJS.Packer
             var name = Path.GetFileNameWithoutExtension(EntryAssemblyName);
             var path = Path.Combine(BaseDir, name + ".js");
             File.WriteAllText(path, libraryJS);
-            Log.LogMessage(MessageImportance.High, $"JavaScript UMD library is published as {path}.");
+            Log.LogMessage(MessageImportance.High, $"JavaScript UMD library is published at {path}.");
         }
 
         private List<Assembly> CollectAssemblies ()
