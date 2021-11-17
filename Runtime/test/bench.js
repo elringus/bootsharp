@@ -1,12 +1,8 @@
-﻿const dotnet = require("../dist/dotnet");
-const { getBootData } = require("./project");
-
-const invoke = (name, ...args) => dotnet.invoke("Test", name, ...args);
-const bootData = getBootData();
+﻿const { boot, invoke, terminate } = require("./project/bin/dotnet");
 
 describe("benchmark", () => {
-    after(dotnet.terminate);
-    it("boot", () => dotnet.boot(bootData));
+    after(terminate);
+    it("boot", boot);
     it("compute", () => invoke("ComputePrime", 50000));
     it("interop", () => {
         for (let i = 0; i < 5000; i++) {

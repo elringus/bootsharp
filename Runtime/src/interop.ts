@@ -5,7 +5,6 @@ import { assertHeapNotLocked, currentHeapLock } from "./heap-lock";
 import { wasm } from "./wasm";
 
 const uint64HighOrderShift = Math.pow(2, 32);
-const maxSafeNumberHighPart = Math.pow(2, 21) - 1;
 
 let invokeDotNet;
 let beginInvokeDotNet;
@@ -96,7 +95,7 @@ function invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, args
 function beginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson) {
     assertHeapNotLocked();
     const assemblyNameOrObjectId: string = dotNetObjectId ? dotNetObjectId.toString() : assemblyName;
-    beginInvokeDotNet(callId ? callId.toString() : null, assemblyNameOrObjectId, methodIdentifier, argsJson);
+    beginInvokeDotNet(callId.toString(), assemblyNameOrObjectId, methodIdentifier, argsJson);
 }
 
 function endInvokeDotNetFromJS(callId, success, resultJsonOrErrorMessage): void {
@@ -117,8 +116,6 @@ function receiveByteArray(id, data): void {
 }
 
 function retrieveByteArray() {
-    if (transferredArray === null)
-        throw new Error("Byte array is not available for transfer.");
     return wasm.BINDING.js_typed_array_to_array(transferredArray);
 }
 
@@ -135,15 +132,9 @@ function toUint8Array(array): Uint8Array {
     return uint8Array;
 }
 
-function readHeapObject(baseAddress, fieldOffset?, readBoolValueAsString?) {
+function readHeapObject(baseAddress, fieldOffset) {
     const fieldValue = getValueI32((baseAddress as any as number) + (fieldOffset || 0)) as any;
-    if (fieldValue === 0) return null;
-    if (readBoolValueAsString) {
-        const unboxedValue = wasm.BINDING.unbox_mono_obj(fieldValue);
-        if (typeof (unboxedValue) === "boolean") return unboxedValue ? "" : null;
-        return unboxedValue;
-    }
-    return decodeString(fieldValue);
+    return fieldValue === 0 ? null : decodeString(fieldValue);
 }
 
 function decodeString(fieldValue) {
@@ -165,17 +156,15 @@ function getValueI32(ptr: number) {
 function getValueU64(ptr: number) {
     const heapU32Index = ptr >> 2;
     const highPart = wasm.HEAPU32[heapU32Index + 1];
-    if (highPart > maxSafeNumberHighPart)
-        throw new Error(`Cannot read uint64 with ES order part ${highPart}, because the result would exceed Number.MAX_SAFE_INTEGER.`);
     return (highPart * uint64HighOrderShift) + wasm.HEAPU32[heapU32Index];
 }
 
-function readHeapInt32(baseAddress, fieldOffset?): number {
-    return getValueI32((baseAddress as any as number) + (fieldOffset || 0));
+function readHeapInt32(baseAddress, fieldOffset): number {
+    return getValueI32((baseAddress as any as number) + fieldOffset);
 }
 
-function readHeapUint64(baseAddress, fieldOffset?): number {
-    return getValueU64((baseAddress as any as number) + (fieldOffset || 0));
+function readHeapUint64(baseAddress, fieldOffset): number {
+    return getValueU64((baseAddress as any as number) + fieldOffset);
 }
 
 function getArrayDataPointer<T>(array): number {

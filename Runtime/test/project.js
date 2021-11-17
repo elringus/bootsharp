@@ -20,8 +20,9 @@ function getBootData() {
 }
 
 function loadWasmBinary() {
-    const dirPath = resolvePublishDirectory();
-    return fs.readFileSync(`${dirPath}/dotnet.wasm`);
+    const file = path.resolve("runtime/artifacts/bin/native/net6.0-Browser-Release-wasm/dotnet.wasm");
+    assert(fs.existsSync(file), "Missing WASM binary. Run 'scripts/compile-runtime.sh'.");
+    return fs.readFileSync(file);
 }
 
 function loadAssemblies() {
@@ -33,17 +34,12 @@ function loadAssemblies() {
 
 function findAssemblies() {
     let assemblyPaths = [];
-    const dirPath = resolvePublishDirectory();
+    const dirPath = path.resolve("test/project/bin/Release/net6.0/publish/wwwroot/_framework");
+    assert(fs.existsSync(dirPath), "Missing test assemblies. Run 'scripts/compile-test.sh'.");
     for (const fileName of fs.readdirSync(dirPath))
         if (fileName.endsWith(".dll"))
             assemblyPaths.push(`${dirPath}/${fileName}`);
     return assemblyPaths;
-}
-
-function resolvePublishDirectory() {
-    const dirPath = path.resolve("test/project/bin/Release/net6.0/publish/js");
-    assert(fs.existsSync(dirPath), "Missing test assemblies. Run 'scripts/compile-test.sh'.");
-    return dirPath;
 }
 
 function loadAssembly(assemblyPath) {

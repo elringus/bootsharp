@@ -2,18 +2,13 @@
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using DotNetJS;
 using Microsoft.JSInterop;
-using Microsoft.JSInterop.WebAssembly;
 
 namespace Test;
 
 public static class Program
 {
-    private class JSRuntime : WebAssemblyJSRuntime { }
-
-    private static readonly JSRuntime js = new();
-
-    // Entry point is required by the runtime.
     private static void Main () { }
 
     [JSInvokable]
@@ -26,13 +21,13 @@ public static class Program
     public static DateTime AddDays (DateTime date, int days) => date.AddDays(days);
 
     [JSInvokable]
-    public static void InvokeJS (string funcName) => js.InvokeVoid(funcName);
+    public static void InvokeJS (string funcName) => JS.Invoke(funcName);
 
     [JSInvokable]
     public static string[] ForEachJS (string[] items, string funcName)
     {
         for (int i = 0; i < items.Length; i++)
-            items[i] = js.Invoke<string>(funcName, items[i]);
+            items[i] = JS.Invoke<string>(funcName, items[i]);
         return items;
     }
 
@@ -58,7 +53,7 @@ public static class Program
             0x20, 0x43, 0x61, 0x70, 0x74, 0x61, 0x69, 0x6e, 0x2e, 0x20, 0x4e,
             0x6f, 0x74, 0x20, 0x74, 0x6f, 0x20, 0x66, 0x72, 0x65, 0x74, 0x2e
         };
-        return js.Invoke<string>("receiveBytes", bytes);
+        return JS.Invoke<string>("receiveBytes", bytes);
     }
 
     [JSInvokable]
@@ -87,7 +82,7 @@ public static class Program
     [JSInvokable]
     public static string CatchException ()
     {
-        try { js.InvokeVoid("throw"); }
+        try { JS.Invoke("throw"); }
         catch (JSException e) { return e.Message; }
         return null;
     }
@@ -98,7 +93,7 @@ public static class Program
     [JSInvokable]
     public static IJSObjectReference GetAndReturnJSObject ()
     {
-        return js.Invoke<IJSObjectReference>("getObject");
+        return JS.Invoke<IJSObjectReference>("getObject");
     }
 
     [JSInvokable]

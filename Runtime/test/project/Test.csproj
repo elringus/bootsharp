@@ -3,26 +3,12 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <LangVersion>10</LangVersion>
-        <RunAOTCompilation>false</RunAOTCompilation>
-        <PublishTrimmed>true</PublishTrimmed>
-        <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
-        <InvariantGlobalization>true</InvariantGlobalization>
-        <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
-        <BlazorEnableCompression>false</BlazorEnableCompression>
+        <LibraryName>dotnet</LibraryName>
+        <Clean>false</Clean>
     </PropertyGroup>
 
     <ItemGroup>
-        <TrimmerRootDescriptor Include="Linker.xml"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0"/>
+        <PackageReference Include="DotNetJS" Version="0.0.40"/>
     </ItemGroup>
-
-    <Target Name="PublishJS" AfterTargets="Publish">
-        <ItemGroup>
-            <FilesToMove Include="$(OutDir)/**/publish/**/_framework/*.dll"/>
-            <FilesToMove Include="../../runtime/artifacts/bin/native/net6.0-Browser-Release-wasm/dotnet.wasm"/>
-        </ItemGroup>
-        <RemoveDir Directories="$(OutDir)/publish/js"/>
-        <Copy SourceFiles="@(FilesToMove)" DestinationFolder="$(OutDir)/publish/js"/>
-    </Target>
 
 </Project>
