@@ -1,12 +1,13 @@
 {
   "name": "dotnetjs",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "displayName": "Hello, DotNetJS!",
   "description": "A test web extension built with DotNetJS.",
   "categories": ["Other"],
   "publisher": "Elringus",
   "repository": "https://github.com/Elringus/DotNetJS",
   "engines": { "vscode": "^1.60.0" },
+  "main": "./dist/extension.js",
   "browser": "./dist/extension.js",
   "activationEvents": [
     "onCommand:dotnetjs.hello"
