@@ -89,8 +89,9 @@ global.getName = () => "Node.js";
 
 You can find the following sample projects in this repository:
 
- - [HelloWorld](https://github.com/Elringus/DotNetJS/tree/main/Examples/HelloWorld): consume DotNetJS-compiled program library as global import in browser, CommonJS or ECMAScript (ES) module in node.
- - [WebExtension](https://github.com/Elringus/DotNetJS/tree/main/Examples/WebExtension): consume the library in VS Code web extension, which works with both web and standalone versions of the IDE.
+ - [Hello World](https://github.com/Elringus/DotNetJS/tree/main/Examples/HelloWorld) Consume DotNetJS-compiled program library as global import in browser, CommonJS or ECMAScript (ES) module in node.
+ - [Web Extension](https://github.com/Elringus/DotNetJS/tree/main/Examples/WebExtension) Consume the library in VS Code web extension, which works with both web and standalone versions of the IDE.
+ - [Runtime Tests](https://github.com/Elringus/DotNetJS/tree/wip/Runtime/test) Integration tests featuring various usage scenarios: async invocations, interop with instances, sending raw byte arrays, streaming, etc.
 
 ## Build Properties
 
@@ -98,6 +99,25 @@ You can specify the following optional properties in .csproj to customize the bu
 
  - `<Clean>false<Clean>` Do not clean the build output folders
  - `<LibraryName>CustomName</LibraryName>` Provide a custom name for the compiled library and export object.
+
+For example, the following configuration will preserve the WebAssembly build artifacts and produce `my-dotnet-lib.js` library with `my-dotnet-lib` export object:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>10</LangVersion>
+        <Clean>false</Clean>
+        <LibraryName>my-dotnet-lib</LibraryName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="DotNetJS" Version="0.1.0"/>
+    </ItemGroup>
+
+</Project>
+```
 
 ## Compiling Runtime
 
