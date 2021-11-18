@@ -84,3 +84,20 @@ global.getName = () => "Node.js";
     console.log(`Welcome, ${guestName}! Enjoy your CommonJS module space.`);
 })();
 ```
+
+## Example Projects
+
+You can find the following sample projects in this repository:
+
+ - [HelloWorld](https://github.com/Elringus/DotNetJS/tree/main/Examples/HelloWorld): consume DotNetJS-compiled program library as global import in browser, CommonJS or ECMAScript (ES) module in node.
+ - [WebExtension](https://github.com/Elringus/DotNetJS/tree/main/Examples/WebExtension): consume the library in VS Code web extension, which works with both web and standalone versions of the IDE.
+
+## Compiling Runtime
+
+To compile and test the runtime run the following in order:
+
+1. scripts/install-emsdk.sh
+2. scripts/compile-runtime.sh
+3. scripts/compile-test.sh
+4. npm build
+5. npm test
