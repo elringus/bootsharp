@@ -2,11 +2,11 @@
 [![npm](https://img.shields.io/npm/v/dotnet-runtime)](https://www.npmjs.com/package/dotnet-runtime)
 [![CodeFactor](https://www.codefactor.io/repository/github/elringus/dotnetjs/badge/main)](https://www.codefactor.io/repository/github/elringus/dotnetjs/overview/main)
 
-This project is dedicated to providing a user-friendly workflow for using .NET C# programs and libraries in any JavaScript environments: be it browsers, node.js or custom restricted spaces, like VS Code [web-extensions](https://code.visualstudio.com/api/extension-guides/web-extensions).
+This project is dedicated to providing a user-friendly workflow for using .NET C# programs and libraries in any JavaScript environments: be it browsers, node.js or custom restricted spaces, like [web extensions](https://code.visualstudio.com/api/extension-guides/web-extensions) for VS Code.
 
 ## Quick Start
 
-In C# project (.csproj) specify `Microsoft.NET.Sdk.BlazorWebAssembly` SDK and import [DotNetJS](https://www.nuget.org/packages/DotNetJS) package:
+In C# project (.csproj) specify `Microsoft.NET.Sdk.BlazorWebAssembly` SDK and import DotNetJS NuGet package:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
@@ -23,7 +23,7 @@ In C# project (.csproj) specify `Microsoft.NET.Sdk.BlazorWebAssembly` SDK and im
 </Project>
 ```
 
-Make sure the project has an entry point (usually, Main method in Program class). To invoke a JavaScript function use `JS.Invoke` method. To expose a static C# method to JavaScript, use `[JSInvokable]` attribute:
+To invoke a JavaScript function in C# use `JS.Invoke(functionName, args)` method. To expose a C# method to JavaScript, use `[JSInvokable]` attribute:
 
 ```csharp
 using System;
