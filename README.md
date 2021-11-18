@@ -2,7 +2,7 @@
 [![npm](https://img.shields.io/npm/v/dotnet-runtime)](https://www.npmjs.com/package/dotnet-runtime)
 [![CodeFactor](https://www.codefactor.io/repository/github/elringus/dotnetjs/badge/main)](https://www.codefactor.io/repository/github/elringus/dotnetjs/overview/main)
 
-This project is dedicated to providing a user-friendly workflow for using .NET C# programs and libraries in any JavaScript environments: be it browsers, node.js or custom restricted spaces, like [web extensions](https://code.visualstudio.com/api/extension-guides/web-extensions) for VS Code.
+This project is dedicated to providing a user-friendly workflow for consuming .NET C# programs and libraries in any JavaScript environments: be it browsers, node.js or custom restricted spaces, like [web extensions](https://code.visualstudio.com/api/extension-guides/web-extensions) for VS Code.
 
 ## Quick Start
 
