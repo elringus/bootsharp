@@ -1,0 +1,27 @@
+name: cover
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: setup dotnet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+    - name: build and cover
+      run: |
+          cd Runtime
+          npm install
+          npm run build
+          dotnet publish test/project/Test.csproj -c Release
+          npm install -g codecov
+          npm install -g nyc
+          nyc --reporter=lcov -x **/bin npm run test
+          codecov
