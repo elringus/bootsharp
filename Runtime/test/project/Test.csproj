@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>10</LangVersion>
+        <LibraryName>dotnet</LibraryName>
+        <Clean>false</Clean>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="DotNetJS" Version="0.0.41"/>
+    </ItemGroup>
+
+</Project>

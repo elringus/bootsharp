@@ -1,0 +1,14 @@
+<!-- Notice the 'Sdk="Microsoft.NET.Sdk.BlazorWebAssembly"' — it's required. -->
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>10</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- 'DotNetJS' will pack the project and provide JavaScript interop. -->
+        <PackageReference Include="DotNetJS" Version="0.0.42"/>
+    </ItemGroup>
+
+</Project>

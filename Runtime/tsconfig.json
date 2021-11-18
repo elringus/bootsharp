@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "Node",
+    "strict": true,
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "declaration": true,
+    "declarationDir": "./dist"
+  },
+  "include": ["src/**/*.ts"]
+}

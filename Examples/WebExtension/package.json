@@ -1,0 +1,32 @@
+{
+  "name": "dotnetjs",
+  "version": "1.0.0",
+  "displayName": "Hello, DotNetJS!",
+  "description": "A test web extension built with DotNetJS.",
+  "categories": ["Other"],
+  "publisher": "Elringus",
+  "repository": "https://github.com/Elringus/DotNetJS",
+  "engines": { "vscode": "^1.60.0" },
+  "main": "./dist/extension.js",
+  "browser": "./dist/extension.js",
+  "activationEvents": [
+    "onCommand:dotnetjs.hello"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "dotnetjs.hello",
+        "title": "Hello, DotNetJS!"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "webpack --mode production",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "vsce": "^2.3.0",
+    "webpack": "^5.64.1",
+    "webpack-cli": "^4.9.1"
+  }
+}
