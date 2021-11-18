@@ -17,7 +17,7 @@ In C# project (.csproj) specify `Microsoft.NET.Sdk.BlazorWebAssembly` SDK and im
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DotNetJS" Version="0.0.42"/>
+        <PackageReference Include="DotNetJS" Version="0.1.0"/>
     </ItemGroup>
 
 </Project>
