@@ -92,6 +92,13 @@ You can find the following sample projects in this repository:
  - [HelloWorld](https://github.com/Elringus/DotNetJS/tree/main/Examples/HelloWorld): consume DotNetJS-compiled program library as global import in browser, CommonJS or ECMAScript (ES) module in node.
  - [WebExtension](https://github.com/Elringus/DotNetJS/tree/main/Examples/WebExtension): consume the library in VS Code web extension, which works with both web and standalone versions of the IDE.
 
+## Build Properties
+
+You can specify the following optional properties in .csproj to customize the build:
+
+ - `<Clean>false<Clean>` Do not clean the build output folders
+ - `<LibraryName>CustomName</LibraryName>` Provide a custom name for the compiled library and export object.
+
 ## Compiling Runtime
 
 To compile and test the runtime run the following in order:
