@@ -121,7 +121,7 @@ For example, the following configuration will preserve the WebAssembly build art
 
 ## Compiling Runtime
 
-To compile and test the runtime run the following in order:
+To compile and test the runtime run the following in order (under Runtime folder):
 
 1. scripts/install-emsdk.sh
 2. scripts/compile-runtime.sh
