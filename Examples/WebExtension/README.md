@@ -1,0 +1,1 @@
+An example on using [DotNetJS](https://github.com/Elringus/DotNetJS)-compiled C# program within VS Code [web extension](https://code.visualstudio.com/api/extension-guides/web-extensions).

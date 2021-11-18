@@ -8,9 +8,7 @@ namespace DotNetJS.Packer
     {
         private const string moduleTemplate = @"
 (function (root, factory) {
-    if (typeof define === 'function' && define.amd)
-        define(['exports', 'dotnet'], factory);
-    else if (typeof exports === 'object' && typeof exports.nodeName !== 'string')
+    if (typeof exports === 'object' && typeof exports.nodeName !== 'string')
         factory(module.exports, { boot: module.exports.boot, invoke: module.exports.invoke, invokeAsync: module.exports.invokeAsync });
     else factory((root.%LIBRARY% = {}), root.dotnet);
 }(typeof self !== 'undefined' ? self : this, function (exports, dotnet) {
