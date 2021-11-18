@@ -11,5 +11,8 @@ dist
 *.suo
 *.user
 
-Runtime/runtime*
-Runtime/emsdk*
+Runtime/emsdk
+Runtime/runtime
+
+!**/dotnet.js
+!**/dotnet.wasm
