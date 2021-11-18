@@ -89,9 +89,9 @@ global.getName = () => "Node.js";
 
 You can find the following sample projects in this repository:
 
- - [Hello World](https://github.com/Elringus/DotNetJS/tree/main/Examples/HelloWorld) Consume DotNetJS-compiled program library as global import in browser, CommonJS or ECMAScript (ES) module in node.
- - [Web Extension](https://github.com/Elringus/DotNetJS/tree/main/Examples/WebExtension) Consume the library in VS Code web extension, which works with both web and standalone versions of the IDE.
- - [Runtime Tests](https://github.com/Elringus/DotNetJS/tree/wip/Runtime/test) Integration tests featuring various usage scenarios: async invocations, interop with instances, sending raw byte arrays, streaming, etc.
+ - [Hello World](https://github.com/Elringus/DotNetJS/tree/main/Examples/HelloWorld) — Consume DotNetJS-compiled program library as global import in browser, CommonJS or ECMAScript (ES) module in node.
+ - [Web Extension](https://github.com/Elringus/DotNetJS/tree/main/Examples/WebExtension) — Consume the library in VS Code web extension, which works with both web and standalone versions of the IDE.
+ - [Runtime Tests](https://github.com/Elringus/DotNetJS/tree/wip/Runtime/test) — Integration tests featuring various usage scenarios: async invocations, interop with instances, sending raw byte arrays, streaming, etc.
 
 ## Build Properties
 
