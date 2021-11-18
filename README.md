@@ -47,15 +47,40 @@ public static class Program
 
 Publish the project with `dotnet publish`. A single-file UMD library containing the dotnet runtime and project assemblies will be produced in the "bin" directory. Namespace of the program will be used for both the library file name and main export object. Consume the library depending on the environment:
 
- - Browser
+### Browser
+
 ```html
-<script src="Project/bin/HelloWorld.js"></script>
+<script src="HelloWorld.js"></script>
+
 <script>
-window.getName = () => navigator.appName;
-window.onload = async function () {
-    await HelloWorld.boot();
-    const guestName = HelloWorld.invoke("GetName");
-    console.log(`Welcome, ${guestName}! Enjoy your global space.`);
-};
+    
+    // This function is invoked by DotNet.
+    window.getName = () => "Browser";
+    
+    window.onload = async function () {
+        // Booting the DotNet runtime and invoking entry point.
+        await HelloWorld.boot();
+        // Invoking 'GetName()' method from DotNet.
+        const guestName = HelloWorld.invoke("GetName");
+        console.log(`Welcome, ${guestName}! Enjoy your global space.`);
+    };
+    
 </script>
+```
+
+### Node.js
+
+```js
+const HelloWorld = require("HelloWorld");
+
+// This function is invoked by DotNet.
+global.getName = () => "Node.js";
+
+(async function () {
+    // Booting the DotNet runtime and invoking entry point.
+    await HelloWorld.boot();
+    // Invoking 'GetName()' method from DotNet.
+    const guestName = HelloWorld.invoke("GetName");
+    console.log(`Welcome, ${guestName}! Enjoy your CommonJS module space.`);
+})();
 ```
