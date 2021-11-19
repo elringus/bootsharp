@@ -3,6 +3,7 @@
 import { DotNet } from "dotnet-js-interop";
 import { assertHeapNotLocked, currentHeapLock } from "./heap-lock";
 import { wasm } from "./wasm";
+import { getBootStatus, BootStatus } from "./boot";
 
 const uint64HighOrderShift = Math.pow(2, 32);
 
@@ -18,11 +19,20 @@ export function initializeInterop(): void {
     assignBlazorGlobals();
 }
 
-export const invoke: <T>(assembly: string, method: string, ...args: any[]) => T = DotNet.invokeMethod;
-export const invokeAsync: <T>(assembly: string, method: string, ...args: any[]) => Promise<T> = DotNet.invokeMethodAsync;
-export const createObjectReference: (object: any) => any = DotNet.createJSObjectReference;
-export const disposeObjectReference: (objectReference: any) => void = DotNet.disposeJSObjectReference;
-export const createStreamReference: (buffer: Uint8Array | any) => any = DotNet.createJSStreamReference;
+export const invoke: <T>(assembly: string, method: string, ...args: any[]) => T = whenBooted(DotNet.invokeMethod);
+export const invokeAsync: <T>(assembly: string, method: string, ...args: any[]) => Promise<T> = whenBooted(DotNet.invokeMethodAsync);
+export const createObjectReference: (object: any) => any = whenBooted(DotNet.createJSObjectReference);
+export const disposeObjectReference: (objectReference: any) => void = whenBooted(DotNet.disposeJSObjectReference);
+export const createStreamReference: (buffer: Uint8Array | any) => any = whenBooted(DotNet.createJSStreamReference);
+
+function whenBooted<T extends Function>(fn: T): T {
+    return <any>function (...args) {
+        const status = getBootStatus();
+        if (status !== BootStatus.Booted)
+            throw Error(`Can't interop until .NET runtime is booted. Current status: ${status}.`);
+        return fn(...args);
+    };
+}
 
 function bindMethods(): void {
     invokeDotNet = bindStaticMethod("Microsoft.AspNetCore.Components.WebAssembly",
@@ -47,7 +57,7 @@ function createDispatcher(): DotNet.DotNetCallDispatcher {
 function assignBlazorGlobals(): void {
     // "Blazor" global is hardcoded in mono wasm runtime. ¯\_(ツ)_/¯
     // https://github.com/dotnet/runtime/blob/release/6.0/src/mono/wasm/runtime/dotnet_support.js#L15
-    global["Blazor"] = {
+    globalThis.Blazor = {
         _internal: {
             invokeJSFromDotNet: invokeJSFromDotNet,
             endInvokeDotNetFromJS: endInvokeDotNetFromJS,

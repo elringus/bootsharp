@@ -128,6 +128,9 @@ public static class Program
 
     [JSInvokable]
     public static void InvokeVoid () { }
+
+    [JSInvokable]
+    public static string GetGuid () => Guid.NewGuid().ToString();
 }
 
 public class Instance

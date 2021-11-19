@@ -15,11 +15,17 @@ describe("export", () => {
             assert(dotnet.createStreamReference);
         });
     });
+    describe("crypto", () => {
+        it("is defined after import", () => {
+            const crypto = globalThis.crypto;
+            assert(crypto.getRandomValues);
+        });
+    });
     // Below globals are required for emscripten and blazor internals.
     // TODO: Find a way to hide them from leaking to consumer global space.
     describe("blazor internal", () => {
         it("is defined after import", () => {
-            const blazor = global["Blazor"]._internal;
+            const blazor = globalThis.Blazor._internal;
             assert(blazor.invokeJSFromDotNet);
             assert(blazor.endInvokeDotNetFromJS);
             assert(blazor.receiveByteArray);
@@ -29,13 +35,13 @@ describe("export", () => {
     });
     describe("emscripten module", () => {
         it("is defined after import", () => {
-            const em = global["Module"];
+            const em = globalThis.Module;
             assert(em.wasmBinary);
         });
     });
     describe("dotnet interop", () => {
         it("is defined after import", () => {
-            const dotnet = global["DotNet"];
+            const dotnet = globalThis.DotNet;
             assert(dotnet.attachDispatcher);
             assert(dotnet.invokeMethodAsync);
         });
