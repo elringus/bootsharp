@@ -94,6 +94,10 @@ describe("interop", () => {
     it("can catch dotnet exceptions", () => {
         assert.throws(() => invoke("Throw", "bar"), /Error: System.Exception: bar/);
     });
+    it("can get guid", () => {
+        assert.deepStrictEqual(invoke("GetGuid").length, 36);
+        assert.throws(() => invoke("Throw", "bar"), /Error: System.Exception: bar/);
+    });
     it("can stream from js", async () => {
         const array = new Uint8Array(100000).map((_, index) => index % 256);
         const stream = dotnet.createStreamReference(array);
