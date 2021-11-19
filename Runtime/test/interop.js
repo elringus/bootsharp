@@ -5,6 +5,17 @@ const { bootTest } = require("./project");
 const invoke = (name, ...args) => dotnet.invoke("Test", name, ...args);
 const invokeAsync = (name, ...args) => dotnet.invokeAsync("Test", name, ...args);
 
+describe("interop when not booted", () => {
+    it("throws when attempting to use", () => {
+        const error = /Can't interop until \.NET runtime is booted\./;
+        assert.throws(() => invoke("Foo"), error);
+        assert.throws(() => invokeAsync("Foo"), error);
+        assert.throws(() => dotnet.createObjectReference({}), error);
+        assert.throws(() => dotnet.disposeObjectReference({}), error);
+        assert.throws(() => dotnet.createStreamReference({}), error);
+    });
+});
+
 describe("interop", () => {
     before(bootTest);
     after(dotnet.terminate);
@@ -93,9 +104,6 @@ describe("interop", () => {
     });
     it("can catch dotnet exceptions", () => {
         assert.throws(() => invoke("Throw", "bar"), /Error: System.Exception: bar/);
-    });
-    it("can get guid", () => {
-        assert.deepStrictEqual(invoke("GetGuid").length, 36);
     });
     it("can stream from js", async () => {
         const array = new Uint8Array(100000).map((_, index) => index % 256);

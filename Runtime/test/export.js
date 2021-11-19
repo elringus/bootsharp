@@ -15,6 +15,12 @@ describe("export", () => {
             assert(dotnet.createStreamReference);
         });
     });
+    describe("crypto", () => {
+        it("is defined after import", () => {
+            const crypto = globalThis.crypto;
+            assert(crypto.getRandomValues);
+        });
+    });
     // Below globals are required for emscripten and blazor internals.
     // TODO: Find a way to hide them from leaking to consumer global space.
     describe("blazor internal", () => {
