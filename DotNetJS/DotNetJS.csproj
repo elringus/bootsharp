@@ -3,16 +3,18 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <PackageId>DotNetJS</PackageId>
-        <Version>0.2.0</Version>
+        <Version>0.2.4</Version>
         <Authors>Elringus</Authors>
         <PackageDescription>Compile .NET into single-file UMD JavaScript library.</PackageDescription>
         <RepositoryUrl>https://github.com/Elringus/DotNetJS</RepositoryUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <NoWarn>NU5100</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
+        <None Include="../README.md" Pack="true" PackagePath="/"/>
         <None Update="build/**" Pack="true" PackagePath="%(Identity)"/>
         <Content Include="../Runtime/runtime/artifacts/bin/native/net6.0-Browser-Release-wasm/dotnet.wasm" Pack="true" PackagePath="js/dotnet.wasm"/>
         <Content Include="../Runtime/dist/**" Pack="true" PackagePath="js/"/>
