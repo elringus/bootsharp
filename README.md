@@ -144,4 +144,4 @@ A memo for the publishing process after modifying JS runtime.
  - `dotnet nuget push bin/DotNetJS.{VER}.nupkg --api-key {KEY} --source https://api.nuget.org/v3/index.json`
 3. Wait for the package indexing, bump NuGet version on `./Runtime/test/Test.csproj` and:
  - `script/compile-test.sh`
-4. Remind yourself that this should be automated.
+4. Remind myself that this should be automated.
