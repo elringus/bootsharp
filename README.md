@@ -124,8 +124,24 @@ For example, the following configuration will preserve the WebAssembly build art
 
 To compile and test the runtime run the following in order (under Runtime folder):
 
-1. scripts/install-emsdk.sh
-2. scripts/compile-runtime.sh
-3. scripts/compile-test.sh
-4. npm build
-5. npm test
+```
+scripts/install-emsdk.sh
+scripts/compile-runtime.sh
+scripts/compile-test.sh
+npm build
+npm test
+```
+
+## Publishing Runtime
+
+A memo for the publishing process after modifying JS runtime.
+
+1. Bump NPM version on `./Runtime/package.json` and:
+ - `npm run build`
+ - `scripts/publish-package.sh`
+2. Bump NuGet version on `./DotNetJS/DotNetJS.csproj` and:
+ - `dotnet pack -c Release --output bin`
+ - `dotnet nuget push bin/DotNetJS.{VER}.nupkg --api-key {KEY} --source https://api.nuget.org/v3/index.json`
+3. Wait for the package indexing, bump NuGet version on `./Runtime/test/Test.csproj` and:
+ - `script/compile-test.sh`
+4. Remind yourself that this should be automated.

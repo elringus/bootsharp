@@ -8,7 +8,7 @@
 
     <ItemGroup>
         <!-- 'DotNetJS' will pack the project and provide JavaScript interop. -->
-        <PackageReference Include="DotNetJS" Version="0.0.42"/>
+        <PackageReference Include="DotNetJS" Version="0.2.0"/>
     </ItemGroup>
 
 </Project>
