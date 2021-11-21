@@ -9,7 +9,7 @@ namespace DotNetJS.Packer
         private const string moduleTemplate = @"
 (function (root, factory) {
     if (typeof exports === 'object' && typeof exports.nodeName !== 'string')
-        factory(module.exports, { boot: module.exports.boot, invoke: module.exports.invoke, invokeAsync: module.exports.invokeAsync });
+        factory(module.exports, Object.assign({}, module.exports));
     else factory((root.%LIBRARY% = {}), root.dotnet);
 }(typeof self !== 'undefined' ? self : this, function (exports, dotnet) {
     exports.boot = async function () {
@@ -22,6 +22,8 @@ namespace DotNetJS.Packer
     };
     exports.invoke = (name, ...args) => dotnet.invoke('%INVOKE%', name, ...args);
     exports.invokeAsync = (name, ...args) => dotnet.invokeAsync('%INVOKE%', name, ...args);
+    exports.invokeAssembly = dotnet.invoke;
+    exports.invokeAssemblyAsync = dotnet.invokeAsync;
 }));";
 
         private const string assemblyTemplate = "{ name: '%NAME%', data: '%DATA%' }";

@@ -3,12 +3,12 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <LangVersion>10</LangVersion>
-        <LibraryName>dotnet</LibraryName>
+        <LibraryName>packed</LibraryName>
         <Clean>false</Clean>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DotNetJS" Version="0.2.0" />
+        <PackageReference Include="DotNetJS" Version="0.2.5" />
     </ItemGroup>
 
 </Project>
