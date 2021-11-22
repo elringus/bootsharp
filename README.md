@@ -1,14 +1,21 @@
+# DotNetJS
+
 [![NuGet](https://img.shields.io/nuget/v/DotNetJS)](https://www.nuget.org/packages/DotNetJS)
 [![npm](https://img.shields.io/npm/v/dotnet-runtime)](https://www.npmjs.com/package/dotnet-runtime)
 [![CodeFactor](https://codefactor.io/repository/github/elringus/dotnetjs/badge/main)](https://codefactor.io/repository/github/elringus/dotnetjs/overview/main)
 [![codecov](https://codecov.io/gh/Elringus/DotNetJS/branch/main/graph/badge.svg?token=AAhei51ETt)](https://codecov.io/gh/Elringus/DotNetJS)
 [![CodeQL](https://github.com/Elringus/DotNetJS/actions/workflows/codeql.yml/badge.svg)](https://github.com/Elringus/DotNetJS/actions/workflows/codeql.yml)
 
-This project is dedicated to providing a user-friendly workflow for consuming .NET C# programs and libraries in any JavaScript environments: be it browsers, node.js or custom restricted spaces, like [web extensions](https://code.visualstudio.com/api/extension-guides/web-extensions) for VS Code.
+This project is dedicated to providing user-friendly workflow for consuming .NET C# programs and libraries in any JavaScript environment, be it web browsers, Node.js or custom restricted spaces, like [web extensions](https://code.visualstudio.com/api/extension-guides/web-extensions) for VS Code.
+
+The solution is based on two main components:
+
+ - JavaScript library — [dotnet-runtime](https://www.npmjs.com/package/dotnet-runtime). Consumes compiled C# assemblies and .NET runtime WebAssembly module to provide C# interoperability layer in JavaScript. The library is environment-agnostic — it doesn't depend on platform-specific APIs, like browser DOM or node modules and can be consumed as CommonJS or ECMAScript module or imported via script tag in browsers.
+ - NuGet C# package — [DotNetJS](https://www.nuget.org/packages/DotNetJS). Provides JavaScript interoperability layer in C# and packs project output into single-file JavaScript library via MSBuild task. The packed library uses embeded assemblies to initialize dotnet-runtime library. Can optionally emit declarations and type definions to bootstrap the interoperability.
 
 ## Quick Start
 
-In C# project (.csproj) specify `Microsoft.NET.Sdk.BlazorWebAssembly` SDK and import DotNetJS NuGet package:
+In C# project configuration file specify `Microsoft.NET.Sdk.BlazorWebAssembly` SDK and import `DotNetJS` NuGet package:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
@@ -19,7 +26,8 @@ In C# project (.csproj) specify `Microsoft.NET.Sdk.BlazorWebAssembly` SDK and im
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DotNetJS" Version="0.1.0"/>
+        <!-- Make sure to specify the latest available version. -->
+        <PackageReference Include="DotNetJS" Version="0.2.5"/>
     </ItemGroup>
 
 </Project>
@@ -32,37 +40,43 @@ using System;
 using DotNetJS;
 using Microsoft.JSInterop;
 
+// Entry assembly name defines generated JavaScript file and
+// main export object names. Can be changed in build configuration.
 namespace HelloWorld;
 
-public static class Program
+class Program
 {
-    public static void Main ()
+    // Entry point is invoked by the JavaScript runtime on boot.
+    void Main ()
     {
+        // Invoking 'getName()' JavaScript function.
         var hostName = JS.Invoke<string>("getName");
+        // Writing to JavaScript host console.
         Console.WriteLine($"Hello {hostName}, DotNet here!");
     }
 
-    [JSInvokable]
+    [JSInvokable] // The method is invoked from JavaScript.
     public static string GetName () => "DotNet";
 }
 ```
 
-Publish the project with `dotnet publish`. A single-file UMD library containing the dotnet runtime and project assemblies will be produced in the "bin" directory. Namespace of the program will be used for both the library file name and main export object. Consume the library depending on the environment:
+Publish the project with `dotnet publish`. A single-file JavaScript library will be produced at the "bin" directory. Consume the library depending on the environment:
 
 ### Browser
 
 ```html
+<!-- Import as a global 'HelloWorld' object via script tag. -->
 <script src="HelloWorld.js"></script>
 
 <script>
     
-    // This function is invoked by DotNet.
+    // This function is invoked from C#.
     window.getName = () => "Browser";
     
     window.onload = async function () {
         // Booting the DotNet runtime and invoking entry point.
         await HelloWorld.boot();
-        // Invoking 'GetName()' method from DotNet.
+        // Invoking 'GetName()' C# method.
         const guestName = HelloWorld.invoke("GetName");
         console.log(`Welcome, ${guestName}! Enjoy your global space.`);
     };
@@ -73,36 +87,39 @@ Publish the project with `dotnet publish`. A single-file UMD library containing 
 ### Node.js
 
 ```js
+// Import as CommonJS module.
 const HelloWorld = require("HelloWorld");
+// ... or as ECMAScript module in node v17 or later.
+import HelloWorld from "HelloWorld.js";
 
-// This function is invoked by DotNet.
+// This function is invoked from C#.
 global.getName = () => "Node.js";
 
 (async function () {
     // Booting the DotNet runtime and invoking entry point.
     await HelloWorld.boot();
-    // Invoking 'GetName()' method from DotNet.
+    // Invoking 'GetName()' C# method.
     const guestName = HelloWorld.invoke("GetName");
-    console.log(`Welcome, ${guestName}! Enjoy your CommonJS module space.`);
+    console.log(`Welcome, ${guestName}! Enjoy your module space.`);
 })();
 ```
 
 ## Example Projects
 
-You can find the following sample projects in this repository:
+Find the following sample projects in this repository:
 
- - [Hello World](https://github.com/Elringus/DotNetJS/tree/main/Examples/HelloWorld) — Consume DotNetJS-compiled program as a global import in browser, CommonJS or ECMAScript (ES) module in node.
- - [Web Extension](https://github.com/Elringus/DotNetJS/tree/main/Examples/WebExtension) — Consume the library in VS Code web extension, which works with both web and standalone versions of the IDE.
- - [Runtime Tests](https://github.com/Elringus/DotNetJS/tree/main/Runtime/test) — Integration tests featuring various usage scenarios: async invocations, interop with instances, sending raw byte arrays, streaming, etc.
+ - [Hello World](https://github.com/Elringus/DotNetJS/tree/main/Examples/HelloWorld) — Consume the produced library as a global import in browser, CommonJS or ES module in node.
+ - [Web Extension](https://github.com/Elringus/DotNetJS/tree/main/Examples/WebExtension) — Consume the library in VS Code web extension, which works in both web and standalone versions of the IDE.
+ - [Runtime Tests](https://github.com/Elringus/DotNetJS/tree/main/Runtime/test) — Integration tests featuring various usage scenarios: async method invocations, interop with instances, sending raw byte arrays, streaming, etc.
 
 ## Build Properties
 
-You can specify the following optional properties in .csproj to customize the build:
+Specify following optional properties in .csproj to customize the build:
 
- - `<Clean>false<Clean>` Do not clean the build output folders
- - `<LibraryName>CustomName</LibraryName>` Provide a custom name for the compiled library and export object.
+ - `<Clean>false<Clean>` — do not clean the build output folders.
+ - `<LibraryName>CustomName</LibraryName>` — specify a custom name for the generated library file and export object.
 
-For example, the following configuration will preserve the WebAssembly build artifacts and produce `my-dotnet-lib.js` library with `my-dotnet-lib` export object:
+For example, following configuration will preserve the build artifacts and produce `my-dotnet-lib.js` library with `my-dotnet-lib` export object:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
@@ -123,7 +140,7 @@ For example, the following configuration will preserve the WebAssembly build art
 
 ## Compiling Runtime
 
-To compile and test the runtime run the following in order (under Runtime folder):
+To compile and test the runtime run the following in order (under [Runtime](https://github.com/Elringus/DotNetJS/tree/main/Runtime) folder):
 
 ```
 scripts/install-emsdk.sh
