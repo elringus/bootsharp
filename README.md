@@ -116,8 +116,8 @@ Find the following sample projects in this repository:
 
 Specify following optional properties in .csproj to customize the build:
 
- - `<Clean>false<Clean>` Do not clean the build output folders
- - `<LibraryName>CustomName</LibraryName>` Provide a custom name for the compiled library and export object.
+ - `<Clean>false<Clean>` — do not clean the build output folders.
+ - `<LibraryName>CustomName</LibraryName>` — specify a custom name for the generated library file and export object.
 
 For example, following configuration will preserve the build artifacts and produce `my-dotnet-lib.js` library with `my-dotnet-lib` export object:
 
