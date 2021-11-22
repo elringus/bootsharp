@@ -5,7 +5,7 @@
         <PackageId>DotNetJS</PackageId>
         <Version>0.2.5</Version>
         <Authors>Elringus</Authors>
-        <PackageDescription>Compile .NET into single-file UMD JavaScript library.</PackageDescription>
+        <PackageDescription>Compile C# project into single-file UMD JavaScript library.</PackageDescription>
         <RepositoryUrl>https://github.com/Elringus/DotNetJS</RepositoryUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
