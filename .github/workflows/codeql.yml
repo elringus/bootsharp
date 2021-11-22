@@ -1,4 +1,4 @@
-name: "CodeQL"
+name: codeql
 
 on:
   push:
@@ -10,30 +10,28 @@ on:
 
 jobs:
   analyze:
-    name: Analyze
+    name: analyze
     runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: read
       security-events: write
-
     strategy:
       fail-fast: false
       matrix:
         language: [ 'csharp', 'javascript' ]
-
     steps:
-    - name: Checkout repository
+    - name: checkout
       uses: actions/checkout@v2
-    - name: Setup dotnet
+    - name: setup dotnet
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-    - name: Initialize CodeQL
+    - name: initialize codeql
       uses: github/codeql-action/init@v1
       with:
         languages: ${{ matrix.language }}
-    - name: PreBuild
+    - name: prebuild
       run: |
           dotnet restore Packer/Packer.csproj
           dotnet restore DotNetJS/DotNetJS.csproj
@@ -41,7 +39,7 @@ jobs:
           npm install
           npm run build
           dotnet restore test/project/Test.csproj
-    - name: AutoBuild
+    - name: autobuild
       uses: github/codeql-action/autobuild@v1
-    - name: Perform CodeQL Analysis
+    - name: analyze
       uses: github/codeql-action/analyze@v1
