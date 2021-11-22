@@ -65,7 +65,7 @@ Publish the project with `dotnet publish`. A single-file JavaScript library will
 ### Browser
 
 ```html
-// Import as a global 'HelloWorld' object via script tag.
+<!-- Import as a global 'HelloWorld' object via script tag. -->
 <script src="HelloWorld.js"></script>
 
 <script>
