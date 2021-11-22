@@ -100,7 +100,7 @@ global.getName = () => "Node.js";
     await HelloWorld.boot();
     // Invoking 'GetName()' C# method.
     const guestName = HelloWorld.invoke("GetName");
-    console.log(`Welcome, ${guestName}! Enjoy your CommonJS module space.`);
+    console.log(`Welcome, ${guestName}! Enjoy your module space.`);
 })();
 ```
 
