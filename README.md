@@ -6,12 +6,12 @@
 [![codecov](https://codecov.io/gh/Elringus/DotNetJS/branch/main/graph/badge.svg?token=AAhei51ETt)](https://codecov.io/gh/Elringus/DotNetJS)
 [![CodeQL](https://github.com/Elringus/DotNetJS/actions/workflows/codeql.yml/badge.svg)](https://github.com/Elringus/DotNetJS/actions/workflows/codeql.yml)
 
-This project is dedicated to providing user-friendly workflow for consuming .NET C# programs and libraries in any JavaScript environment, be it web browsers, Node.js or custom restricted spaces, like [web extensions](https://code.visualstudio.com/api/extension-guides/web-extensions) for VS Code
+This project is dedicated to providing user-friendly workflow for consuming .NET C# programs and libraries in any JavaScript environment, be it web browsers, Node.js or custom restricted spaces, like [web extensions](https://code.visualstudio.com/api/extension-guides/web-extensions) for VS Code.
 
 The solution is based on two main components:
 
- - JavaScript library — [dotnet-runtime](https://www.npmjs.com/package/dotnet-runtime). Consumes compiled C# assemblies and .NET runtime WebAssembly module to provide C# interlopability layer in JavaScript. The library is environment-agnostic — it doesn't depend on platform-specific APIs, like browser DOM or node modules and can be consumed as CommonJS or ECMAScript module or imported via script tag in browsers.
- - NuGet C# package — [DotNetJS](https://www.nuget.org/packages/DotNetJS). Provides JavaScript intropability layer in C# and packs project output into single-file JavaScript library via MSBuild task. The packed library uses embeded assemblies to initialize dotnet-runtime library. Can optionally emit declarations and type definions to bootstrap the intropability.
+ - JavaScript library — [dotnet-runtime](https://www.npmjs.com/package/dotnet-runtime). Consumes compiled C# assemblies and .NET runtime WebAssembly module to provide C# interoperability layer in JavaScript. The library is environment-agnostic — it doesn't depend on platform-specific APIs, like browser DOM or node modules and can be consumed as CommonJS or ECMAScript module or imported via script tag in browsers.
+ - NuGet C# package — [DotNetJS](https://www.nuget.org/packages/DotNetJS). Provides JavaScript interoperability layer in C# and packs project output into single-file JavaScript library via MSBuild task. The packed library uses embeded assemblies to initialize dotnet-runtime library. Can optionally emit declarations and type definions to bootstrap the interoperability.
 
 ## Quick Start
 
@@ -65,7 +65,7 @@ Publish the project with `dotnet publish`. A single-file JavaScript library will
 ### Browser
 
 ```html
-// Import as a global 'HelloWorld' object via script tag.
+<!-- Import as a global 'HelloWorld' object via script tag. -->
 <script src="HelloWorld.js"></script>
 
 <script>
@@ -100,7 +100,7 @@ global.getName = () => "Node.js";
     await HelloWorld.boot();
     // Invoking 'GetName()' C# method.
     const guestName = HelloWorld.invoke("GetName");
-    console.log(`Welcome, ${guestName}! Enjoy your CommonJS module space.`);
+    console.log(`Welcome, ${guestName}! Enjoy your module space.`);
 })();
 ```
 
@@ -116,8 +116,8 @@ Find the following sample projects in this repository:
 
 Specify following optional properties in .csproj to customize the build:
 
- - `<Clean>false<Clean>` Do not clean the build output folders
- - `<LibraryName>CustomName</LibraryName>` Provide a custom name for the compiled library and export object.
+ - `<Clean>false<Clean>` — do not clean the build output folders.
+ - `<LibraryName>CustomName</LibraryName>` — specify a custom name for the generated library file and export object.
 
 For example, following configuration will preserve the build artifacts and produce `my-dotnet-lib.js` library with `my-dotnet-lib` export object:
 
