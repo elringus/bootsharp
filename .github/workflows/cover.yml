@@ -1,4 +1,4 @@
-name: "Cover"
+name: cover
 
 on:
   push:
@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Setup dotnet
+    - name: setup dotnet
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-    - name: Cover
+    - name: cover
       run: |
           cd Runtime
           npm install
