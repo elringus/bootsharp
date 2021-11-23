@@ -18,7 +18,6 @@
         <None Update="build/**" Pack="true" PackagePath="%(Identity)" />
         <None Include="../README.md" Pack="true" PackagePath="/" Visible="false" />
         <None Include="$(OutputPath)/$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <Content Include="../Runtime/runtime/artifacts/bin/native/net6.0-Browser-Release-wasm/dotnet.wasm" Pack="true" PackagePath="js/" Visible="false" />
         <Content Include="../Runtime/dist/**" Pack="true" PackagePath="js/" Visible="false" />
     </ItemGroup>
 
