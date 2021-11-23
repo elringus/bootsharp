@@ -12,9 +12,10 @@ namespace DotNetJS.Generator
 
         public void Execute (GeneratorExecutionContext context)
         {
-            var receiver = (SyntaxReceiver)context.SyntaxReceiver!;
-            var source = receiver.BuildSource();
-            context.AddSource("DotNetJS.Generated", source);
+            if (context.SyntaxContextReceiver is not SyntaxReceiver receiver) return;
+
+            context.AddSource("Log", Log.Flush());
+            context.AddSource("Emitted", receiver.GetEmitted());
         }
     }
 }

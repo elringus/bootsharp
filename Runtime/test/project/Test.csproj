@@ -5,10 +5,13 @@
         <LangVersion>10</LangVersion>
         <LibraryName>packed</LibraryName>
         <Clean>false</Clean>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <CompilerGeneratedFilesOutputPath>debug</CompilerGeneratedFilesOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DotNetJS" Version="0.2.5" />
+        <ProjectReference Include="../../../DotNetJS/DotNetJS.csproj" OutputItemType="Analyzer"/>
+        <Compile Remove="$(CompilerGeneratedFilesOutputPath)/*/**/*.cs"/>
     </ItemGroup>
 
 </Project>

@@ -1,5 +1,6 @@
 .vs
 .idea
+debug
 
 node_modules
 dist
