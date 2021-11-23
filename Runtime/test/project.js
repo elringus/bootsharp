@@ -20,7 +20,7 @@ function getBootData() {
 }
 
 function loadWasmBinary() {
-    const file = path.resolve("runtime/artifacts/bin/native/net6.0-Browser-Release-wasm/dotnet.wasm");
+    const file = path.resolve("test/project/bin/Release/net6.0/publish/wwwroot/_framework/dotnet.wasm");
     assert(fs.existsSync(file), "Missing WASM binary. Run 'scripts/compile-runtime.sh'.");
     return fs.readFileSync(file);
 }
