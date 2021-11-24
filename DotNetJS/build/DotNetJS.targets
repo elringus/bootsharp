@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <Configuration>Release</Configuration>
-        <RunAOTCompilation>false</RunAOTCompilation>
         <PublishTrimmed>true</PublishTrimmed>
         <InvariantGlobalization>true</InvariantGlobalization>
         <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
