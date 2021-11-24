@@ -17,7 +17,7 @@ export function initializeWasm(wasmBinary: Uint8Array): Promise<void> {
             wasmBinary: wasmBinary,
             onRuntimeInitialized: resolve
         } as any;
-        require("../runtime/artifacts/bin/native/net6.0-Browser-Release-wasm/dotnet.js")(wasm);
+        require("../native/dotnet.js")(wasm);
     });
 }
 

@@ -4,23 +4,25 @@
         <Configuration>Release</Configuration>
         <RunAOTCompilation>false</RunAOTCompilation>
         <PublishTrimmed>true</PublishTrimmed>
-        <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
         <InvariantGlobalization>true</InvariantGlobalization>
+        <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
         <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
         <BlazorEnableCompression>false</BlazorEnableCompression>
         <BlazorCacheBootResources>false</BlazorCacheBootResources>
+        <PackerAssembly>$(MSBuildThisFileDirectory)../tasks/Packer.dll</PackerAssembly>
+        <JSDir>$(MSBuildThisFileDirectory)../js</JSDir>
     </PropertyGroup>
 
     <ItemGroup>
         <TrimmerRootDescriptor Include="$(MSBuildThisFileDirectory)DotNetJSLinker.xml"/>
     </ItemGroup>
 
-    <UsingTask TaskName="DotNetJS.Packer.PackUMD" AssemblyFile="$(MSBuildThisFileDirectory)../tasks/Packer.dll"/>
+    <UsingTask TaskName="DotNetJS.Packer.PackUMD" AssemblyFile="$(PackerAssembly)"/>
 
     <Target Name="PublishJS" AfterTargets="Publish">
         <PackUMD BaseDir="$(BaseOutputPath)"
                  OutDir="$(OutDir)"
-                 JSDir="$(MSBuildThisFileDirectory)../js"
+                 JSDir="$(JSDir)"
                  EntryAssemblyName="$(AssemblyName)"
                  LibraryName="$(LibraryName)"
                  Clean="$(Clean)"/>

@@ -34,11 +34,11 @@ jobs:
     - name: prebuild
       run: |
           dotnet restore Packer/Packer.csproj
-          dotnet restore DotNetJS/DotNetJS.csproj
+          dotnet publish DotNetJS/DotNetJS.csproj -c Release
           cd Runtime
           npm install
           npm run build
-          dotnet restore test/project/Test.csproj
+          dotnet publish test/project/Test.csproj -c Release
     - name: autobuild
       uses: github/codeql-action/autobuild@v1
     - name: analyze

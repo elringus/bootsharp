@@ -14,4 +14,11 @@
         <Compile Remove="$(CompilerGeneratedFilesOutputPath)/*/**/*.cs"/>
     </ItemGroup>
 
+    <Import Project="../../../DotNetJS/build/DotNetJS.targets"/>
+
+    <PropertyGroup>
+        <PackerAssembly>../../Packer/bin/Release/netstandard2.0/publish/Packer.dll</PackerAssembly>
+        <JSDir>../../../Runtime/dist</JSDir>
+    </PropertyGroup>
+
 </Project>
