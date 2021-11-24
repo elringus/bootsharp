@@ -25,5 +25,5 @@ jobs:
           dotnet publish test/project/Test.csproj -c Release
           npm install -g codecov
           npm install -g nyc
-          nyc --reporter=lcov -x **/bin npm run test
+          nyc --reporter=lcov -x **/native -x **/bin npm run test
           codecov
