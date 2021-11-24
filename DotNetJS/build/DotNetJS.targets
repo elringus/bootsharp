@@ -10,6 +10,7 @@
         <BlazorCacheBootResources>false</BlazorCacheBootResources>
         <PackerAssembly>$(MSBuildThisFileDirectory)../tasks/Packer.dll</PackerAssembly>
         <JSDir>$(MSBuildThisFileDirectory)../js</JSDir>
+        <WasmFile>$(JSDir)/dotnet.wasm</WasmFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -22,6 +23,7 @@
         <PackUMD BaseDir="$(BaseOutputPath)"
                  OutDir="$(OutDir)"
                  JSDir="$(JSDir)"
+                 WasmFile="$(WasmFile)"
                  EntryAssemblyName="$(AssemblyName)"
                  LibraryName="$(LibraryName)"
                  Clean="$(Clean)"/>

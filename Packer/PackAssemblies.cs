@@ -16,6 +16,8 @@ namespace DotNetJS.Packer
         [Required, SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
         public string JSDir { get; set; }
         [Required, SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+        public string WasmFile { get; set; }
+        [Required, SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
         public string EntryAssemblyName { get; set; }
         [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
         public string LibraryName { get; set; }
@@ -78,8 +80,7 @@ namespace DotNetJS.Packer
 
         private string GetWasmBase64 ()
         {
-            var path = Path.Combine(JSDir, "dotnet.wasm");
-            var binary = File.ReadAllBytes(path);
+            var binary = File.ReadAllBytes(WasmFile);
             return Convert.ToBase64String(binary);
         }
 
