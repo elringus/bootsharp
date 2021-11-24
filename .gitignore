@@ -1,19 +1,17 @@
 .vs
 .idea
-debug
-
-node_modules
-dist
-.nyc_output
 
 [Bb]in
 [Oo]bj
 [Pp]ackages
+
 *.suo
 *.user
 
-Runtime/emsdk
-Runtime/runtime
+node_modules
+.nyc_output
+dist
+debug
 
-!**/dotnet.js
-!**/dotnet.wasm
+Runtime/native/emsdk
+Runtime/native/runtime

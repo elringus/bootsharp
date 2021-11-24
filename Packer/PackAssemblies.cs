@@ -78,7 +78,7 @@ namespace DotNetJS.Packer
 
         private string GetWasmBase64 ()
         {
-            var path = Path.Combine(OutDir, "publish/wwwroot/_framework/dotnet.wasm");
+            var path = Path.Combine(JSDir, "dotnet.wasm");
             var binary = File.ReadAllBytes(path);
             return Convert.ToBase64String(binary);
         }

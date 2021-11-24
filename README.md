@@ -138,6 +138,18 @@ For example, following configuration will preserve the build artifacts and produ
 </Project>
 ```
 
+## Compiling Runtime
+
+To compile and test the runtime run the following in order (under [Runtime](https://github.com/Elringus/DotNetJS/tree/main/Runtime) folder):
+
+```
+scripts/install-emsdk.sh
+scripts/compile-runtime.sh
+scripts/compile-test.sh
+npm build
+npm test
+```
+
 ## Publishing Runtime
 
 A memo for the publishing process after modifying JS runtime.
