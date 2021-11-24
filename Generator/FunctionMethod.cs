@@ -23,15 +23,6 @@ namespace DotNetJS.Generator
             return $"JS.{invokeMethod}({invokeParameters})";
         }
 
-        private string GetInvokeParameters ()
-        {
-            var args = $"\"{GetFunctionName()}\"";
-            if (syntax.ParameterList.Parameters.Count == 0) return args;
-            var ids = syntax.ParameterList.Parameters.Select(p => p.Identifier);
-            args += $", {string.Join(",", ids)}";
-            return args;
-        }
-
         private string GetInvokeMethod ()
         {
             var returnType = syntax.ReturnType.ToString();
@@ -40,6 +31,15 @@ namespace DotNetJS.Generator
                 returnType is "ValueTask" ? "InvokeAsync" :
                 returnType.Contains("ValueTask") ? $"InvokeAsync<{returnType.Substring(10, returnType.Length - 11)}>" :
                 $"Invoke<{returnType}>";
+        }
+
+        private string GetInvokeParameters ()
+        {
+            var args = $"\"{GetFunctionName()}\"";
+            if (syntax.ParameterList.Parameters.Count == 0) return args;
+            var ids = syntax.ParameterList.Parameters.Select(p => p.Identifier);
+            args += $", {string.Join(",", ids)}";
+            return args;
         }
 
         private string GetFunctionName ()
