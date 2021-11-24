@@ -24,4 +24,8 @@ describe("packed library", () => {
         assert(packed.disposeObjectReference instanceof Function);
         assert(packed.createStreamReference instanceof Function);
     });
+    it("can interop via generated methods", async () => {
+        global.echoGenerated = value => value;
+        assert.deepStrictEqual(packed.invoke("TestEchoGenerated", "a"), "a");
+    });
 });

@@ -37,8 +37,9 @@ jobs:
           npm install
           npm run build
           dotnet restore ../Packer/Packer.csproj
-          dotnet publish ../DotNetJS/DotNetJS.csproj -c Release
-          dotnet publish test/project/Test.csproj -c Release
+          dotnet build ../Generator/Generator.csproj
+          dotnet build ../DotNetJS/DotNetJS.csproj
+          dotnet publish test/project/Test.csproj
     - name: autobuild
       uses: github/codeql-action/autobuild@v1
     - name: analyze

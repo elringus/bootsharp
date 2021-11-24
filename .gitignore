@@ -9,9 +9,8 @@
 *.user
 
 node_modules
-.nyc_output
 dist
-debug
+.nyc_output
 
 Runtime/native/emsdk
 Runtime/native/runtime
