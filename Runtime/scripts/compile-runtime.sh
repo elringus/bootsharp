@@ -1,8 +1,7 @@
 cd ..
-mkdir -p native
 printf "Removing previous installation...\n"
 rm -rf native/runtime
-mkdir native/runtime
+mkdir -p native/runtime
 printf "Downloading the runtime sources...\n"
 # The fork modifies emscripten compilation flags to support UMD.
 curl -L https://github.com/Elringus/DotNetUMD/archive/release/6.0.tar.gz | tar xz -C native/runtime --strip-components=1

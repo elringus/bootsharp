@@ -145,8 +145,8 @@ To compile and test the runtime run the following in order (under [Runtime](http
 ```
 scripts/install-emsdk.sh
 scripts/compile-runtime.sh
-scripts/compile-test.sh
 npm build
+scripts/compile-test.sh
 npm test
 ```
 
