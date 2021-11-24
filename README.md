@@ -22,12 +22,10 @@ In C# project configuration file specify `Microsoft.NET.Sdk.BlazorWebAssembly` S
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <LangVersion>10</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <!-- Make sure to specify the latest available version. -->
-        <PackageReference Include="DotNetJS" Version="0.2.5"/>
+        <PackageReference Include="DotNetJS" Version="*"/>
     </ItemGroup>
 
 </Project>
@@ -126,13 +124,12 @@ For example, following configuration will preserve the build artifacts and produ
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <LangVersion>10</LangVersion>
         <Clean>false</Clean>
         <LibraryName>my-dotnet-lib</LibraryName>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DotNetJS" Version="0.1.0"/>
+        <PackageReference Include="DotNetJS" Version="*"/>
     </ItemGroup>
 
 </Project>

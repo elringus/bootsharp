@@ -3,12 +3,11 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <LangVersion>10</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
         <!-- 'DotNetJS' will pack the project and provide JavaScript interop. -->
-        <PackageReference Include="DotNetJS" Version="0.2.0"/>
+        <PackageReference Include="DotNetJS" Version="*"/>
     </ItemGroup>
 
 </Project>
