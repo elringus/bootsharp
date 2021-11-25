@@ -5,10 +5,12 @@ namespace DotNetJS.Generator
 {
     internal class FunctionMethod
     {
+        private readonly string className;
         private readonly MethodDeclarationSyntax syntax;
 
-        public FunctionMethod (MethodDeclarationSyntax syntax)
+        public FunctionMethod (string className, MethodDeclarationSyntax syntax)
         {
+            this.className = className;
             this.syntax = syntax;
         }
 
@@ -35,18 +37,11 @@ namespace DotNetJS.Generator
 
         private string GetInvokeParameters ()
         {
-            var args = $"\"{GetFunctionName()}\"";
+            var args = $"\"dotnetjs_packed_internal.{className}.{syntax.Identifier.ToString()}\"";
             if (syntax.ParameterList.Parameters.Count == 0) return args;
             var ids = syntax.ParameterList.Parameters.Select(p => p.Identifier);
             args += $", {string.Join(",", ids)}";
             return args;
-        }
-
-        private string GetFunctionName ()
-        {
-            var name = syntax.Identifier.ToString();
-            if (name.Length < 2) return name.ToLowerInvariant();
-            return char.ToLowerInvariant(name[0]) + name.Substring(1);
         }
     }
 }

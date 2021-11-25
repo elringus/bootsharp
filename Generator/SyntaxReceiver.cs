@@ -24,10 +24,11 @@ namespace DotNetJS.Generator
 
         private List<FunctionMethod> GetFunctionMethods (ClassDeclarationSyntax syntax)
         {
+            var className = syntax.Identifier.ToString();
             return syntax.Members
                 .OfType<MethodDeclarationSyntax>()
                 .Where(HasFunctionAttribute)
-                .Select(m => new FunctionMethod(m)).ToList();
+                .Select(m => new FunctionMethod(className, m)).ToList();
         }
 
         private bool HasFunctionAttribute (MethodDeclarationSyntax syntax)
