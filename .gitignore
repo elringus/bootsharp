@@ -12,5 +12,5 @@ node_modules
 dist
 .nyc_output
 
-Runtime/native/emsdk
-Runtime/native/runtime
+JavaScript/dotnet-runtime/native/emsdk
+JavaScript/dotnet-runtime/native/runtime

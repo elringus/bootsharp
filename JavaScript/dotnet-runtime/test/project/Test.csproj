@@ -7,19 +7,19 @@
         <Clean>false</Clean>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>
+        <DotNetRoot>../../../../DotNet</DotNetRoot>
         <!--<RunAOTCompilation>true</RunAOTCompilation>-->
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../../../Generator/Generator.csproj" OutputItemType="Analyzer"/>
-        <ProjectReference Include="../../../DotNetJS/DotNetJS.csproj"/>
-        <Compile Remove="$(CompilerGeneratedFilesOutputPath)/*/**/*.cs"/>
+        <ProjectReference Include="$(DotNetRoot)/DotNetJS/DotNetJS.csproj"/>
+        <ProjectReference Include="$(DotNetRoot)/Generator/Generator.csproj" OutputItemType="Analyzer"/>
     </ItemGroup>
 
-    <Import Project="../../../DotNetJS/build/DotNetJS.targets"/>
+    <Import Project="$(DotNetRoot)/DotNetJS/build/DotNetJS.targets"/>
 
     <PropertyGroup>
-        <PackerAssembly>../../Packer/bin/Release/netstandard2.0/publish/Packer.dll</PackerAssembly>
+        <PackerAssembly>../../../DotNet/Packer/bin/Release/netstandard2.0/publish/Packer.dll</PackerAssembly>
         <JSDir>../../dist</JSDir>
         <WasmFile>../../native/dotnet.wasm</WasmFile>
     </PropertyGroup>

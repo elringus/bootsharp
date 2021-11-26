@@ -10,8 +10,8 @@ This project is dedicated to providing user-friendly workflow for consuming .NET
 
 The solution is based on two main components:
 
- - JavaScript library — [dotnet-runtime](https://www.npmjs.com/package/dotnet-runtime). Consumes compiled C# assemblies and .NET runtime WebAssembly module to provide C# interoperability layer in JavaScript. The library is environment-agnostic — it doesn't depend on platform-specific APIs, like browser DOM or node modules and can be consumed as CommonJS or ECMAScript module or imported via script tag in browsers.
- - NuGet C# package — [DotNetJS](https://www.nuget.org/packages/DotNetJS). Provides JavaScript interoperability layer in C# and packs project output into single-file JavaScript library via MSBuild task. The packed library uses embeded assemblies to initialize dotnet-runtime library. Can optionally emit declarations and type definions to bootstrap the interoperability.
+ - [JavaScript/dotnet-runtime](https://github.com/Elringus/DotNetJS/tree/main/JavaScript/dotnet-runtime) ([NPM](https://www.npmjs.com/package/dotnet-runtime)). Consumes compiled C# assemblies and .NET runtime WebAssembly module to provide C# interoperability layer in JavaScript. The library is environment-agnostic — it doesn't depend on platform-specific APIs, like browser DOM or node modules and can be consumed as CommonJS or ECMAScript module or imported via script tag in browsers.
+ - [DotNet/DotNetJS](https://github.com/Elringus/DotNetJS/tree/main/DotNet/DotNetJS) ([NuGet](https://www.nuget.org/packages/DotNetJS)). Provides JavaScript interoperability layer in C# and packs project output into single-file JavaScript library via MSBuild task. The packed library uses embedded assemblies to initialize dotnet-runtime library. Can optionally emit declarations and type definitions to bootstrap the interoperability.
 
 ## Quick Start
 
@@ -106,9 +106,9 @@ global.getName = () => "Node.js";
 
 Find the following sample projects in this repository:
 
- - [Hello World](https://github.com/Elringus/DotNetJS/tree/main/Examples/HelloWorld) — Consume the produced library as a global import in browser, CommonJS or ES module in node.
- - [Web Extension](https://github.com/Elringus/DotNetJS/tree/main/Examples/WebExtension) — Consume the library in VS Code web extension, which works in both web and standalone versions of the IDE.
- - [Runtime Tests](https://github.com/Elringus/DotNetJS/tree/main/Runtime/test) — Integration tests featuring various usage scenarios: async method invocations, interop with instances, sending raw byte arrays, streaming, etc.
+ - [Hello World](https://github.com/Elringus/DotNetJS/tree/main/Samples/HelloWorld) — Consume the produced library as a global import in browser, CommonJS or ES module in node.
+ - [Web Extension](https://github.com/Elringus/DotNetJS/tree/main/Samples/WebExtension) — Consume the library in VS Code web extension, which works in both web and standalone versions of the IDE.
+ - [Runtime Tests](https://github.com/Elringus/DotNetJS/tree/main/JavaScript/dotnet-runtime/test) — Integration tests featuring various usage scenarios: async method invocations, interop with instances, sending raw byte arrays, streaming, etc.
 
 ## Build Properties
 
@@ -137,7 +137,7 @@ For example, following configuration will preserve the build artifacts and produ
 
 ## Compiling Runtime
 
-To compile and test the runtime run the following in order (under [Runtime](https://github.com/Elringus/DotNetJS/tree/main/Runtime) folder):
+To compile and test the runtime run the following in order (under [dotnet-runtime](https://github.com/Elringus/DotNetJS/tree/main/JavaScript/dotnet-runtime) folder):
 
 ```
 scripts/install-emsdk.sh
@@ -149,13 +149,11 @@ npm test
 
 ## Publishing Runtime
 
-A memo for the publishing process after modifying JS runtime.
+A memo for the publishing process after modifying dotnet-runtime:
 
-1. Bump NPM version on `./Runtime/package.json` and:
+1. Bump NPM version on `JavaScript/dotnet-runtime/package.json` and:
  - `npm run build`
  - `scripts/publish-package.sh`
-2. Bump NuGet version on `./DotNetJS/DotNetJS.csproj` and:
+2. Bump NuGet version on `DotNet/DotNetJS/DotNetJS.csproj` and:
  - `dotnet pack -c Release --output bin`
  - `dotnet nuget push bin/DotNetJS.{VER}.nupkg --api-key {KEY} --source https://api.nuget.org/v3/index.json`
-3. Recompile test project with:
- - `scripts/compile-test.sh`

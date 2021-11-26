@@ -33,12 +33,10 @@ jobs:
         languages: ${{ matrix.language }}
     - name: prebuild
       run: |
-          cd Runtime
+          dotnet build DotNet/DotNetJS.sln
+          cd JavaScript/dotnet-runtime
           npm install
           npm run build
-          dotnet restore ../Packer/Packer.csproj
-          dotnet build ../Generator/Generator.csproj
-          dotnet build ../DotNetJS/DotNetJS.csproj
           dotnet publish test/project/Test.csproj
     - name: autobuild
       uses: github/codeql-action/autobuild@v1
