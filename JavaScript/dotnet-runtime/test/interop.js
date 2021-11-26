@@ -2,8 +2,8 @@
 const dotnet = require("../dist/dotnet");
 const { bootTest } = require("./project");
 
-const invoke = (name, ...args) => dotnet.invoke("Test", name, ...args);
-const invokeAsync = (name, ...args) => dotnet.invokeAsync("Test", name, ...args);
+const invoke = (name, ...args) => dotnet.invoke(`Test.${name}`, ...args);
+const invokeAsync = (name, ...args) => dotnet.invokeAsync(`Test.${name}`, ...args);
 
 describe("interop when not booted", () => {
     it("throws when attempting to use", () => {
@@ -19,8 +19,16 @@ describe("interop when not booted", () => {
 describe("interop", () => {
     before(bootTest);
     after(dotnet.terminate);
+    it("throws when assembly can not be extracted", () => {
+        const error = /Failed to extract assembly name.*/;
+        assert.throws(() => dotnet.invoke("Foo"), error);
+        assert.throws(() => dotnet.invoke(""), error);
+        assert.throws(() => dotnet.invoke("."), error);
+        assert.throws(() => dotnet.invoke(".Foo"), error);
+        assert.throws(() => dotnet.invoke("Foo."), error);
+    });
     it("throws when assembly is not found", () => {
-        assert.throws(() => dotnet.invoke("Foo", "JoinStrings"), /.*no loaded assembly.*'Foo'/);
+        assert.throws(() => dotnet.invoke("Foo.JoinStrings"), /.*no loaded assembly.*'Foo'/);
     });
     it("throws when method is not found", () => {
         assert.throws(() => invoke("Bar"), /.*does not contain.*"Bar"/);
