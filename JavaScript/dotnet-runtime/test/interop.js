@@ -7,7 +7,7 @@ const invokeAsync = (name, ...args) => dotnet.invokeAsync(`Test.${name}`, ...arg
 
 describe("interop when not booted", () => {
     it("throws when attempting to use", () => {
-        const error = /Can't interop until \.NET runtime is booted\./;
+        const error = "Can't interop until .NET runtime is booted.";
         assert.throws(() => invoke("Foo"), error);
         assert.throws(() => invokeAsync("Foo"), error);
         assert.throws(() => dotnet.createObjectReference({}), error);
