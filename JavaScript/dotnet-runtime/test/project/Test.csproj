@@ -12,11 +12,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="$(DotNetRoot)/DotNetJS/DotNetJS.csproj"/>
-        <ProjectReference Include="$(DotNetRoot)/Generator/Generator.csproj" OutputItemType="Analyzer"/>
+        <ProjectReference Include="$(DotNetRoot)/DotNetJS/DotNetJS.csproj" />
+        <ProjectReference Include="$(DotNetRoot)/Generator/Generator.csproj" OutputItemType="Analyzer" />
     </ItemGroup>
 
-    <Import Project="$(DotNetRoot)/DotNetJS/build/DotNetJS.targets"/>
+    <Import Project="$(DotNetRoot)/DotNetJS/build/DotNetJS.targets" />
 
     <PropertyGroup>
         <PackerAssembly>../../../DotNet/Packer/bin/Release/netstandard2.0/publish/Packer.dll</PackerAssembly>

@@ -2,7 +2,7 @@
 
 namespace Test
 {
-    public static partial class Generated
+    public static partial class Function
     {
         [Microsoft.JSInterop.JSInvokable]
         public static string TestEchoGenerated (string value)

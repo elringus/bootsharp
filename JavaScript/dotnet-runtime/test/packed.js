@@ -8,8 +8,8 @@ describe("packed library", () => {
         assert.deepStrictEqual(packed.getBootStatus(), packed.BootStatus.Booted);
     });
     it("can interop with specifying assembly", async () => {
-        assert.deepStrictEqual(packed.invoke("Test.JoinStrings", "a", "b"), "ab");
-        assert.deepStrictEqual(await packed.invokeAsync("Test.JoinStringsAsync", "a", "b"), "ab");
+        assert.deepStrictEqual(packed.invoke("Test", "JoinStrings", "a", "b"), "ab");
+        assert.deepStrictEqual(await packed.invokeAsync("Test", "JoinStringsAsync", "a", "b"), "ab");
     });
     it("re-exports other dotnet functions", async () => {
         assert(packed.BootStatus instanceof Object);

@@ -19,8 +19,8 @@ export function initializeInterop(): void {
     assignBlazorGlobals();
 }
 
-export const invoke: <T>(method: string, ...args: any[]) => T = whenBooted(splitName(DotNet.invokeMethod));
-export const invokeAsync: <T>(method: string, ...args: any[]) => Promise<T> = whenBooted(splitName(DotNet.invokeMethodAsync));
+export const invoke: <T>(assembly: string, method: string, ...args: any[]) => T = whenBooted(DotNet.invokeMethod);
+export const invokeAsync: <T>(assembly: string, method: string, ...args: any[]) => Promise<T> = whenBooted(DotNet.invokeMethodAsync);
 export const createObjectReference: (object: any) => any = whenBooted(DotNet.createJSObjectReference);
 export const disposeObjectReference: (objectReference: any) => void = whenBooted(DotNet.disposeJSObjectReference);
 export const createStreamReference: (buffer: Uint8Array | any) => any = whenBooted(DotNet.createJSStreamReference);
@@ -31,19 +31,6 @@ function whenBooted<T extends Function>(fn: T): T {
         if (status !== BootStatus.Booted)
             throw Error(`Can't interop until .NET runtime is booted. Current status: ${status}.`);
         return fn(...args);
-    };
-}
-
-function splitName<T extends Function>(fn: T): T {
-    return <any>function (...args) {
-        const fullName = args[0];
-        const lastDotIndex = fullName.lastIndexOf(".");
-        if (lastDotIndex < 1 || lastDotIndex == fullName.length - 1)
-            throw Error(`Failed to extract assembly name from '${fullName}' C# method name.`);
-        const assembly = fullName.substring(0, lastDotIndex);
-        const name = fullName.substring(lastDotIndex + 1);
-        if (args.length == 1) return fn(assembly, name);
-        return fn(assembly, name, ...args.slice(1));
     };
 }
 

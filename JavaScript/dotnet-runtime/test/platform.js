@@ -2,7 +2,7 @@
 const dotnet = require("../dist/dotnet");
 const { bootTest } = require("./project");
 
-const invoke = (name, ...args) => dotnet.invoke(`Test.${name}`, ...args);
+const invoke = (name, ...args) => dotnet.invoke("Test", name, ...args);
 
 describe("platform", () => {
     before(bootTest);
