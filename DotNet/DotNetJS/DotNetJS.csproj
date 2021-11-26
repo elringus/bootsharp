@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="../../README.md" Pack="true" PackagePath="/"/>
+        <None Include="../../README.md" Pack="true" PackagePath="/" Visible="false"/>
         <None Update="build/**" Pack="true" PackagePath="%(Identity)"/>
         <None Include="../Generator/bin/Release/netstandard2.0/Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
         <Content Include="../../JavaScript/dotnet-runtime/native/dotnet.wasm" Pack="true" PackagePath="js/dotnet.wasm" Visible="false"/>
