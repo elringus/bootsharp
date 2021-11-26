@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace DotNetJS.Generator
@@ -15,7 +16,10 @@ namespace DotNetJS.Generator
             this.methods = methods;
         }
 
-        public string EmitSource () => EmitImport() + WrapNamespace(EmitHeader() + EmitMethods() + EmitFooter());
+        public string EmitSource (Compilation compilation)
+        {
+            return EmitImport() + WrapNamespace(EmitHeader() + EmitMethods(compilation) + EmitFooter());
+        }
 
         private string EmitImport ()
         {
@@ -25,9 +29,9 @@ namespace DotNetJS.Generator
 
         private string EmitHeader () => $"{syntax.Modifiers} class {syntax.Identifier}\n{{\n";
 
-        private string EmitMethods ()
+        private string EmitMethods (Compilation compilation)
         {
-            var sources = methods.Select(m => m.EmitSource());
+            var sources = methods.Select(m => m.EmitSource(compilation));
             return string.Join("\n", sources);
         }
 

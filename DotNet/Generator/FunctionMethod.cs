@@ -1,27 +1,42 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace DotNetJS.Generator
 {
     internal class FunctionMethod
     {
-        private readonly string className;
         private readonly MethodDeclarationSyntax syntax;
 
-        public FunctionMethod (string className, MethodDeclarationSyntax syntax)
+        public FunctionMethod (MethodDeclarationSyntax syntax)
         {
-            this.className = className;
             this.syntax = syntax;
         }
 
-        public string EmitSource () => $"{EmitSignature()} => {EmitBody()};";
+        public string EmitSource (Compilation compilation)
+        {
+            var assembly = GetAssemblyName(compilation);
+            return $"{EmitSignature()} => {EmitBody(assembly)};";
+        }
 
-        private string EmitSignature () => $"{syntax.Modifiers} {syntax.ReturnType} {syntax.Identifier} {syntax.ParameterList}";
+        private string GetAssemblyName (Compilation compilation)
+        {
+            var model = compilation.GetSemanticModel(syntax.SyntaxTree);
+            var symbol = model.GetEnclosingSymbol(syntax.SpanStart);
+            if (symbol is null) throw new InvalidOperationException("Failed to get assembly name.");
+            return symbol.ContainingAssembly.Identity.Name;
+        }
 
-        private string EmitBody ()
+        private string EmitSignature ()
+        {
+            return $"{syntax.Modifiers} {syntax.ReturnType} {syntax.Identifier} {syntax.ParameterList}";
+        }
+
+        private string EmitBody (string assembly)
         {
             var invokeMethod = GetInvokeMethod();
-            var invokeParameters = GetInvokeParameters();
+            var invokeParameters = GetInvokeParameters(assembly);
             return $"JS.{invokeMethod}({invokeParameters})";
         }
 
@@ -35,9 +50,9 @@ namespace DotNetJS.Generator
                 $"Invoke<{returnType}>";
         }
 
-        private string GetInvokeParameters ()
+        private string GetInvokeParameters (string assembly)
         {
-            var args = $"\"dotnetjs_packed_internal.{className}.{syntax.Identifier.ToString()}\"";
+            var args = $"\"DotNetJS_functions_{assembly}_{syntax.Identifier.ToString()}\"";
             if (syntax.ParameterList.Parameters.Count == 0) return args;
             var ids = syntax.ParameterList.Parameters.Select(p => p.Identifier);
             args += $", {string.Join(",", ids)}";

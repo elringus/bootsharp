@@ -20,12 +20,14 @@ describe("packed library", () => {
         assert(packed.createStreamReference instanceof Function);
     });
     it("can interop via generated methods", async () => {
-        global.dotnetjs_packed_internal = {
-            Generated: {
-                EchoGenerated: value => value
-            }
-        };
-        packed.Generated = dotnetjs_packed_internal.Generated;
-        assert.deepStrictEqual(packed.Generated.EchoGenerated("a"), "a");
+        // TODO:
+        // 1. Emitted by generator at export.
+        packed.Test = { EchoGenerated: undefined };
+        // 2. Assigned by user before boot.
+        packed.Test.EchoGenerated = value => value;
+        // 3. Emitted by generator at boot(). In case undefined, throw error.
+        global.DotNetJS_functions_Test_EchoGenerated = packed.Test.EchoGenerated;
+
+        assert.deepStrictEqual(packed.invoke("Test", "TestEchoGenerated", "a"), "a");
     });
 });
