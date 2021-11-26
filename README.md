@@ -10,7 +10,7 @@ This project is dedicated to providing user-friendly workflow for consuming .NET
 
 The solution is based on two main components:
 
- - [JavaScript/dotnet-runtime](https://github.com/Elringus/DotNetJS/tree/main/JavaScript/dotnet-runtime) ([NPM](https://www.npmjs.com/package/dotnet-runtime)). Consumes compiled C# assemblies and .NET runtime WebAssembly module to provide C# interoperability layer in JavaScript. The library is environment-agnostic — it doesn't depend on platform-specific APIs, like browser DOM or node modules and can be consumed as CommonJS or ECMAScript module or imported via script tag in browsers.
+ - [JavaScript/dotnet-runtime](https://github.com/Elringus/DotNetJS/tree/main/JavaScript/dotnet-runtime) ([npm](https://www.npmjs.com/package/dotnet-runtime)). Consumes compiled C# assemblies and .NET runtime WebAssembly module to provide C# interoperability layer in JavaScript. The library is environment-agnostic — it doesn't depend on platform-specific APIs, like browser DOM or node modules and can be consumed as CommonJS or ECMAScript module or imported via script tag in browsers.
  - [DotNet/DotNetJS](https://github.com/Elringus/DotNetJS/tree/main/DotNet/DotNetJS) ([NuGet](https://www.nuget.org/packages/DotNetJS)). Provides JavaScript interoperability layer in C# and packs project output into single-file JavaScript library via MSBuild task. The packed library uses embedded assemblies to initialize dotnet-runtime library. Can optionally emit declarations and type definitions to bootstrap the interoperability.
 
 ## Quick Start
