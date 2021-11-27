@@ -41,7 +41,7 @@ export function terminate(): Promise<void> {
 
 function transitionBootStatus(from: BootStatus, to: BootStatus): void {
     if (from !== bootStatus)
-        throw `Invalid boot status. Expected: ${from}. Actual: ${bootStatus}.`;
+        throw Error(`Invalid boot status. Expected: ${from}. Actual: ${bootStatus}.`);
     bootStatus = to;
 }
 
@@ -51,10 +51,10 @@ function getWasmBinary(wasm: Uint8Array | string) {
 
 function validateBootData(data: BootData): void {
     if (data == null)
-        throw "Boot data is missing.";
+        throw Error("Boot data is missing.");
     if (data.wasm == null || data.wasm.length == 0)
-        throw "Wasm binary is missing.";
+        throw Error("Wasm binary is missing.");
     for (const assembly of data.assemblies)
         if (assembly.data == null || assembly.data.length == 0)
-            throw `${assembly.name} assembly data is invalid.`;
+            throw Error(`${assembly.name} assembly data is invalid.`);
 }
