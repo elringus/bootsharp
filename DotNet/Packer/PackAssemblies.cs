@@ -24,26 +24,25 @@ namespace DotNetJS.Packer
 
         public override bool Execute ()
         {
-            var libraryJS = GetDotNetJS() + GenerateModuleJS();
+            var libraryJS = GetRuntimeJS() + GenerateProjectJS();
             if (Clean) CleanPublishDirectory();
             PublishLibrary(libraryJS);
             CopyDotNetMap();
             return true;
         }
 
-        private string GetDotNetJS ()
+        private string GetRuntimeJS ()
         {
             var path = Path.Combine(JSDir, "dotnet.js");
             return File.ReadAllText(path);
         }
 
-        private string GenerateModuleJS ()
+        private string GenerateProjectJS ()
         {
             var wasmBase64 = GetWasmBase64();
             var assemblies = CollectAssemblies();
-            var initJS = File.ReadAllText("bin/codegen/init.txt");
-            var bootJS = File.ReadAllText("bin/codegen/boot.txt");
-            return UMD.GenerateJS(EntryAssemblyName, wasmBase64, assemblies, initJS, bootJS);
+            var projectJS = new ProjectJS(EntryAssemblyName, wasmBase64, assemblies);
+            return projectJS.Generate();
         }
 
         private void CleanPublishDirectory ()
@@ -71,9 +70,9 @@ namespace DotNetJS.Packer
         private Assembly CreateAssembly (string path)
         {
             var name = Path.GetFileName(path);
-            var binary = File.ReadAllBytes(path);
-            var base64 = Convert.ToBase64String(binary);
-            return new Assembly { Name = name, Base64 = base64 };
+            var bytes = File.ReadAllBytes(path);
+            var base64 = Convert.ToBase64String(bytes);
+            return new Assembly { Name = name, Bytes = bytes, Base64 = base64 };
         }
 
         private string GetWasmBase64 ()
