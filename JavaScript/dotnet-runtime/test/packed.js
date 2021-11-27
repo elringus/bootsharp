@@ -6,7 +6,7 @@ const dotnet = require("./project/bin/dotnet");
 describe("packed library", () => {
     after(dotnet.terminate);
     it("throws on boot when a C#-declared function is missing implementation", async () => {
-        await assert.rejects(dotnet.boot, /'dotnet.Test.EchoFunction' is not implemented\./);
+        await assert.rejects(dotnet.boot, /Function 'dotnet.Test.EchoFunction' is not implemented\./);
     });
     it("allows providing implementation for functions declared in C#", () => {
         dotnet.Test.EchoFunction = value => value;
