@@ -25,7 +25,6 @@
                  JSDir="$(JSDir)"
                  WasmFile="$(WasmFile)"
                  EntryAssemblyName="$(AssemblyName)"
-                 LibraryName="$(LibraryName)"
                  Clean="$(Clean)"/>
     </Target>
 

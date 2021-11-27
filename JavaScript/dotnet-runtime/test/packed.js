@@ -1,33 +1,39 @@
 ﻿const assert = require("assert");
-const packed = require("./project/bin/packed");
+const dotnet = require("./project/bin/dotnet");
 
 describe("packed library", () => {
-    after(packed.terminate);
-    it("can boot without specifying boot data", async () => {
-        await assert.doesNotReject(packed.boot);
-        assert.deepStrictEqual(packed.getBootStatus(), packed.BootStatus.Booted);
-    });
-    it("can interop with specifying assembly", async () => {
-        assert.deepStrictEqual(packed.invoke("Test", "JoinStrings", "a", "b"), "ab");
-        assert.deepStrictEqual(await packed.invokeAsync("Test", "JoinStringsAsync", "a", "b"), "ab");
-    });
-    it("re-exports other dotnet functions", async () => {
-        assert(packed.BootStatus instanceof Object);
-        assert(packed.getBootStatus instanceof Function);
-        assert(packed.terminate instanceof Function);
-        assert(packed.createObjectReference instanceof Function);
-        assert(packed.disposeObjectReference instanceof Function);
-        assert(packed.createStreamReference instanceof Function);
-    });
-    it("can interop via generated methods", async () => {
+    after(dotnet.terminate);
+    // it("throws on boot when a C#-declared function is missing implementation", async () => {
+    //     await assert.rejects(dotnet.boot, /'dotnet.Test.EchoGenerated' function is missing implementation\./);
+    // });
+    it("allows providing implementation for functions declared in C#", () => {
         // TODO:
         // 1. Emitted by generator at export.
-        packed.Test = { EchoGenerated: undefined };
+        dotnet.Test = { EchoFunction: undefined };
         // 2. Assigned by user before boot.
-        packed.Test.EchoGenerated = value => value;
+        dotnet.Test.EchoFunction = value => value;
         // 3. Emitted by generator at boot(). In case undefined, throw error.
-        global.DotNetJS_functions_Test_EchoGenerated = packed.Test.EchoGenerated;
-
-        assert.deepStrictEqual(packed.invoke("Test", "TestEchoGenerated", "a"), "a");
+        global.DotNetJS_functions_Test_EchoGenerated = dotnet.Test.EchoFunction;
     });
+    it("can boot without specifying boot data", async () => {
+        await assert.doesNotReject(dotnet.boot);
+        assert.deepStrictEqual(dotnet.getBootStatus(), dotnet.BootStatus.Booted);
+    });
+    it("re-exports dotnet members", async () => {
+        assert(dotnet.BootStatus instanceof Object);
+        assert(dotnet.getBootStatus instanceof Function);
+        assert(dotnet.terminate instanceof Function);
+        assert(dotnet.invoke instanceof Function);
+        assert(dotnet.invokeAsync instanceof Function);
+        assert(dotnet.createObjectReference instanceof Function);
+        assert(dotnet.disposeObjectReference instanceof Function);
+        assert(dotnet.createStreamReference instanceof Function);
+    });
+    // it("provides exposed C# methods grouped under assembly object", async () => {
+    //     assert.deepStrictEqual(dotnet.Test.JoinStrings("a", "b"), "ab");
+    //     assert.deepStrictEqual(await dotnet.Test.JoinStringsAsync("c", "d"), "cd");
+    // });
+    // it("can interop via functions declared in C#", () => {
+    //     assert.deepStrictEqual(dotnet.Test.TestEchoFunction("a"), "a");
+    // });
 });

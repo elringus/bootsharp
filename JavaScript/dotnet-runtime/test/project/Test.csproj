@@ -3,7 +3,6 @@
     <PropertyGroup>
         <Configuration>Release</Configuration>
         <TargetFramework>net6.0</TargetFramework>
-        <LibraryName>packed</LibraryName>
         <Clean>false</Clean>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>
@@ -12,11 +11,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="$(DotNetRoot)/DotNetJS/DotNetJS.csproj" />
-        <ProjectReference Include="$(DotNetRoot)/Generator/Generator.csproj" OutputItemType="Analyzer" />
+        <ProjectReference Include="$(DotNetRoot)/DotNetJS/DotNetJS.csproj"/>
+        <ProjectReference Include="$(DotNetRoot)/Generator/Generator.csproj" OutputItemType="Analyzer"/>
     </ItemGroup>
 
-    <Import Project="$(DotNetRoot)/DotNetJS/build/DotNetJS.targets" />
+    <Import Project="$(DotNetRoot)/DotNetJS/build/DotNetJS.targets"/>
 
     <PropertyGroup>
         <PackerAssembly>../../../DotNet/Packer/bin/Release/netstandard2.0/publish/Packer.dll</PackerAssembly>

@@ -1,4 +1,4 @@
-﻿const { boot, invoke, terminate } = require("./project/bin/packed");
+﻿const { boot, invoke, terminate } = require("./project/bin/dotnet");
 const assert = require("assert");
 
 describe("benchmark", () => {

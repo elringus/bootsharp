@@ -5,12 +5,12 @@ namespace Test
     public static partial class Function
     {
         [Microsoft.JSInterop.JSInvokable]
-        public static string TestEchoGenerated (string value)
+        public static string TestEchoFunction (string value)
         {
-            return EchoGenerated(value);
+            return EchoFunction(value);
         }
 
         [JSFunction]
-        private static partial string EchoGenerated (string value);
+        private static partial string EchoFunction (string value);
     }
 }
