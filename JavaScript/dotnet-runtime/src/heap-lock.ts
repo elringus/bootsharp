@@ -6,7 +6,7 @@ export let currentHeapLock: ManagedHeapLock | null = null;
 
 export function assertHeapNotLocked() {
     if (currentHeapLock)
-        throw new Error("Heap is currently locked.");
+        throw "Heap is currently locked.";
 }
 
 class ManagedHeapLock implements HeapLock {
@@ -16,7 +16,7 @@ class ManagedHeapLock implements HeapLock {
 
     release() {
         if (currentHeapLock !== this)
-            throw new Error("Trying to release a lock which isn't current.");
+            throw "Trying to release a lock which isn't current.";
 
         currentHeapLock = null;
 

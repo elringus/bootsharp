@@ -1,13 +1,14 @@
-﻿const { boot, invoke, terminate } = require("./project/bin/dotnet");
-const assert = require("assert");
+﻿const assert = require("assert");
+const dotnet = require("../dist/dotnet");
+const bootData = require("./project").getBootData();
 
 describe("benchmark", () => {
-    after(terminate);
-    it("boot", boot);
-    it("compute", () => invoke("Test", "ComputePrime", 52000));
+    after(dotnet.terminate);
+    it("boot", () => dotnet.boot(bootData));
+    it("compute", () => dotnet.invoke("Test", "ComputePrime", 52000));
     it("interop", () => {
         const cycles = 23000;
-        const instance = invoke("Test", "CreateInstance");
+        const instance = dotnet.invoke("Test", "CreateInstance");
         for (let i = 0; i <= cycles; i++)
             instance.invokeMethod("SetVar", i.toString());
         const performed = instance.invokeMethod("GetVar");

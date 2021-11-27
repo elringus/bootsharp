@@ -29,7 +29,7 @@ function whenBooted<T extends Function>(fn: T): T {
     return <any>function (...args) {
         const status = getBootStatus();
         if (status !== BootStatus.Booted)
-            throw Error(`Can't interop until .NET runtime is booted. Current status: ${status}.`);
+            throw `Can't interop until .NET runtime is booted. Current status: ${status}.`;
         return fn(...args);
     };
 }

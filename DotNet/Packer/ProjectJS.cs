@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -8,10 +7,9 @@ namespace DotNetJS.Packer
 {
     public class ProjectJS
     {
-        private const string library = "dotnet";
+        private const string exports = "exports";
         private const string invokableAttribute = "JSInvokableAttribute";
         private const string functionAttribute = "JSFunctionAttribute";
-        private const string assemblyTemplate = "{ name: '%NAME%', data: '%DATA%' }";
         private const string moduleTemplate = @"
 (function (root, factory) {
     if (typeof exports === 'object' && typeof exports.nodeName !== 'string')
@@ -34,19 +32,38 @@ namespace DotNetJS.Packer
         private readonly string entryName;
         private readonly string wasmBase64;
         private readonly IReadOnlyList<Assembly> assemblies;
+        private readonly List<MethodInfo> invokableMethods = new List<MethodInfo>();
+        private readonly List<MethodInfo> functionMethods = new List<MethodInfo>();
+        private readonly HashSet<string> declaredAssemblies = new HashSet<string>();
 
         public ProjectJS (string entryName, string wasmBase64, IReadOnlyList<Assembly> assemblies)
         {
             this.entryName = entryName;
             this.wasmBase64 = wasmBase64;
             this.assemblies = assemblies;
+            foreach (var assembly in assemblies)
+                CollectMethods(assembly.Path);
+        }
+
+        private void CollectMethods (string assemblyPath)
+        {
+            try
+            {
+                var assembly = System.Reflection.Assembly.LoadFrom(assemblyPath);
+                foreach (var method in assembly.GetExportedTypes().SelectMany(t => t.GetMethods()))
+                    if (method.CustomAttributes.Any(a => a.AttributeType.Name == invokableAttribute))
+                        invokableMethods.Add(method);
+                    else if (method.CustomAttributes.Any(a => a.AttributeType.Name == functionAttribute))
+                        functionMethods.Add(method);
+            }
+            catch { return; }
         }
 
         public string Generate ()
         {
             var initJS = GenerateInitJS(assemblies);
             var bootJS = GenerateBootJS(assemblies);
-            var dlls = string.Join(",", assemblies.Select(GenerateAssembly));
+            var dlls = string.Join(", ", assemblies.Select(GenerateAssembly));
             return moduleTemplate
                 .Replace("%ENTRY%", entryName)
                 .Replace("%WASM%", wasmBase64)
@@ -57,58 +74,76 @@ namespace DotNetJS.Packer
 
         private string GenerateAssembly (Assembly assembly)
         {
-            return assemblyTemplate
-                .Replace("%NAME%", assembly.Name)
-                .Replace("%DATA%", assembly.Base64);
+            return $"{{ name: '{assembly.Name}', data: '{assembly.Base64}' }}";
         }
 
         private string GenerateInitJS (IReadOnlyList<Assembly> assemblies)
         {
-            var invokableMethods = assemblies.SelectMany(a => GetMethodsWithAttribute(a, invokableAttribute));
-            var functionMethods = assemblies.SelectMany(a => GetMethodsWithAttribute(a, functionAttribute));
-            return string.Join("\n", invokableMethods.Select(GenerateInvokableBinding)) + "\n" +
-                   string.Join("\n", functionMethods.Select(GenerateFunctionDeclaration));
+            return JoinNewLine(
+                JoinNewLine(invokableMethods.Select(GenerateInvokableBinding)),
+                JoinNewLine(functionMethods.Select(GenerateFunctionDeclaration))
+            );
         }
 
         private string GenerateBootJS (IReadOnlyList<Assembly> assemblies)
         {
-            var functionMethods = assemblies.SelectMany(a => GetMethodsWithAttribute(a, functionAttribute));
-            return string.Join("\n", functionMethods.Select(GenerateFunctionBinding));
-        }
-
-        private MethodInfo[] GetMethodsWithAttribute (Assembly assembly, string attribute)
-        {
-            return System.Reflection.Assembly.ReflectionOnlyLoad(assembly.Bytes).GetExportedTypes()
-                .SelectMany(t => t.GetMethods())
-                .Where(m => m.CustomAttributes.Any(a => a.AttributeType.Name == attribute))
-                .ToArray();
+            return JoinNewLine(functionMethods.Select(GenerateFunctionBinding), 2);
         }
 
         private string GenerateInvokableBinding (MethodInfo invokableMethod)
         {
             var name = invokableMethod.Name;
-            if (invokableMethod.DeclaringType is null)
-                throw new PackerException($"Failed to generate JavaScript binding for '{name}' method.");
-            var assembly = invokableMethod.DeclaringType.FullName;
             var args = GetArgs(invokableMethod);
             var invoke = GetInvokeFunction(invokableMethod);
-            return $"{library}.{assembly} = {library}.{assembly} || {{}}; " +
-                   $"{library}.{assembly}.{name} = ({args}) => {library}.{invoke}('{assembly}', '{name}', {args});";
+            var assembly = GetAssemblyName(invokableMethod);
+            var body = $"{exports}.{invoke}('{assembly}', '{name}', {args})";
+            var js = $"{exports}.{assembly}.{name} = ({args}) => {body};";
+            return EnsureAssemblyDeclared(assembly, js);
         }
 
         private string GenerateFunctionDeclaration (MethodInfo functionMethod)
         {
-            return "";
+            var name = functionMethod.Name;
+            var args = GetArgs(functionMethod);
+            var assembly = GetAssemblyName(functionMethod);
+            var js = $"{exports}.{assembly}.{name} = undefined;";
+            return EnsureAssemblyDeclared(assembly, js);
         }
 
         private string GenerateFunctionBinding (MethodInfo functionMethod)
         {
-            return "";
+            var name = functionMethod.Name;
+            var assembly = GetAssemblyName(functionMethod);
+            var error = $"function() {{ throw new Error(\"Function 'dotnet.{assembly}.{name}' is not implemented.\"); }}()";
+            return $"global.DotNetJS_functions_{assembly}_{name} = {exports}.{assembly}.{name} || {error};";
+        }
+
+        private string EnsureAssemblyDeclared (string assembly, string js)
+        {
+            if (declaredAssemblies.Add(assembly))
+                js = JoinNewLine($"{exports}.{assembly} = {{}};", js);
+            return js;
+        }
+
+        private string GetAssemblyName (MemberInfo member)
+        {
+            if (member.DeclaringType is null)
+                throw new PackerException($"Failed to get declaring type for '{member}'.");
+            return member.DeclaringType.Assembly.GetName().Name;
         }
 
         private string GetArgs (MethodInfo method)
         {
-            return string.Join(", ", method.GetParameters().Select(p => p.Name));
+            return string.Join(", ", method.GetParameters().Select(ToJavaScriptArg));
+        }
+
+        private string ToJavaScriptArg (ParameterInfo param)
+        {
+            switch (param.Name)
+            {
+                case "function": return "fn";
+                default: return param.Name;
+            }
         }
 
         private string GetInvokeFunction (MethodInfo method)
@@ -116,5 +151,13 @@ namespace DotNetJS.Packer
             var awaitable = method.ReturnType.GetMethod(nameof(Task.GetAwaiter)) != null;
             return awaitable ? "invokeAsync" : "invoke";
         }
+
+        private string JoinNewLine (IEnumerable<string> values, int indent = 1)
+        {
+            var separator = "\n" + new string(' ', indent * 4);
+            return string.Join(separator, values);
+        }
+
+        private string JoinNewLine (params string[] values) => JoinNewLine(values, 1);
     }
 }

@@ -1,19 +1,15 @@
-﻿const assert = require("assert");
+﻿// noinspection JSUnresolvedFunction,JSCheckFunctionSignatures
+
+const assert = require("assert");
 const dotnet = require("./project/bin/dotnet");
 
 describe("packed library", () => {
     after(dotnet.terminate);
-    // it("throws on boot when a C#-declared function is missing implementation", async () => {
-    //     await assert.rejects(dotnet.boot, /'dotnet.Test.EchoGenerated' function is missing implementation\./);
-    // });
+    it("throws on boot when a C#-declared function is missing implementation", async () => {
+        await assert.rejects(dotnet.boot, /'dotnet.Test.EchoFunction' is not implemented\./);
+    });
     it("allows providing implementation for functions declared in C#", () => {
-        // TODO:
-        // 1. Emitted by generator at export.
-        dotnet.Test = { EchoFunction: undefined };
-        // 2. Assigned by user before boot.
         dotnet.Test.EchoFunction = value => value;
-        // 3. Emitted by generator at boot(). In case undefined, throw error.
-        global.DotNetJS_functions_Test_EchoGenerated = dotnet.Test.EchoFunction;
     });
     it("can boot without specifying boot data", async () => {
         await assert.doesNotReject(dotnet.boot);
@@ -29,11 +25,11 @@ describe("packed library", () => {
         assert(dotnet.disposeObjectReference instanceof Function);
         assert(dotnet.createStreamReference instanceof Function);
     });
-    // it("provides exposed C# methods grouped under assembly object", async () => {
-    //     assert.deepStrictEqual(dotnet.Test.JoinStrings("a", "b"), "ab");
-    //     assert.deepStrictEqual(await dotnet.Test.JoinStringsAsync("c", "d"), "cd");
-    // });
-    // it("can interop via functions declared in C#", () => {
-    //     assert.deepStrictEqual(dotnet.Test.TestEchoFunction("a"), "a");
-    // });
+    it("provides exposed C# methods grouped under assembly object", async () => {
+        assert.deepStrictEqual(dotnet.Test.JoinStrings("a", "b"), "ab");
+        assert.deepStrictEqual(await dotnet.Test.JoinStringsAsync("c", "d"), "cd");
+    });
+    it("can interop via functions declared in C#", async () => {
+        assert.deepStrictEqual(dotnet.Test.TestEchoFunction("a"), "a");
+    });
 });

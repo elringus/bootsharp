@@ -72,7 +72,8 @@ namespace DotNetJS.Packer
             var name = Path.GetFileName(path);
             var bytes = File.ReadAllBytes(path);
             var base64 = Convert.ToBase64String(bytes);
-            return new Assembly { Name = name, Bytes = bytes, Base64 = base64 };
+            var fullPath = Path.GetFullPath(path);
+            return new Assembly { Name = name, Path = fullPath, Base64 = base64 };
         }
 
         private string GetWasmBase64 ()

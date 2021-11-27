@@ -97,9 +97,7 @@ describe("interop", () => {
         assert.deepStrictEqual(invoke("SendBytes"), expected);
     });
     it("can catch js exceptions", () => {
-        global.throw = function () {
-            throw new Error("foo");
-        };
+        global.throw = function () { throw new Error("foo"); };
         assert.deepStrictEqual(invoke("CatchException").split("\n")[0], "foo");
     });
     it("can catch dotnet exceptions", () => {

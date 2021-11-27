@@ -1,16 +1,17 @@
 ﻿using DotNetJS;
+using Microsoft.JSInterop;
 
 namespace Test
 {
     public static partial class Function
     {
-        [Microsoft.JSInterop.JSInvokable]
+        [JSInvokable]
         public static string TestEchoFunction (string value)
         {
             return EchoFunction(value);
         }
 
         [JSFunction]
-        private static partial string EchoFunction (string value);
+        public static partial string EchoFunction (string value);
     }
 }
