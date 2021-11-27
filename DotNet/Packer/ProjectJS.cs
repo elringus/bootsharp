@@ -47,8 +47,8 @@ namespace DotNetJS.Packer
 
         public string Generate ()
         {
-            var initJS = GenerateInitJS(assemblies);
-            var bootJS = GenerateBootJS(assemblies);
+            var initJS = GenerateInitJS();
+            var bootJS = GenerateBootJS();
             var dlls = string.Join(", ", assemblies.Select(GenerateAssembly));
             return moduleTemplate
                 .Replace("%ENTRY%", entryName)
@@ -77,7 +77,7 @@ namespace DotNetJS.Packer
             return $"{{ name: '{assembly.Name}', data: '{assembly.Base64}' }}";
         }
 
-        private string GenerateInitJS (IReadOnlyList<Assembly> assemblies)
+        private string GenerateInitJS ()
         {
             return JoinNewLine(
                 JoinNewLine(invokableMethods.Select(GenerateInvokableBinding)),
@@ -85,7 +85,7 @@ namespace DotNetJS.Packer
             );
         }
 
-        private string GenerateBootJS (IReadOnlyList<Assembly> assemblies)
+        private string GenerateBootJS ()
         {
             return JoinNewLine(functionMethods.Select(GenerateFunctionBinding), 2);
         }
