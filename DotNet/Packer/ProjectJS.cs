@@ -45,6 +45,19 @@ namespace DotNetJS.Packer
                 CollectMethods(assembly.Path);
         }
 
+        public string Generate ()
+        {
+            var initJS = GenerateInitJS(assemblies);
+            var bootJS = GenerateBootJS(assemblies);
+            var dlls = string.Join(", ", assemblies.Select(GenerateAssembly));
+            return moduleTemplate
+                .Replace("%ENTRY%", entryName)
+                .Replace("%WASM%", wasmBase64)
+                .Replace("%DLLS%", dlls)
+                .Replace("%INIT_JS%", initJS)
+                .Replace("%BOOT_JS%", bootJS);
+        }
+
         private void CollectMethods (string assemblyPath)
         {
             try
@@ -57,19 +70,6 @@ namespace DotNetJS.Packer
                         functionMethods.Add(method);
             }
             catch { return; }
-        }
-
-        public string Generate ()
-        {
-            var initJS = GenerateInitJS(assemblies);
-            var bootJS = GenerateBootJS(assemblies);
-            var dlls = string.Join(", ", assemblies.Select(GenerateAssembly));
-            return moduleTemplate
-                .Replace("%ENTRY%", entryName)
-                .Replace("%WASM%", wasmBase64)
-                .Replace("%DLLS%", dlls)
-                .Replace("%INIT_JS%", initJS)
-                .Replace("%BOOT_JS%", bootJS);
         }
 
         private string GenerateAssembly (Assembly assembly)
