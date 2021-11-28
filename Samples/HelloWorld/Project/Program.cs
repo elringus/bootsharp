@@ -2,22 +2,22 @@
 using DotNetJS;
 using Microsoft.JSInterop;
 
-// Namespace is used as the name for both the generated .js file
-// and main export object of the UMD library.
-namespace HelloWorld
-{
-    public static class Program
-    {
-        // Main is invoked by the JavaScript runtime on boot.
-        public static void Main ()
-        {
-            // Invoking 'getName()' function from JavaScript.
-            var hostName = JS.Invoke<string>("getName");
-            // Writing to JavaScript console output.
-            Console.WriteLine($"Hello {hostName}, DotNet here!");
-        }
+namespace HelloWorld;
 
-        [JSInvokable] // The method is invoked from JavaScript.
-        public static string GetName () => "DotNet";
+internal partial class Program
+{
+    // Entry point is invoked by the JavaScript runtime on boot.
+    public static void Main ()
+    {
+        // Invoking 'dotnet.HelloWorld.GetHostName()' JavaScript function.
+        var hostName = GetHostName();
+        // Writing to JavaScript host console.
+        Console.WriteLine($"Hello {hostName}, DotNet here!");
     }
+
+    [JSFunction] // The interoperability code is auto-generated.
+    public static partial string GetHostName ();
+
+    [JSInvokable] // The method is invoked from JavaScript.
+    public static string GetName () => "DotNet";
 }

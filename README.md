@@ -43,7 +43,7 @@ namespace HelloWorld;
 partial class Program
 {
     // Entry point is invoked by the JavaScript runtime on boot.
-    void Main ()
+    public static void Main ()
     {
         // Invoking 'dotnet.HelloWorld.GetHostName()' JavaScript function.
         var hostName = GetHostName();

@@ -2,46 +2,45 @@
 using DotNetJS;
 using Microsoft.JSInterop;
 
-namespace Test
+namespace Test;
+
+public static class Platform
 {
-    public static class Platform
+    [JSInvokable]
+    public static string GetGuid () => Guid.NewGuid().ToString();
+
+    [JSInvokable]
+    public static string CatchException ()
     {
-        [JSInvokable]
-        public static string GetGuid () => Guid.NewGuid().ToString();
+        try { JS.Invoke("throw"); }
+        catch (JSException e) { return e.Message; }
+        return null;
+    }
 
-        [JSInvokable]
-        public static string CatchException ()
+    [JSInvokable]
+    public static string Throw (string message) => throw new Exception(message);
+
+    [JSInvokable]
+    public static long ComputePrime (int n)
+    {
+        int count = 0;
+        long a = 2;
+        while (count < n)
         {
-            try { JS.Invoke("throw"); }
-            catch (JSException e) { return e.Message; }
-            return null;
-        }
-
-        [JSInvokable]
-        public static string Throw (string message) => throw new Exception(message);
-
-        [JSInvokable]
-        public static long ComputePrime (int n)
-        {
-            int count = 0;
-            long a = 2;
-            while (count < n)
+            long b = 2;
+            int prime = 1;
+            while (b * b <= a)
             {
-                long b = 2;
-                int prime = 1;
-                while (b * b <= a)
+                if (a % b == 0)
                 {
-                    if (a % b == 0)
-                    {
-                        prime = 0;
-                        break;
-                    }
-                    b++;
+                    prime = 0;
+                    break;
                 }
-                if (prime > 0) count++;
-                a++;
+                b++;
             }
-            return --a;
+            if (prime > 0) count++;
+            a++;
         }
+        return --a;
     }
 }

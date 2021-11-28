@@ -41,6 +41,8 @@ namespace DotNetJS.Generator
         {
             if (syntax.Parent is NamespaceDeclarationSyntax space)
                 return $"namespace {space.Name}\n{{\n{source}\n}}";
+            else if (syntax.Parent is FileScopedNamespaceDeclarationSyntax fileSpace)
+                return $"namespace {fileSpace.Name};\n{source}";
             return source;
         }
     }
