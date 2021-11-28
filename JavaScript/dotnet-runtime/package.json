@@ -1,6 +1,6 @@
 {
   "name": "dotnet-runtime",
-  "version": "0.2.0",
+  "version": "0.3.1",
   "description": "JavaScript runtime for .NET",
   "keywords": ["csharp", "C#", "dotnet", "runtime", "WebAssembly", "interop", "UMD"],
   "repository": "https://github.com/Elringus/DotNetJS",
