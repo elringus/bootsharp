@@ -31,14 +31,12 @@ jobs:
       uses: github/codeql-action/init@v1
       with:
         languages: ${{ matrix.language }}
-    - name: prebuild
+    - name: build
       run: |
           dotnet build DotNet/DotNetJS.sln
           cd JavaScript/dotnet-runtime
           npm install
           npm run build
           dotnet publish test/project/Test.Project.csproj
-    - name: autobuild
-      uses: github/codeql-action/autobuild@v1
     - name: analyze
       uses: github/codeql-action/analyze@v1
