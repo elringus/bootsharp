@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Build.Utilities;
 
 namespace DotNetJS.Packer
 {
@@ -12,9 +13,15 @@ namespace DotNetJS.Packer
         public IReadOnlyList<Method> InvokableMethods => invokableMethods;
         public IReadOnlyList<Method> FunctionMethods => functionMethods;
 
+        private readonly TaskLoggingHelper log;
         private readonly List<Assembly> assemblies = new List<Assembly>();
         private readonly List<Method> invokableMethods = new List<Method>();
         private readonly List<Method> functionMethods = new List<Method>();
+
+        public ProjectMetadata (TaskLoggingHelper log)
+        {
+            this.log = log;
+        }
 
         public void LoadAssemblies (string directory)
         {
@@ -53,7 +60,12 @@ namespace DotNetJS.Packer
                     else if (attribute.AttributeType.Name == functionAttr)
                         functionMethods.Add(new Method(method));
             }
-            catch { return; }
+            catch (Exception e)
+            {
+                log.LogWarning($"Failed to inspect '{filePath}' assembly; " +
+                               $"affected methods won't be available in JavaScript. Error: {e}");
+                return;
+            }
         }
 
         private IEnumerable<MethodInfo> GetStaticMethods (string assemblyPath)

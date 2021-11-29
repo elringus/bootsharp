@@ -17,9 +17,16 @@ namespace DotNetJS.Packer
         public bool EmitSourceMap { get; set; }
         public bool EmitTypes { get; set; }
 
-        private readonly ProjectMetadata project = new ProjectMetadata();
-        private readonly SourceGenerator sourceGenerator = new SourceGenerator();
-        private readonly TypeGenerator typeGenerator = new TypeGenerator();
+        private readonly ProjectMetadata project;
+        private readonly SourceGenerator sourceGenerator;
+        private readonly TypeGenerator typeGenerator;
+
+        public PublishDotNetJS ()
+        {
+            project = new ProjectMetadata(Log);
+            sourceGenerator = new SourceGenerator();
+            typeGenerator = new TypeGenerator();
+        }
 
         public override bool Execute ()
         {
