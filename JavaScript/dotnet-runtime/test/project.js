@@ -15,7 +15,7 @@ function getBootData() {
     return {
         wasm: loadWasmBinary(),
         assemblies: loadAssemblies(),
-        entryAssemblyName: "Test.dll"
+        entryAssemblyName: "Test.Project.dll"
     };
 }
 

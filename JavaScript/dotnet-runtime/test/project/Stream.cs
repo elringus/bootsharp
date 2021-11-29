@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
-namespace Test;
+namespace Test.Project;
 
 public static class Stream
 {

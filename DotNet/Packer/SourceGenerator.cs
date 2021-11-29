@@ -85,7 +85,7 @@ namespace DotNetJS.Packer
 
         private string GenerateFunctionBinding (Method method)
         {
-            var global = $"global.DotNetJS_functions_{method.Assembly}_{method.Name}";
+            var global = $"global.DotNetJS_functions_{method.Assembly.Replace('.', '_')}_{method.Name}";
             var error = $"throw new Error(\"Function 'dotnet.{method.Assembly}.{method.Name}' is not implemented.\");";
             return $"{global} = {exports}.{method.Assembly}.{method.Name} || function() {{ {error} }}();";
         }
@@ -93,8 +93,21 @@ namespace DotNetJS.Packer
         private string EnsureAssemblyDeclared (string assembly, string js)
         {
             if (declaredAssemblies.Add(assembly))
-                js = JoinLines($"{exports}.{assembly} = {{}};", js);
+                js = JoinLines(GenerateDeclarationsForAssembly(assembly), js);
             return js;
+        }
+
+        private string GenerateDeclarationsForAssembly (string assembly)
+        {
+            var parts = assembly.Split('.');
+            var declarations = "";
+            for (int i = 0; i < parts.Length; i++)
+            {
+                var previousParts = i > 0 ? string.Join(".", parts.Take(i)) + "." : "";
+                var path = previousParts + parts[i];
+                declarations = JoinLines(declarations, $"{exports}.{path} = {{}};");
+            }
+            return declarations.Trim();
         }
     }
 }

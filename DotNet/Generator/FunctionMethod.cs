@@ -52,7 +52,7 @@ namespace DotNetJS.Generator
 
         private string GetInvokeParameters (string assembly)
         {
-            var args = $"\"DotNetJS_functions_{assembly}_{syntax.Identifier.ToString()}\"";
+            var args = $"\"DotNetJS_functions_{assembly.Replace('.', '_')}_{syntax.Identifier.ToString()}\"";
             if (syntax.ParameterList.Parameters.Count == 0) return args;
             var ids = syntax.ParameterList.Parameters.Select(p => p.Identifier);
             args += $", {string.Join(",", ids)}";

@@ -1,6 +1,6 @@
 ﻿using Microsoft.JSInterop;
 
-namespace Test;
+namespace Test.Project;
 
 public static class Program
 {

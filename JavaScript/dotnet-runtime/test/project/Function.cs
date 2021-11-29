@@ -1,7 +1,7 @@
 ﻿using DotNetJS;
 using Microsoft.JSInterop;
 
-namespace Test;
+namespace Test.Project;
 
 public static partial class Function
 {

@@ -2,8 +2,8 @@
 const dotnet = require("../dist/dotnet");
 const { bootTest } = require("./project");
 
-const invoke = (name, ...args) => dotnet.invoke("Test", name, ...args);
-const invokeAsync = (name, ...args) => dotnet.invokeAsync("Test", name, ...args);
+const invoke = (name, ...args) => dotnet.invoke("Test.Project", name, ...args);
+const invokeAsync = (name, ...args) => dotnet.invokeAsync("Test.Project", name, ...args);
 
 describe("interop when not booted", () => {
     it("throws when attempting to use", () => {
