@@ -14,7 +14,6 @@ namespace DotNetJS.Packer
         [Required] public string JSDir { get; set; }
         [Required] public string WasmFile { get; set; }
         [Required] public string EntryAssemblyName { get; set; }
-        public bool CleanPublish { get; set; } = true;
         public bool EmitSourceMap { get; set; }
         public bool EmitTypes { get; set; }
 
@@ -26,7 +25,6 @@ namespace DotNetJS.Packer
         {
             LoadProjectMetadata();
             var librarySource = GenerateLibrarySource();
-            if (CleanPublish) CleanPublishDirectory();
             PublishLibrary(librarySource);
             if (EmitSourceMap) PublishSourceMap();
             if (EmitTypes) PublishTypes();
@@ -44,12 +42,6 @@ namespace DotNetJS.Packer
             var wasm = GetRuntimeWasm();
             var js = GetRuntimeJS();
             return sourceGenerator.Generate(js, wasm, EntryAssemblyName, project);
-        }
-
-        private void CleanPublishDirectory ()
-        {
-            Directory.Delete(BaseDir, true);
-            Directory.CreateDirectory(BaseDir);
         }
 
         private void PublishLibrary (string source)

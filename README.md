@@ -115,18 +115,16 @@ Find the following sample projects in this repository:
 
 Specify following optional properties in .csproj to customize the build:
 
- - `<CleanPublish>false</CleanPublish>` — do not clean the build output folders.
  - `<EmitSourceMap>true</EmitSourceMap>` — emit JavaScript source map file.
  - `<EmitTypes>true</EmitTypes>` — emit TypeScript type definitions file.
 
-For example, following configuration will preserve build artifacts and emit source map and type definitions files:
+For example, following configuration will emit source map and type definitions:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <CleanPublish>false</CleanPublish>
         <EmitSourceMap>true</EmitSourceMap>
         <EmitTypes>true</EmitTypes>
     </PropertyGroup>

@@ -25,7 +25,6 @@
                          JSDir="$(JSDir)"
                          WasmFile="$(WasmFile)"
                          EntryAssemblyName="$(AssemblyName)"
-                         CleanPublish="$(CleanPublish)"
                          EmitSourceMap="$(EmitSourceMap)"
                          EmitTypes="$(EmitTypes)"/>
     </Target>
