@@ -37,7 +37,7 @@ jobs:
           cd JavaScript/dotnet-runtime
           npm install
           npm run build
-          dotnet publish test/project/Test.csproj
+          dotnet publish test/project/Test.Project.csproj
     - name: autobuild
       uses: github/codeql-action/autobuild@v1
     - name: analyze

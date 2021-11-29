@@ -21,7 +21,7 @@ jobs:
           cd JavaScript/dotnet-runtime
           npm install
           npm run build
-          dotnet publish test/project/Test.csproj
+          dotnet publish test/project/Test.Project.csproj
           npm install -g codecov
           npm install -g nyc
           nyc --reporter=lcov -x **/native -x **/bin npm run test

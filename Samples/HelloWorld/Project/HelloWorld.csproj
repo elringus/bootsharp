@@ -1,13 +1,13 @@
-<!-- Notice the 'Sdk="Microsoft.NET.Sdk.BlazorWebAssembly"' — it's required. -->
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <EmitSourceMap>true</EmitSourceMap>
+        <EmitTypes>true</EmitTypes>
     </PropertyGroup>
 
     <ItemGroup>
-        <!-- 'DotNetJS' will pack the project and provide JavaScript interop. -->
-        <PackageReference Include="DotNetJS" Version="0.3.1" />
+        <PackageReference Include="DotNetJS" Version="0.3.2"/>
     </ItemGroup>
 
 </Project>

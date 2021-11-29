@@ -1,15 +1,15 @@
 // Example on consuming the library as CommonJS module. 
 // Run 'node common.js' to test.
 
-const HelloWorld = require("./Project/bin/HelloWorld");
+const dotnet = require("./Project/bin/dotnet");
 
-// This function is invoked by DotNet.
-global.getName = () => `node ${process.version}`;
+// Providing implementation for 'GetHostName' function declared in 'HelloWorld' C# assembly.
+dotnet.HelloWorld.GetHostName = () => "Node.js CommonJS Module";
 
 (async function () {
     // Booting the DotNet runtime and invoking entry point.
-    await HelloWorld.boot();
-    // Invoking 'GetName()' method from DotNet.
-    const guestName = HelloWorld.invoke("GetName");
-    console.log(`Welcome, ${guestName}! Enjoy your CommonJS module space.`);
+    await dotnet.boot();
+    // Invoking 'GetName()' C# method defined in 'HelloWorld' assembly.
+    const guestName = dotnet.HelloWorld.GetName();
+    console.log(`Welcome, ${guestName}! Enjoy your module space.`);
 })();
