@@ -32,18 +32,26 @@ namespace DotNetJS.Packer
             ReportDiscoveredMethods();
         }
 
-        private void LoadAssembly (string filePath)
+        private void LoadAssembly (string assemblyPath)
         {
-            var name = Path.GetFileName(filePath);
-            var base64 = ReadBase64(filePath);
+            var name = Path.GetFileName(assemblyPath);
+            var base64 = ReadBase64(assemblyPath);
             assemblies.Add(new Assembly(name, base64));
-            InspectAssembly(filePath);
+            if (ShouldInspectAssembly(name))
+                InspectAssembly(assemblyPath);
         }
 
         private static string ReadBase64 (string filePath)
         {
             var bytes = File.ReadAllBytes(filePath);
             return Convert.ToBase64String(bytes);
+        }
+
+        private bool ShouldInspectAssembly (string assemblyName)
+        {
+            if (assemblyName.StartsWith("System.")) return false;
+            if (assemblyName.StartsWith("Microsoft.")) return false;
+            return true;
         }
 
         private void InspectAssembly (string assemblyPath)
@@ -56,9 +64,8 @@ namespace DotNetJS.Packer
             }
             catch (Exception e)
             {
-                if (ShouldWarnAboutAssemblyInspectionFail(assemblyPath))
-                    log.LogWarning($"Failed to inspect '{assemblyPath}' assembly; " +
-                                   $"affected methods won't be available in JavaScript. Error: {e}");
+                log.LogWarning($"Failed to inspect '{assemblyPath}' assembly; " +
+                               $"affected methods won't be available in JavaScript. Error: {e}");
                 return;
             }
         }
@@ -80,13 +87,6 @@ namespace DotNetJS.Packer
                 invokableMethods.Add(new Method(method));
             else if (attribute.AttributeType.Name == functionAttr)
                 functionMethods.Add(new Method(method));
-        }
-
-        private bool ShouldWarnAboutAssemblyInspectionFail (string assemblyPath)
-        {
-            var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
-            if (assemblyName.StartsWith("System.")) return false;
-            return true;
         }
 
         private void ReportDiscoveredMethods ()
