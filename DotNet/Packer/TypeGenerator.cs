@@ -9,33 +9,22 @@ namespace DotNetJS.Packer
     public class TypeGenerator
     {
         private readonly Stack<string> declaredAssemblies = new Stack<string>();
-        private readonly List<TypeDefinition> satelliteDefinitions = new List<TypeDefinition>();
-        private TypeDefinition mainDefinition;
+        private readonly List<TypeDefinition> definitions = new List<TypeDefinition>();
 
         public void LoadDefinitions (string directory)
         {
-            declaredAssemblies.Clear();
-            satelliteDefinitions.Clear();
-            mainDefinition = null;
             foreach (var path in Directory.GetFiles(directory, "*.d.ts"))
-                LoadDefinition(path);
+                definitions.Add(LoadDefinition(path));
         }
 
         public string Generate (ProjectMetadata project)
         {
-            var satelliteSources = satelliteDefinitions.Select(GenerateSatellite);
-            return GenerateMain(project) + "\n" + string.Join("\n", satelliteSources);
+            var projectTypes = GenerateForProject(project);
+            var runtimeTypes = JoinLines(definitions.Select(GenerateForDefinition), 0);
+            return JoinLines(0, runtimeTypes, projectTypes);
         }
 
-        private void LoadDefinition (string path)
-        {
-            var definition = CreateDefinition(path);
-            if (definition.FileName == "dotnet")
-                mainDefinition = definition;
-            else satelliteDefinitions.Add(definition);
-        }
-
-        private TypeDefinition CreateDefinition (string path)
+        private TypeDefinition LoadDefinition (string path)
         {
             var fileName = Path.GetFileNameWithoutExtension(path);
             fileName = fileName.Substring(0, fileName.Length - 2);
@@ -43,40 +32,40 @@ namespace DotNetJS.Packer
             return new TypeDefinition(fileName, source);
         }
 
-        private string GenerateMain (ProjectMetadata project)
-        {
-            var source = mainDefinition.Source;
-            foreach (var line in SplitLines(source))
-                if (line.StartsWith("import {") || line.StartsWith("export {"))
-                    source = source.Replace(line, "");
-                else if (line == "export declare const dotnet: {")
-                    source = source.Replace(line, JoinLines(line, GenerateBindings(project)));
-            return source.Trim();
-        }
-
-        private string GenerateBindings (ProjectMetadata project)
+        private string GenerateForProject (ProjectMetadata project)
         {
             var methods = project.InvokableMethods
                 .Concat(project.FunctionMethods)
                 .OrderBy(m => m.Assembly).ToArray();
             if (methods.Length == 0) return "";
-            return JoinLines(JoinLines(methods.Select(GenerateBinding), 2), "};");
+            return JoinLines(JoinLines(methods.Select(GenerateForMethod), 2), "};");
         }
 
-        private string GenerateBinding (Method method)
+        private string GenerateForMethod (Method method)
         {
             var args = string.Join(", ", method.Arguments.Select(a => $"{a.Name}: {a.Type}"));
             var declaration = $"{method.Name}: ({args}) => {method.ReturnType},";
             return EnsureWrappedInAssembly(method.Assembly, declaration);
         }
 
-        private string GenerateSatellite (TypeDefinition definition)
+        private string GenerateForDefinition (TypeDefinition definition)
         {
+            if (!ShouldExportDefinition(definition)) return "";
             var source = definition.Source;
             foreach (var line in SplitLines(source))
                 if (line.StartsWith("import"))
                     source = source.Replace(line, GetSourceForImportLine(line));
-            return source.Replace("boot(bootData: BootData):", "boot():").Trim();
+            return ModifyInternalDeclarations(source);
+        }
+
+        private bool ShouldExportDefinition (TypeDefinition definition)
+        {
+            switch (definition.FileName)
+            {
+                case "boot":
+                case "interop": return true;
+                default: return false;
+            }
         }
 
         private string GetSourceForImportLine (string line)
@@ -84,10 +73,19 @@ namespace DotNetJS.Packer
             var importStart = line.LastIndexOf("\"./", StringComparison.Ordinal) + 3;
             var importLength = line.Length - importStart - 2;
             var import = line.Substring(importStart, importLength);
-            foreach (var definition in satelliteDefinitions)
+            foreach (var definition in definitions)
                 if (definition.FileName == import)
                     return definition.Source;
             throw new InvalidOperationException($"Failed to find type import for '{import}'.");
+        }
+
+        private string ModifyInternalDeclarations (string source)
+        {
+            source = source.Replace("boot(bootData: BootData):", "boot():");
+            source = source.Replace("export declare function initializeInterop(): void;", "");
+            source = source.Replace("export declare function initializeMono(assemblies: Assembly[]): void;", "");
+            source = source.Replace("export declare function callEntryPoint(assemblyName: string): Promise<any>;", "");
+            return source;
         }
 
         private string EnsureWrappedInAssembly (string assembly, string declaration)
@@ -95,7 +93,7 @@ namespace DotNetJS.Packer
             if (declaredAssemblies.Count > 0 && declaredAssemblies.Peek() == assembly) return declaration;
             if (declaredAssemblies.Count > 0) declaration = JoinLines("};", declaration);
             declaredAssemblies.Push(assembly);
-            declaration = JoinLines(2, $"{assembly}: {{", declaration);
+            declaration = JoinLines(2, $"export declare const {assembly}: {{", declaration);
             return declaration;
         }
     }
