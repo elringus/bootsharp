@@ -1,5 +1,8 @@
 const vscode = require("vscode");
-const dotnet = require("../../HelloWorld/Project/bin/HelloWorld");
+const dotnet = require("../../HelloWorld/Project/bin/dotnet");
+
+// Providing implementation for 'GetHostName' function declared in 'HelloWorld' C# assembly.
+dotnet.HelloWorld.GetHostName = () => "VS Code";
 
 module.exports = {
     activate: async context => {
@@ -12,11 +15,8 @@ module.exports = {
 };
 
 function greet() {
-    // Invoking 'GetName()' method from DotNet.
-    const guestName = dotnet.invoke("GetName");
+    // Invoking 'GetName()' C# method defined in 'HelloWorld' assembly.
+    const guestName = dotnet.HelloWorld.GetName();
     const message = `Welcome, ${guestName}! Enjoy your VS Code extension space.`;
     vscode.window.showInformationMessage(message);
 }
-
-// This function is invoked by DotNet.
-global.getName = () => "VS Code";

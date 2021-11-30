@@ -10,9 +10,9 @@ namespace DotNetJS.Packer
         private const string moduleTemplate = @"%RUNTIME_JS%
 (function (root, factory) {
     if (typeof exports === 'object' && typeof exports.nodeName !== 'string')
-        factory(module.exports);
-    else factory(root.dotnet);
-}(typeof self !== 'undefined' ? self : this, function (exports) {
+        factory(module.exports, global);
+    else factory(root.dotnet, root);
+}(typeof self !== 'undefined' ? self : this, function (exports, global) {
     %INIT_JS%
     const bootWithData = exports.boot;
     exports.boot = async function () {
