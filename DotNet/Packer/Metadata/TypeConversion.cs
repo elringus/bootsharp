@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace DotNetJS.Packer
 {
@@ -6,6 +7,7 @@ namespace DotNetJS.Packer
     {
         public static string ToTypeScript (Type type)
         {
+            if (IsAwaitable(type)) return WithPromise(type);
             if (type == typeof(void)) return "void";
             switch (Type.GetTypeCode(type))
             {
@@ -26,6 +28,18 @@ namespace DotNetJS.Packer
                 case TypeCode.DateTime: return "Date";
                 default: return "any";
             }
+        }
+
+        public static bool IsAwaitable (Type type)
+        {
+            return type.GetMethod(nameof(Task.GetAwaiter)) != null;
+        }
+
+        private static string WithPromise (Type type)
+        {
+            if (type.GenericTypeArguments.Length == 0) return "Promise<void>";
+            var resultType = ToTypeScript(type.GenericTypeArguments[0]);
+            return $"Promise<{resultType}>";
         }
     }
 }

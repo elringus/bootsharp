@@ -13,6 +13,8 @@ namespace DotNetJS.Packer
             Type = TypeConversion.ToTypeScript(info.ParameterType);
         }
 
+        public override string ToString () => $"{Name}: {Type}";
+
         private string GetJavaScriptName (string dotnetName)
         {
             if (dotnetName == "function") return "fn";

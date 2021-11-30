@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace DotNetJS.Packer
 {
@@ -19,7 +18,13 @@ namespace DotNetJS.Packer
             Assembly = GetAssemblyName(info);
             Arguments = GetArguments(info);
             ReturnType = TypeConversion.ToTypeScript(info.ReturnType);
-            Async = info.ReturnType.GetMethod(nameof(Task.GetAwaiter)) != null;
+            Async = TypeConversion.IsAwaitable(info.ReturnType);
+        }
+
+        public override string ToString ()
+        {
+            var args = string.Join(", ", Arguments.Select(a => a.ToString()));
+            return $"{Assembly}.{Name} ({args}) => {ReturnType}";
         }
 
         private string GetAssemblyName (MemberInfo member)
