@@ -1,18 +1,16 @@
 .vs
 .idea
 
+[Bb]in
+[Oo]bj
+[Pp]ackages
+
+*.suo
+*.user
+
 node_modules
 dist
 .nyc_output
 
-[Bb]in
-[Oo]bj
-[Pp]ackages
-*.suo
-*.user
-
-Runtime/emsdk
-Runtime/runtime
-
-!**/dotnet.js
-!**/dotnet.wasm
+JavaScript/dotnet-runtime/native/emsdk
+JavaScript/dotnet-runtime/native/runtime

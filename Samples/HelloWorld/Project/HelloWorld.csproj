@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <EmitSourceMap>true</EmitSourceMap>
+        <EmitTypes>true</EmitTypes>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="DotNetJS" Version="0.3.8" />
+    </ItemGroup>
+
+</Project>

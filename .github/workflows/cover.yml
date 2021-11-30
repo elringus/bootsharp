@@ -17,11 +17,12 @@ jobs:
         dotnet-version: 6.0.x
     - name: cover
       run: |
-          cd Runtime
+          dotnet build DotNet/DotNetJS.sln
+          cd JavaScript/dotnet-runtime
           npm install
           npm run build
-          dotnet publish test/project/Test.csproj -c Release
+          dotnet publish test/project/Test.Project.csproj
           npm install -g codecov
           npm install -g nyc
-          nyc --reporter=lcov -x **/bin npm run test
+          nyc --reporter=lcov -x **/native -x **/bin npm run test
           codecov

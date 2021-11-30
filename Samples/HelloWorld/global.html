@@ -1,0 +1,24 @@
+<!-- Example on consuming the library as global script. -->
+<!-- Open the .html file in a web browser to test. -->
+
+<meta charset="UTF-8">
+
+Open console (Ctrl+Shift+I) to see the output.
+
+<!-- Import as a global 'dotnet' object via script tag. -->
+<script src="Project/bin/dotnet.js"></script>
+
+<script>
+
+    // Providing implementation for 'GetHostName' function declared in 'HelloWorld' C# assembly.
+    dotnet.HelloWorld.GetHostName = () => "Browser";
+
+    window.onload = async function () {
+        // Booting the DotNet runtime and invoking entry point.
+        await dotnet.boot();
+        // Invoking 'GetName()' C# method defined in 'HelloWorld' assembly.
+        const guestName = dotnet.HelloWorld.GetName();
+        console.log(`Welcome, ${guestName}! Enjoy your global space.`);
+    };
+
+</script>
