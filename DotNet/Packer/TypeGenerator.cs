@@ -14,7 +14,12 @@ namespace DotNetJS.Packer
         public void LoadDefinitions (string directory)
         {
             foreach (var path in Directory.GetFiles(directory, "*.d.ts"))
-                definitions.Add(LoadDefinition(path));
+            {
+                var fileName = Path.GetFileNameWithoutExtension(path);
+                fileName = fileName.Substring(0, fileName.Length - 2);
+                var source = File.ReadAllText(path);
+                definitions.Add(new TypeDefinition(fileName, source));
+            }
         }
 
         public string Generate (ProjectMetadata project)
@@ -24,28 +29,14 @@ namespace DotNetJS.Packer
             return JoinLines(0, runtimeTypes, projectTypes);
         }
 
-        private TypeDefinition LoadDefinition (string path)
-        {
-            var fileName = Path.GetFileNameWithoutExtension(path);
-            fileName = fileName.Substring(0, fileName.Length - 2);
-            var source = File.ReadAllText(path);
-            return new TypeDefinition(fileName, source);
-        }
-
         private string GenerateForProject (ProjectMetadata project)
         {
             var methods = project.InvokableMethods
                 .Concat(project.FunctionMethods)
                 .OrderBy(m => m.Assembly).ToArray();
             if (methods.Length == 0) return "";
-            return JoinLines(JoinLines(methods.Select(GenerateForMethod), 2), "};");
-        }
-
-        private string GenerateForMethod (Method method)
-        {
-            var args = string.Join(", ", method.Arguments.Select(a => $"{a.Name}: {a.Type}"));
-            var declaration = $"{method.Name}: ({args}) => {method.ReturnType},";
-            return EnsureWrappedInAssembly(method.Assembly, declaration);
+            return JoinLines(methods.Select(GenerateForMethod)) + "\n" +
+                   GenerateAssemblyFooter(declaredAssemblies.Peek());
         }
 
         private string GenerateForDefinition (TypeDefinition definition)
@@ -56,6 +47,13 @@ namespace DotNetJS.Packer
                 if (line.StartsWith("import"))
                     source = source.Replace(line, GetSourceForImportLine(line));
             return ModifyInternalDeclarations(source);
+        }
+
+        private string GenerateForMethod (Method method)
+        {
+            var args = string.Join(", ", method.Arguments.Select(a => $"{a.Name}: {a.Type}"));
+            var declaration = $"{method.Name}: ({args}) => {method.ReturnType},";
+            return EnsureWrappedInAssembly(method.Assembly, declaration);
         }
 
         private bool ShouldExportDefinition (TypeDefinition definition)
@@ -90,11 +88,27 @@ namespace DotNetJS.Packer
 
         private string EnsureWrappedInAssembly (string assembly, string declaration)
         {
-            if (declaredAssemblies.Count > 0 && declaredAssemblies.Peek() == assembly) return declaration;
-            if (declaredAssemblies.Count > 0) declaration = JoinLines("};", declaration);
+            if (declaredAssemblies.Count > 0 && declaredAssemblies.Peek() == assembly)
+                return declaration;
+            if (declaredAssemblies.Count > 0)
+                declaration = JoinLines(GenerateAssemblyFooter(assembly), declaration);
             declaredAssemblies.Push(assembly);
-            declaration = JoinLines(2, $"export declare const {assembly}: {{", declaration);
+            declaration = JoinLines(GenerateAssemblyHeader(assembly), declaration);
             return declaration;
+        }
+
+        private string GenerateAssemblyHeader (string assembly)
+        {
+            var declaration = "export declare const";
+            foreach (var name in assembly.Split('.'))
+                declaration += $" {name}: {{";
+            return declaration;
+        }
+
+        private string GenerateAssemblyFooter (string assembly)
+        {
+            var level = assembly.Count(c => c == '.') + 1;
+            return string.Concat(Enumerable.Repeat("};", level));
         }
     }
 }
