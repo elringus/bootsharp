@@ -5,6 +5,7 @@ const assert = require("assert");
 
 exports.bootTest = bootTest;
 exports.getBootData = getBootData;
+exports.getGeneratedTypes = getGeneratedTypes;
 
 async function bootTest() {
     const bootData = getBootData();
@@ -19,9 +20,15 @@ function getBootData() {
     };
 }
 
+function getGeneratedTypes() {
+    const file = path.resolve("test/project/bin/dotnet.d.ts");
+    assertPathExists(file);
+    return fs.readFileSync(file);
+}
+
 function loadWasmBinary() {
     const file = path.resolve("native/dotnet.wasm");
-    assert(fs.existsSync(file), "Missing WASM binary. Run 'scripts/compile-runtime.sh'.");
+    assertPathExists(file);
     return fs.readFileSync(file);
 }
 
@@ -35,7 +42,7 @@ function loadAssemblies() {
 function findAssemblies() {
     let assemblyPaths = [];
     const dirPath = path.resolve("test/project/bin/Release/net6.0/publish/wwwroot/_framework");
-    assert(fs.existsSync(dirPath), "Missing test assemblies. Run 'scripts/compile-test.sh'.");
+    assertPathExists(dirPath);
     for (const fileName of fs.readdirSync(dirPath))
         if (fileName.endsWith(".dll"))
             assemblyPaths.push(`${dirPath}/${fileName}`);
@@ -47,4 +54,8 @@ function loadAssembly(assemblyPath) {
         name: path.parse(assemblyPath).base,
         data: fs.readFileSync(assemblyPath)
     };
+}
+
+function assertPathExists(path) {
+    assert(fs.existsSync(path), "Missing test project artifacts. Run 'scripts/compile-test.sh'.");
 }

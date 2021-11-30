@@ -2,6 +2,7 @@
 
 const assert = require("assert");
 const dotnet = require("./project/bin/dotnet");
+const { getGeneratedTypes } = require("./project");
 
 describe("packed library", () => {
     after(dotnet.terminate);
@@ -35,5 +36,9 @@ describe("packed library", () => {
     it("still can interop via strings", async () => {
         assert.deepStrictEqual(dotnet.invoke("Test.Project", "JoinStrings", "a", "b"), "ab");
         assert.deepStrictEqual(await dotnet.invokeAsync("Test.Project", "JoinStringsAsync", "a", "b"), "ab");
+    });
+    it("generates valid type definitions", async () => {
+        // TODO: Find a way to check validity of the generated types.
+        assert(getGeneratedTypes());
     });
 });
