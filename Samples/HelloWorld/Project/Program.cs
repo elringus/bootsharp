@@ -4,7 +4,7 @@ using Microsoft.JSInterop;
 
 namespace HelloWorld;
 
-internal partial class Program
+public partial class Program
 {
     // Entry point is invoked by the JavaScript runtime on boot.
     public static void Main ()
