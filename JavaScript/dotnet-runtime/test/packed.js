@@ -37,8 +37,56 @@ describe("packed library", () => {
         assert.deepStrictEqual(dotnet.invoke("Test.Project", "JoinStrings", "a", "b"), "ab");
         assert.deepStrictEqual(await dotnet.invokeAsync("Test.Project", "JoinStringsAsync", "a", "b"), "ab");
     });
-    it("generates valid type definitions", async () => {
-        // TODO: Find a way to check validity of the generated types.
-        assert(getGeneratedTypes());
+    it("generates valid type definitions", () => {
+        assert.deepStrictEqual(getGeneratedTypes(), expectedTypes);
     });
 });
+
+const expectedTypes = `export interface Assembly {
+    name: string;
+    data: Uint8Array | string;
+}
+export interface BootData {
+    wasm: Uint8Array | string;
+    assemblies: Assembly[];
+    entryAssemblyName: string;
+}
+export declare enum BootStatus {
+    Standby = "Standby",
+    Booting = "Booting",
+    Terminating = "Terminating",
+    Booted = "Booted"
+}
+export declare function getBootStatus(): BootStatus;
+export declare function boot(): Promise<void>;
+export declare function terminate(): Promise<void>;
+export declare const invoke: <T>(assembly: string, method: string, ...args: any[]) => T;
+export declare const invokeAsync: <T>(assembly: string, method: string, ...args: any[]) => Promise<T>;
+export declare const createObjectReference: (object: any) => any;
+export declare const disposeObjectReference: (objectReference: any) => void;
+export declare const createStreamReference: (buffer: Uint8Array | any) => any;
+export declare const Test: { Project: {
+    TestEchoFunction: (value: string) => string,
+    InvokeVoid: () => void,
+    Echo: (message: string) => string,
+    JoinStrings: (a: string, b: string) => string,
+    SumDoubles: (a: number, b: number) => number,
+    AddDays: (date: Date, days: number) => Date,
+    InvokeJS: (funcName: string) => void,
+    ForEachJS: (items: any, funcName: string) => any,
+    JoinStringsAsync: (a: string, b: string) => Promise<string>,
+    ReceiveBytes: (bytes: any) => string,
+    SendBytes: () => string,
+    CreateInstance: () => any,
+    GetAndReturnJSObject: () => any,
+    InvokeOnJSObjectAsync: (obj: any, fn: string, args: any) => Promise<void>,
+    GetGuid: () => string,
+    CatchException: () => string,
+    Throw: (message: string) => string,
+    ComputePrime: (n: number) => number,
+    IsMainInvoked: () => boolean,
+    StreamFromJSAsync: (streamRef: any) => Promise<void>,
+    StreamFromDotNet: () => any,
+    EchoFunction: (value: string) => string,
+};};
+`;

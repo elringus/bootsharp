@@ -23,7 +23,7 @@ function getBootData() {
 function getGeneratedTypes() {
     const file = path.resolve("test/project/bin/dotnet.d.ts");
     assertPathExists(file);
-    return fs.readFileSync(file);
+    return fs.readFileSync(file).toString();
 }
 
 function loadWasmBinary() {
