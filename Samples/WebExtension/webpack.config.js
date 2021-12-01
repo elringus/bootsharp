@@ -1,14 +1,15 @@
 module.exports = {
     target: "webworker",
-    entry: "./src/extension.js",
+    entry: "./src/extension.ts",
     resolve: {
-        extensions: [".js"],
+        extensions: [".ts", ".js"],
         mainFields: ["browser", "module", "main"]
     },
-    externals: { vscode: "commonjs vscode" },
     output: {
         filename: "extension.js",
         library: { type: "commonjs" }
     },
+    module: { rules: [{ test: /\.ts/, loader: "ts-loader" }] },
+    externals: { vscode: "commonjs vscode" },
     performance: { hints: false }
 };

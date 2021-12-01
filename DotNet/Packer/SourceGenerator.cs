@@ -107,7 +107,7 @@ namespace DotNetJS.Packer
                 var path = previousParts + parts[i];
                 declarations = JoinLines(declarations, $"{exports}.{path} = {{}};");
             }
-            return declarations.Trim();
+            return declarations;
         }
     }
 }

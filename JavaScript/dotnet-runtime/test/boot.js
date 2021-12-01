@@ -1,5 +1,5 @@
 ﻿const assert = require("assert");
-const { boot, terminate, getBootStatus, BootStatus } = require("../dist/dotnet");
+const { boot, terminate, getBootStatus, BootStatus, invoke } = require("../dist/dotnet");
 const { bootTest, getBootData } = require("./project");
 const { Base64 } = require("js-base64");
 
@@ -41,6 +41,11 @@ describe("boot", () => {
     it("boots when in standby", async () => {
         await bootTest();
         assert.deepStrictEqual(getBootStatus(), BootStatus.Booted);
+        terminate();
+    });
+    it("invokes entry point on boot", async () => {
+        await bootTest();
+        assert(invoke("Test.Project", "IsMainInvoked"));
         terminate();
     });
     it("terminates when booted", async () => {

@@ -1,6 +1,6 @@
 {
   "name": "dotnetjs",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "displayName": "Hello, DotNetJS!",
   "description": "A test web extension built with DotNetJS.",
   "categories": ["Other"],
@@ -25,8 +25,11 @@
     "package": "vsce package"
   },
   "devDependencies": {
+    "typescript": "^4.5.2",
+    "@types/vscode": "^1.60.0",
     "vsce": "^2.3.0",
-    "webpack": "^5.64.1",
-    "webpack-cli": "^4.9.1"
+    "webpack": "^5.64.4",
+    "webpack-cli": "^4.9.1",
+    "ts-loader": "^9.2.6"
   }
 }

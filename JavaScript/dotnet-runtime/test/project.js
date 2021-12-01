@@ -1,10 +1,14 @@
-﻿const dotnet = require("../dist/dotnet");
-const path = require("path");
+﻿const path = require("path");
 const fs = require("fs");
 const assert = require("assert");
+const dotnet = require("../dist/dotnet");
 
+assertPathExists("test/project/bin/dotnet.js");
+exports.packed = require("./project/bin/dotnet");
 exports.bootTest = bootTest;
 exports.getBootData = getBootData;
+exports.getGeneratedTypes = getGeneratedTypes;
+exports.getGeneratedMap = getGeneratedMap;
 
 async function bootTest() {
     const bootData = getBootData();
@@ -19,9 +23,21 @@ function getBootData() {
     };
 }
 
+function getGeneratedTypes() {
+    const file = path.resolve("test/project/bin/dotnet.d.ts");
+    assertPathExists(file);
+    return fs.readFileSync(file).toString();
+}
+
+function getGeneratedMap() {
+    const file = path.resolve("test/project/bin/dotnet.js.map");
+    assertPathExists(file);
+    return fs.readFileSync(file).toString();
+}
+
 function loadWasmBinary() {
     const file = path.resolve("native/dotnet.wasm");
-    assert(fs.existsSync(file), "Missing WASM binary. Run 'scripts/compile-runtime.sh'.");
+    assertPathExists(file);
     return fs.readFileSync(file);
 }
 
@@ -35,7 +51,7 @@ function loadAssemblies() {
 function findAssemblies() {
     let assemblyPaths = [];
     const dirPath = path.resolve("test/project/bin/Release/net6.0/publish/wwwroot/_framework");
-    assert(fs.existsSync(dirPath), "Missing test assemblies. Run 'scripts/compile-test.sh'.");
+    assertPathExists(dirPath);
     for (const fileName of fs.readdirSync(dirPath))
         if (fileName.endsWith(".dll"))
             assemblyPaths.push(`${dirPath}/${fileName}`);
@@ -47,4 +63,9 @@ function loadAssembly(assemblyPath) {
         name: path.parse(assemblyPath).base,
         data: fs.readFileSync(assemblyPath)
     };
+}
+
+function assertPathExists(pathToCheck) {
+    const name = path.basename(pathToCheck);
+    assert(fs.existsSync(pathToCheck), `Missing test project artifact: '${name}'. Run 'scripts/compile-test.sh'.`);
 }
