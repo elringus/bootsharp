@@ -1,44 +1,46 @@
-﻿// noinspection JSUnresolvedFunction,JSCheckFunctionSignatures,JSUnresolvedVariable
+﻿// noinspection JSCheckFunctionSignatures,JSUnresolvedFunction,JSUnresolvedVariable
 
 const assert = require("assert");
-const dotnet = require("./project/bin/dotnet");
-const { getGeneratedTypes } = require("./project");
+const { packed, getGeneratedTypes, getGeneratedMap } = require("./project");
 
 describe("packed library", () => {
-    after(dotnet.terminate);
+    after(packed.terminate);
     it("throws on boot when a C#-declared function is missing implementation", async () => {
-        await assert.rejects(dotnet.boot, /Function 'dotnet.Test.Project.EchoFunction' is not implemented\./);
+        await assert.rejects(packed.boot, /Function 'dotnet.Test.Project.EchoFunction' is not implemented\./);
     });
     it("allows providing implementation for functions declared in C#", () => {
-        dotnet.Test.Project.EchoFunction = value => value;
+        packed.Test.Project.EchoFunction = value => value;
     });
     it("can boot without specifying boot data", async () => {
-        await assert.doesNotReject(dotnet.boot);
-        assert.deepStrictEqual(dotnet.getBootStatus(), dotnet.BootStatus.Booted);
+        await assert.doesNotReject(packed.boot);
+        assert.deepStrictEqual(packed.getBootStatus(), packed.BootStatus.Booted);
     });
     it("re-exports dotnet members", async () => {
-        assert(dotnet.BootStatus instanceof Object);
-        assert(dotnet.getBootStatus instanceof Function);
-        assert(dotnet.terminate instanceof Function);
-        assert(dotnet.invoke instanceof Function);
-        assert(dotnet.invokeAsync instanceof Function);
-        assert(dotnet.createObjectReference instanceof Function);
-        assert(dotnet.disposeObjectReference instanceof Function);
-        assert(dotnet.createStreamReference instanceof Function);
+        assert(packed.BootStatus instanceof Object);
+        assert(packed.getBootStatus instanceof Function);
+        assert(packed.terminate instanceof Function);
+        assert(packed.invoke instanceof Function);
+        assert(packed.invokeAsync instanceof Function);
+        assert(packed.createObjectReference instanceof Function);
+        assert(packed.disposeObjectReference instanceof Function);
+        assert(packed.createStreamReference instanceof Function);
     });
     it("provides exposed C# methods grouped under assembly object", async () => {
-        assert.deepStrictEqual(dotnet.Test.Project.JoinStrings("a", "b"), "ab");
-        assert.deepStrictEqual(await dotnet.Test.Project.JoinStringsAsync("c", "d"), "cd");
+        assert.deepStrictEqual(packed.Test.Project.JoinStrings("a", "b"), "ab");
+        assert.deepStrictEqual(await packed.Test.Project.JoinStringsAsync("c", "d"), "cd");
     });
     it("can interop via functions declared in C#", async () => {
-        assert.deepStrictEqual(dotnet.Test.Project.TestEchoFunction("a"), "a");
+        assert.deepStrictEqual(packed.Test.Project.TestEchoFunction("a"), "a");
     });
     it("still can interop via strings", async () => {
-        assert.deepStrictEqual(dotnet.invoke("Test.Project", "JoinStrings", "a", "b"), "ab");
-        assert.deepStrictEqual(await dotnet.invokeAsync("Test.Project", "JoinStringsAsync", "a", "b"), "ab");
+        assert.deepStrictEqual(packed.invoke("Test.Project", "JoinStrings", "a", "b"), "ab");
+        assert.deepStrictEqual(await packed.invokeAsync("Test.Project", "JoinStringsAsync", "a", "b"), "ab");
     });
     it("generates valid type definitions", () => {
         assert.deepStrictEqual(getGeneratedTypes(), expectedTypes);
+    });
+    it("generates source map", () => {
+        assert(getGeneratedMap());
     });
 });
 

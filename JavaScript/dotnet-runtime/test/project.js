@@ -1,11 +1,14 @@
-﻿const dotnet = require("../dist/dotnet");
-const path = require("path");
+﻿const path = require("path");
 const fs = require("fs");
 const assert = require("assert");
+const dotnet = require("../dist/dotnet");
 
+assertPathExists("test/project/bin/dotnet.js");
+exports.packed = require("./project/bin/dotnet");
 exports.bootTest = bootTest;
 exports.getBootData = getBootData;
 exports.getGeneratedTypes = getGeneratedTypes;
+exports.getGeneratedMap = getGeneratedMap;
 
 async function bootTest() {
     const bootData = getBootData();
@@ -22,6 +25,12 @@ function getBootData() {
 
 function getGeneratedTypes() {
     const file = path.resolve("test/project/bin/dotnet.d.ts");
+    assertPathExists(file);
+    return fs.readFileSync(file).toString();
+}
+
+function getGeneratedMap() {
+    const file = path.resolve("test/project/bin/dotnet.js.map");
     assertPathExists(file);
     return fs.readFileSync(file).toString();
 }
@@ -56,6 +65,7 @@ function loadAssembly(assemblyPath) {
     };
 }
 
-function assertPathExists(path) {
-    assert(fs.existsSync(path), "Missing test project artifacts. Run 'scripts/compile-test.sh'.");
+function assertPathExists(pathToCheck) {
+    const name = path.basename(pathToCheck);
+    assert(fs.existsSync(pathToCheck), `Missing test project artifact: '${name}'. Run 'scripts/compile-test.sh'.`);
 }

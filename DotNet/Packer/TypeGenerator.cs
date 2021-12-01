@@ -26,7 +26,7 @@ namespace DotNetJS.Packer
         {
             var projectTypes = GenerateForProject(project);
             var runtimeTypes = JoinLines(definitions.Select(GenerateForDefinition), 0);
-            return JoinLines(0, runtimeTypes, projectTypes);
+            return JoinLines(0, runtimeTypes, projectTypes) + "\n";
         }
 
         private string GenerateForProject (ProjectMetadata project)
