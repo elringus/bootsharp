@@ -16,9 +16,11 @@ describe("platform", () => {
         assert.notDeepEqual(guid1, guid2);
     });
     it("can connect via websocket", async () => {
-        const uri = "ws://echo.websocket.org";
-        const msg = "foo";
-        const timeout = 5;
-        assert.deepStrictEqual(await invokeAsync("EchoViaWebSocket", uri, msg, timeout), msg);
+        global.WebSocket = require("ws");
+        const wss = new WebSocket.Server({ port: 8080 });
+        wss.on("connection", socket => socket.on("message", data => socket.send(data)));
+        const echo = await invokeAsync("EchoViaWebSocket", "ws://localhost:8080", "foo", 1);
+        assert.deepStrictEqual(echo, "foo");
+        wss.close();
     });
 });

@@ -13,7 +13,6 @@ export function initializeMono(assemblies: Assembly[]): void {
     wasm.MONO.mono_wasm_setenv("TZ", "UTC");
     wasm.MONO.mono_wasm_setenv("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT", "1");
     injectCrypto();
-    injectWebsocket();
 }
 
 export async function callEntryPoint(assemblyName: string): Promise<any> {
@@ -40,9 +39,4 @@ function injectCrypto(): void {
                 buffer[i] = (Math.random() * 256) | 0;
         }
     } as any;
-}
-
-function injectWebsocket(): void {
-    if (typeof WebSocket === "object") return;
-    globalThis.WebSocket = require("ws");
 }
