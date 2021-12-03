@@ -3,6 +3,7 @@ const dotnet = require("../dist/dotnet");
 const { bootTest } = require("./project");
 
 const invoke = (name, ...args) => dotnet.invoke("Test.Project", name, ...args);
+const invokeAsync = (name, ...args) => dotnet.invokeAsync("Test.Project", name, ...args);
 
 describe("platform", () => {
     before(bootTest);
@@ -13,5 +14,13 @@ describe("platform", () => {
         assert.deepStrictEqual(guid1.length, 36);
         assert.deepStrictEqual(guid2.length, 36);
         assert.notDeepEqual(guid1, guid2);
+    });
+    it("can connect via websocket", async () => {
+        global.WebSocket = require("ws");
+        const wss = new WebSocket.Server({ port: 8080 });
+        wss.on("connection", socket => socket.on("message", data => socket.send(data)));
+        const echo = await invokeAsync("EchoViaWebSocket", "ws://localhost:8080", "foo", 1);
+        assert.deepStrictEqual(echo, "foo");
+        wss.close();
     });
 });

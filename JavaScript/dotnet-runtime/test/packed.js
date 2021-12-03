@@ -85,6 +85,7 @@ export declare const Test: { Project: {
     GetGuid: () => string,
     CatchException: () => string,
     Throw: (message: string) => string,
+    EchoViaWebSocket: (uri: string, message: string, timeout: number) => Promise<string>,
     ComputePrime: (n: number) => number,
     IsMainInvoked: () => boolean,
     StreamFromJSAsync: (streamRef: any) => Promise<void>,
