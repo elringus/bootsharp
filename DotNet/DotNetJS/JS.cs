@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
 namespace DotNetJS
@@ -8,15 +10,12 @@ namespace DotNetJS
     /// </summary>
     public static class JS
     {
-        private static IJSInProcessRuntime js = new JSRuntime();
+        private static readonly JSRuntime js = new();
 
         /// <summary>
-        /// Allows providing a custom JavaScript runtime to be used for the interop.
+        /// Overrides default JSON serializer options used for marshalling the interop data.
         /// </summary>
-        public static void UseCustomRuntime (IJSInProcessRuntime runtime)
-        {
-            js = runtime;
-        }
+        public static void ConfigureJson (Action<JsonSerializerOptions> action) => js.ConfigureJson(action);
 
         /// <summary>
         /// Invokes a global JavaScript function with the provided name and arguments.

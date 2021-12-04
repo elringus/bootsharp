@@ -44,8 +44,8 @@ describe("interop", () => {
                 { id: "bicycle", wheelCount: 2, maxSpeed: 30.5 }
             ],
             tracked: [
-                { id: "tank", trackType: 1, maxSpeed: 20.005 },
-                { id: "tractor", trackType: 2, maxSpeed: 15.9 }
+                { id: "tank", trackType: "Chain", maxSpeed: 20.005 },
+                { id: "tractor", trackType: "Rubber", maxSpeed: 15.9 }
             ]
         };
         const actual = invoke("EchoRegistry", expected);
