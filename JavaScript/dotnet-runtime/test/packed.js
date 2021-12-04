@@ -69,6 +69,9 @@ export declare const disposeObjectReference: (objectReference: any) => void;
 export declare const createStreamReference: (buffer: Uint8Array | any) => any;
 export declare const Test: { Project: {
     TestEchoFunction: (value: string) => string,
+    CreateInstance: () => any,
+    GetAndReturnJSObject: () => any,
+    InvokeOnJSObjectAsync: (obj: any, fn: string, args: any) => Promise<void>,
     InvokeVoid: () => void,
     Echo: (message: string) => string,
     JoinStrings: (a: string, b: string) => string,
@@ -79,9 +82,6 @@ export declare const Test: { Project: {
     JoinStringsAsync: (a: string, b: string) => Promise<string>,
     ReceiveBytes: (bytes: any) => string,
     SendBytes: () => string,
-    CreateInstance: () => any,
-    GetAndReturnJSObject: () => any,
-    InvokeOnJSObjectAsync: (obj: any, fn: string, args: any) => Promise<void>,
     GetGuid: () => string,
     CatchException: () => string,
     Throw: (message: string) => string,
