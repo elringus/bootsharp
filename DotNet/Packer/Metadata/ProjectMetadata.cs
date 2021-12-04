@@ -80,12 +80,9 @@ namespace DotNetJS.Packer
 
         private void InspectMethodAttribute (CustomAttributeData attribute, MethodInfo method)
         {
-            const string invokableAttr = "JSInvokableAttribute";
-            const string functionAttr = "JSFunctionAttribute";
-
-            if (attribute.AttributeType.Name == invokableAttr)
+            if (attribute.AttributeType.Name == Attributes.Invokable)
                 invokableMethods.Add(new Method(method));
-            else if (attribute.AttributeType.Name == functionAttr)
+            else if (attribute.AttributeType.Name == Attributes.Function)
                 functionMethods.Add(new Method(method));
         }
 
