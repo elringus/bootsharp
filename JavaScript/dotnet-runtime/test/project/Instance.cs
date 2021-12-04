@@ -4,21 +4,9 @@ using Microsoft.JSInterop;
 
 namespace Test.Project;
 
-public static class Object
+public class Instance
 {
-    public class Instance
-    {
-        private string var;
-
-        [JSInvokable]
-        public void SetVar (string value) => var = value;
-
-        [JSInvokable]
-        public string GetVar () => var;
-
-        [JSInvokable]
-        public string SetFromOther (DotNetObjectReference<Instance> objRef) => var = objRef.Value.var;
-    }
+    private string var;
 
     [JSInvokable]
     public static DotNetObjectReference<Instance> CreateInstance ()
@@ -37,4 +25,13 @@ public static class Object
     {
         await obj.InvokeVoidAsync(function, args);
     }
+
+    [JSInvokable]
+    public void SetVar (string value) => var = value;
+
+    [JSInvokable]
+    public string GetVar () => var;
+
+    [JSInvokable]
+    public string SetFromOther (DotNetObjectReference<Instance> objRef) => var = objRef.Value.var;
 }

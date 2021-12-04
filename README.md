@@ -136,6 +136,24 @@ For example, following configuration will emit source map and type definitions:
 </Project>
 ```
 
+## JSON Serializer Options
+
+To override default JSON serializer options used for marshalling the interop data, use `JS.ConfigureJson` method before the program entry point is invoked. For example, below will add `JsonStringEnumConverter` converter to allow serializing enums via strings:
+
+```csharp
+static class Program
+{
+    static Program () // Static constructor is invoked before 'Main'
+    {
+        JS.ConfigureJson(options =>
+            options.Converters.Add(new JsonStringEnumConverter())
+        );
+    }
+
+    public static void Main () { }
+}
+```
+
 ## Compiling Runtime
 
 To compile and test the runtime run the following in order (under [dotnet-runtime](https://github.com/Elringus/DotNetJS/tree/main/JavaScript/dotnet-runtime) folder):

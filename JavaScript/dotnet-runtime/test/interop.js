@@ -31,11 +31,32 @@ describe("interop", () => {
     it("can send and receive number", () => {
         assert.deepStrictEqual(invoke("SumDoubles", -1, 2.75), 1.75);
     });
-    it("can send and receive object", () => {
+    it("can send and receive date", () => {
         const date = new Date(1977, 3, 2);
         const expected = new Date(1977, 3, 9);
         const actual = new Date(invoke("AddDays", date, 7));
         assert.deepStrictEqual(actual, expected);
+    });
+    it("can send and receive custom data type", () => {
+        const expected = {
+            wheeled: [
+                { id: "car", wheelCount: 4, maxSpeed: 100.0 },
+                { id: "bicycle", wheelCount: 2, maxSpeed: 30.5 }
+            ],
+            tracked: [
+                { id: "tank", trackType: "Chain", maxSpeed: 20.005 },
+                { id: "tractor", trackType: "Rubber", maxSpeed: 15.9 }
+            ]
+        };
+        const actual = invoke("EchoRegistry", expected);
+        assert.deepStrictEqual(actual, expected);
+    });
+    it("can process custom data types", () => {
+        const registry = {
+            wheeled: [{ maxSpeed: 1 }],
+            tracked: [{ maxSpeed: 2 }]
+        };
+        assert.deepStrictEqual(invoke("CountTotalSpeed", registry), 3);
     });
     it("can invoke js function from dotnet", () => {
         let invokedFromDotNet = false;

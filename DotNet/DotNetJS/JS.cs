@@ -1,6 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.JSInterop;
-using Microsoft.JSInterop.WebAssembly;
 
 namespace DotNetJS
 {
@@ -9,9 +10,12 @@ namespace DotNetJS
     /// </summary>
     public static class JS
     {
-        private class JSRuntime : WebAssemblyJSRuntime { }
-
         private static readonly JSRuntime js = new();
+
+        /// <summary>
+        /// Overrides default JSON serializer options used for marshalling the interop data.
+        /// </summary>
+        public static void ConfigureJson (Action<JsonSerializerOptions> action) => js.ConfigureJson(action);
 
         /// <summary>
         /// Invokes a global JavaScript function with the provided name and arguments.
