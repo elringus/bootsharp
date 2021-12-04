@@ -24,19 +24,17 @@ namespace DotNetJS.Packer
 
         public string Generate (ProjectMetadata project)
         {
-            var projectTypes = GenerateForProject(project);
-            var runtimeTypes = JoinLines(definitions.Select(GenerateForDefinition), 0);
-            return JoinLines(0, runtimeTypes, projectTypes) + "\n";
+            var methods = project.FunctionMethods.Concat(project.InvokableMethods).ToArray();
+            var methodsContent = GenerateForMethods(methods);
+            var runtimeContent = JoinLines(definitions.Select(GenerateForDefinition), 0);
+            return JoinLines(0, runtimeContent, methodsContent) + "\n";
         }
 
-        private string GenerateForProject (ProjectMetadata project)
+        private string GenerateForMethods (IReadOnlyCollection<Method> methods)
         {
-            var methods = project.InvokableMethods
-                .Concat(project.FunctionMethods)
-                .OrderBy(m => m.Assembly).ToArray();
-            if (methods.Length == 0) return "";
-            return JoinLines(methods.Select(GenerateForMethod)) + "\n" +
-                   GenerateAssemblyFooter(declaredAssemblies.Peek());
+            if (methods.Count == 0) return "";
+            var lines = methods.OrderBy(m => m.Assembly).Select(GenerateForMethod);
+            return JoinLines(lines) + "\n" + GenerateAssemblyFooter(declaredAssemblies.Peek());
         }
 
         private string GenerateForDefinition (TypeDefinition definition)

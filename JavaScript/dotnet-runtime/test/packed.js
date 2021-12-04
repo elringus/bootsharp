@@ -44,6 +44,7 @@ describe("packed library", () => {
     });
 });
 
+// TODO: That's fragile. Find a more robust way to validate the types.
 const expectedTypes = `export interface Assembly {
     name: string;
     data: Uint8Array | string;
@@ -68,6 +69,7 @@ export declare const createObjectReference: (object: any) => any;
 export declare const disposeObjectReference: (objectReference: any) => void;
 export declare const createStreamReference: (buffer: Uint8Array | any) => any;
 export declare const Test: { Project: {
+    EchoFunction: (value: string) => string,
     TestEchoFunction: (value: string) => string,
     CreateInstance: () => any,
     GetAndReturnJSObject: () => any,
@@ -90,6 +92,7 @@ export declare const Test: { Project: {
     IsMainInvoked: () => boolean,
     StreamFromJSAsync: (streamRef: any) => Promise<void>,
     StreamFromDotNet: () => any,
-    EchoFunction: (value: string) => string,
+    EchoRegistry: (registry: any) => any,
+    CountTotalSpeed: (registry: any) => number,
 };};
 `;

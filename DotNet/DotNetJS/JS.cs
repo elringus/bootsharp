@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.JSInterop;
-using Microsoft.JSInterop.WebAssembly;
 
 namespace DotNetJS
 {
@@ -9,9 +8,15 @@ namespace DotNetJS
     /// </summary>
     public static class JS
     {
-        private class JSRuntime : WebAssemblyJSRuntime { }
+        private static IJSInProcessRuntime js = new JSRuntime();
 
-        private static readonly JSRuntime js = new();
+        /// <summary>
+        /// Allows providing a custom JavaScript runtime to be used for the interop.
+        /// </summary>
+        public static void UseCustomRuntime (IJSInProcessRuntime runtime)
+        {
+            js = runtime;
+        }
 
         /// <summary>
         /// Invokes a global JavaScript function with the provided name and arguments.
