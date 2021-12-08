@@ -72,7 +72,6 @@ namespace DotNetJS.Packer
 
         private string GenerateFunctionDeclaration (Method method)
         {
-            var args = BuildArgs(method);
             var js = $"{exports}.{method.Assembly}.{method.Name} = undefined;";
             return EnsureAssemblyDeclared(method.Assembly, js);
         }
