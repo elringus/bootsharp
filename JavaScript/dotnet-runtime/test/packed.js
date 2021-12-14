@@ -37,7 +37,10 @@ describe("packed library", () => {
         assert.deepStrictEqual(await packed.invokeAsync("Test.Project", "JoinStringsAsync", "a", "b"), "ab");
     });
     it("generates valid type definitions", () => {
-        assert.deepStrictEqual(getGeneratedTypes(), expectedTypes);
+        const expectedLines = expectedTypes.split(/\r?\n/);
+        const actualLines = getGeneratedTypes().split(/\r?\n/);
+        for (const expectedLine of expectedLines)
+            assert(actualLines.includes(expectedLine));
     });
     it("generates source map", () => {
         assert(getGeneratedMap());
