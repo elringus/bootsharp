@@ -39,7 +39,7 @@ describe("packed library", () => {
     it("generates valid type definitions", () => {
         const expectedLines = expectedTypes.split(/\r?\n/);
         const actualLines = getGeneratedTypes().split(/\r?\n/);
-        for (const expectedLine in expectedLines)
+        for (const expectedLine of expectedLines)
             assert(actualLines.includes(expectedLine));
     });
     it("generates source map", () => {
