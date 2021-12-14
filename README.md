@@ -165,14 +165,3 @@ npm build
 scripts/compile-test.sh
 npm test
 ```
-
-## Publishing Runtime
-
-A memo for the publishing process after modifying dotnet-runtime:
-
-1. Bump NPM version on `JavaScript/dotnet-runtime/package.json` and:
- - `npm run build`
- - `scripts/publish-package.sh`
-2. Bump NuGet version on `DotNet/DotNetJS/DotNetJS.csproj` and:
- - `dotnet pack -c Release --output bin`
- - `dotnet nuget push bin/DotNetJS.{VER}.nupkg --api-key {KEY} --source https://api.nuget.org/v3/index.json`
