@@ -29,6 +29,8 @@ try {
         # Build DotNetJS Solution
         if ($continue) {
             $verbosity = $Verbose ? 'd' : 'n';
+
+            Write-Verbose "& dotnet build `$sln.FullName -v `$verbosity" -Verbose:$Verbose
             & dotnet build $sln.FullName -v $verbosity
 
             $continue = $LASTEXITCODE -eq 0
@@ -40,10 +42,16 @@ try {
             if (Test-Path $path -Verbose:$Verbose) {
                 Set-Location $path -Verbose:$Verbose
 
+                Write-Verbose "& npm install" -Verbose:$Verbose
                 & npm install
-                & npm run build
-
                 $continue = $LASTEXITCODE -eq 0
+
+                if($continue) {
+                    Write-Verbose "& npm run build" -Verbose:$Verbose
+                    & npm run build
+
+                    $continue = $LASTEXITCODE -eq 0
+                }
             }
             else {
                 throw "Could not locate JavaScript path at $path.";
@@ -56,10 +64,16 @@ try {
             if (Test-Path $path -Verbose:$Verbose) {
                 Set-Location $path -Verbose:$Verbose
 
+                Write-Verbose "& npm install" -Verbose:$Verbose
                 & npm install
-                & npm run build
-
                 $continue = $LASTEXITCODE -eq 0
+
+                if($continue) {
+                    Write-Verbose "& npm run build" -Verbose:$Verbose
+                    & npm run build
+
+                    $continue = $LASTEXITCODE -eq 0
+                }
             }
             else {
                 throw "Could not locate JavaScript path at $path.";
@@ -72,6 +86,7 @@ try {
             if (Test-Path $path -Verbose:$Verbose) {
                 Set-Location $path -Verbose:$Verbose
 
+                Write-Verbose ". ./build.ps1 -Automated:`$Automated -Verbose:`$Verbose" -Verbose:$Verbose
                 . ./build.ps1 -Automated:$Automated -Verbose:$Verbose
 
                 $continue = $LASTEXITCODE -eq 0
@@ -87,10 +102,16 @@ try {
             if (Test-Path $path -Verbose:$Verbose) {
                 Set-Location $path -Verbose:$Verbose
 
+                Write-Verbose "& npm install" -Verbose:$Verbose
                 & npm install
-                & npm run build
-
                 $continue = $LASTEXITCODE -eq 0
+
+                if($continue) {
+                    Write-Verbose "& npm run build" -Verbose:$Verbose
+                    & npm run build
+
+                    $continue = $LASTEXITCODE -eq 0
+                }
             }
             else {
                 throw "Could not locate Sample path at $path.";
