@@ -14,6 +14,12 @@ param (
 Push-Location -Verbose:$Verbose
 $root = Get-Location -Verbose:$Verbose
 
+Write-Verbose "`$root: $root";
+
+if($Verbose) {
+    Get-ChildItem -Directory $root -Verbose:$Verbose -ErrorAction Stop -Recurse
+}
+
 try {
     if ($Clean) {
         Get-ChildItem obj, bin, dist, node_modules -Recurse -ErrorAction SilentlyContinue -Verbose:$Verbose `
