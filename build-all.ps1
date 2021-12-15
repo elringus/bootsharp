@@ -39,7 +39,7 @@ try {
 
         # Build DotNetJS Solution
         if ($continue) {
-            $verbosity = $Verbose ? 'd' : 'n';
+            $verbosity = $Verbose ? 'd' : 'm';
 
             Write-Verbose "& dotnet build `$sln.FullName -v `$verbosity" -Verbose:$Verbose
             & dotnet build $sln.FullName -v $verbosity
@@ -139,6 +139,21 @@ try {
         if(-not $continue) {
             throw "Exit code $failedCode at step:$([System.Environment]::NewLine)$failedStep"
         }
+        
+        ""
+
+        # Write Success Message
+        $ValidColors = @("black","green","yellow","blue","cyan","darkblue" ,"darkcyan","darkgray",
+            "darkgreen","darkmagenta","darkred","darkyellow","gray",
+            "magenta","red","white");
+        $DefaultForeground = (Get-Host).UI.RawUI.ForegroundColor
+        $a = (Get-Host).UI.RawUI
+        $a.ForegroundColor = $ValidColors[2]
+        "---"
+        $a.ForegroundColor = $ValidColors[1]
+        "Successfully built all portions of the repository!"
+        $a.ForegroundColor = $DefaultForeground
+        ""
     }
 
     if($Publish) {
