@@ -21,6 +21,9 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet_version: 6.0.x
     
     # Runs a single command using the runners shell
     - name: Build
