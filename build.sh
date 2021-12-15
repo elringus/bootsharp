@@ -80,10 +80,13 @@ then
     else
         echo "Dotnet not found and unable to insstall it."
     fi
+else
+    echo "pwsh found to be type: $(type -t pwsh)"
+    which pwsh
 fi
 
 # Step 2: Build with Powershell
-if [ ! $(type -t pwsh) ]
+if [ $(type -t pwsh) ]
 then
     pwsh ./build-all.ps1 $1 $2 $3 $4 $5
 else
