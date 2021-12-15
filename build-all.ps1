@@ -14,10 +14,11 @@ param (
 Push-Location -Verbose:$Verbose
 $root = Get-Location -Verbose:$Verbose
 
-Write-Verbose "`$root: $root";
+Write-Verbose "`$root: $root" -Verbose:$Verbose;
 
 if($Verbose) {
-    Get-ChildItem * -Directory $root -Verbose:$Verbose -ErrorAction Stop -Recurse
+    Set-Location $root -Verbose:$Verbose -ErrorAction Stop
+    Get-ChildItem * -Verbose:$Verbose -ErrorAction Stop -Recurse
 }
 
 try {
