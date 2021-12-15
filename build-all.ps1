@@ -32,7 +32,7 @@ try {
         Set-Location $root -Verbose:$Verbose -ErrorAction Stop
         $next = Resolve-Path $root/DotNet/ -Verbose:$Verbose -ErrorAction Stop
 
-        Set-Location $next -Verbose:$Verbose -ErrorAction Stop
+        Set-Location ${next} -Verbose:$Verbose -ErrorAction Stop
         $sln = Get-Item ./DotNetJS.sln -Verbose:$Verbose -ErrorAction SilentlyContinue
 
         $continue = (Test-Path $sln -ErrorAction SilentlyContinue -Verbose:$Verbose) ?? $false
@@ -52,14 +52,14 @@ try {
         # Build JavaScript JS Interop
         if ($continue) {
             $next = Resolve-Path $root/JavaScript/dotnet-js-interop/ -Verbose:$Verbose -ErrorAction Stop
-            if (Test-Path $next -Verbose:$Verbose) {
-                Set-Location $next -Verbose:$Verbose
+            if (Test-Path ${next} -Verbose:$Verbose) {
+                Set-Location ${next} -Verbose:$Verbose
 
                 Write-Verbose "& npm install" -Verbose:$Verbose
                 & npm install
 
                 $failedCode = $LASTEXITCODE
-                $failedStep = "$next: & npm install"
+                $failedStep = "${next}: & npm install"
                 $continue = $failedCode -eq 0
 
                 if($continue) {
@@ -67,7 +67,7 @@ try {
                     & npm run build
 
                     $failedCode = $LASTEXITCODE
-                    $failedStep = "$next: & npm run build"
+                    $failedStep = "${next}: & npm run build"
                     $continue = $failedCode -eq 0
                 }
             }
@@ -76,14 +76,14 @@ try {
         # Build JavaScript dotnet-runtime
         if ($continue) {
             $next = Resolve-Path $root/JavaScript/dotnet-runtime/ -Verbose:$Verbose -ErrorAction Stop
-            if (Test-Path $next -Verbose:$Verbose) {
-                Set-Location $next -Verbose:$Verbose
+            if (Test-Path ${next} -Verbose:$Verbose) {
+                Set-Location ${next} -Verbose:$Verbose
 
                 Write-Verbose "& npm install" -Verbose:$Verbose
                 & npm install
 
                 $failedCode = $LASTEXITCODE
-                $failedStep = "$next: & npm install"
+                $failedStep = "${next}: & npm install"
                 $continue = $failedCode -eq 0
 
                 if($continue) {
@@ -91,7 +91,7 @@ try {
                     & npm run build
 
                     $failedCode = $LASTEXITCODE
-                    $failedStep = "$next: & npm run build"
+                    $failedStep = "${next}: & npm run build"
                     $continue = $failedCode -eq 0
                 }
             }
@@ -100,14 +100,14 @@ try {
         # Build Samples
         if ($continue) {
             $next = Resolve-Path $root/Samples/HelloWorld/ -Verbose:$Verbose -ErrorAction Stop
-            if (Test-Path $next -Verbose:$Verbose) {
-                Set-Location $next -Verbose:$Verbose
+            if (Test-Path ${next} -Verbose:$Verbose) {
+                Set-Location ${next} -Verbose:$Verbose
 
                 Write-Verbose ". ./build.ps1 -Automated:`$Automated -Verbose:`$Verbose" -Verbose:$Verbose
                 . ./build.ps1 -Automated:$Automated -Verbose:$Verbose
 
                 $failedCode = $LASTEXITCODE
-                $failedStep = "$next: . ./build.ps1 -Automated:$Automated -Verbose:$Verbose"
+                $failedStep = "${next}: . ./build.ps1 -Automated:$Automated -Verbose:$Verbose"
                 $continue = $failedCode -eq 0
             }
         }
@@ -115,14 +115,14 @@ try {
         # Build Extension
         if ($continue) {
             $next = Resolve-Path $root/Samples/WebExtension/ -Verbose:$Verbose -ErrorAction Stop
-            if (Test-Path $next -Verbose:$Verbose) {
-                Set-Location $next -Verbose:$Verbose
+            if (Test-Path ${next} -Verbose:$Verbose) {
+                Set-Location ${next} -Verbose:$Verbose
 
                 Write-Verbose "& npm install" -Verbose:$Verbose
                 & npm install
 
                 $failedCode = $LASTEXITCODE
-                $failedStep = "$next: & npm install"
+                $failedStep = "${next}: & npm install"
                 $continue = $failedCode -eq 0
 
                 if($continue) {
@@ -130,7 +130,7 @@ try {
                     & npm run build
 
                     $failedCode = $LASTEXITCODE
-                    $failedStep = "$next: & npm run build"
+                    $failedStep = "${next}: & npm run build"
                     $continue = $failedCode -eq 0
                 }
             }
