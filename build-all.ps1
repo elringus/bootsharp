@@ -44,7 +44,9 @@ try {
             Write-Verbose "& dotnet build `$sln.FullName -v `$verbosity" -Verbose:$Verbose
             & dotnet build $sln.FullName -v $verbosity
 
-            $continue = $LASTEXITCODE -eq 0
+            $failedCode = $LASTEXITCODE
+            $failedStep = "& dotnet build `$sln.FullName -v `$verbosity"
+            $continue = $failedCode -eq 0
         }
 
         # Build JavaScript JS Interop
@@ -55,17 +57,19 @@ try {
 
                 Write-Verbose "& npm install" -Verbose:$Verbose
                 & npm install
-                $continue = $LASTEXITCODE -eq 0
+
+                $failedCode = $LASTEXITCODE
+                $failedStep = "$next: & npm install"
+                $continue = $failedCode -eq 0
 
                 if($continue) {
                     Write-Verbose "& npm run build" -Verbose:$Verbose
                     & npm run build
 
-                    $continue = $LASTEXITCODE -eq 0
+                    $failedCode = $LASTEXITCODE
+                    $failedStep = "$next: & npm run build"
+                    $continue = $failedCode -eq 0
                 }
-            }
-            else {
-                throw "Could not locate JavaScript path at $path.";
             }
         }
 
@@ -77,17 +81,19 @@ try {
 
                 Write-Verbose "& npm install" -Verbose:$Verbose
                 & npm install
-                $continue = $LASTEXITCODE -eq 0
+
+                $failedCode = $LASTEXITCODE
+                $failedStep = "$next: & npm install"
+                $continue = $failedCode -eq 0
 
                 if($continue) {
                     Write-Verbose "& npm run build" -Verbose:$Verbose
                     & npm run build
 
-                    $continue = $LASTEXITCODE -eq 0
+                    $failedCode = $LASTEXITCODE
+                    $failedStep = "$next: & npm run build"
+                    $continue = $failedCode -eq 0
                 }
-            }
-            else {
-                throw "Could not locate JavaScript path at $path.";
             }
         }
 
@@ -100,10 +106,9 @@ try {
                 Write-Verbose ". ./build.ps1 -Automated:`$Automated -Verbose:`$Verbose" -Verbose:$Verbose
                 . ./build.ps1 -Automated:$Automated -Verbose:$Verbose
 
-                $continue = $LASTEXITCODE -eq 0
-            }
-            else {
-                throw "Could not locate Sample path at $path.";
+                $failedCode = $LASTEXITCODE
+                $failedStep = "$next: . ./build.ps1 -Automated:$Automated -Verbose:$Verbose"
+                $continue = $failedCode -eq 0
             }
         }
 
@@ -115,18 +120,24 @@ try {
 
                 Write-Verbose "& npm install" -Verbose:$Verbose
                 & npm install
-                $continue = $LASTEXITCODE -eq 0
+
+                $failedCode = $LASTEXITCODE
+                $failedStep = "$next: & npm install"
+                $continue = $failedCode -eq 0
 
                 if($continue) {
                     Write-Verbose "& npm run build" -Verbose:$Verbose
                     & npm run build
 
-                    $continue = $LASTEXITCODE -eq 0
+                    $failedCode = $LASTEXITCODE
+                    $failedStep = "$next: & npm run build"
+                    $continue = $failedCode -eq 0
                 }
             }
-            else {
-                throw "Could not locate Sample path at $path.";
-            }
+        }
+
+        if(-not continue) {
+            throw "Exit code $failedCode at step:\n$failedStep"
         }
     }
 
