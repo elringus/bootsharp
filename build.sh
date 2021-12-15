@@ -66,7 +66,7 @@ else
     exit 1
 fi
 
-# Step 2: Build with Powershell
+# Step 3: Build with Powershell
 if [ $(type -t pwsh) ]
 then
     pwsh ./build-all.ps1 $1 $2 $3 $4 $5
