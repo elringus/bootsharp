@@ -32,6 +32,8 @@ try {
         Set-Location $root -Verbose:$Verbose -ErrorAction Stop
         $next = (Get-ChildItem DotNet -ErrorAction Stop -Verbose:$Verbose).FullName
 
+        Write-Verbose "`$next: $next"
+
         Set-Location $next -Verbose:$Verbose -ErrorAction Stop
         $sln = Get-Item ./DotNetJS.sln -Verbose:$Verbose -ErrorAction SilentlyContinue
 
