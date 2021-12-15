@@ -30,7 +30,7 @@ try {
 
     if (-not $NoBuild) {
         Set-Location $root -Verbose:$Verbose -ErrorAction Stop
-        $next = Get-ChildItem Dotnet -ErrorAction Stop -Verbose:$Verbose
+        $next = Get-ChildItem DotNet -ErrorAction Stop -Verbose:$Verbose
 
         Set-Location $next -Verbose:$Verbose -ErrorAction Stop
         $sln = Get-Item ./DotNetJS.sln -Verbose:$Verbose -ErrorAction SilentlyContinue
