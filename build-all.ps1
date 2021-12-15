@@ -136,7 +136,7 @@ try {
             }
         }
 
-        if(-not continue) {
+        if(-not $continue) {
             throw "Exit code $failedCode at step:\n$failedStep"
         }
     }
