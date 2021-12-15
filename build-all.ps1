@@ -18,7 +18,8 @@ Write-Verbose "`$root: $root" -Verbose:$Verbose;
 
 if($Verbose) {
     Set-Location $root -Verbose:$Verbose -ErrorAction Stop
-    Get-ChildItem * -Verbose:$Verbose -ErrorAction Stop -Recurse
+    Get-ChildItem * -Verbose:$Verbose -ErrorAction Stop -Recurse `
+    | format-Table -Property UnixMode, Size, FullName 
 }
 
 try {
