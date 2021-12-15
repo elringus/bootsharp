@@ -28,8 +28,10 @@ try {
     }
 
     if (-not $NoBuild) {
-        $next = Get-ChildItem -Directory $root Dotnet -ErrorAction Stop -Verbose:$Verbose
-        Set-Location $next -Verbose:$Verbose
+        Set-Location $root -Verbose:$Verbose -ErrorAction Stop
+        $next = Get-ChildItem Dotnet -ErrorAction Stop -Verbose:$Verbose
+
+        Set-Location $next -Verbose:$Verbose -ErrorAction Stop
         $sln = Get-Item ./DotNetJS.sln -Verbose:$Verbose -ErrorAction SilentlyContinue
 
         $continue = (Test-Path $sln -ErrorAction SilentlyContinue -Verbose:$Verbose) ?? $false
