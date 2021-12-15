@@ -27,5 +27,5 @@ jobs:
     
     # Runs a single command using the runners shell
     - name: Build
-      run: . ./build.sh -Automated -Verbose
+      run: . ./build.sh -Automated
       
