@@ -45,7 +45,7 @@ try {
             & dotnet build $sln.FullName -v $verbosity
 
             $failedCode = $LASTEXITCODE
-            $failedStep = "& dotnet build `$sln.FullName -v `$verbosity"
+            $failedStep = "& dotnet build $sln.FullName -v $verbosity"
             $continue = $failedCode -eq 0
         }
 
@@ -137,7 +137,7 @@ try {
         }
 
         if(-not $continue) {
-            throw "Exit code $failedCode at step:\n$failedStep"
+            throw "Exit code $failedCode at step:$([System.Environment]::NewLine)$failedStep"
         }
     }
 
