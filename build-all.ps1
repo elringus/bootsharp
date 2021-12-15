@@ -30,9 +30,7 @@ try {
 
     if (-not $NoBuild) {
         Set-Location $root -Verbose:$Verbose -ErrorAction Stop
-        $next = (Get-ChildItem DotNet -ErrorAction Stop -Verbose:$Verbose).FullName
-
-        Write-Verbose "`$next: $next"
+        $next = Resolve-Path $root/DotNet/ -Verbose:$Verbose -ErrorAction Stop
 
         Set-Location $next -Verbose:$Verbose -ErrorAction Stop
         $sln = Get-Item ./DotNetJS.sln -Verbose:$Verbose -ErrorAction SilentlyContinue
@@ -51,7 +49,7 @@ try {
 
         # Build JavaScript JS Interop
         if ($continue) {
-            $next = Resolve-Path $root/JavaScript/dotnet-js-interop/ -Verbose:$Verbose
+            $next = Resolve-Path $root/JavaScript/dotnet-js-interop/ -Verbose:$Verbose -ErrorAction Stop
             if (Test-Path $next -Verbose:$Verbose) {
                 Set-Location $next -Verbose:$Verbose
 
@@ -73,7 +71,7 @@ try {
 
         # Build JavaScript dotnet-runtime
         if ($continue) {
-            $next = Resolve-Path $root/JavaScript/dotnet-runtime/ -Verbose:$Verbose
+            $next = Resolve-Path $root/JavaScript/dotnet-runtime/ -Verbose:$Verbose -ErrorAction Stop
             if (Test-Path $next -Verbose:$Verbose) {
                 Set-Location $next -Verbose:$Verbose
 
@@ -95,7 +93,7 @@ try {
 
         # Build Samples
         if ($continue) {
-            $next = Resolve-Path $root/Samples/HelloWorld/ -Verbose:$Verbose
+            $next = Resolve-Path $root/Samples/HelloWorld/ -Verbose:$Verbose -ErrorAction Stop
             if (Test-Path $next -Verbose:$Verbose) {
                 Set-Location $next -Verbose:$Verbose
 
@@ -111,7 +109,7 @@ try {
 
         # Build Extension
         if ($continue) {
-            $next = Resolve-Path $root/Samples/WebExtension/ -Verbose:$Verbose
+            $next = Resolve-Path $root/Samples/WebExtension/ -Verbose:$Verbose -ErrorAction Stop
             if (Test-Path $next -Verbose:$Verbose) {
                 Set-Location $next -Verbose:$Verbose
 
