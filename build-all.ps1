@@ -17,7 +17,7 @@ $root = Get-Location -Verbose:$Verbose
 Write-Verbose "`$root: $root";
 
 if($Verbose) {
-    Get-ChildItem -Directory $root -Verbose:$Verbose -ErrorAction Stop -Recurse
+    Get-ChildItem * -Directory $root -Verbose:$Verbose -ErrorAction Stop -Recurse
 }
 
 try {
@@ -27,7 +27,8 @@ try {
     }
 
     if (-not $NoBuild) {
-        Set-Location $root/Dotnet -Verbose:$Verbose
+        $next = Get-ChildItem -Directory $root Dotnet -ErrorAction Stop -Verbose:$Verbose
+        Set-Location $next -Verbose:$Verbose
         $sln = Get-Item ./DotNetJS.sln -Verbose:$Verbose -ErrorAction SilentlyContinue
 
         $continue = (Test-Path $sln -ErrorAction SilentlyContinue -Verbose:$Verbose) ?? $false
@@ -44,9 +45,9 @@ try {
 
         # Build JavaScript JS Interop
         if ($continue) {
-            $path = Resolve-Path $root/JavaScript/dotnet-js-interop -Verbose:$Verbose
-            if (Test-Path $path -Verbose:$Verbose) {
-                Set-Location $path -Verbose:$Verbose
+            $next = Resolve-Path $root/JavaScript/dotnet-js-interop/ -Verbose:$Verbose
+            if (Test-Path $next -Verbose:$Verbose) {
+                Set-Location $next -Verbose:$Verbose
 
                 Write-Verbose "& npm install" -Verbose:$Verbose
                 & npm install
@@ -66,9 +67,9 @@ try {
 
         # Build JavaScript dotnet-runtime
         if ($continue) {
-            $path = Resolve-Path $root/JavaScript/dotnet-runtime -Verbose:$Verbose
-            if (Test-Path $path -Verbose:$Verbose) {
-                Set-Location $path -Verbose:$Verbose
+            $next = Resolve-Path $root/JavaScript/dotnet-runtime/ -Verbose:$Verbose
+            if (Test-Path $next -Verbose:$Verbose) {
+                Set-Location $next -Verbose:$Verbose
 
                 Write-Verbose "& npm install" -Verbose:$Verbose
                 & npm install
@@ -88,9 +89,9 @@ try {
 
         # Build Samples
         if ($continue) {
-            $path = Resolve-Path $root/Samples/HelloWorld -Verbose:$Verbose
-            if (Test-Path $path -Verbose:$Verbose) {
-                Set-Location $path -Verbose:$Verbose
+            $next = Resolve-Path $root/Samples/HelloWorld/ -Verbose:$Verbose
+            if (Test-Path $next -Verbose:$Verbose) {
+                Set-Location $next -Verbose:$Verbose
 
                 Write-Verbose ". ./build.ps1 -Automated:`$Automated -Verbose:`$Verbose" -Verbose:$Verbose
                 . ./build.ps1 -Automated:$Automated -Verbose:$Verbose
@@ -104,9 +105,9 @@ try {
 
         # Build Extension
         if ($continue) {
-            $path = Resolve-Path $root/Samples/WebExtension -Verbose:$Verbose
-            if (Test-Path $path -Verbose:$Verbose) {
-                Set-Location $path -Verbose:$Verbose
+            $next = Resolve-Path $root/Samples/WebExtension/ -Verbose:$Verbose
+            if (Test-Path $next -Verbose:$Verbose) {
+                Set-Location $next -Verbose:$Verbose
 
                 Write-Verbose "& npm install" -Verbose:$Verbose
                 & npm install
