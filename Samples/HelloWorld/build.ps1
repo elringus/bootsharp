@@ -44,7 +44,10 @@ try {
         }
     }
     else {
-        Write-Host 'cancelled'
+        ""
+        "---"
+        "Cancelled by user input."
+        ""        
     }
 
     $LASTEXITCODE = 0;
