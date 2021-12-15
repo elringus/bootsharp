@@ -25,8 +25,7 @@ jobs:
     - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-    
+
     # Runs a single command using the runners shell
     - name: Build
       run: . ./build.sh -Automated
-      
