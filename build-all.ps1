@@ -16,11 +16,11 @@ $root = Get-Location -Verbose:$Verbose
 
 Write-Verbose "`$root: $root" -Verbose:$Verbose;
 
-if($Verbose) {
-    Set-Location $root -Verbose:$Verbose -ErrorAction Stop
-    Get-ChildItem * -Verbose:$Verbose -ErrorAction Stop -Recurse `
-    | format-Table -Property UnixMode, Size, FullName 
-}
+# if($Verbose) {
+#     Set-Location $root -Verbose:$Verbose -ErrorAction Stop
+#     Get-ChildItem * -Verbose:$Verbose -ErrorAction Stop -Recurse `
+#     | format-Table -Property UnixMode, Size, FullName 
+# }
 
 try {
     if ($Clean) {
@@ -30,7 +30,7 @@ try {
 
     if (-not $NoBuild) {
         Set-Location $root -Verbose:$Verbose -ErrorAction Stop
-        $next = Get-ChildItem DotNet -ErrorAction Stop -Verbose:$Verbose
+        $next = (Get-ChildItem DotNet -ErrorAction Stop -Verbose:$Verbose).FullName
 
         Set-Location $next -Verbose:$Verbose -ErrorAction Stop
         $sln = Get-Item ./DotNetJS.sln -Verbose:$Verbose -ErrorAction SilentlyContinue
