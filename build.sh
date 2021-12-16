@@ -1,75 +1,220 @@
 #!/bin/bash
 
-pushd $(pwd)
+Automated=false
+Verbose=false
+Clean=false
+NoBuild=false
+Publish=false
+continue=true
 
-# Step 1: Determine if .Net 6.0 and pwershell are Installed
-if [ ! $(type -t dotnet) ]
-then
-    apt=$(type -t apt);
-    if [ $apt ]
-    then
-        echo "Installing libicu with apt."
-        sudo apt install libicu-dev;
-    else
-        yum=$(type -t yum)
-        if [ $yum ]
-        then
-            echo "Installing libicu with yum."
-            sudo yum install libicu;
+for i in $@; do
+    if [ '--automated' == "$i" ]; then
+        Automated=true
+    fi
+    if [ '--verbose' == "$i" ]; then
+        Verbose=true
+    fi
+    if [ '--clean' == "$i" ]; then
+        Clean=true
+    fi
+    if [ '--no-build' == "$i" ]; then
+        NoBuild=true
+    fi
+    if [ '--publish' == "$i" ]; then
+        Publish=true
+    fi
+done
 
-            sudo yum install libicu-devel.x86_64;
+out="/dev/null"
 
-            sudo /usr/bin/pecl install intl;
-        else
-            zypper=$(type -t zypper)
-            if [ $zypper ]
-            then
-                echo "Installing libicu with zypper."
-                sudo zypper install libicu70;
+if $Verbose; then
+    out="/dev/tty"
+fi
+
+pushd $(pwd) >$out
+
+root=$(pwd)
+
+if $Verbose; then
+    echo "Automated: $Automated"
+    echo "Verbose: $Verbose"
+    echo "Clean: $Clean"
+    echo "NoBuild: $NoBuild"
+    echo "Publish: $Publish"
+    echo "root: $root"
+fi
+
+if $Clean; then
+    if $Verbose; then
+        echo "Removing node_modules, obj, bin and dist folders."
+    fi
+    find ${PWD} -type d -name 'node_modules' -exec rm -rf '{}' \;  >$out
+    find ${PWD} -type d -regextype posix-extended -regex '.*/(bin|obj|dist)' -exec rm -rf '{}' \;  >$out
+fi
+
+if (! $NoBuild); then
+    cd $root >$out
+
+    if [ -d "$root/DotNet/" ]; then
+        cd "$root/DotNet/" >$out
+
+        sln="./DotNetJS.sln"
+
+        if [ -f $sln ]; then
+            if $Verbose; then
+                verbosity='d'
+                echo "dotnet build \$sln -v \$verbosity"
+            else
+                verbosity='q'
+            fi
+
+            dotnet build ${sln} -v ${verbosity} >$out
+
+            echo "\`dotnet build ${sln} -v ${verbosity}\` in $(pwd) exited with $?"
+
+            failedCode="$?"
+            failedStep="$(pwd): dotnet build ${sln} -v ${verbosity}"
+            if [ "$failedCode" != "0" ]; then
+                continue=false
             fi
         fi
     fi
 
+    # Build JavaScript JS Interop
+    if $continue; then
+        if [ -d "$root/JavaScript/dotnet-js-interop/" ]; then
+            cd "$root/JavaScript/dotnet-js-interop/" >$out
+
+            if $Verbose; then
+                echo "npm install"
+            fi
+            npm install >$out
+            echo "\`npm install\` in $(pwd) exited with $?"
+
+            failedCode="$?"
+            failedStep="$(pwd): npm install"
+            if [ "$failedCode" != "0" ]; then
+                continue=false
+            fi
+
+            if $continue; then
+                if $Verbose; then
+                    echo "npm run build"
+                fi
+                npm run build >$out
+                echo "\`npm run build\` in $(pwd) exited with $?"
+
+                failedCode="$?"
+                failedStep="$(pwd): npm run build"
+                if [ "$failedCode" != "0" ]; then
+                    continue=false
+                fi
+            fi
+        fi
+    fi
+
+    # Build JavaScript dotnet-runtime
+    if $continue; then
+        if [ -d "$root/JavaScript/dotnet-runtime/" ]; then
+            cd "$root/JavaScript/dotnet-runtime/" >$out
+
+            if $Verbose; then
+                echo "npm install"
+            fi
+            npm install >$out
+            echo "\`npm install\` in $(pwd) exited with $?"
+
+            failedCode="$?"
+            failedStep="$(pwd): npm install"
+            if [ "$failedCode" != "0" ]; then
+                continue=false
+            fi
+
+            if $continue; then
+                if $Verbose; then
+                    echo "npm run build"
+                fi
+                npm run build >$out
+                echo "\`npm run build\` in $(pwd) exited with $?"
+
+                failedCode="$?"
+                failedStep="$(pwd): npm run build"
+                if [ "$failedCode" != "0" ]; then
+                    continue=false
+                fi
+            fi
+        fi
+    fi
+
+    # Build Samples
+    if $continue; then
+        if [ -d "$root/Samples/HelloWorld/" ]; then
+            cd "$root/Samples/HelloWorld/" >$out
+
+            if $Automated; then
+                automate="--automated"
+            fi
+
+            if $Verbose; then
+                vrbse="--verbose"
+                echo ". ./build.sh $automate $vrbse"
+            fi
+
+            /bin/bash $(pwd)/build.sh ${automate} ${vrbse}
+
+            failedCode="$?"
+            failedStep="${next}: . ./build.sh ${automate} ${vrbse}"
+            if [ "$failedCode" != "0" ]; then
+                continue=false
+            fi
+        fi
+    fi
+
+    # Build Extension
+    if $continue; then
+        if [ -d "$root/Samples/WebExtension/" ]; then
+            cd "$root/Samples/WebExtension/" >$out
+
+            if $Verbose; then
+                echo "npm install"
+            fi
+            npm install >$out
+            echo "\`npm install\` in $(pwd) exited with $?"
+
+            failedCode="$?"
+            failedStep="$(pwd): npm install"
+            if [ "$failedCode" != "0" ]; then
+                continue=false
+            fi
+
+            if $continue; then
+                if $Verbose; then
+                    echo "npm run build"
+                fi
+                npm run build >$out
+                echo "\`npm run build\` in $(pwd) exited with $?"
+
+                failedCode="$?"
+                failedStep="$(pwd): npm run build"
+                if [ "$failedCode" != "0" ]; then
+                    continue=false
+                fi
+            fi
+        fi
+    fi
+
+    if ! $continue; then
+        echo "Exit code ${failedCode} at step: $failedStep"
+    fi
+
     echo
-
-    url="https://download.visualstudio.microsoft.com/download/pr/17b6759f-1af0-41bc-ab12-209ba0377779/e8d02195dbf1434b940e0f05ae086453/dotnet-sdk-6.0.100-linux-x64.tar.gz";
-    echo "Downlading $url"
-    curl -o dotnet-sdk-6.0.100-linux-x64.tar.gz --verbose $url;
-    echo "Extracting to $HOME/dotnet"
-    mkdir -p $HOME/dotnet && tar zxf dotnet-sdk-6.0.100-linux-x64.tar.gz -C $HOME/dotnet;
-
-    echo "Exporting variables."
-    export DOTNET_ROOT=$HOME/dotnet;
-    export PATH=$PATH:$HOME/dotnet:$HOME/.dotnet/tools;
-
-    dotnet=$(type -t dotnet);
-    echo "dotnet: $dotnet"
-
-    echo "Updating ~/.profile"
-    echo "export DOTNET_ROOT=\$HOME/dotnet" >> ~/.profile;
-    echo "export PATH=\$PATH:\$HOME/dotnet:\$HOME/.dotnet/tools" >> ~/.profile;
-else
-    echo "dotnet found to be type: $(type -t dotnet)"
-    which dotnet
+    echo "---"
+    echo "Successfully built all portions of the repository!"
+    echo
 fi
 
-# Step 2: Install/Update Powershell
-if [ $(type -t dotnet) ]
-then
-    echo "Installing or Updating PowerShell as dotnet tool."
-    # Install Powershell
-    dotnet tool update powershell -g
-
-    pwsh --version
-else
-    echo "Dotnet not found and unable to install it."
-    exit 1
+if $Publish; then
+    echo "Steps to publish the components go here."
 fi
 
-# Step 3: Build with Powershell
-if [ $(type -t pwsh) ]
-then
-    pwsh ./build-all.ps1 $1 $2 $3 $4 $5
-else
-    echo "Powershell still not found.  Aborting."
-fi
+popd >$out
