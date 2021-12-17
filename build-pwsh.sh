@@ -1,8 +1,9 @@
 #!/bin/bash
 
-pushd $(pwd)
+pushd "$(pwd)" || exit
 
 # Step 1: Determine if .Net 6.0 and pwershell are Installed
+# shellcheck disable=SC2046
 if [ ! $(type -t dotnet) ]
 then
     apt=$(type -t apt);
@@ -54,6 +55,7 @@ else
 fi
 
 # Step 2: Install/Update Powershell
+# shellcheck disable=SC2046
 if [ $(type -t dotnet) ]
 then
     echo "Installing or Updating PowerShell as dotnet tool."
@@ -67,6 +69,7 @@ else
 fi
 
 # Step 3: Build with Powershell
+# shellcheck disable=SC2046
 if [ $(type -t pwsh) ]
 then
     pwsh ./build-all.ps1 $1 $2 $3 $4 $5

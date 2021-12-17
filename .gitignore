@@ -15,3 +15,5 @@ dist
 
 JavaScript/dotnet-runtime/native/emsdk
 JavaScript/dotnet-runtime/native/runtime
+/dotnet-sdk-6.0.100-linux-x64.tar.gz
+.run/WSL Default on 2222.run.xml

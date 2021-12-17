@@ -2,111 +2,145 @@
 
 Automated=false
 Verbose=false
-continue=true
+failed=0
 
 for i in $@; do
-    if [ '--automated' == "$i" ]; then
-        Automated=true
-    fi
-    if [ '--verbose' == "$i" ]; then
-        Verbose=true
-    fi
+  if [ '--automated' == "$i" ]; then
+    Automated=true
+  fi
+  if [ '--verbose' == "$i" ]; then
+    Verbose=true
+  fi
 done
 
-out="/dev/null"
+out="&> /dev/null"
 
 if $Verbose; then
-    out="/dev/tty"
+  out=""
 fi
 
-pushd $(pwd) >$out
+function Verbose {
+  if $Verbose; then
+    echo "$1" &> ${out}
+  fi
+}
+
+function Execute {
+  command=$1
+
+  Verbose ${command}
+
+  failedCode=$(${command})
+
+  echo "\`${command}\` in $(pwd) exited with ${failedCode}"
+
+  return $failedCode
+}
+
+function NpmExecute {
+  fail=$1
+  path=$2
+
+  if ! $fail; then
+    if [ -d ${path} ]; then
+      Verbose "${path} exists."
+      cd ${path} &> ${out}
+
+      failed=$(Execute "npm install &> ${out}")
+
+      if ! $failed; then
+        failed=$(Execute "npm run build &> ${out}")
+      fi
+
+      return $failed
+    fi
+  fi
+
+  return 0
+}
+
+pushd "$(pwd)" &> ${out}
 
 root=$(pwd)
 
 if $Verbose; then
-    echo "Automated: $Automated"
-    echo "Verbose: $Verbose"
-    echo "root: $root"
+  echo "Automated: $Automated"
+  echo "Verbose: $Verbose"
+  echo "root: $root"
 fi
 
-cd Project >$out
+if [ -d "$(pwd)/Project" ]; then
+  Verbose "$(pwd)/Project exists"
+  cd Project &> ${out}
 
-if $Verbose; then
+  if $Verbose; then
     verbosity='d'
-    echo "dotnet build \$sln -v \$verbosity"
-else
+  else
     verbosity='q'
-fi
+  fi
 
-sln="."
+  sln="."
 
-dotnet publish ${sln} -v ${verbosity} >$out
+  failed=$(Execute "dotnet publish ${sln} -v ${verbosity} &> ${out}")
 
-echo "\`dotnet publish ${sln} -v ${verbosity}\` in $(pwd) exited with $?"
+  popd &> ${out}
+  popped=true
 
-popd >$out
-popped=true
+  page="${PWD}/global.html"
 
-page="${PWD}/global.html"
+  Verbose "\${page}: ${page}"
 
-if $Verbose; then
-    echo "\${page}: ${page}"
-fi
-
-if (! ${Automated}); then
+  if (! ${Automated}); then
     if (type -f 'xdg-open'); then
-        xdg-open $page >$out
+      Verbose "Launching browser..."
+      xdg-open $page &> ${out}
 
-        title='Confirmation'
-        question='Was publishing successful?'
+      title='Confirmation'
+      question='Was publishing successful?'
 
-        echo
-        echo "$title"
-        echo "$question"
-        select yn in "Yes" "No"; do
-            case $yn in
-            Yes)
-                decision=true
-                break
-                ;;
-            No)
-                decision=false
-                break
-                ;;
-            esac
-        done
+      echo
+      echo "$title"
+      echo "$question"
+      select yn in "Yes" "No"; do
+        case $yn in
+        Yes)
+          decision=true
+          break
+          ;;
+        No)
+          decision=false
+          break
+          ;;
+        esac
+      done
     else
-        decision=true
+      decision=true
     fi
-else
+  else
     decision=true
-fi
+  fi
 
-if $decision; then
-    node common.js &>$out
+  if $decision; then
+    failed=$(Execute "node common.js &> ${out}")
 
-    echo "\`common.js\` in $(pwd) exited with $?"
-
-    if [ "$?" != "0" ]; then
-        exit $?
+    if ${failed}; then
+      exit ${failed}
     fi
 
-    node es.mjs &>$out
+    failed=$(Execute "node es.mjs &> ${out}")
 
-    echo "\`es.mjs\` in $(pwd) exited with $?"
-
-    if [ "$?" != "0" ]; then
-        exit $?
+    if ${failed}; then
+      exit ${failed}
     fi
-else
+  else
     echo
     echo "---"
     echo "Cancelled by user input."
     echo
+  fi
 fi
-
 if (! ${popped}); then
-    popd >$out
+  popd &> ${out}
 fi
 
-exit 0
+exit ${failed}

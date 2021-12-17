@@ -5,216 +5,192 @@ Verbose=false
 Clean=false
 NoBuild=false
 Publish=false
-continue=true
+failed=0
 
+# shellcheck disable=SC2068
 for i in $@; do
-    if [ '--automated' == "$i" ]; then
-        Automated=true
-    fi
-    if [ '--verbose' == "$i" ]; then
-        Verbose=true
-    fi
-    if [ '--clean' == "$i" ]; then
-        Clean=true
-    fi
-    if [ '--no-build' == "$i" ]; then
-        NoBuild=true
-    fi
-    if [ '--publish' == "$i" ]; then
-        Publish=true
-    fi
+  if [ '--automated' == "$i" ]; then
+    Automated=true
+  fi
+  if [ '--verbose' == "$i" ]; then
+    Verbose=true
+  fi
+  if [ '--clean' == "$i" ]; then
+    Clean=true
+  fi
+  if [ '--no-build' == "$i" ]; then
+    NoBuild=true
+  fi
+  if [ '--publish' == "$i" ]; then
+    Publish=true
+  fi
 done
 
-out="/dev/null"
+out='/dev/null'
 
 if $Verbose; then
-    out="/dev/tty"
+  out="/dev/tty"
 fi
 
-pushd $(pwd) >$out
+function Verbose {
+  if $Verbose; then
+    echo "$1" &> ${out}
+  fi
+}
+
+function Execute {
+  command=$1
+
+  Verbose ${command}
+
+  result=$(${command})
+  failedCode=$?
+  echo "48: (${failedCode}) :: while executing [${command}] :: \${result}: [${result}]" &> /dev/tty
+  
+  if [ "${failedCode}" != "0" ] ; then
+    "51: Failure (${failedCode}) executing command: [${command}]"
+    return ${failedCode}
+  fi
+
+  echo "\`${command}\` in $(pwd) exited successfully." &> /dev/tty
+
+  "57: (${failedCode}) [${command}]"
+  return $failedCode
+}
+
+function NpmExecute {
+  path=$2
+  
+  if [ ! -d ${path} ]; then
+    "71: Failed to execute NPM because \${path}: ${path} is not found."
+    return 126;
+  fi
+
+  if [ -d ${path} ]; then
+    Verbose "${path} exists."
+    cd ${path} &> ${out}
+
+    result=$(Execute "npm install &> ${out}")
+    fail=$?
+    echo "81: (${fail}): [${result}]" &> ${out}
+
+    if [ "${fail}" != "0" ] ; then
+      "84: Failure (${fail}) executing command: [npm install] :: \${result}: [${result}]"
+      return ${fail}
+    fi
+  fi
+
+  "89: (${fail}) :: [${result}]"
+  return ${fail}
+}
+
+function ExitIfFailed {
+  fail=$1
+  message=$2
+  
+  if [ "${fail}" != "0" ] ; then
+    echo "FAILED: (${fail}): ${message}" > /dev/tty
+    exit ${fail}
+  fi
+}
+
+echo "\${out}: ${out}"
+
+# shellcheck disable=SC2046
+pushd $(pwd) &> ${out}
 
 root=$(pwd)
 
 if $Verbose; then
-    echo "Automated: $Automated"
-    echo "Verbose: $Verbose"
-    echo "Clean: $Clean"
-    echo "NoBuild: $NoBuild"
-    echo "Publish: $Publish"
-    echo "root: $root"
+  echo "Automated: $Automated"
+  echo "Verbose: $Verbose"
+  echo "Clean: $Clean"
+  echo "NoBuild: $NoBuild"
+  echo "Publish: $Publish"
+  echo "root: ${root}"
 fi
 
 if $Clean; then
-    if $Verbose; then
-        echo "Removing node_modules, obj, bin and dist folders."
-    fi
-    find ${PWD} -type d -name 'node_modules' -exec rm -rf '{}' \;  >$out
-    find ${PWD} -type d -regextype posix-extended -regex '.*/(bin|obj|dist)' -exec rm -rf '{}' \;  >$out
+  Verbose "Removing node_modules, obj, bin and dist folders."
+  find "${PWD}" -type d -name 'node_modules' -exec rm -rf '{}' \; &> ${out}
+  find "${PWD}" -type d -regextype posix-extended -regex '.*/(bin|obj|dist)' -exec rm -rf '{}' \; &> ${out}
+else
+  Verbose "Clean not requested (\$Clean: $Clean)"
 fi
 
 if (! $NoBuild); then
-    cd $root >$out
+  Verbose "Building..."
 
-    if [ -d "$root/DotNet/" ]; then
-        cd "$root/DotNet/" >$out
+  cd ${root} &> ${out}
 
-        sln="./DotNetJS.sln"
+  if [ -d "${root}/DotNet/" ]; then
+    Verbose "${root}/DotNet/ exists."
 
-        if [ -f $sln ]; then
-            if $Verbose; then
-                verbosity='d'
-                echo "dotnet build \$sln -v \$verbosity"
-            else
-                verbosity='q'
-            fi
+    cd "${root}/DotNet/" &> ${out}
 
-            dotnet build ${sln} -v ${verbosity} >$out
+    sln="./DotNetJS.sln"
 
-            echo "\`dotnet build ${sln} -v ${verbosity}\` in $(pwd) exited with $?"
+    if [ -f $sln ]; then
+      Verbose "${sln} exists."
 
-            failedCode="$?"
-            failedStep="$(pwd): dotnet build ${sln} -v ${verbosity}"
-            if [ "$failedCode" != "0" ]; then
-                continue=false
-            fi
-        fi
+      if $Verbose; then
+        verbosity='d'
+      else
+        verbosity='q'
+      fi
+
+      result=$(Execute "dotnet build ${sln} -v ${verbosity} &> ${out}")
+      failed=$?
+      ExitIfFailed ${failed} ${result}
+    fi
+  fi
+
+  # Build JavaScript JS Interop
+  result="[LINE 155] $(NpmExecute $failed "${root}/JavaScript/dotnet-js-interop/")"
+  failed=$?
+  ExitIfFailed ${failed} ${result}
+
+  # Build JavaScript dotnet-runtime
+  result="[LINE 160] $(NpmExecute $failed "${root}/JavaScript/dotnet-runtime/")"
+  failed=$?
+  ExitIfFailed ${failed} ${result}
+
+  # Build Samples
+  if [ -d "${root}/Samples/HelloWorld/" ]; then
+    Verbose "${root}/Samples/HelloWorld/ exists."
+    cd "${root}/Samples/HelloWorld/" &> ${out}
+
+    if $Automated; then
+      automate="--automated"
     fi
 
-    # Build JavaScript JS Interop
-    if $continue; then
-        if [ -d "$root/JavaScript/dotnet-js-interop/" ]; then
-            cd "$root/JavaScript/dotnet-js-interop/" >$out
-
-            if $Verbose; then
-                echo "npm install"
-            fi
-            npm install >$out
-            echo "\`npm install\` in $(pwd) exited with $?"
-
-            failedCode="$?"
-            failedStep="$(pwd): npm install"
-            if [ "$failedCode" != "0" ]; then
-                continue=false
-            fi
-
-            if $continue; then
-                if $Verbose; then
-                    echo "npm run build"
-                fi
-                npm run build >$out
-                echo "\`npm run build\` in $(pwd) exited with $?"
-
-                failedCode="$?"
-                failedStep="$(pwd): npm run build"
-                if [ "$failedCode" != "0" ]; then
-                    continue=false
-                fi
-            fi
-        fi
+    if $Verbose; then
+      vrbse="--verbose"
     fi
 
-    # Build JavaScript dotnet-runtime
-    if $continue; then
-        if [ -d "$root/JavaScript/dotnet-runtime/" ]; then
-            cd "$root/JavaScript/dotnet-runtime/" >$out
+    result="[LINE 177] $(Execute "/bin/bash \"$(pwd)/build.sh\" ${automate} ${vrbse}")"
+    failed=$?
+    ExitIfFailed ${failed} ${result}
+  fi
 
-            if $Verbose; then
-                echo "npm install"
-            fi
-            npm install >$out
-            echo "\`npm install\` in $(pwd) exited with $?"
+  # Build Extension
+  result="[LINE 183] $(NpmExecute $failed "${root}/Samples/WebExtension/")"
+  failed=$?
+  ExitIfFailed ${failed} ${result}
 
-            failedCode="$?"
-            failedStep="$(pwd): npm install"
-            if [ "$failedCode" != "0" ]; then
-                continue=false
-            fi
-
-            if $continue; then
-                if $Verbose; then
-                    echo "npm run build"
-                fi
-                npm run build >$out
-                echo "\`npm run build\` in $(pwd) exited with $?"
-
-                failedCode="$?"
-                failedStep="$(pwd): npm run build"
-                if [ "$failedCode" != "0" ]; then
-                    continue=false
-                fi
-            fi
-        fi
-    fi
-
-    # Build Samples
-    if $continue; then
-        if [ -d "$root/Samples/HelloWorld/" ]; then
-            cd "$root/Samples/HelloWorld/" >$out
-
-            if $Automated; then
-                automate="--automated"
-            fi
-
-            if $Verbose; then
-                vrbse="--verbose"
-                echo ". ./build.sh $automate $vrbse"
-            fi
-
-            /bin/bash $(pwd)/build.sh ${automate} ${vrbse}
-
-            failedCode="$?"
-            failedStep="${next}: . ./build.sh ${automate} ${vrbse}"
-            if [ "$failedCode" != "0" ]; then
-                continue=false
-            fi
-        fi
-    fi
-
-    # Build Extension
-    if $continue; then
-        if [ -d "$root/Samples/WebExtension/" ]; then
-            cd "$root/Samples/WebExtension/" >$out
-
-            if $Verbose; then
-                echo "npm install"
-            fi
-            npm install >$out
-            echo "\`npm install\` in $(pwd) exited with $?"
-
-            failedCode="$?"
-            failedStep="$(pwd): npm install"
-            if [ "$failedCode" != "0" ]; then
-                continue=false
-            fi
-
-            if $continue; then
-                if $Verbose; then
-                    echo "npm run build"
-                fi
-                npm run build >$out
-                echo "\`npm run build\` in $(pwd) exited with $?"
-
-                failedCode="$?"
-                failedStep="$(pwd): npm run build"
-                if [ "$failedCode" != "0" ]; then
-                    continue=false
-                fi
-            fi
-        fi
-    fi
-
-    if ! $continue; then
-        echo "Exit code ${failedCode} at step: $failedStep"
-    fi
-
-    echo
-    echo "---"
-    echo "Successfully built all portions of the repository!"
-    echo
+  echo
+  echo "---"
+  echo "Successfully built all portions of the repository!"
+  echo
+else
+  Verbose "No-Build requested  (\$NoBuild: $NoBuild)"
 fi
 
 if $Publish; then
-    echo "Steps to publish the components go here."
+  echo "Steps to publish the components go here."
+else
+  Verbose "Publish not requested (\$Publish: $Publish)"
 fi
 
-popd >$out
+popd &> ${out}
+exit ${failedCode}

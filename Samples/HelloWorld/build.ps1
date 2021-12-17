@@ -47,7 +47,7 @@ try {
         ""
         "---"
         "Cancelled by user input."
-        ""        
+        ""
     }
 
     $LASTEXITCODE = 0;
