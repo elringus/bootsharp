@@ -1,6 +1,6 @@
 ﻿namespace Packer
 {
-    public class Assembly
+    internal class Assembly
     {
         public string Name { get; }
         public string Base64 { get; }

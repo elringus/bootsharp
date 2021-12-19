@@ -2,7 +2,7 @@
 
 namespace Packer
 {
-    public class Argument
+    internal class Argument
     {
         public string Name { get; }
         public string Type { get; }

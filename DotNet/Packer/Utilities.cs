@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace Packer
 {
-    public static class Utilities
+    internal static class Utilities
     {
         public static IEnumerable<string> SplitLines (string input)
         {

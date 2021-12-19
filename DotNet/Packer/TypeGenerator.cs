@@ -6,7 +6,7 @@ using static Packer.Utilities;
 
 namespace Packer
 {
-    public class TypeGenerator
+    internal class TypeGenerator
     {
         private readonly Stack<string> declaredAssemblies = new Stack<string>();
         private readonly List<TypeDefinition> definitions = new List<TypeDefinition>();

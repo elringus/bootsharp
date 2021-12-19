@@ -1,6 +1,6 @@
 ﻿namespace Packer
 {
-    public static class Attributes
+    internal static class Attributes
     {
         public const string Invokable = "JSInvokableAttribute";
         public const string Function = "JSFunctionAttribute";

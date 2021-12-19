@@ -4,7 +4,7 @@ using static Packer.Utilities;
 
 namespace Packer
 {
-    public class SourceGenerator
+    internal class SourceGenerator
     {
         private const string exports = "exports";
         private const string moduleTemplate = @"%RUNTIME_JS%

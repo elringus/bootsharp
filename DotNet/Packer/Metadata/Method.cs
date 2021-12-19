@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Packer
 {
-    public class Method
+    internal class Method
     {
         public string Name { get; }
         public string Assembly { get; }

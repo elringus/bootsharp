@@ -1,6 +1,6 @@
 ﻿namespace Packer
 {
-    public class TypeDefinition
+    internal class TypeDefinition
     {
         public string FileName { get; }
         public string Source { get; }

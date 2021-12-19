@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Packer
 {
-    public static class TypeConversion
+    internal static class TypeConversion
     {
         public static string ToTypeScript (Type type)
         {

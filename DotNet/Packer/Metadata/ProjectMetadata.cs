@@ -9,7 +9,7 @@ using static Packer.Utilities;
 
 namespace Packer
 {
-    public class ProjectMetadata
+    internal class ProjectMetadata
     {
         public IReadOnlyList<Assembly> Assemblies => assemblies;
         public IReadOnlyList<Method> InvokableMethods => invokableMethods;
