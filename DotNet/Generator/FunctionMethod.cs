@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -24,8 +23,7 @@ namespace Generator
         {
             var model = compilation.GetSemanticModel(syntax.SyntaxTree);
             var symbol = model.GetEnclosingSymbol(syntax.SpanStart);
-            if (symbol is null) throw new InvalidOperationException("Failed to get assembly name.");
-            return symbol.ContainingAssembly.Identity.Name;
+            return symbol?.ContainingAssembly.Identity.Name;
         }
 
         private string EmitSignature ()
@@ -45,8 +43,8 @@ namespace Generator
             var returnType = syntax.ReturnType.ToString();
             return
                 returnType is "void" ? "Invoke" :
-                returnType is "ValueTask" ? "InvokeAsync" :
-                returnType.Contains("ValueTask") ? $"InvokeAsync<{returnType.Substring(10, returnType.Length - 11)}>" :
+                returnType is "ValueTask" || returnType is "Task" ? "InvokeAsync" :
+                returnType.Contains("Task") ? $"InvokeAsync<{returnType.Substring(10, returnType.Length - 11)}>" :
                 $"Invoke<{returnType}>";
         }
 
@@ -55,7 +53,7 @@ namespace Generator
             var args = $"\"DotNetJS_functions_{assembly.Replace('.', '_')}_{syntax.Identifier.ToString()}\"";
             if (syntax.ParameterList.Parameters.Count == 0) return args;
             var ids = syntax.ParameterList.Parameters.Select(p => p.Identifier);
-            args += $", {string.Join(",", ids)}";
+            args += $", {string.Join(", ", ids)}";
             return args;
         }
     }
