@@ -10,7 +10,7 @@ public static class Program
 
     static Program ()
     {
-        JS.ConfigureJson(options =>
+        JS.Runtime.ConfigureJson(options =>
             options.Converters.Add(new JsonStringEnumConverter())
         );
     }
