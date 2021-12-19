@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetJS.Test", "DotNetJS.T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Generator.Test", "Generator.Test\Generator.Test.csproj", "{B17E4577-6391-4669-9B12-083CA18ADF33}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Packer.Test", "Packer.Test\Packer.Test.csproj", "{62571679-675C-4E85-AB3F-5C243920EE6B}"
+EndProject
 Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8D23B7D8-3E5D-420D-80FF-6A437B03D303}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -21,6 +23,8 @@ Global
 		{AEE52DF2-26C4-479B-B62D-14B58903BCE7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B17E4577-6391-4669-9B12-083CA18ADF33}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B17E4577-6391-4669-9B12-083CA18ADF33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62571679-675C-4E85-AB3F-5C243920EE6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62571679-675C-4E85-AB3F-5C243920EE6B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Release|Any CPU = Release|Any CPU
