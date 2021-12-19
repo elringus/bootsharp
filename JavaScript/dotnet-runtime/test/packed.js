@@ -1,15 +1,15 @@
 ﻿// noinspection JSCheckFunctionSignatures,JSUnresolvedFunction,JSUnresolvedVariable
 
 const assert = require("assert");
-const { packed, getGeneratedTypes, getGeneratedMap } = require("./project");
+const { packed, getGeneratedTypes, getGeneratedMap } = require("./csharp");
 
 describe("packed library", () => {
     after(packed.terminate);
     it("throws on boot when a C#-declared function is missing implementation", async () => {
-        await assert.rejects(packed.boot, /Function 'dotnet.Test.Project.EchoFunction' is not implemented\./);
+        await assert.rejects(packed.boot, /Function 'dotnet.Test.Main.EchoFunction' is not implemented\./);
     });
     it("allows providing implementation for functions declared in C#", () => {
-        packed.Test.Project.EchoFunction = value => value;
+        packed.Test.Main.EchoFunction = value => value;
     });
     it("can boot without specifying boot data", async () => {
         await assert.doesNotReject(packed.boot);
@@ -26,11 +26,11 @@ describe("packed library", () => {
         assert(packed.createStreamReference instanceof Function);
     });
     it("provides exposed C# methods grouped under assembly object", async () => {
-        assert.deepStrictEqual(packed.Test.Project.JoinStrings("a", "b"), "ab");
-        assert.deepStrictEqual(await packed.Test.Project.JoinStringsAsync("c", "d"), "cd");
+        assert.deepStrictEqual(packed.Test.Main.JoinStrings("a", "b"), "ab");
+        assert.deepStrictEqual(await packed.Test.Main.JoinStringsAsync("c", "d"), "cd");
     });
     it("can interop via functions declared in C#", async () => {
-        assert.deepStrictEqual(packed.Test.Project.TestEchoFunction("a"), "a");
+        assert.deepStrictEqual(packed.Test.Main.TestEchoFunction("a"), "a");
     });
     it("still can interop via strings", async () => {
         assert.deepStrictEqual(packed.invoke("Test.Project", "JoinStrings", "a", "b"), "ab");
@@ -71,7 +71,7 @@ export declare const invokeAsync: <T>(assembly: string, method: string, ...args:
 export declare const createObjectReference: (object: any) => any;
 export declare const disposeObjectReference: (objectReference: any) => void;
 export declare const createStreamReference: (buffer: Uint8Array | any) => any;
-export declare const Test: { Project: {
+export declare const Test: { Main: {
     EchoFunction: (value: string) => string,
     TestEchoFunction: (value: string) => string,
     CreateInstance: () => any,

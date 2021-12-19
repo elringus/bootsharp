@@ -2,7 +2,7 @@
 using DotNetJS;
 using Microsoft.JSInterop;
 
-namespace Test.Project;
+namespace Test.Main;
 
 public static class Program
 {

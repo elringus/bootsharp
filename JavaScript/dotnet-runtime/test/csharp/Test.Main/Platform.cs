@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using DotNetJS;
 using Microsoft.JSInterop;
 
-namespace Test.Project;
+namespace Test.Main;
 
 public static class Platform
 {
@@ -32,7 +32,7 @@ public static class Platform
         await client.ConnectAsync(new Uri(uri), cts.Token);
         var buffer = Encoding.UTF8.GetBytes(message);
         await client.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, cts.Token);
-        var result = await client.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token);
+        await client.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token);
         return Encoding.UTF8.GetString(buffer);
     }
 

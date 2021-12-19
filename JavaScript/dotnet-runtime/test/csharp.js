@@ -3,8 +3,8 @@ const fs = require("fs");
 const assert = require("assert");
 const dotnet = require("../dist/dotnet");
 
-assertPathExists("test/project/bin/dotnet.js");
-exports.packed = require("./project/bin/dotnet");
+assertPathExists("test/csharp/Test.Main/bin/dotnet.js");
+exports.packed = require("./csharp/Test.Main/bin/dotnet");
 exports.bootTest = bootTest;
 exports.getBootData = getBootData;
 exports.getGeneratedTypes = getGeneratedTypes;
@@ -19,18 +19,18 @@ function getBootData() {
     return {
         wasm: loadWasmBinary(),
         assemblies: loadAssemblies(),
-        entryAssemblyName: "Test.Project.dll"
+        entryAssemblyName: "Test.Main.dll"
     };
 }
 
 function getGeneratedTypes() {
-    const file = path.resolve("test/project/bin/dotnet.d.ts");
+    const file = path.resolve("test/csharp/Test.Main/bin/dotnet.d.ts");
     assertPathExists(file);
     return fs.readFileSync(file).toString();
 }
 
 function getGeneratedMap() {
-    const file = path.resolve("test/project/bin/dotnet.js.map");
+    const file = path.resolve("test/csharp/Test.Main/bin/dotnet.js.map");
     assertPathExists(file);
     return fs.readFileSync(file).toString();
 }
@@ -50,7 +50,7 @@ function loadAssemblies() {
 
 function findAssemblies() {
     let assemblyPaths = [];
-    const dirPath = path.resolve("test/project/bin/Release/net6.0/publish/wwwroot/_framework");
+    const dirPath = path.resolve("test/csharp/Test.Main/bin/Release/net6.0/publish/wwwroot/_framework");
     assertPathExists(dirPath);
     for (const fileName of fs.readdirSync(dirPath))
         if (fileName.endsWith(".dll"))

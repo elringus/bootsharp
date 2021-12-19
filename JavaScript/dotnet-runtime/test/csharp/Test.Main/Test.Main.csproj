@@ -1,27 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
-        <Configuration>Release</Configuration>
         <TargetFramework>net6.0</TargetFramework>
         <EmitSourceMap>true</EmitSourceMap>
         <EmitTypes>true</EmitTypes>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>
-        <DotNetRoot>../../../../DotNet</DotNetRoot>
+        <DotNetRoot>../../../../../DotNet</DotNetRoot>
         <!--<RunAOTCompilation>true</RunAOTCompilation>-->
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="$(DotNetRoot)/DotNetJS/DotNetJS.csproj"/>
         <ProjectReference Include="$(DotNetRoot)/Generator/Generator.csproj" OutputItemType="Analyzer"/>
+        <ProjectReference Include="../Test.Types/Test.Types.csproj"/>
     </ItemGroup>
 
     <Import Project="$(DotNetRoot)/DotNetJS/build/DotNetJS.targets"/>
 
     <PropertyGroup>
         <PackerAssembly>../../../DotNet/Packer/bin/Release/netstandard2.0/publish/Packer.dll</PackerAssembly>
-        <JSDir>../../dist</JSDir>
-        <WasmFile>../../native/dotnet.wasm</WasmFile>
+        <JSDir>../../../dist</JSDir>
+        <WasmFile>../../../native/dotnet.wasm</WasmFile>
     </PropertyGroup>
 
 </Project>

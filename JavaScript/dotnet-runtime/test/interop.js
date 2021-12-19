@@ -1,9 +1,9 @@
 ﻿const assert = require("assert");
 const dotnet = require("../dist/dotnet");
-const { bootTest } = require("./project");
+const { bootTest } = require("./csharp");
 
-const invoke = (name, ...args) => dotnet.invoke("Test.Project", name, ...args);
-const invokeAsync = (name, ...args) => dotnet.invokeAsync("Test.Project", name, ...args);
+const invoke = (name, ...args) => dotnet.invoke("Test.Main", name, ...args);
+const invokeAsync = (name, ...args) => dotnet.invokeAsync("Test.Main", name, ...args);
 
 describe("interop when not booted", () => {
     it("throws when attempting to use", () => {
@@ -48,7 +48,7 @@ describe("interop", () => {
                 { id: "tractor", trackType: "Rubber", maxSpeed: 15.9 }
             ]
         };
-        const actual = invoke("EchoRegistry", expected);
+        const actual = dotnet.invoke("Test.Types", "EchoRegistry", expected);
         assert.deepStrictEqual(actual, expected);
     });
     it("can process custom data types", () => {
@@ -56,7 +56,7 @@ describe("interop", () => {
             wheeled: [{ maxSpeed: 1 }],
             tracked: [{ maxSpeed: 2 }]
         };
-        assert.deepStrictEqual(invoke("CountTotalSpeed", registry), 3);
+        assert.deepStrictEqual(dotnet.invoke("Test.Types", "CountTotalSpeed", registry), 3);
     });
     it("can invoke js function from dotnet", () => {
         let invokedFromDotNet = false;

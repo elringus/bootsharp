@@ -1,4 +1,4 @@
-﻿namespace Test.Project.Types;
+﻿namespace Test.Types;
 
 public class Wheeled : Vehicle
 {

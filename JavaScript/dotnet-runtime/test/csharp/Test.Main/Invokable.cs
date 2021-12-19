@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using DotNetJS;
 using Microsoft.JSInterop;
 
-namespace Test.Project;
+namespace Test.Main;
 
 public static class Invokable
 {
