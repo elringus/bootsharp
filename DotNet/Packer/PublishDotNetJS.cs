@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
 namespace Packer
 {
-    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
     public class PublishDotNetJS : Task
     {
         [Required] public string BaseDir { get; set; }
-        [Required] public string OutDir { get; set; }
+        [Required] public string BlazorOutDir { get; set; }
         [Required] public string JSDir { get; set; }
         [Required] public string WasmFile { get; set; }
         [Required] public string EntryAssemblyName { get; set; }
@@ -30,18 +28,12 @@ namespace Packer
 
         public override bool Execute ()
         {
-            LoadProjectMetadata();
+            project.LoadAssemblies(BlazorOutDir);
             var librarySource = GenerateLibrarySource();
             PublishLibrary(librarySource);
             if (EmitSourceMap) PublishSourceMap();
             if (EmitTypes) PublishTypes();
             return true;
-        }
-
-        private void LoadProjectMetadata ()
-        {
-            var blazorOutDir = Path.Combine(OutDir, "publish/wwwroot/_framework");
-            project.LoadAssemblies(blazorOutDir);
         }
 
         private string GenerateLibrarySource ()

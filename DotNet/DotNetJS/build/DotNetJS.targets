@@ -21,7 +21,7 @@
 
     <Target Name="PublishDotNetJS" AfterTargets="Publish">
         <PublishDotNetJS BaseDir="$(BaseOutputPath)"
-                         OutDir="$(OutDir)"
+                         BlazorOutDir="$(OutDir)/publish/wwwroot/_framework"
                          JSDir="$(JSDir)"
                          WasmFile="$(WasmFile)"
                          EntryAssemblyName="$(AssemblyName)"

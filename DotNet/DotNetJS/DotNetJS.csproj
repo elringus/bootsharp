@@ -15,23 +15,27 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.1"/>
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="build/**" Pack="true" PackagePath="%(Identity)" />
-        <None Include="../../README.md" Pack="true" PackagePath="/" Visible="false" />
-        <None Include="../Generator/bin/Release/netstandard2.0/Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <Content Include="../../JavaScript/dotnet-runtime/native/dotnet.wasm" Pack="true" PackagePath="js/dotnet.wasm" Visible="false" />
-        <Content Include="../../JavaScript/dotnet-runtime/dist/**" Pack="true" PackagePath="js/" Visible="false" />
+        <None Update="build/**" Pack="true" PackagePath="%(Identity)"/>
+        <None Include="../../README.md" Pack="true" PackagePath="/" Visible="false"/>
+        <None Include="../Generator/bin/Release/netstandard2.0/Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <Content Include="../../JavaScript/dotnet-runtime/native/dotnet.wasm" Pack="true" PackagePath="js/dotnet.wasm" Visible="false"/>
+        <Content Include="../../JavaScript/dotnet-runtime/dist/**" Pack="true" PackagePath="js/" Visible="false"/>
     </ItemGroup>
 
     <Target Name="GetTasksOutputDlls" BeforeTargets="CoreCompile">
         <MSBuild Projects="../Packer/Packer.csproj" Targets="Publish;PublishItemsOutputGroup" Properties="Configuration=Release">
-            <Output TaskParameter="TargetOutputs" ItemName="_TasksProjectOutputs" />
+            <Output TaskParameter="TargetOutputs" ItemName="_TasksProjectOutputs"/>
         </MSBuild>
         <ItemGroup>
-            <Content Include="@(_TasksProjectOutputs)" Condition="'%(_TasksProjectOutputs.Extension)' == '.dll'" Pack="true" PackagePath="tasks/%(_TasksProjectOutputs.TargetPath)" KeepMetadata="Pack;PackagePath" />
+            <Content Include="@(_TasksProjectOutputs)"
+                     Condition="'%(_TasksProjectOutputs.Extension)' == '.dll'"
+                     Pack="true"
+                     PackagePath="tasks/%(_TasksProjectOutputs.TargetPath)"
+                     KeepMetadata="Pack;PackagePath"/>
         </ItemGroup>
     </Target>
 
