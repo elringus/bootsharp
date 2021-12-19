@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using static DotNetJS.Packer.Utilities;
+using static Packer.Utilities;
 
-namespace DotNetJS.Packer
+namespace Packer
 {
     public class SourceGenerator
     {

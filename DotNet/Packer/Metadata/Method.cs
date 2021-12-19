@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 
-namespace DotNetJS.Packer
+namespace Packer
 {
     public class Method
     {

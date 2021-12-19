@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DotNetJS.Packer
+namespace Packer
 {
     public class PackerException : Exception
     {

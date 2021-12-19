@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace DotNetJS.Packer
+namespace Packer
 {
     public class Argument
     {

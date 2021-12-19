@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using static DotNetJS.Packer.Utilities;
+using static Packer.Utilities;
 
-namespace DotNetJS.Packer
+namespace Packer
 {
     public class TypeGenerator
     {

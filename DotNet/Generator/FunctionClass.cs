@@ -3,7 +3,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace DotNetJS.Generator
+namespace Generator
 {
     internal class FunctionClass
     {

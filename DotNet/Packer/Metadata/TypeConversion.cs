@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace DotNetJS.Packer
+namespace Packer
 {
     public static class TypeConversion
     {

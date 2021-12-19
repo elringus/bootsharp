@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace DotNetJS.Packer
+namespace Packer
 {
     public static class Utilities
     {

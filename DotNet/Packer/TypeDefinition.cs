@@ -1,4 +1,4 @@
-﻿namespace DotNetJS.Packer
+﻿namespace Packer
 {
     public class TypeDefinition
     {

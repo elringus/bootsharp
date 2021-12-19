@@ -5,9 +5,9 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using static DotNetJS.Packer.Utilities;
+using static Packer.Utilities;
 
-namespace DotNetJS.Packer
+namespace Packer
 {
     public class ProjectMetadata
     {

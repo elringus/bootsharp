@@ -1,4 +1,4 @@
-﻿namespace DotNetJS.Generator
+﻿namespace Generator
 {
     internal static class Attributes
     {
