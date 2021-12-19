@@ -37,6 +37,6 @@ jobs:
           cd JavaScript/dotnet-runtime
           npm install
           npm run build
-          dotnet publish test/project/Test.Project.csproj
+          dotnet publish test/csharp/Test.sln
     - name: analyze
       uses: github/codeql-action/analyze@v1
