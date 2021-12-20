@@ -28,12 +28,12 @@ internal class SourceGenerator
 
     private readonly HashSet<string> declaredAssemblies = new();
 
-    public string Generate (string runtimeJS, string runtimeWasm, string entryName, ProjectMetadata project)
+    public string Generate (string runtimeJS, string runtimeWasm, string entryName, AssemblyInspector inspector)
     {
         declaredAssemblies.Clear();
-        var initJS = GenerateInitJS(project.InvokableMethods, project.FunctionMethods);
-        var bootJS = GenerateBootJS(project.FunctionMethods);
-        var dlls = string.Join(", ", project.Assemblies.Select(GenerateAssembly));
+        var initJS = GenerateInitJS(inspector.InvokableMethods, inspector.FunctionMethods);
+        var bootJS = GenerateBootJS(inspector.FunctionMethods);
+        var dlls = string.Join(", ", inspector.Assemblies.Select(GenerateAssembly));
         return moduleTemplate
             .Replace("%RUNTIME_JS%", runtimeJS)
             .Replace("%ENTRY%", entryName)

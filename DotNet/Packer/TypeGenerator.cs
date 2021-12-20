@@ -22,9 +22,9 @@ internal class TypeGenerator
         }
     }
 
-    public string Generate (ProjectMetadata project)
+    public string Generate (AssemblyInspector inspector)
     {
-        var methods = project.FunctionMethods.Concat(project.InvokableMethods).ToArray();
+        var methods = inspector.FunctionMethods.Concat(inspector.InvokableMethods).ToArray();
         var methodsContent = GenerateForMethods(methods);
         var runtimeContent = JoinLines(definitions.Select(GenerateForDefinition), 0);
         return JoinLines(0, runtimeContent, methodsContent) + "\n";

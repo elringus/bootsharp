@@ -18,18 +18,20 @@ public sealed class MockData : IDisposable
     public string JSFile { get; }
     public string MapFile { get; }
 
+    private readonly string root = GetRandomRoot();
+
     public MockData ()
     {
-        BaseDir = GetRandomBaseDir();
+        BaseDir = Path.Combine(root, "base");
         BlazorOutDir = Path.Combine(BaseDir, "blazor");
-        JSDir = Path.Combine(BaseDir, "js");
+        JSDir = Path.Combine(root, "js");
         WasmFile = Path.Combine(JSDir, "dotnet.wasm");
         JSFile = Path.Combine(JSDir, "dotnet.js");
         MapFile = Path.Combine(JSDir, "dotnet.js.map");
         CreateBuildResources();
     }
 
-    public void Dispose () => Directory.Delete(BaseDir, true);
+    public void Dispose () => Directory.Delete(root, true);
 
     public void AddBlazorOutAssembly (string name, string code)
     {
@@ -56,9 +58,10 @@ public sealed class MockData : IDisposable
         File.WriteAllText(WasmFile, WasmFileContent);
         File.WriteAllText(JSFile, JSFileContent);
         File.WriteAllText(MapFile, MapFileContent);
+        MockAssembly.EmitReferences(BlazorOutDir);
     }
 
-    private static string GetRandomBaseDir ()
+    private static string GetRandomRoot ()
     {
         var testAssembly = Assembly.GetExecutingAssembly().Location;
         var assemblyDir = Path.Combine(Path.GetDirectoryName(testAssembly));

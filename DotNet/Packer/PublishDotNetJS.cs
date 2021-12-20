@@ -12,23 +12,18 @@ public class PublishDotNetJS : Task
     [Required] public string JSDir { get; set; }
     [Required] public string WasmFile { get; set; }
     [Required] public string EntryAssemblyName { get; set; }
+    public bool Clean { get; set; } = true;
     public bool EmitSourceMap { get; set; }
     public bool EmitTypes { get; set; }
 
-    private readonly ProjectMetadata project;
-    private readonly SourceGenerator sourceGenerator;
-    private readonly TypeGenerator typeGenerator;
-
-    public PublishDotNetJS ()
-    {
-        project = new ProjectMetadata(Log);
-        sourceGenerator = new SourceGenerator();
-        typeGenerator = new TypeGenerator();
-    }
+    private readonly AssemblyInspector inspector = new();
+    private readonly SourceGenerator sourceGenerator = new();
+    private readonly TypeGenerator typeGenerator = new();
 
     public override bool Execute ()
     {
-        project.LoadAssemblies(BlazorOutDir);
+        InspectAssemblies();
+        if (Clean) CleanBaseDirectory();
         var librarySource = GenerateLibrarySource();
         PublishLibrary(librarySource);
         if (EmitSourceMap) PublishSourceMap();
@@ -36,11 +31,23 @@ public class PublishDotNetJS : Task
         return true;
     }
 
+    private void InspectAssemblies ()
+    {
+        inspector.InspectInDirectory(BlazorOutDir);
+        inspector.Report(Log);
+    }
+
+    private void CleanBaseDirectory ()
+    {
+        Directory.Delete(BaseDir, true);
+        Directory.CreateDirectory(BaseDir);
+    }
+
     private string GenerateLibrarySource ()
     {
         var wasm = GetRuntimeWasm();
         var js = GetRuntimeJS();
-        return sourceGenerator.Generate(js, wasm, EntryAssemblyName, project);
+        return sourceGenerator.Generate(js, wasm, EntryAssemblyName, inspector);
     }
 
     private void PublishLibrary (string source)
@@ -60,7 +67,7 @@ public class PublishDotNetJS : Task
     private void PublishTypes ()
     {
         typeGenerator.LoadDefinitions(JSDir);
-        var source = typeGenerator.Generate(project);
+        var source = typeGenerator.Generate(inspector);
         var file = Path.Combine(BaseDir, "dotnet.d.ts");
         File.WriteAllText(file, source);
     }
