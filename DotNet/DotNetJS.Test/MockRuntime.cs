@@ -14,17 +14,17 @@ public class MockRuntime : IJSRuntime
         throw new NotImplementedException();
     }
 
-    public ValueTask<TValue> InvokeAsync<TValue> (string identifier, object?[]? args)
+    public ValueTask<TValue> InvokeAsync<TValue> (string identifier, object[] args)
     {
         throw new NotImplementedException();
     }
 
-    public ValueTask<TValue> InvokeAsync<TValue> (string identifier, CancellationToken cancellationToken, object?[]? args)
+    public ValueTask<TValue> InvokeAsync<TValue> (string identifier, CancellationToken cancellationToken, object[] args)
     {
         throw new NotImplementedException();
     }
 
-    public TResult Invoke<TResult> (string identifier, object?[]? args)
+    public TResult Invoke<TResult> (string identifier, object[] args)
     {
         throw new NotImplementedException();
     }
