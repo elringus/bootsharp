@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace Packer
+namespace Packer;
+
+internal class PackerException : Exception
 {
-    internal class PackerException : Exception
-    {
-        public PackerException (string message) : base(message) { }
-    }
+    public PackerException (string message) : base(message) { }
 }
