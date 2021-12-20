@@ -101,7 +101,7 @@ internal class ProjectMetadata
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void UnloadInspectedAssemblies ()
     {
-        // The reason for this mess:
+        // The assemblies are not unloaded until the context is alive:
         // https://docs.microsoft.com/dotnet/standard/assembly/unloadability
 
         var weakRef = new WeakReference(inspectContext, true);
