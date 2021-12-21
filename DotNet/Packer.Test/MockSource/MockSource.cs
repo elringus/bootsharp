@@ -1,9 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace Packer.Test;
 
-[ExcludeFromCodeCoverage]
 public abstract class MockSource
 {
     public string SourceFilePath { get; private set; }
