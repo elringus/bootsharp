@@ -58,7 +58,7 @@ public sealed class PublishDotNetJSTest : IDisposable
     }
 
     [Fact]
-    public void BaseDirectoryNotCleanedWhenDisabled ()
+    public void BaseDirectoryNotCleanedWhenRequested ()
     {
         var filePath = Path.Combine(data.BaseDir, "test");
         File.WriteAllText(filePath, "");
