@@ -29,9 +29,7 @@ internal class Method
 
     private string GetAssemblyName (MemberInfo member)
     {
-        if (member.DeclaringType is null)
-            throw new PackerException($"Failed to get declaring type for '{member}'.");
-        return member.DeclaringType.Assembly.GetName().Name;
+        return member.DeclaringType!.Assembly.GetName().Name;
     }
 
     private Argument[] GetArguments (MethodInfo info)

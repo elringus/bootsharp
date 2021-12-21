@@ -63,23 +63,20 @@ internal class SourceGenerator
 
     private string GenerateInvokableBinding (Method method)
     {
-        var args = BuildArgs(method);
+        var funcArgs = BuildFuncArgs();
         var invoke = method.Async ? "invokeAsync" : "invoke";
-        var body = $"{exports}.{invoke}('{method.Assembly}', '{method.Name}', {args})";
-        var js = $"{exports}.{method.Assembly}.{method.Name} = ({args}) => {body};";
+        var body = $"{exports}.{invoke}({BuildMethodArgs()})";
+        var js = $"{exports}.{method.Assembly}.{method.Name} = ({funcArgs}) => {body};";
         return EnsureAssemblyDeclared(method.Assembly, js);
+
+        string BuildFuncArgs () => string.Join(", ", method.Arguments.Select(a => a.Name));
+        string BuildMethodArgs () => $"'{method.Assembly}', '{method.Name}'" + (funcArgs == "" ? "" : $", {funcArgs}");
     }
 
     private string GenerateFunctionDeclaration (Method method)
     {
         var js = $"{exports}.{method.Assembly}.{method.Name} = undefined;";
         return EnsureAssemblyDeclared(method.Assembly, js);
-    }
-
-    private string BuildArgs (Method method)
-    {
-        var names = method.Arguments.Select(a => a.Name);
-        return string.Join(", ", names);
     }
 
     private string GenerateFunctionBinding (Method method)

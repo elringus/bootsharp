@@ -7,8 +7,8 @@ internal static class TypeConversion
 {
     public static string ToTypeScript (Type type)
     {
+        if (type.Name == "Void") return "void";
         if (IsAwaitable(type)) return WithPromise(type);
-        if (type == typeof(void)) return "void";
         switch (Type.GetTypeCode(type))
         {
             case TypeCode.Byte:

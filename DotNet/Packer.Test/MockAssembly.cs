@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using DotNetJS;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -15,8 +17,9 @@ public static class MockAssembly
 {
     private static readonly PortableExecutableReference[] references = CreateReferences();
 
-    public static void Emit (string assemblyPath, params string[] code)
+    public static void Emit (string assemblyPath, IEnumerable<Type> types)
     {
+        var code = types.Select(t => ReadTypeSourceCode(t));
         var compilation = CreateCompilation(assemblyPath, code);
         var result = compilation.Emit(assemblyPath);
         AssertEmitted(result);
@@ -39,6 +42,13 @@ public static class MockAssembly
         };
     }
 
+    private static string ReadTypeSourceCode (Type type, [CallerFilePath] string callerPath = "")
+    {
+        var directory = Path.GetDirectoryName(callerPath);
+        var filePath = Path.Combine(directory, "MockSource", $"{type.Name}.cs");
+        return File.ReadAllText(filePath);
+    }
+
     private static CSharpCompilation CreateCompilation (string assemblyPath, IEnumerable<string> code)
     {
         var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
@@ -52,5 +62,6 @@ public static class MockAssembly
     {
         foreach (var diagnostic in result.Diagnostics)
             Assert.Null(diagnostic.GetMessage());
+        Assert.True(result.Success);
     }
 }

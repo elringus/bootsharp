@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -13,6 +14,8 @@ public sealed class MockData : IDisposable
     public const string WasmFileContent = "mockwasmcontent";
     public const string JSFileContent = "(function(){})();";
     public const string MapFileContent = "{version:3,file:\"dotnet.js\"}";
+    public const string InteropTypeContent = "export interface Interop {}";
+    public const string BootTypeContent = "import from \"./interop\";\nexport interface Boot {}";
 
     public string BaseDir { get; }
     public string BlazorOutDir { get; }
@@ -26,7 +29,7 @@ public sealed class MockData : IDisposable
     public PublishDotNetJS Task { get; }
 
     private readonly string root = GetRandomRoot();
-    private readonly List<MockSource> addedSources = new();
+    private readonly Dictionary<string, List<MockSource>> addedAssemblies = new();
 
     public MockData ()
     {
@@ -47,21 +50,52 @@ public sealed class MockData : IDisposable
 
     public void AddBlazorOutAssembly (params MockSource[] sources)
     {
-        addedSources.AddRange(sources);
-        var name = Guid.NewGuid().ToString("N");
+        var name = $"test{Guid.NewGuid():N}.dll";
         var path = Path.Combine(BlazorOutDir, name);
-        var code = sources.Select(s => File.ReadAllText(s.SourceFilePath)).ToArray();
-        MockAssembly.Emit(path, code);
+        var types = sources.Select(s => s.GetType()).Append(typeof(MockSource));
+        MockAssembly.Emit(path, types);
         Task.EntryAssemblyName = name;
+        addedAssemblies[name] = new List<MockSource>(sources);
     }
 
-    public void AssertExpectedJSGenerated ()
+    public void AssertExpectedCodeGenerated ()
     {
         var libraryContent = File.ReadAllText(ResultLibraryFile);
         var typesContent = Task.EmitTypes ? File.ReadAllText(ResultTypesFile) : null;
-        Assert.StartsWith(JSFileContent, libraryContent);
-        foreach (var source in addedSources)
-            AssertExpectedLinesGenerated(source, libraryContent, typesContent);
+        foreach (var (assembly, sources) in addedAssemblies)
+        foreach (var source in sources)
+            AssertExpectedLinesGenerated(assembly, source, libraryContent, typesContent);
+    }
+
+    private void AssertExpectedLinesGenerated (string assembly, MockSource source, string library, string types = default)
+    {
+        assembly = Path.GetFileNameWithoutExtension(assembly);
+        AssertContainsExpectedLines(source.GetExpectedInitLines(assembly),
+            ExtractLinesBetween(library, "// DotNetJSInitStart", "// DotNetJSInitEnd"));
+        AssertContainsExpectedLines(source.GetExpectedBootLines(assembly),
+            ExtractLinesBetween(library, "// DotNetJSBootStart", "// DotNetJSBootEnd"));
+        if (!string.IsNullOrEmpty(types))
+            AssertContainsExpectedLines(source.GetExpectedTypeLines(assembly),
+                ExtractLinesBetween(types, "// MethodsStart", "// MethodsEnd"));
+    }
+
+    [ExcludeFromCodeCoverage]
+    private void AssertContainsExpectedLines (string[] expected, string[] actual)
+    {
+        for (int i = 0; i < Math.Max(expected.Length, actual.Length); i++)
+            if (i >= expected.Length) throw new Exception($"Actual contains extra: {actual[i]}");
+            else if (i >= actual.Length) throw new Exception($"Actual misses: {expected[i]}");
+            else Assert.Equal(expected[i], actual[i]);
+    }
+
+    private string[] ExtractLinesBetween (string content, string startMarker, string endMarker)
+    {
+        var startIndex = content.IndexOf(startMarker, StringComparison.Ordinal);
+        var endIndex = content.IndexOf(endMarker, StringComparison.Ordinal);
+        var subContent = content.Substring(startIndex, endIndex - startIndex);
+        var lines = subContent.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.TrimEntries);
+        if (lines.Length <= 2) return Array.Empty<string>();
+        return lines.Skip(1).Take(lines.Length - 2).ToArray();
     }
 
     private PublishDotNetJS CreateTask () => new() {
@@ -72,34 +106,6 @@ public sealed class MockData : IDisposable
         BuildEngine = BuildEngine.Create()
     };
 
-    private void AssertExpectedLinesGenerated (MockSource source, string libraryContent, string typesContent)
-    {
-        AssertActualContainsExpectedLines(source.GetExpectedInitLines(),
-            ExtractLinesBetween(libraryContent, "// DotNetJSInitStart", "// DotNetJSInitEnd"));
-        AssertActualContainsExpectedLines(source.GetExpectedBootLines(),
-            ExtractLinesBetween(libraryContent, "// DotNetJSBootStart", "// DotNetJSBootEnd"));
-        if (Task.EmitTypes)
-            AssertActualContainsExpectedLines(source.GetExpectedTypeLines(),
-                ExtractLinesBetween(typesContent, "// MethodsStart", "// MethodsEnd"));
-    }
-
-    private void AssertActualContainsExpectedLines (string[] expectedLines, string[] actualLines)
-    {
-        Assert.Equal(expectedLines.Length, actualLines.Length);
-        foreach (var expected in expectedLines)
-            Assert.Contains(actualLines, actual => actual.Trim() == expected.Trim());
-    }
-
-    private string[] ExtractLinesBetween (string content, string startMarker, string endMarker)
-    {
-        var startIndex = content.IndexOf(startMarker, StringComparison.Ordinal);
-        var endIndex = content.IndexOf(endMarker, StringComparison.Ordinal);
-        var subContent = content.Substring(startIndex, endIndex - startIndex);
-        var lines = subContent.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
-        if (lines.Length <= 2) return Array.Empty<string>();
-        return lines.Skip(1).Take(lines.Length - 2).ToArray();
-    }
-
     private void CreateBuildResources ()
     {
         Directory.CreateDirectory(BaseDir);
@@ -108,6 +114,8 @@ public sealed class MockData : IDisposable
         File.WriteAllText(WasmFile, WasmFileContent);
         File.WriteAllText(JSFile, JSFileContent);
         File.WriteAllText(MapFile, MapFileContent);
+        File.WriteAllText(Path.Combine(JSDir, "interop.d.ts"), InteropTypeContent);
+        File.WriteAllText(Path.Combine(JSDir, "boot.d.ts"), BootTypeContent);
         MockAssembly.EmitReferences(BlazorOutDir);
     }
 
@@ -115,6 +123,6 @@ public sealed class MockData : IDisposable
     {
         var testAssembly = Assembly.GetExecutingAssembly().Location;
         var assemblyDir = Path.Combine(Path.GetDirectoryName(testAssembly));
-        return Path.Combine(assemblyDir, $"temp-{Guid.NewGuid()}");
+        return Path.Combine(assemblyDir, $"temp{Guid.NewGuid():N}");
     }
 }

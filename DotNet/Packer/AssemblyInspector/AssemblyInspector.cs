@@ -61,7 +61,8 @@ internal class AssemblyInspector
 
     private void AddSkippedAssemblyWarning (string assemblyPath, Exception exception)
     {
-        var message = $"Failed to inspect '{assemblyPath}' assembly; " +
+        var assemblyName = Path.GetFileName(assemblyPath);
+        var message = $"Failed to inspect '{assemblyName}' assembly; " +
                       $"affected methods won't be available in JavaScript. Error: {exception.Message}";
         warnings.Add(message);
     }

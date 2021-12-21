@@ -23,7 +23,7 @@ internal class TypeGenerator
 
     public string Generate (AssemblyInspector inspector)
     {
-        var methods = inspector.FunctionMethods.Concat(inspector.InvokableMethods).ToArray();
+        var methods = inspector.InvokableMethods.Concat(inspector.FunctionMethods).ToArray();
         var methodsContent = GenerateForMethods(methods);
         var runtimeContent = JoinLines(definitions.Select(GenerateForDefinition), 0);
         return JoinLines(0, runtimeContent, "// MethodsStart", methodsContent, "// MethodsEnd") + "\n";
@@ -71,7 +71,7 @@ internal class TypeGenerator
         foreach (var definition in definitions)
             if (definition.FileName == import)
                 return definition.Source;
-        throw new InvalidOperationException($"Failed to find type import for '{import}'.");
+        throw new PackerException($"Failed to find type import for '{import}'.");
     }
 
     private string ModifyInternalDeclarations (string source)

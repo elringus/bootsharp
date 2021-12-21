@@ -1,19 +1,14 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace Packer.Test;
+﻿namespace Packer.Test;
 
 public abstract class MockSource
 {
-    public string SourceFilePath { get; private set; }
+    public abstract string[] GetExpectedInitLines (string assembly);
+    public abstract string[] GetExpectedBootLines (string assembly);
+    public abstract string[] GetExpectedTypeLines (string assembly);
 
-    protected MockSource () => TraceFilePath();
-
-    public abstract string[] GetExpectedInitLines ();
-    public abstract string[] GetExpectedBootLines ();
-    public abstract string[] GetExpectedTypeLines ();
-
-    private void TraceFilePath ([CallerFilePath] string path = "")
+    protected string BuildFunctionAssignmentLine (string assembly, string method)
     {
-        SourceFilePath = path;
+        return $"global.DotNetJS_functions_{assembly}_{method} = exports.{assembly}.{method} || " +
+               $"function() {{ throw new Error(\"Function 'dotnet.{assembly}.{method}' is not implemented.\"); }}();";
     }
 }
