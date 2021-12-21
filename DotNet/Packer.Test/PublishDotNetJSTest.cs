@@ -9,7 +9,7 @@ public sealed class PublishDotNetJSTest : IDisposable
 {
     private readonly MockData data = new();
     private PublishDotNetJS task => data.Task;
-    private BuildEngine engine => (BuildEngine)data.Task.BuildEngine;
+    private BuildEngine engine => (BuildEngine)task.BuildEngine;
 
     public void Dispose () => data.Dispose();
 
