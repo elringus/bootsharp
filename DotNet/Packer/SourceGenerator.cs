@@ -39,8 +39,8 @@ internal class SourceGenerator
             .Replace("%ENTRY%", entryName)
             .Replace("%WASM%", runtimeWasm)
             .Replace("%DLLS%", dlls)
-            .Replace("%INIT_JS%", initJS)
-            .Replace("%BOOT_JS%", bootJS);
+            .Replace("%INIT_JS%", JoinLines(1, "// DotNetJSInitStart", initJS, "// DotNetJSInitEnd"))
+            .Replace("%BOOT_JS%", JoinLines(2, "// DotNetJSBootStart", bootJS, "// DotNetJSBootEnd"));
     }
 
     private string GenerateAssembly (Assembly assembly)

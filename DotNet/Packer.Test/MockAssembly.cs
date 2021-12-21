@@ -43,8 +43,8 @@ public static class MockAssembly
     {
         var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
         var trees = code.Select(c => CSharpSyntaxTree.ParseText(c));
-        var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
-        return CSharpCompilation.Create(assemblyName, trees, references, options);
+        var compileOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+        return CSharpCompilation.Create(assemblyName, trees, references, compileOptions);
     }
 
     [ExcludeFromCodeCoverage]

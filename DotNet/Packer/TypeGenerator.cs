@@ -15,8 +15,7 @@ internal class TypeGenerator
     {
         foreach (var path in Directory.GetFiles(directory, "*.d.ts"))
         {
-            var fileName = Path.GetFileNameWithoutExtension(path);
-            fileName = fileName.Substring(0, fileName.Length - 2);
+            var fileName = Path.GetFileNameWithoutExtension(path)[..^2];
             var source = File.ReadAllText(path);
             definitions.Add(new TypeDefinition(fileName, source));
         }
@@ -27,7 +26,7 @@ internal class TypeGenerator
         var methods = inspector.FunctionMethods.Concat(inspector.InvokableMethods).ToArray();
         var methodsContent = GenerateForMethods(methods);
         var runtimeContent = JoinLines(definitions.Select(GenerateForDefinition), 0);
-        return JoinLines(0, runtimeContent, methodsContent) + "\n";
+        return JoinLines(0, runtimeContent, "// MethodsStart", methodsContent, "// MethodsEnd") + "\n";
     }
 
     private string GenerateForMethods (IReadOnlyCollection<Method> methods)
