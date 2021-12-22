@@ -70,6 +70,8 @@ internal class AssemblyInspector
     private bool ShouldInspectAssembly (string assemblyPath)
     {
         var assemblyName = Path.GetFileName(assemblyPath);
+        if (assemblyName == "DotNetJS.dll") return false;
+        if (assemblyName == "netstandard.dll") return false;
         if (assemblyName.StartsWith("System.")) return false;
         if (assemblyName.StartsWith("Microsoft.")) return false;
         return true;
