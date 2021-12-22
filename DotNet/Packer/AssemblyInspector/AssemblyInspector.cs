@@ -25,9 +25,8 @@ internal class AssemblyInspector
         var assemblyPaths = Directory.GetFiles(directory, "*.dll");
         using var context = CreateLoadContext(assemblyPaths);
         foreach (var assemblyPath in assemblyPaths)
-            if (ShouldInspectAssembly(assemblyPath))
-                try { InspectAssembly(assemblyPath, context); }
-                catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
+            try { InspectAssembly(assemblyPath, context); }
+            catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
     }
 
     public void Report (TaskLoggingHelper logger)
@@ -56,7 +55,8 @@ internal class AssemblyInspector
             Name = Path.GetFileName(assemblyPath),
             Base64 = ReadBase64(assemblyPath)
         });
-        InspectMethods(context.LoadFromAssemblyPath(assemblyPath));
+        if (ShouldInspectMethods(assemblyPath))
+            InspectMethods(context.LoadFromAssemblyPath(assemblyPath));
     }
 
     private void AddSkippedAssemblyWarning (string assemblyPath, Exception exception)
@@ -67,11 +67,9 @@ internal class AssemblyInspector
         warnings.Add(message);
     }
 
-    private bool ShouldInspectAssembly (string assemblyPath)
+    private bool ShouldInspectMethods (string assemblyPath)
     {
         var assemblyName = Path.GetFileName(assemblyPath);
-        if (assemblyName == "DotNetJS.dll") return false;
-        if (assemblyName == "netstandard.dll") return false;
         if (assemblyName.StartsWith("System.")) return false;
         if (assemblyName.StartsWith("Microsoft.")) return false;
         return true;
