@@ -20,8 +20,8 @@ public sealed class TypesTest : BuildTest
     public void TypesContainInteropAndBootContentWithoutImport ()
     {
         Task.Execute();
-        Assert.Contains(MockData.InteropTypeContent, Data.GeneratedTypes);
-        Assert.Contains(MockData.BootTypeContent.Split('\n')[1], Data.GeneratedTypes);
+        Contains(MockData.InteropTypeContent);
+        Contains(MockData.BootTypeContent.Split('\n')[1]);
     }
 
     [Fact]
@@ -37,38 +37,57 @@ public sealed class TypesTest : BuildTest
     {
         Data.AddAssemblyWithName("foo.dll", "[JSInvokable] public static void Bar () { }");
         Task.Execute();
-        Assert.Contains("export declare const foo: {", Data.GeneratedTypes);
+        Contains("export declare const foo: {");
     }
 
     [Fact]
-    public void WhenAssemblyNameContainDotsObjectCreateForEachPart ()
+    public void WhenAssemblyNameContainDotsObjectCreatedForEachPart ()
     {
         Data.AddAssemblyWithName("foo.bar.nya.dll", "[JSInvokable] public static void Bar () { }");
         Task.Execute();
-        Assert.Contains("export declare const foo: { bar: { nya: {", Data.GeneratedTypes);
+        Contains("export declare const foo: { bar: { nya: {");
     }
 
     [Fact]
-    public void NumericsTranslatedToNumberType ()
+    public void BindingsFromMultipleAssembliesAssignedToRespectiveObjects ()
     {
-        var numerics = new[] { "byte", "sbyte", "ushort", "uint", "ulong", "short", "int", "long", "decimal", "double", "float" };
-        var csArgs = string.Join(", ", numerics.Select(n => n + " v" + Array.IndexOf(numerics, n)));
-        var tsArgs = string.Join(", ", numerics.Select(n => "v" + Array.IndexOf(numerics, n) + ": number"));
+        Data.AddAssemblyWithName("foo.dll", "[JSInvokable] public static void Foo () { }");
+        Data.AddAssemblyWithName("bar.nya.dll", "[JSFunction] public static void Fun () { }");
+        Task.Execute();
+        Contains("export declare const bar: { nya: {\n    Fun: () => void,\n};};");
+        Contains("export declare const foo: {\n    Foo: () => void,\n};");
+    }
+
+    [Fact]
+    public void MultipleAssemblyObjectsDeclaredFromNewLine ()
+    {
+        Data.AddAssemblyWithName("a.dll", "[JSInvokable] public static void Foo () { }");
+        Data.AddAssemblyWithName("b.dll", "[JSInvokable] public static void Bar () { }");
+        Task.Execute();
+        Contains("\nexport declare const b");
+    }
+
+    [Fact]
+    public void NumericsTranslatedToNumber ()
+    {
+        var nums = new[] { "byte", "sbyte", "ushort", "uint", "ulong", "short", "int", "long", "decimal", "double", "float" };
+        var csArgs = string.Join(", ", nums.Select(n => n + " v" + Array.IndexOf(nums, n)));
+        var tsArgs = string.Join(", ", nums.Select(n => "v" + Array.IndexOf(nums, n) + ": number"));
         Data.AddAssembly($"[JSInvokable] public static void Num ({csArgs}) {{}}");
         Task.Execute();
-        Assert.Contains($"Num: ({tsArgs})", Data.GeneratedTypes);
+        Contains($"Num: ({tsArgs})");
     }
 
     [Fact]
-    public void AsyncDotNetMethodsReturnPromiseInJS ()
+    public void TaskTranslatedToPromise ()
     {
         Data.AddAssembly(
             "[JSInvokable] public static Task<bool> AsyBool () => default;",
             "[JSInvokable] public static ValueTask AsyVoid () => default;"
         );
         Task.Execute();
-        Assert.Contains("AsyBool: () => Promise<boolean>", Data.GeneratedTypes);
-        Assert.Contains("AsyVoid: () => Promise<void>", Data.GeneratedTypes);
+        Contains("AsyBool: () => Promise<boolean>");
+        Contains("AsyVoid: () => Promise<void>");
     }
 
     [Fact]
@@ -76,7 +95,7 @@ public sealed class TypesTest : BuildTest
     {
         Data.AddAssembly("[JSInvokable] public static void Cha (char c, string s) {}");
         Task.Execute();
-        Assert.Contains("Cha: (c: string, s: string) => void", Data.GeneratedTypes);
+        Contains("Cha: (c: string, s: string) => void");
     }
 
     [Fact]
@@ -84,7 +103,7 @@ public sealed class TypesTest : BuildTest
     {
         Data.AddAssembly("[JSInvokable] public static void Boo (bool b) {}");
         Task.Execute();
-        Assert.Contains("Boo: (b: boolean) => void", Data.GeneratedTypes);
+        Contains("Boo: (b: boolean) => void");
     }
 
     [Fact]
@@ -92,7 +111,7 @@ public sealed class TypesTest : BuildTest
     {
         Data.AddAssembly("[JSInvokable] public static void Doo (DateTime time) {}");
         Task.Execute();
-        Assert.Contains("Doo: (time: Date) => void", Data.GeneratedTypes);
+        Contains("Doo: (time: Date) => void");
     }
 
     [Fact]
@@ -100,6 +119,8 @@ public sealed class TypesTest : BuildTest
     {
         Data.AddAssembly("[JSInvokable] public static Type Method (Type t) => default;");
         Task.Execute();
-        Assert.Contains("Method: (t: any) => any", Data.GeneratedTypes);
+        Contains("Method: (t: any) => any");
     }
+
+    private void Contains (string content) => Assert.Contains(content, Data.GeneratedTypes);
 }

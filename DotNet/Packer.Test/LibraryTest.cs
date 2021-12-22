@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace Packer.Test;
@@ -8,7 +9,7 @@ public class LibraryTest : BuildTest
     public void LibraryContainsJSRuntime ()
     {
         Task.Execute();
-        Assert.Contains(MockData.JSFileContent, Data.GeneratedLibrary);
+        Contains(MockData.JSFileContent);
     }
 
     [Fact]
@@ -16,17 +17,37 @@ public class LibraryTest : BuildTest
     {
         Data.AddAssemblyWithName("foo.dll", "[JSInvokable] public static void Bar () { }");
         Task.Execute();
-        Assert.Contains("exports.foo = {};", Data.GeneratedLibrary);
+        Contains("exports.foo = {};");
     }
 
     [Fact]
-    public void WhenAssemblyNameContainDotsObjectCreateForEachPart ()
+    public void WhenAssemblyNameContainDotsObjectCreatedForEachPart ()
     {
         Data.AddAssemblyWithName("foo.bar.nya.dll", "[JSInvokable] public static void Bar () { }");
         Task.Execute();
-        Assert.Contains("exports.foo = {};", Data.GeneratedLibrary);
-        Assert.Contains("exports.foo.bar = {};", Data.GeneratedLibrary);
-        Assert.Contains("exports.foo.bar.nya = {};", Data.GeneratedLibrary);
+        Contains("exports.foo = {};");
+        Contains("exports.foo.bar = {};");
+        Contains("exports.foo.bar.nya = {};");
+    }
+
+    [Fact]
+    public void WhenMultipleAssembliesEachGetItsOwnObject ()
+    {
+        Data.AddAssemblyWithName("foo.dll", "[JSInvokable] public static void Foo () { }");
+        Data.AddAssemblyWithName("bar.nya.dll", "[JSFunction] public static void Fun () { }");
+        Task.Execute();
+        Contains("exports.foo = {};");
+        Contains("exports.bar = {};");
+        Contains("exports.bar.nya = {};");
+    }
+
+    [Fact]
+    public void WhenMultipleAssembliesWithSameRootObjectIsPreserved ()
+    {
+        Data.AddAssemblyWithName("nya.foo.dll", "[JSInvokable] public static void Foo () { }");
+        Data.AddAssemblyWithName("nya.bar.dll", "[JSFunction] public static void Fun () { }");
+        Task.Execute();
+        Assert.True(Regex.Matches(Data.GeneratedLibrary, @"exports\.nya = \{}").Count == 1);
     }
 
     [Fact]
@@ -34,7 +55,7 @@ public class LibraryTest : BuildTest
     {
         Data.AddAssemblyWithName("foo.bar.dll", "[JSInvokable] public static void Nya () { }");
         Task.Execute();
-        Assert.Contains("exports.foo.bar.Nya = () => exports.invoke('foo.bar', 'Nya');", Data.GeneratedLibrary);
+        Contains("exports.foo.bar.Nya = () => exports.invoke('foo.bar', 'Nya');");
     }
 
     [Fact]
@@ -42,7 +63,7 @@ public class LibraryTest : BuildTest
     {
         Data.AddAssemblyWithName("foo.bar.dll", "[JSFunction] public static void Fun () { }");
         Task.Execute();
-        Assert.Contains("exports.foo.bar.Fun = undefined;", Data.GeneratedLibrary);
+        Contains("exports.foo.bar.Fun = undefined;");
     }
 
     [Fact]
@@ -50,8 +71,19 @@ public class LibraryTest : BuildTest
     {
         Data.AddAssemblyWithName("foo.bar.dll", "[JSFunction] public static void Fun () { }");
         Task.Execute();
-        Assert.Contains("global.DotNetJS_functions_foo_bar_Fun = exports.foo.bar.Fun || " +
-                        "function() { throw new Error(\"Function 'dotnet.foo.bar.Fun' is not implemented.\"); }();", Data.GeneratedLibrary);
+        Contains("global.DotNetJS_functions_foo_bar_Fun = exports.foo.bar.Fun || " +
+                 "function() { throw new Error(\"Function 'dotnet.foo.bar.Fun' is not implemented.\"); }();");
+    }
+
+    [Fact]
+    public void BindingsFromMultipleAssembliesAssignedToRespectiveObjects ()
+    {
+        Data.AddAssemblyWithName("foo.dll", "[JSInvokable] public static void Foo () { }");
+        Data.AddAssemblyWithName("bar.nya.dll", "[JSFunction] public static void Fun () { }");
+        Task.Execute();
+        Contains("exports.foo.Foo = () => exports.invoke('foo', 'Foo');");
+        Contains("exports.bar.nya.Fun = undefined;");
+        Contains("global.DotNetJS_functions_bar_nya_Fun = exports.bar.nya.Fun ||");
     }
 
     [Fact]
@@ -59,7 +91,7 @@ public class LibraryTest : BuildTest
     {
         Data.AddAssembly("[JSInvokable] public static void Fun (string function) { }");
         Task.Execute();
-        Assert.Contains("Fun = (fn) => exports.invoke", Data.GeneratedLibrary);
+        Contains("Fun = (fn) => exports.invoke");
     }
 
     [Fact]
@@ -70,7 +102,9 @@ public class LibraryTest : BuildTest
             "[JSInvokable] public static ValueTask AsyValue () => default;"
         );
         Task.Execute();
-        Assert.Contains("Asy = () => exports.invokeAsync", Data.GeneratedLibrary);
-        Assert.Contains("AsyValue = () => exports.invokeAsync", Data.GeneratedLibrary);
+        Contains("Asy = () => exports.invokeAsync");
+        Contains("AsyValue = () => exports.invokeAsync");
     }
+
+    private void Contains (string content) => Assert.Contains(content, Data.GeneratedLibrary);
 }

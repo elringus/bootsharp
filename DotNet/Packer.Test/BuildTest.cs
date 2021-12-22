@@ -11,7 +11,7 @@ public abstract class BuildTest : IDisposable
 
     public void Dispose ()
     {
-        GC.SuppressFinalize(this);
         Data.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

@@ -36,66 +36,10 @@ describe("packed library", () => {
         assert.deepStrictEqual(packed.invoke("Test.Project", "JoinStrings", "a", "b"), "ab");
         assert.deepStrictEqual(await packed.invokeAsync("Test.Project", "JoinStringsAsync", "a", "b"), "ab");
     });
-    it("generates valid type definitions", () => {
-        const expectedLines = expectedTypes.split(/\r?\n/);
-        const actualLines = getGeneratedTypes().split(/\r?\n/);
-        for (const expectedLine of expectedLines)
-            assert(actualLines.includes(expectedLine));
+    it("generates type definitions", () => {
+        assert(getGeneratedTypes());
     });
     it("generates source map", () => {
         assert(getGeneratedMap());
     });
 });
-
-// TODO: That's fragile. Find a more robust way to validate the types.
-const expectedTypes = `export interface Assembly {
-    name: string;
-    data: Uint8Array | string;
-}
-export interface BootData {
-    wasm: Uint8Array | string;
-    assemblies: Assembly[];
-    entryAssemblyName: string;
-}
-export declare enum BootStatus {
-    Standby = "Standby",
-    Booting = "Booting",
-    Terminating = "Terminating",
-    Booted = "Booted"
-}
-export declare function getBootStatus(): BootStatus;
-export declare function boot(): Promise<void>;
-export declare function terminate(): Promise<void>;
-export declare const invoke: <T>(assembly: string, method: string, ...args: any[]) => T;
-export declare const invokeAsync: <T>(assembly: string, method: string, ...args: any[]) => Promise<T>;
-export declare const createObjectReference: (object: any) => any;
-export declare const disposeObjectReference: (objectReference: any) => void;
-export declare const createStreamReference: (buffer: Uint8Array | any) => any;
-export declare const Test: { Main: {
-    EchoFunction: (value: string) => string,
-    TestEchoFunction: (value: string) => string,
-    CreateInstance: () => any,
-    GetAndReturnJSObject: () => any,
-    InvokeOnJSObjectAsync: (obj: any, fn: string, args: any) => Promise<void>,
-    InvokeVoid: () => void,
-    Echo: (message: string) => string,
-    JoinStrings: (a: string, b: string) => string,
-    SumDoubles: (a: number, b: number) => number,
-    AddDays: (date: Date, days: number) => Date,
-    InvokeJS: (funcName: string) => void,
-    ForEachJS: (items: any, funcName: string) => any,
-    JoinStringsAsync: (a: string, b: string) => Promise<string>,
-    ReceiveBytes: (bytes: any) => string,
-    SendBytes: () => string,
-    GetGuid: () => string,
-    CatchException: () => string,
-    Throw: (message: string) => string,
-    EchoViaWebSocket: (uri: string, message: string, timeout: number) => Promise<string>,
-    ComputePrime: (n: number) => number,
-    IsMainInvoked: () => boolean,
-    StreamFromJSAsync: (streamRef: any) => Promise<void>,
-    StreamFromDotNet: () => any,
-    EchoRegistry: (registry: any) => any,
-    CountTotalSpeed: (registry: any) => number,
-};};
-`;

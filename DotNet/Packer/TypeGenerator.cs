@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using static Packer.Utilities;
 
 namespace Packer;
@@ -32,8 +33,10 @@ internal class TypeGenerator
     private string GenerateForMethods (IReadOnlyCollection<Method> methods)
     {
         if (methods.Count == 0) return "";
-        var lines = methods.OrderBy(m => m.Assembly).Select(GenerateForMethod);
-        return JoinLines(lines) + "\n" + GenerateAssemblyFooter(declaredAssemblies.Peek());
+        var builder = new StringBuilder();
+        foreach (var method in methods.OrderBy(m => m.Assembly))
+            GenerateForMethod(method, builder);
+        return JoinLines(0, builder.ToString(), GenerateAssemblyFooter(declaredAssemblies.Peek()));
     }
 
     private string GenerateForDefinition (TypeDefinition definition)
@@ -46,14 +49,23 @@ internal class TypeGenerator
         return ModifyInternalDeclarations(source);
     }
 
-    private string GenerateForMethod (Method method)
+    private void GenerateForMethod (Method method, StringBuilder builder)
     {
+        EnsureWrappedInAssembly(method.Assembly, builder);
         var args = string.Join(", ", method.Arguments.Select(a => $"{a.Name}: {a.Type}"));
-        var declaration = $"{method.Name}: ({args}) => {method.ReturnType},";
-        return EnsureWrappedInAssembly(method.Assembly, declaration);
+        builder.Append($"\n    {method.Name}: ({args}) => {method.ReturnType},");
     }
 
-    private bool ShouldExportDefinition (TypeDefinition definition)
+    private void EnsureWrappedInAssembly (string assembly, StringBuilder builder)
+    {
+        var prevAssembly = declaredAssemblies.Count > 0 ? declaredAssemblies.Peek() : null;
+        declaredAssemblies.Push(assembly);
+        if (prevAssembly == assembly) return;
+        if (prevAssembly != null) builder.Append('\n').Append(GenerateAssemblyFooter(prevAssembly));
+        builder.Append('\n').Append(GenerateAssemblyHeader(assembly)).Append('\n');
+    }
+
+    private static bool ShouldExportDefinition (TypeDefinition definition)
     {
         switch (definition.FileName)
         {
@@ -74,7 +86,7 @@ internal class TypeGenerator
         throw new PackerException($"Failed to find type import for '{import}'.");
     }
 
-    private string ModifyInternalDeclarations (string source)
+    private static string ModifyInternalDeclarations (string source)
     {
         source = source.Replace("boot(bootData: BootData):", "boot():");
         source = source.Replace("export declare function initializeInterop(): void;", "");
@@ -83,18 +95,7 @@ internal class TypeGenerator
         return source;
     }
 
-    private string EnsureWrappedInAssembly (string assembly, string declaration)
-    {
-        if (declaredAssemblies.Count > 0 && declaredAssemblies.Peek() == assembly)
-            return declaration;
-        if (declaredAssemblies.Count > 0)
-            declaration = JoinLines(GenerateAssemblyFooter(assembly), declaration);
-        declaredAssemblies.Push(assembly);
-        declaration = JoinLines(GenerateAssemblyHeader(assembly), declaration);
-        return declaration;
-    }
-
-    private string GenerateAssemblyHeader (string assembly)
+    private static string GenerateAssemblyHeader (string assembly)
     {
         var declaration = "export declare const";
         foreach (var name in assembly.Split('.'))
@@ -102,7 +103,7 @@ internal class TypeGenerator
         return declaration;
     }
 
-    private string GenerateAssemblyFooter (string assembly)
+    private static string GenerateAssemblyFooter (string assembly)
     {
         var level = assembly.Count(c => c == '.') + 1;
         return string.Concat(Enumerable.Repeat("};", level));
