@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using DotNetJS;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Emit;
 using Microsoft.JSInterop;
 using Xunit;
 
@@ -17,12 +14,12 @@ public static class MockAssembly
 {
     private static readonly PortableExecutableReference[] references = CreateReferences();
 
-    public static void Emit (string assemblyPath, IEnumerable<Type> types)
+    public static void Emit (string assemblyPath, IEnumerable<string> sources)
     {
-        var code = types.Select(t => ReadTypeSourceCode(t));
-        var compilation = CreateCompilation(assemblyPath, code);
+        var fileSource = BuildFileSource(sources);
+        var compilation = CreateCompilation(assemblyPath, fileSource);
         var result = compilation.Emit(assemblyPath);
-        AssertEmitted(result);
+        Assert.True(result.Success);
     }
 
     public static void EmitReferences (string directory)
@@ -42,26 +39,18 @@ public static class MockAssembly
         };
     }
 
-    private static string ReadTypeSourceCode (Type type, [CallerFilePath] string callerPath = "")
+    private static string BuildFileSource (IEnumerable<string> sources)
     {
-        var directory = Path.GetDirectoryName(callerPath);
-        var filePath = Path.Combine(directory, "MockSource", $"{type.Name}.cs");
-        return File.ReadAllText(filePath);
+        var usings = new[] { "System", "System.Threading.Tasks", "DotNetJS", "Microsoft.JSInterop" };
+        var source = $"public class c{Guid.NewGuid():N} {{ {string.Join('\n', sources)} }}";
+        return string.Join('\n', usings.Select(u => $"using {u};")) + source;
     }
 
-    private static CSharpCompilation CreateCompilation (string assemblyPath, IEnumerable<string> code)
+    private static CSharpCompilation CreateCompilation (string assemblyPath, string fileSource)
     {
         var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
-        var trees = code.Select(c => CSharpSyntaxTree.ParseText(c));
+        var tree = CSharpSyntaxTree.ParseText(fileSource);
         var compileOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
-        return CSharpCompilation.Create(assemblyName, trees, references, compileOptions);
-    }
-
-    [ExcludeFromCodeCoverage]
-    private static void AssertEmitted (EmitResult result)
-    {
-        foreach (var diagnostic in result.Diagnostics)
-            Assert.Null(diagnostic.GetMessage());
-        Assert.True(result.Success);
+        return CSharpCompilation.Create(assemblyName, new[] { tree }, references, compileOptions);
     }
 }

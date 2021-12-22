@@ -26,7 +26,7 @@ internal class TypeGenerator
         var methods = inspector.InvokableMethods.Concat(inspector.FunctionMethods).ToArray();
         var methodsContent = GenerateForMethods(methods);
         var runtimeContent = JoinLines(definitions.Select(GenerateForDefinition), 0);
-        return JoinLines(0, runtimeContent, "// MethodsStart", methodsContent, "// MethodsEnd") + "\n";
+        return JoinLines(0, runtimeContent, methodsContent) + "\n";
     }
 
     private string GenerateForMethods (IReadOnlyCollection<Method> methods)
