@@ -5,16 +5,11 @@ using Xunit;
 
 namespace Packer.Test;
 
-public sealed class TypesTest : BuildTest
+public class TypesTest : ContentTest
 {
-    public TypesTest () => Task.EmitTypes = true;
+    protected override string TestedContent => Data.GeneratedTypes;
 
-    [Fact]
-    public void WhenTypeResolveFailsExceptionIsThrown ()
-    {
-        File.Delete(Path.Combine(Data.JSDir, "interop.d.ts"));
-        Assert.Throws<PackerException>(() => Task.Execute());
-    }
+    public TypesTest () => Task.EmitTypes = true;
 
     [Fact]
     public void TypesContainInteropAndBootContentWithoutImport ()
@@ -33,7 +28,14 @@ public sealed class TypesTest : BuildTest
     }
 
     [Fact]
-    public void LibraryExportsAssemblyObject ()
+    public void WhenTypeResolveFailsExceptionIsThrown ()
+    {
+        File.Delete(Path.Combine(Data.JSDir, "interop.d.ts"));
+        Assert.Throws<PackerException>(() => Task.Execute());
+    }
+
+    [Fact]
+    public void TypesExportAssemblyObject ()
     {
         Data.AddAssemblyWithName("foo.dll", "[JSInvokable] public static void Bar () { }");
         Task.Execute();
@@ -68,11 +70,20 @@ public sealed class TypesTest : BuildTest
     }
 
     [Fact]
+    public void DifferentAssembliesWithSameRootAssignedToDifferentObjects ()
+    {
+        Data.AddAssemblyWithName("nya.foo.dll", "[JSFunction] public static void Foo () { }");
+        Data.AddAssemblyWithName("nya.bar.dll", "[JSFunction] public static void Fun () { }");
+        Task.Execute();
+        Assert.Single(Matches("export declare const nya:"));
+    }
+
+    [Fact]
     public void NumericsTranslatedToNumber ()
     {
         var nums = new[] { "byte", "sbyte", "ushort", "uint", "ulong", "short", "int", "long", "decimal", "double", "float" };
-        var csArgs = string.Join(", ", nums.Select(n => n + " v" + Array.IndexOf(nums, n)));
-        var tsArgs = string.Join(", ", nums.Select(n => "v" + Array.IndexOf(nums, n) + ": number"));
+        var csArgs = string.Join(", ", nums.Select(n => $"{n} v{Array.IndexOf(nums, n)}"));
+        var tsArgs = string.Join(", ", nums.Select(n => $"v{Array.IndexOf(nums, n)}: number"));
         Data.AddAssembly($"[JSInvokable] public static void Num ({csArgs}) {{}}");
         Task.Execute();
         Contains($"Num: ({tsArgs})");
@@ -121,6 +132,4 @@ public sealed class TypesTest : BuildTest
         Task.Execute();
         Contains("Method: (t: any) => any");
     }
-
-    private void Contains (string content) => Assert.Contains(content, Data.GeneratedTypes);
 }

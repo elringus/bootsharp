@@ -61,8 +61,9 @@ internal class TypeGenerator
         var prevAssembly = declaredAssemblies.Count > 0 ? declaredAssemblies.Peek() : null;
         declaredAssemblies.Push(assembly);
         if (prevAssembly == assembly) return;
-        if (prevAssembly != null) builder.Append('\n').Append(GenerateAssemblyFooter(prevAssembly));
-        builder.Append('\n').Append(GenerateAssemblyHeader(assembly)).Append('\n');
+        var export = prevAssembly is null || !HasSameAssemblyRoot(assembly, prevAssembly);
+        if (export && prevAssembly != null) builder.Append('\n').Append(GenerateAssemblyFooter(prevAssembly));
+        builder.Append('\n').Append(GenerateAssemblyHeader(assembly, export)).Append('\n');
     }
 
     private static bool ShouldExportDefinition (TypeDefinition definition)
@@ -95,9 +96,16 @@ internal class TypeGenerator
         return source;
     }
 
-    private static string GenerateAssemblyHeader (string assembly)
+    private static bool HasSameAssemblyRoot (string assemblyA, string assemblyB)
     {
-        var declaration = "export declare const";
+        var partsA = assemblyA.Split(".");
+        var partsB = assemblyB.Split(".");
+        return partsA.Length > 0 && partsB.Length > 0 && partsA[0] == partsB[0];
+    }
+
+    private static string GenerateAssemblyHeader (string assembly, bool export)
+    {
+        var declaration = export ? "export declare const" : "";
         foreach (var name in assembly.Split('.'))
             declaration += $" {name}: {{";
         return declaration;

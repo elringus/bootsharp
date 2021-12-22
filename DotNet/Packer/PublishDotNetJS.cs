@@ -17,7 +17,7 @@ public class PublishDotNetJS : Task
     public bool EmitTypes { get; set; }
 
     private readonly AssemblyInspector inspector = new();
-    private readonly SourceGenerator sourceGenerator = new();
+    private readonly LibraryGenerator libraryGenerator = new();
     private readonly TypeGenerator typeGenerator = new();
 
     public override bool Execute ()
@@ -47,7 +47,7 @@ public class PublishDotNetJS : Task
     {
         var wasm = GetRuntimeWasm();
         var js = GetRuntimeJS();
-        return sourceGenerator.Generate(js, wasm, EntryAssemblyName, inspector);
+        return libraryGenerator.Generate(js, wasm, EntryAssemblyName, inspector);
     }
 
     private void PublishLibrary (string source)

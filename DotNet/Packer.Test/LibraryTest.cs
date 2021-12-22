@@ -1,10 +1,11 @@
-using System.Text.RegularExpressions;
 using Xunit;
 
 namespace Packer.Test;
 
-public class LibraryTest : BuildTest
+public class LibraryTest : ContentTest
 {
+    protected override string TestedContent => Data.GeneratedLibrary;
+
     [Fact]
     public void LibraryContainsJSRuntime ()
     {
@@ -21,13 +22,11 @@ public class LibraryTest : BuildTest
     }
 
     [Fact]
-    public void WhenAssemblyNameContainDotsObjectCreatedForEachPart ()
+    public void WhenAssemblyNameContainDotsObjectCreatedForEachPartInOrder ()
     {
         Data.AddAssemblyWithName("foo.bar.nya.dll", "[JSInvokable] public static void Bar () { }");
         Task.Execute();
-        Contains("exports.foo = {};");
-        Contains("exports.foo.bar = {};");
-        Contains("exports.foo.bar.nya = {};");
+        Matches(@"exports.foo = {};\s*exports.foo.bar = {};\s*exports.foo.bar.nya = {};");
     }
 
     [Fact]
@@ -42,12 +41,12 @@ public class LibraryTest : BuildTest
     }
 
     [Fact]
-    public void WhenMultipleAssembliesWithSameRootObjectIsPreserved ()
+    public void DifferentAssembliesWithSameRootAssignedToDifferentObjects ()
     {
         Data.AddAssemblyWithName("nya.foo.dll", "[JSInvokable] public static void Foo () { }");
         Data.AddAssemblyWithName("nya.bar.dll", "[JSFunction] public static void Fun () { }");
         Task.Execute();
-        Assert.True(Regex.Matches(Data.GeneratedLibrary, @"exports\.nya = \{}").Count == 1);
+        Assert.Single(Matches("exports.nya = {}"));
     }
 
     [Fact]
@@ -105,6 +104,4 @@ public class LibraryTest : BuildTest
         Contains("Asy = () => exports.invokeAsync");
         Contains("AsyValue = () => exports.invokeAsync");
     }
-
-    private void Contains (string content) => Assert.Contains(content, Data.GeneratedLibrary);
 }

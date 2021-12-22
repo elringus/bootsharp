@@ -10,6 +10,7 @@ describe("packed library", () => {
     });
     it("allows providing implementation for functions declared in C#", () => {
         packed.Test.Main.EchoFunction = value => value;
+        packed.Test.Types.GetRegistry = () => {};
     });
     it("can boot without specifying boot data", async () => {
         await assert.doesNotReject(packed.boot);

@@ -4,7 +4,7 @@ using static Packer.Utilities;
 
 namespace Packer;
 
-internal class SourceGenerator
+internal class LibraryGenerator
 {
     private const string exports = "exports";
     private const string moduleTemplate = @"%RUNTIME_JS%
@@ -26,11 +26,11 @@ internal class SourceGenerator
     };
 }));";
 
-    private readonly HashSet<string> declaredAssemblies = new();
+    private readonly HashSet<string> declaredObjects = new();
 
     public string Generate (string runtimeJS, string runtimeWasm, string entryName, AssemblyInspector inspector)
     {
-        declaredAssemblies.Clear();
+        declaredObjects.Clear();
         var initJS = GenerateInitJS(inspector.InvokableMethods, inspector.FunctionMethods);
         var bootJS = GenerateBootJS(inspector.FunctionMethods);
         var dlls = string.Join(", ", inspector.Assemblies.Select(GenerateAssembly));
@@ -67,7 +67,7 @@ internal class SourceGenerator
         var invoke = method.Async ? "invokeAsync" : "invoke";
         var body = $"{exports}.{invoke}({BuildMethodArgs()})";
         var js = $"{exports}.{method.Assembly}.{method.Name} = ({funcArgs}) => {body};";
-        return EnsureAssemblyDeclared(method.Assembly, js);
+        return EnsureAssemblyObjectsDeclared(method.Assembly, js);
 
         string BuildFuncArgs () => string.Join(", ", method.Arguments.Select(a => a.Name));
         string BuildMethodArgs () => $"'{method.Assembly}', '{method.Name}'" + (funcArgs == "" ? "" : $", {funcArgs}");
@@ -76,7 +76,7 @@ internal class SourceGenerator
     private string GenerateFunctionDeclaration (Method method)
     {
         var js = $"{exports}.{method.Assembly}.{method.Name} = undefined;";
-        return EnsureAssemblyDeclared(method.Assembly, js);
+        return EnsureAssemblyObjectsDeclared(method.Assembly, js);
     }
 
     private string GenerateFunctionBinding (Method method)
@@ -86,23 +86,25 @@ internal class SourceGenerator
         return $"{global} = {exports}.{method.Assembly}.{method.Name} || function() {{ {error} }}();";
     }
 
-    private string EnsureAssemblyDeclared (string assembly, string js)
+    private string EnsureAssemblyObjectsDeclared (string assembly, string js)
     {
-        if (declaredAssemblies.Add(assembly))
-            js = JoinLines(GenerateDeclarationsForAssembly(assembly), js);
+        var objects = BuildObjectNamesForAssembly(assembly);
+        foreach (var obj in objects)
+            if (declaredObjects.Add(obj))
+                js = JoinLines($"{exports}.{obj} = {{}};", js);
         return js;
     }
 
-    private string GenerateDeclarationsForAssembly (string assembly)
+    private List<string> BuildObjectNamesForAssembly (string assembly)
     {
         var parts = assembly.Split('.');
-        var declarations = "";
+        var names = new List<string>();
         for (int i = 0; i < parts.Length; i++)
         {
             var previousParts = i > 0 ? string.Join(".", parts.Take(i)) + "." : "";
-            var path = previousParts + parts[i];
-            declarations = JoinLines(declarations, $"{exports}.{path} = {{}};");
+            names.Add(previousParts + parts[i]);
         }
-        return declarations;
+        names.Reverse();
+        return names;
     }
 }

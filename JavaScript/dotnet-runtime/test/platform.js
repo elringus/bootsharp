@@ -1,9 +1,9 @@
 ﻿const assert = require("assert");
 const dotnet = require("../dist/dotnet");
-const { bootTest } = require("./project");
+const { bootTest } = require("./csharp");
 
-const invoke = (name, ...args) => dotnet.invoke("Test.Project", name, ...args);
-const invokeAsync = (name, ...args) => dotnet.invokeAsync("Test.Project", name, ...args);
+const invoke = (name, ...args) => dotnet.invoke("Test.Main", name, ...args);
+const invokeAsync = (name, ...args) => dotnet.invokeAsync("Test.Main", name, ...args);
 
 describe("platform", () => {
     before(bootTest);
