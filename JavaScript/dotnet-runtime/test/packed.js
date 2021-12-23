@@ -10,7 +10,12 @@ describe("packed library", () => {
     });
     it("allows providing implementation for functions declared in C#", () => {
         packed.Test.Main.EchoFunction = value => value;
-        packed.Test.Types.GetRegistry = () => {};
+        packed.Test.Types.GetRegistry = function () {
+            return {
+                wheeled: [{ maxSpeed: 1 }],
+                tracked: [{ maxSpeed: 2 }]
+            };
+        };
     });
     it("can boot without specifying boot data", async () => {
         await assert.doesNotReject(packed.boot);
@@ -32,6 +37,7 @@ describe("packed library", () => {
     });
     it("can interop via functions declared in C#", async () => {
         assert.deepStrictEqual(packed.Test.Main.TestEchoFunction("a"), "a");
+        assert.deepStrictEqual(packed.Test.Types.CountTotalSpeed(), 3);
     });
     it("still can interop via strings", async () => {
         assert.deepStrictEqual(packed.invoke("Test.Main", "JoinStrings", "a", "b"), "ab");

@@ -51,13 +51,6 @@ describe("interop", () => {
         const actual = dotnet.invoke("Test.Types", "EchoRegistry", expected);
         assert.deepStrictEqual(actual, expected);
     });
-    it("can process custom data types", () => {
-        const registry = {
-            wheeled: [{ maxSpeed: 1 }],
-            tracked: [{ maxSpeed: 2 }]
-        };
-        assert.deepStrictEqual(dotnet.invoke("Test.Types", "CountTotalSpeed", registry), 3);
-    });
     it("can invoke js function from dotnet", () => {
         let invokedFromDotNet = false;
         global.invokeFromDotNet = () => invokedFromDotNet = true;
