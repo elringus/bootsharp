@@ -56,7 +56,7 @@ public class TypesTest : ContentTest
         Data.AddAssemblyWithName("foo.dll", "[JSInvokable] public static void Foo () { }");
         Data.AddAssemblyWithName("bar.nya.dll", "[JSFunction] public static void Fun () { }");
         Task.Execute();
-        Contains("export declare const bar: { nya: {\n    Fun: () => void,\n};};");
+        Contains("export declare const bar: { nya: {\n    Fun: () => void,\n}};");
         Contains("export declare const foo: {\n    Foo: () => void,\n};");
     }
 
@@ -72,10 +72,11 @@ public class TypesTest : ContentTest
     [Fact]
     public void DifferentAssembliesWithSameRootAssignedToDifferentObjects ()
     {
-        Data.AddAssemblyWithName("nya.foo.dll", "[JSFunction] public static void Foo () { }");
         Data.AddAssemblyWithName("nya.bar.dll", "[JSFunction] public static void Fun () { }");
+        Data.AddAssemblyWithName("nya.foo.dll", "[JSFunction] public static void Foo () { }");
         Task.Execute();
-        Assert.Single(Matches("export declare const nya:"));
+        Contains("export declare const nya: { bar: {\n    Fun: () => void,");
+        Contains("}, foo: {\n    Foo: () => void,\n}};");
     }
 
     [Fact]

@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using static Packer.Utilities;
 
 namespace Packer;
 
 internal class TypeGenerator
 {
-    private readonly Stack<string> declaredAssemblies = new();
+    private readonly TypeMethodGenerator methodGenerator = new();
     private readonly List<TypeDefinition> definitions = new();
 
     public void LoadDefinitions (string directory)
@@ -25,18 +24,9 @@ internal class TypeGenerator
     public string Generate (AssemblyInspector inspector)
     {
         var methods = inspector.InvokableMethods.Concat(inspector.FunctionMethods).ToArray();
-        var methodsContent = GenerateForMethods(methods);
+        var methodsContent = methodGenerator.Generate(methods);
         var runtimeContent = JoinLines(definitions.Select(GenerateForDefinition), 0);
         return JoinLines(0, runtimeContent, methodsContent) + "\n";
-    }
-
-    private string GenerateForMethods (IReadOnlyCollection<Method> methods)
-    {
-        if (methods.Count == 0) return "";
-        var builder = new StringBuilder();
-        foreach (var method in methods.OrderBy(m => m.Assembly))
-            GenerateForMethod(method, builder);
-        return JoinLines(0, builder.ToString(), GenerateAssemblyFooter(declaredAssemblies.Peek()));
     }
 
     private string GenerateForDefinition (TypeDefinition definition)
@@ -47,23 +37,6 @@ internal class TypeGenerator
             if (line.StartsWith("import"))
                 source = source.Replace(line, GetSourceForImportLine(line));
         return ModifyInternalDeclarations(source);
-    }
-
-    private void GenerateForMethod (Method method, StringBuilder builder)
-    {
-        EnsureWrappedInAssembly(method.Assembly, builder);
-        var args = string.Join(", ", method.Arguments.Select(a => $"{a.Name}: {a.Type}"));
-        builder.Append($"\n    {method.Name}: ({args}) => {method.ReturnType},");
-    }
-
-    private void EnsureWrappedInAssembly (string assembly, StringBuilder builder)
-    {
-        var prevAssembly = declaredAssemblies.Count > 0 ? declaredAssemblies.Peek() : null;
-        declaredAssemblies.Push(assembly);
-        if (prevAssembly == assembly) return;
-        var export = prevAssembly is null || !HasSameAssemblyRoot(assembly, prevAssembly);
-        if (export && prevAssembly != null) builder.Append('\n').Append(GenerateAssemblyFooter(prevAssembly));
-        builder.Append('\n').Append(GenerateAssemblyHeader(assembly, export)).Append('\n');
     }
 
     private static bool ShouldExportDefinition (TypeDefinition definition)
@@ -94,26 +67,5 @@ internal class TypeGenerator
         source = source.Replace("export declare function initializeMono(assemblies: Assembly[]): void;", "");
         source = source.Replace("export declare function callEntryPoint(assemblyName: string): Promise<any>;", "");
         return source;
-    }
-
-    private static bool HasSameAssemblyRoot (string assemblyA, string assemblyB)
-    {
-        var partsA = assemblyA.Split(".");
-        var partsB = assemblyB.Split(".");
-        return partsA.Length > 0 && partsB.Length > 0 && partsA[0] == partsB[0];
-    }
-
-    private static string GenerateAssemblyHeader (string assembly, bool export)
-    {
-        var declaration = export ? "export declare const" : "";
-        foreach (var name in assembly.Split('.'))
-            declaration += $" {name}: {{";
-        return declaration;
-    }
-
-    private static string GenerateAssemblyFooter (string assembly)
-    {
-        var level = assembly.Count(c => c == '.') + 1;
-        return string.Concat(Enumerable.Repeat("};", level));
     }
 }
