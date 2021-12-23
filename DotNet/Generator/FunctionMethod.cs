@@ -23,7 +23,7 @@ namespace Generator
         {
             var model = compilation.GetSemanticModel(syntax.SyntaxTree);
             var symbol = model.GetEnclosingSymbol(syntax.SpanStart);
-            return symbol?.ContainingAssembly.Identity.Name;
+            return symbol!.ContainingAssembly.Identity.Name;
         }
 
         private string EmitSignature ()

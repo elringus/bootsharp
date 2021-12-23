@@ -34,14 +34,12 @@ public class JSRuntime : WebAssemblyJSRuntime, IJSRuntime
     {
         var assembly = Assembly.Load("Microsoft.AspNetCore.Components.WebAssembly");
         var type = assembly.GetType("Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime");
-        var instance = type?.GetField("Instance", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null);
-        return instance as WebAssemblyJSRuntime ?? throw new InvalidOperationException("Failed to access inbound runtime.");
+        return (WebAssemblyJSRuntime)type!.GetField("Instance", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!;
     }
 
     private static JsonSerializerOptions GetJsonSerializerOptions (WebAssemblyJSRuntime runtime)
     {
-        var options = typeof(Microsoft.JSInterop.JSRuntime).GetProperty(nameof(JsonSerializerOptions),
-            BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(runtime) as JsonSerializerOptions;
-        return options ?? throw new InvalidOperationException("Failed to access JSON serializer options of JS runtime.");
+        return (JsonSerializerOptions)typeof(Microsoft.JSInterop.JSRuntime).GetProperty(nameof(JsonSerializerOptions),
+            BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(runtime)!;
     }
 }
