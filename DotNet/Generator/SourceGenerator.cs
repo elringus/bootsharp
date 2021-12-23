@@ -2,10 +2,10 @@
 using System.Text;
 using Microsoft.CodeAnalysis;
 
-namespace DotNetJS.Generator
+namespace Generator
 {
     [Generator]
-    internal class SourceGenerator : ISourceGenerator
+    public class SourceGenerator : ISourceGenerator
     {
         public void Initialize (GeneratorInitializationContext context)
         {
@@ -22,7 +22,7 @@ namespace DotNetJS.Generator
         {
             var builder = new StringBuilder();
             foreach (var functionClass in functionClasses)
-                builder.AppendLine(functionClass.EmitSource(compilation));
+                builder.Append(functionClass.EmitSource(compilation) + '\n');
             return builder.ToString();
         }
     }

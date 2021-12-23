@@ -3,7 +3,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace DotNetJS.Generator
+namespace Generator
 {
     internal class FunctionClass
     {
@@ -31,7 +31,7 @@ namespace DotNetJS.Generator
 
         private string EmitMethods (Compilation compilation)
         {
-            var sources = methods.Select(m => m.EmitSource(compilation));
+            var sources = methods.Select(m => "    " + m.EmitSource(compilation));
             return string.Join("\n", sources);
         }
 
@@ -41,7 +41,7 @@ namespace DotNetJS.Generator
         {
             if (syntax.Parent is NamespaceDeclarationSyntax space)
                 return $"namespace {space.Name}\n{{\n{source}\n}}";
-            else if (syntax.Parent is FileScopedNamespaceDeclarationSyntax fileSpace)
+            if (syntax.Parent is FileScopedNamespaceDeclarationSyntax fileSpace)
                 return $"namespace {fileSpace.Name};\n{source}";
             return source;
         }

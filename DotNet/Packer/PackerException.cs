@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace DotNetJS.Packer
+namespace Packer;
+
+public class PackerException : Exception
 {
-    public class PackerException : Exception
-    {
-        public PackerException (string message) : base(message) { }
-    }
+    public PackerException (string message) : base(message) { }
 }

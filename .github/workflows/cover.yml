@@ -17,12 +17,13 @@ jobs:
         dotnet-version: 6.0.x
     - name: cover
       run: |
-          dotnet build DotNet/DotNetJS.sln
+          dotnet test DotNet/DotNetJS.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
           cd JavaScript/dotnet-runtime
           npm install
           npm run build
-          dotnet publish test/project/Test.Project.csproj
+          dotnet publish test/csharp/Test.sln
           npm install -g codecov
           npm install -g nyc
           nyc --reporter=lcov -x **/native -x **/bin npm run test
+          cd ../..
           codecov

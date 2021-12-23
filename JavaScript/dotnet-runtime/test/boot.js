@@ -1,6 +1,6 @@
 ﻿const assert = require("assert");
 const { boot, terminate, getBootStatus, BootStatus, invoke } = require("../dist/dotnet");
-const { bootTest, getBootData } = require("./project");
+const { bootTest, getBootData } = require("./csharp");
 const { Base64 } = require("js-base64");
 
 describe("boot", () => {
@@ -45,7 +45,7 @@ describe("boot", () => {
     });
     it("invokes entry point on boot", async () => {
         await bootTest();
-        assert(invoke("Test.Project", "IsMainInvoked"));
+        assert(invoke("Test.Main", "IsMainInvoked"));
         terminate();
     });
     it("terminates when booted", async () => {

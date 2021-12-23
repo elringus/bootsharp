@@ -115,16 +115,18 @@ Find the following sample projects in this repository:
 
 Specify following optional properties in .csproj to customize the build:
 
+ - `<Clean>false</Clean>` — don't clean publish directory.
  - `<EmitSourceMap>true</EmitSourceMap>` — emit JavaScript source map file.
  - `<EmitTypes>true</EmitTypes>` — emit TypeScript type definitions file.
 
-For example, following configuration will emit source map and type definitions:
+For example, following configuration will preserve build artifacts, emit source map and type definitions:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <Clean>false</Clean>
         <EmitSourceMap>true</EmitSourceMap>
         <EmitTypes>true</EmitTypes>
     </PropertyGroup>
@@ -138,14 +140,14 @@ For example, following configuration will emit source map and type definitions:
 
 ## JSON Serializer Options
 
-To override default JSON serializer options used for marshalling the interop data, use `JS.ConfigureJson` method before the program entry point is invoked. For example, below will add `JsonStringEnumConverter` converter to allow serializing enums via strings:
+To override default JSON serializer options used for marshalling the interop data, use `JS.Runtime.ConfigureJson` method before the program entry point is invoked. For example, below will add `JsonStringEnumConverter` converter to allow serializing enums via strings:
 
 ```csharp
 static class Program
 {
     static Program () // Static constructor is invoked before 'Main'
     {
-        JS.ConfigureJson(options =>
+        JS.Runtime.ConfigureJson(options =>
             options.Converters.Add(new JsonStringEnumConverter())
         );
     }
