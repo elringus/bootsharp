@@ -26,7 +26,6 @@ public static class Program
     [JSInvokable]
     public static bool IsMainInvoked () => mainInvoked;
 
-    // Required to load Test.Types; otherwise JS throws 'assembly not loaded'. 
-    // TODO: Figure if that's by design and/or find a workaround.
+    // https://github.com/Elringus/DotNetJS/issues/23
     private static void ForceLoadTypesAssembly () => Console.Write(typeof(Registry));
 }

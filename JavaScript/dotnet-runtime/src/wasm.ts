@@ -22,6 +22,6 @@ export function initializeWasm(wasmBinary: Uint8Array): Promise<void> {
 }
 
 export function destroyWasm(): void {
+    // https://github.com/Elringus/DotNetJS/issues/22
     // EM.ccall("emscripten_force_exit", null, ["number"], [0]);
-    // TODO: Find out how to destroy emscripten module (or if it's necessary).
 }

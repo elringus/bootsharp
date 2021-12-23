@@ -22,7 +22,6 @@ describe("export", () => {
         });
     });
     // Below globals are required for emscripten and blazor internals.
-    // TODO: Find a way to hide them from leaking to consumer global space.
     describe("blazor internal", () => {
         it("is defined after import", () => {
             const blazor = globalThis.Blazor._internal;
