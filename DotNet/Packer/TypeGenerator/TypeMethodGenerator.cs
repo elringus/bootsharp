@@ -77,11 +77,10 @@ internal class TypeMethodGenerator
     {
         var curParts = method.Assembly.Split('.');
         var deltaParts = deltaMethod?.Assembly.Split('.') ?? Array.Empty<string>();
-        var delta = curParts.Length;
         for (int i = 0; i < deltaParts.Length; i++)
-            if (i >= curParts.Length || curParts[i] != deltaParts[i]) break;
-            else delta--;
-        return delta;
+            if (i >= curParts.Length || curParts[i] != deltaParts[i])
+                return curParts.Length - i;
+        return curParts.Length;
     }
 
     private bool ShouldOpenRoot ()
