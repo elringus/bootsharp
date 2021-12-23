@@ -29,11 +29,9 @@ function loadAssembly(assembly: Assembly): void {
 }
 
 function injectCrypto(): void {
-    // Used by .NET for entropy-related activities (eg, GUID). Microsoft's implementation is for browsers only:
-    // https://github.com/dotnet/runtime/blob/release/6.0/src/libraries/Native/Unix/System.Native/pal_random.js
     if (typeof crypto === "object" && typeof crypto["getRandomValues"] === "function") return;
+    // https://github.com/Elringus/DotNetJS/issues/17
     globalThis.crypto = {
-        // TODO: This is not safe. Find a packable environment-agnostic crypto library.
         getRandomValues: buffer => {
             for (let i = 0; i < buffer.length; i++)
                 buffer[i] = (Math.random() * 256) | 0;
