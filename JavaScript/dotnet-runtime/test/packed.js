@@ -35,6 +35,7 @@ describe("packed library", () => {
     });
     it("still can interop via strings", async () => {
         assert.deepStrictEqual(packed.invoke("Test.Main", "JoinStrings", "a", "b"), "ab");
+        assert.deepStrictEqual(await packed.invokeAsync("Test.Main", "JoinStringsAsync", "a", "b"), "ab");
     });
     it("generates type definitions", () => {
         assert(getGeneratedTypes());
