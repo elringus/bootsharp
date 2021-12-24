@@ -5,18 +5,6 @@ const { packed, getGeneratedTypes, getGeneratedMap } = require("./csharp");
 
 describe("packed library", () => {
     after(packed.terminate);
-    it("throws on boot when a C#-declared function is missing implementation", async () => {
-        await assert.rejects(packed.boot, /Function 'dotnet.Test.Main.EchoFunction' is not implemented\./);
-    });
-    it("allows providing implementation for functions declared in C#", () => {
-        packed.Test.Main.EchoFunction = value => value;
-        packed.Test.Types.GetRegistry = function () {
-            return {
-                wheeled: [{ maxSpeed: 1 }],
-                tracked: [{ maxSpeed: 2 }]
-            };
-        };
-    });
     it("can boot without specifying boot data", async () => {
         await assert.doesNotReject(packed.boot);
         assert.deepStrictEqual(packed.getBootStatus(), packed.BootStatus.Booted);
@@ -31,11 +19,17 @@ describe("packed library", () => {
         assert(packed.disposeObjectReference instanceof Function);
         assert(packed.createStreamReference instanceof Function);
     });
-    it("provides exposed C# methods grouped under assembly object", async () => {
+    it("exports C# methods grouped under assembly object", async () => {
         assert.deepStrictEqual(packed.Test.Main.JoinStrings("a", "b"), "ab");
         assert.deepStrictEqual(await packed.Test.Main.JoinStringsAsync("c", "d"), "cd");
     });
-    it("can interop via functions declared in C#", async () => {
+    it("when function is not implemented error is thrown", async () => {
+        assert.throws(() => packed.Test.Main.TestEchoFunction(""), /.*JSException/);
+        assert.throws(() => packed.Test.Types.CountTotalSpeed(), /.*JSException/);
+    });
+    it("can implement functions declared in C#", async () => {
+        packed.Test.Main.EchoFunction = value => value;
+        packed.Test.Types.GetRegistry = () => ({ wheeled: [{ maxSpeed: 1 }], tracked: [{ maxSpeed: 2 }] });
         assert.deepStrictEqual(packed.Test.Main.TestEchoFunction("a"), "a");
         assert.deepStrictEqual(packed.Test.Types.CountTotalSpeed(), 3);
     });

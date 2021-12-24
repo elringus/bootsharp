@@ -16,7 +16,6 @@ internal class LibraryGenerator
     %INIT_JS%
     const bootWithData = exports.boot;
     exports.boot = async function () {
-        %BOOT_JS%
         const bootData = {
             wasm: '%WASM%',
             assemblies: [%DLLS%],
@@ -24,6 +23,7 @@ internal class LibraryGenerator
         };
         await bootWithData(bootData);
     };
+    global.dotnet = exports;
 }));";
 
     private readonly HashSet<string> declaredObjects = new();
@@ -32,15 +32,13 @@ internal class LibraryGenerator
     {
         declaredObjects.Clear();
         var initJS = GenerateInitJS(inspector.InvokableMethods, inspector.FunctionMethods);
-        var bootJS = GenerateBootJS(inspector.FunctionMethods);
         var dlls = string.Join(", ", inspector.Assemblies.Select(GenerateAssembly));
         return moduleTemplate
             .Replace("%RUNTIME_JS%", runtimeJS)
             .Replace("%ENTRY%", entryName)
             .Replace("%WASM%", runtimeWasm)
             .Replace("%DLLS%", dlls)
-            .Replace("%INIT_JS%", initJS)
-            .Replace("%BOOT_JS%", bootJS);
+            .Replace("%INIT_JS%", initJS);
     }
 
     private string GenerateAssembly (Assembly assembly)
@@ -54,11 +52,6 @@ internal class LibraryGenerator
             JoinLines(invokable.Select(GenerateInvokableBinding)),
             JoinLines(functions.Select(GenerateFunctionDeclaration))
         );
-    }
-
-    private string GenerateBootJS (IEnumerable<Method> functions)
-    {
-        return JoinLines(functions.Select(GenerateFunctionBinding), 2);
     }
 
     private string GenerateInvokableBinding (Method method)
@@ -77,13 +70,6 @@ internal class LibraryGenerator
     {
         var js = $"{exports}.{method.Assembly}.{method.Name} = undefined;";
         return EnsureAssemblyObjectsDeclared(method.Assembly, js);
-    }
-
-    private string GenerateFunctionBinding (Method method)
-    {
-        var global = $"global.DotNetJS_functions_{method.Assembly.Replace('.', '_')}_{method.Name}";
-        var error = $"throw new Error(\"Function 'dotnet.{method.Assembly}.{method.Name}' is not implemented.\");";
-        return $"{global} = {exports}.{method.Assembly}.{method.Name} || function() {{ {error} }}();";
     }
 
     private string EnsureAssemblyObjectsDeclared (string assembly, string js)

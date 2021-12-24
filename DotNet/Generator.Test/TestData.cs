@@ -18,7 +18,7 @@ partial class Foo
             @"
 partial class Foo
 {
-    partial void Bar () => JS.Invoke(""DotNetJS_functions_TestProject_Bar"");
+    partial void Bar () => JS.Invoke(""dotnet.TestProject.Bar"");
 }
 "
         },
@@ -35,7 +35,7 @@ public static partial class Foo
 namespace FileScoped;
 public static partial class Foo
 {
-    private static partial Task BarAsync (string a, int b) => JS.InvokeAsync(""DotNetJS_functions_TestProject_BarAsync"", a, b);
+    private static partial Task BarAsync (string a, int b) => JS.InvokeAsync(""dotnet.TestProject.BarAsync"", a, b);
 }
 "
         },
@@ -57,8 +57,8 @@ namespace Classic
 {
 partial class Foo
 {
-    partial DateTime GetTime (DateTime time) => JS.Invoke<DateTime>(""DotNetJS_functions_TestProject_GetTime"", time);
-    partial ValueTask<DateTime> GetTimeAsync (DateTime time) => JS.InvokeAsync<DateTime>(""DotNetJS_functions_TestProject_GetTimeAsync"", time);
+    partial DateTime GetTime (DateTime time) => JS.Invoke<DateTime>(""dotnet.TestProject.GetTime"", time);
+    partial ValueTask<DateTime> GetTimeAsync (DateTime time) => JS.InvokeAsync<DateTime>(""dotnet.TestProject.GetTimeAsync"", time);
 }
 }
 "

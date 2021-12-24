@@ -66,15 +66,6 @@ public class LibraryTest : ContentTest
     }
 
     [Fact]
-    public void BindFunctionIsAssertedAndAssignedToGlobal ()
-    {
-        Data.AddAssemblyWithName("foo.bar.dll", "[JSFunction] public static void Fun () { }");
-        Task.Execute();
-        Contains("global.DotNetJS_functions_foo_bar_Fun = exports.foo.bar.Fun || " +
-                 "function() { throw new Error(\"Function 'dotnet.foo.bar.Fun' is not implemented.\"); }();");
-    }
-
-    [Fact]
     public void BindingsFromMultipleAssembliesAssignedToRespectiveObjects ()
     {
         Data.AddAssemblyWithName("foo.dll", "[JSInvokable] public static void Foo () { }");
@@ -82,7 +73,6 @@ public class LibraryTest : ContentTest
         Task.Execute();
         Contains("exports.foo.Foo = () => exports.invoke('foo', 'Foo');");
         Contains("exports.bar.nya.Fun = undefined;");
-        Contains("global.DotNetJS_functions_bar_nya_Fun = exports.bar.nya.Fun ||");
     }
 
     [Fact]
