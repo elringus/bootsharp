@@ -62,6 +62,6 @@ partial class Foo
 }
 }
 "
-        },
+        }
     };
 }
