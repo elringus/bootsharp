@@ -10,5 +10,5 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - name: editorconfig
-      uses: zbeekman/EditorConfig-Action@v1.1.1
+    - uses: actions/checkout@v2
+    - uses: github/super-linter@v4
