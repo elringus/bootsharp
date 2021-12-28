@@ -1,8 +1,8 @@
 {
-  "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
-    "strict": true
-  },
-  "include": ["src/**/*.ts"]
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "strict": true
+    },
+    "include": ["src/**/*.ts"]
 }
