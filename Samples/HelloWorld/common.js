@@ -1,4 +1,4 @@
-// Example on consuming the library as CommonJS module. 
+// Example on consuming the library as CommonJS module.
 // Run 'node common.js' to test.
 
 const dotnet = require("./Project/bin/dotnet");
