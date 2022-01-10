@@ -28,18 +28,18 @@ public class PublishTest : BuildTest
     }
 
     [Fact]
-    public void TypesNotPublishedByDefault ()
+    public void TypesPublishedByDefault ()
     {
         Task.Execute();
-        Assert.Null(Data.GeneratedTypes);
+        Assert.NotNull(Data.GeneratedTypes);
     }
 
     [Fact]
-    public void TypesPublishedWhenRequested ()
+    public void TypesNotPublishedWhenRequested ()
     {
-        Task.EmitTypes = true;
+        Task.EmitTypes = false;
         Task.Execute();
-        Assert.NotNull(Data.GeneratedTypes);
+        Assert.Null(Data.GeneratedTypes);
     }
 
     [Fact]

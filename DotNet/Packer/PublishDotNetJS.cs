@@ -14,7 +14,7 @@ public class PublishDotNetJS : Task
     [Required] public string EntryAssemblyName { get; set; }
     public bool Clean { get; set; } = true;
     public bool EmitSourceMap { get; set; }
-    public bool EmitTypes { get; set; }
+    public bool EmitTypes { get; set; } = true;
 
     private readonly AssemblyInspector inspector = new();
     private readonly LibraryGenerator libraryGenerator = new();

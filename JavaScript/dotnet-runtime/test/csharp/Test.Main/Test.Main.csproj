@@ -4,7 +4,6 @@
         <TargetFramework>net6.0</TargetFramework>
         <Clean>false</Clean>
         <EmitSourceMap>true</EmitSourceMap>
-        <EmitTypes>true</EmitTypes>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>
         <DotNetRoot>../../../../../DotNet</DotNetRoot>

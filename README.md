@@ -118,9 +118,9 @@ Specify following optional properties in .csproj to customize the build:
 
 - `<Clean>false</Clean>` — don't clean publish directory.
 - `<EmitSourceMap>true</EmitSourceMap>` — emit JavaScript source map file.
-- `<EmitTypes>true</EmitTypes>` — emit TypeScript type definitions file.
+- `<EmitTypes>false</EmitTypes>` — do not emit TypeScript type definitions file.
 
-For example, following configuration will preserve build artifacts, emit source map and type definitions:
+For example, following configuration will preserve build artifacts, emit source map and do not emit type definitions:
 
 ```xml
 
@@ -130,7 +130,7 @@ For example, following configuration will preserve build artifacts, emit source 
         <TargetFramework>net6.0</TargetFramework>
         <Clean>false</Clean>
         <EmitSourceMap>true</EmitSourceMap>
-        <EmitTypes>true</EmitTypes>
+        <EmitTypes>false</EmitTypes>
     </PropertyGroup>
 
     <ItemGroup>

@@ -2,12 +2,10 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <EmitSourceMap>true</EmitSourceMap>
-        <EmitTypes>true</EmitTypes>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DotNetJS" Version="0.4.0" />
+        <PackageReference Include="DotNetJS" Version="*" />
     </ItemGroup>
 
 </Project>
