@@ -59,7 +59,7 @@ internal class ObjectTypeGenerator
     {
         builder.Append($"export enum {enumType.Name} {{\n");
         builder.AppendJoin(",\n", Enum.GetNames(enumType).Select(e => $"    {e}"));
-        builder.Append("\n}");
+        builder.Append("\n}\n");
     }
 
     private void GenerateForContent (string content)
