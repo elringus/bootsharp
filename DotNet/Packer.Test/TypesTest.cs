@@ -127,15 +127,67 @@ public class TypesTest : ContentTest
     }
 
     [Fact]
+    public void ListAndArrayTranslatedToArray ()
+    {
+        Data.AddAssembly("[JSInvokable] public static List<string> Goo (DateTime[] d) => default;");
+        Task.Execute();
+        Contains("Goo: (d: Array<Date>) => Array<string>");
+    }
+
+    [Fact]
     public void DefinitionIsGeneratedForObjectType ()
     {
         Data.AddAssembly(
-            "public class Foo { public string Bar { get; set; } }" +
+            "public class Foo { public string Str { get; set; } public int Int { get; set; } }" +
             "[JSInvokable] public static Foo Method (Foo t) => default;"
         );
         Task.Execute();
-        Matches(@"export class Foo {\s*bar: string;\s*}");
+        Matches(@"export class Foo {\s*str: string;\s*int: number;\s*}");
         Contains("Method: (t: Foo) => Foo");
+    }
+
+    [Fact]
+    public void DefinitionIsGeneratedForInterfaceAndImplementation ()
+    {
+        Data.AddAssembly(
+            "public interface Base { Base Foo { get; } void Bar (Base b); }" +
+            "public class Derived : Base { public Base Foo { get; } public void Bar (Base b) {} }" +
+            "[JSInvokable] public static Derived Method (Base b) => default;"
+        );
+        Task.Execute();
+        Matches(@"export interface Base {\s*foo: Base;\s*}");
+        Matches(@"export class Derived implements Base {\s*foo: Base;\s*}");
+        Contains("Method: (b: Base) => Derived");
+    }
+
+    [Fact]
+    public void DefinitionIsGeneratedForTypeWithListProperty ()
+    {
+        Data.AddAssembly(
+            "public interface Item { }" +
+            "public class Container { public List<Item> Items { get; } }" +
+            "[JSInvokable] public static Container Combine (List<Item> items) => default;"
+        );
+        Task.Execute();
+        Matches(@"export interface Item {\s*}");
+        Matches(@"export class Container {\s*items: Array<Item>;\s*}");
+        Contains("Combine: (items: Array<Item>) => Container");
+    }
+
+    [Fact]
+    public void CanCrawlCustomTypes ()
+    {
+        Data.AddAssembly(
+            "public enum Nyam { A, B }" +
+            "public class Foo { public Nyam Nyam { get; } }" +
+            "public class Bar : Foo { }" +
+            "public class Barrel { public List<Bar> Bars { get; } }" +
+            "[JSInvokable] public static Barrel GetBarrel () => default;"
+        );
+        Task.Execute();
+        Matches(@"export enum Nyam {\s*A,\s*B\s*}");
+        Matches(@"export class Foo {\s*nyam: Nyam;\s*}");
+        Matches(@"export class Bar extends Foo {\s*}");
     }
 
     [Fact]

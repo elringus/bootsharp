@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using TypeScriptModelsGenerator;
 using static Packer.Utilities;
 
 namespace Packer;
@@ -15,10 +14,10 @@ internal class AssemblyInspector
     public List<Assembly> Assemblies { get; } = new();
     public List<Method> InvokableMethods { get; } = new();
     public List<Method> FunctionMethods { get; } = new();
-    public List<TypeScriptFile> TypeScriptFiles { get; } = new();
+    public string ObjectDefinitions { get; private set; }
 
     private readonly List<string> warnings = new();
-    private readonly HashSet<Type> objectTypes = new();
+    private readonly ObjectTypeGenerator objectGenerator = new();
 
     public void InspectInDirectory (string directory)
     {
@@ -27,7 +26,7 @@ internal class AssemblyInspector
         foreach (var assemblyPath in assemblyPaths)
             try { InspectAssembly(assemblyPath, context); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
-        GenerateObjectTypeDefinitions();
+        ObjectDefinitions = objectGenerator.GenerateDefinitions();
     }
 
     public void Report (TaskLoggingHelper logger)
@@ -55,7 +54,7 @@ internal class AssemblyInspector
         var name = Path.GetFileName(assemblyPath);
         var base64 = ReadBase64(assemblyPath);
         Assemblies.Add(new Assembly(name, base64));
-        if (ShouldInspectMethods(assemblyPath))
+        if (!TypeConversion.ShouldIgnoreAssembly(assemblyPath))
             InspectMethods(context.LoadFromAssemblyPath(assemblyPath));
     }
 
@@ -65,21 +64,6 @@ internal class AssemblyInspector
         var message = $"Failed to inspect '{assemblyName}' assembly; " +
                       $"affected methods won't be available in JavaScript. Error: {exception.Message}";
         warnings.Add(message);
-    }
-
-    private void GenerateObjectTypeDefinitions ()
-    {
-        TypeScriptModelsGeneration.Setup(objectTypes).Execute(out var result);
-        TypeScriptFiles.AddRange(result.Files);
-    }
-
-    private bool ShouldInspectMethods (string assemblyPath)
-    {
-        var assemblyName = Path.GetFileName(assemblyPath);
-        if (assemblyName.StartsWith("System.")) return false;
-        if (assemblyName.StartsWith("Microsoft.")) return false;
-        if (assemblyName.StartsWith("TypeScriptModelsGenerator")) return false;
-        return true;
     }
 
     private void InspectMethods (System.Reflection.Assembly assembly)
@@ -107,9 +91,9 @@ internal class AssemblyInspector
 
     private string ConvertType (Type type)
     {
-        if (Type.GetTypeCode(type) == TypeCode.Object)
-            objectTypes.Add(type);
-        return TypeConversion.ToTypeScript(type);
+        if (!TypeConversion.ShouldConvertToObjectType(type))
+            return TypeConversion.ToTypeScript(type);
+        return TypeConversion.ConvertToObjectType(type, objectGenerator);
     }
 
     private static string ReadBase64 (string filePath)

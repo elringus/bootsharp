@@ -43,7 +43,7 @@ public static class MockAssembly
 
     private static string BuildFileSource (IEnumerable<string> sources)
     {
-        var usings = new[] { "System", "System.Threading.Tasks", "DotNetJS", "Microsoft.JSInterop" };
+        var usings = new[] { "System", "System.Collections.Generic", "System.Threading.Tasks", "DotNetJS", "Microsoft.JSInterop" };
         var source = $"public class c{Guid.NewGuid():N} {{ {string.Join('\n', sources)} }}";
         return string.Join('\n', usings.Select(u => $"using {u};")) + source;
     }
