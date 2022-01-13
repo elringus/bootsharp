@@ -6,6 +6,7 @@ using DotNetJS;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.JSInterop;
+using TypeScriptModelsGenerator;
 using Xunit;
 
 namespace Packer.Test;
@@ -35,13 +36,14 @@ public static class MockAssembly
             MetadataReference.CreateFromFile(Path.Combine(coreDir, "System.Runtime.dll")),
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(JSFunctionAttribute).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JSInvokableAttribute).Assembly.Location)
+            MetadataReference.CreateFromFile(typeof(JSInvokableAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(TypeScriptModelsGeneration).Assembly.Location)
         };
     }
 
     private static string BuildFileSource (IEnumerable<string> sources)
     {
-        var usings = new[] { "System", "System.Threading.Tasks", "DotNetJS", "Microsoft.JSInterop" };
+        var usings = new[] { "System", "System.Collections.Generic", "System.Threading.Tasks", "DotNetJS", "Microsoft.JSInterop" };
         var source = $"public class c{Guid.NewGuid():N} {{ {string.Join('\n', sources)} }}";
         return string.Join('\n', usings.Select(u => $"using {u};")) + source;
     }

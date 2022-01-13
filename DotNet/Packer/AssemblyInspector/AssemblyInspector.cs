@@ -11,14 +11,13 @@ namespace Packer;
 
 internal class AssemblyInspector
 {
-    public IReadOnlyCollection<Assembly> Assemblies => assemblies;
-    public IReadOnlyCollection<Method> InvokableMethods => invokableMethods;
-    public IReadOnlyCollection<Method> FunctionMethods => functionMethods;
+    public List<Assembly> Assemblies { get; } = new();
+    public List<Method> InvokableMethods { get; } = new();
+    public List<Method> FunctionMethods { get; } = new();
+    public string ObjectDefinitions { get; private set; }
 
-    private readonly List<Assembly> assemblies = new();
-    private readonly List<Method> invokableMethods = new();
-    private readonly List<Method> functionMethods = new();
     private readonly List<string> warnings = new();
+    private readonly ObjectTypeGenerator objectGenerator = new();
 
     public void InspectInDirectory (string directory)
     {
@@ -27,6 +26,7 @@ internal class AssemblyInspector
         foreach (var assemblyPath in assemblyPaths)
             try { InspectAssembly(assemblyPath, context); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
+        ObjectDefinitions = objectGenerator.GenerateDefinitions();
     }
 
     public void Report (TaskLoggingHelper logger)
@@ -51,11 +51,10 @@ internal class AssemblyInspector
 
     private void InspectAssembly (string assemblyPath, MetadataLoadContext context)
     {
-        assemblies.Add(new Assembly {
-            Name = Path.GetFileName(assemblyPath),
-            Base64 = ReadBase64(assemblyPath)
-        });
-        if (ShouldInspectMethods(assemblyPath))
+        var name = Path.GetFileName(assemblyPath);
+        var base64 = ReadBase64(assemblyPath);
+        Assemblies.Add(new Assembly(name, base64));
+        if (!TypeConversion.ShouldIgnoreAssembly(assemblyPath))
             InspectMethods(context.LoadFromAssemblyPath(assemblyPath));
     }
 
@@ -67,22 +66,34 @@ internal class AssemblyInspector
         warnings.Add(message);
     }
 
-    private bool ShouldInspectMethods (string assemblyPath)
-    {
-        var assemblyName = Path.GetFileName(assemblyPath);
-        if (assemblyName.StartsWith("System.")) return false;
-        if (assemblyName.StartsWith("Microsoft.")) return false;
-        return true;
-    }
-
     private void InspectMethods (System.Reflection.Assembly assembly)
     {
         foreach (var method in GetStaticMethods(assembly))
         foreach (var attribute in method.CustomAttributes)
             if (attribute.AttributeType.Name == Attributes.Invokable)
-                invokableMethods.Add(new Method(method));
+                InvokableMethods.Add(CreateMethod(method));
             else if (attribute.AttributeType.Name == Attributes.Function)
-                functionMethods.Add(new Method(method));
+                FunctionMethods.Add(CreateMethod(method));
+    }
+
+    private Method CreateMethod (MethodInfo info) => new() {
+        Name = info.Name,
+        Assembly = info.DeclaringType!.Assembly.GetName().Name,
+        Arguments = info.GetParameters().Select(CreateArgument).ToArray(),
+        ReturnType = ConvertType(info.ReturnType),
+        Async = TypeConversion.IsAwaitable(info.ReturnType)
+    };
+
+    private Argument CreateArgument (ParameterInfo info) => new() {
+        Name = info.Name == "function" ? "fn" : info.Name,
+        Type = ConvertType(info.ParameterType)
+    };
+
+    private string ConvertType (Type type)
+    {
+        if (!TypeConversion.ShouldConvertToObjectType(type))
+            return TypeConversion.ToTypeScript(type);
+        return TypeConversion.ConvertToObjectType(type, objectGenerator);
     }
 
     private static string ReadBase64 (string filePath)

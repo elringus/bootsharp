@@ -1,39 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace Packer;
 
-internal class Method
+internal record Method
 {
-    public string Name { get; }
-    public string Assembly { get; }
-    public IReadOnlyList<Argument> Arguments { get; }
-    public string ReturnType { get; }
-    public bool Async { get; }
-
-    public Method (MethodInfo info)
-    {
-        Name = info.Name;
-        Assembly = GetAssemblyName(info);
-        Arguments = GetArguments(info);
-        ReturnType = TypeConversion.ToTypeScript(info.ReturnType);
-        Async = TypeConversion.IsAwaitable(info.ReturnType);
-    }
+    public string Name { get; init; }
+    public string Assembly { get; init; }
+    public IReadOnlyList<Argument> Arguments { get; init; }
+    public string ReturnType { get; init; }
+    public bool Async { get; init; }
 
     public override string ToString ()
     {
         var args = string.Join(", ", Arguments.Select(a => a.ToString()));
         return $"{Assembly}.{Name} ({args}) => {ReturnType}";
-    }
-
-    private string GetAssemblyName (MemberInfo member)
-    {
-        return member.DeclaringType!.Assembly.GetName().Name;
-    }
-
-    private Argument[] GetArguments (MethodInfo info)
-    {
-        return info.GetParameters().Select(p => new Argument(p)).ToArray();
     }
 }
