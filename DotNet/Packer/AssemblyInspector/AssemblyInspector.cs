@@ -5,20 +5,20 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using TypeScriptModelsGenerator;
 using static Packer.Utilities;
 
 namespace Packer;
 
 internal class AssemblyInspector
 {
-    public IReadOnlyCollection<Assembly> Assemblies => assemblies;
-    public IReadOnlyCollection<Method> InvokableMethods => invokableMethods;
-    public IReadOnlyCollection<Method> FunctionMethods => functionMethods;
+    public List<Assembly> Assemblies { get; } = new();
+    public List<Method> InvokableMethods { get; } = new();
+    public List<Method> FunctionMethods { get; } = new();
+    public List<TypeScriptFile> TypeScriptFiles { get; } = new();
 
-    private readonly List<Assembly> assemblies = new();
-    private readonly List<Method> invokableMethods = new();
-    private readonly List<Method> functionMethods = new();
     private readonly List<string> warnings = new();
+    private readonly HashSet<Type> objectTypes = new();
 
     public void InspectInDirectory (string directory)
     {
@@ -27,6 +27,7 @@ internal class AssemblyInspector
         foreach (var assemblyPath in assemblyPaths)
             try { InspectAssembly(assemblyPath, context); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
+        GenerateObjectTypeDefinitions();
     }
 
     public void Report (TaskLoggingHelper logger)
@@ -51,10 +52,9 @@ internal class AssemblyInspector
 
     private void InspectAssembly (string assemblyPath, MetadataLoadContext context)
     {
-        assemblies.Add(new Assembly {
-            Name = Path.GetFileName(assemblyPath),
-            Base64 = ReadBase64(assemblyPath)
-        });
+        var name = Path.GetFileName(assemblyPath);
+        var base64 = ReadBase64(assemblyPath);
+        Assemblies.Add(new Assembly(name, base64));
         if (ShouldInspectMethods(assemblyPath))
             InspectMethods(context.LoadFromAssemblyPath(assemblyPath));
     }
@@ -67,11 +67,18 @@ internal class AssemblyInspector
         warnings.Add(message);
     }
 
+    private void GenerateObjectTypeDefinitions ()
+    {
+        TypeScriptModelsGeneration.Setup(objectTypes).Execute(out var result);
+        TypeScriptFiles.AddRange(result.Files);
+    }
+
     private bool ShouldInspectMethods (string assemblyPath)
     {
         var assemblyName = Path.GetFileName(assemblyPath);
         if (assemblyName.StartsWith("System.")) return false;
         if (assemblyName.StartsWith("Microsoft.")) return false;
+        if (assemblyName.StartsWith("TypeScriptModelsGenerator")) return false;
         return true;
     }
 
@@ -80,9 +87,29 @@ internal class AssemblyInspector
         foreach (var method in GetStaticMethods(assembly))
         foreach (var attribute in method.CustomAttributes)
             if (attribute.AttributeType.Name == Attributes.Invokable)
-                invokableMethods.Add(new Method(method));
+                InvokableMethods.Add(CreateMethod(method));
             else if (attribute.AttributeType.Name == Attributes.Function)
-                functionMethods.Add(new Method(method));
+                FunctionMethods.Add(CreateMethod(method));
+    }
+
+    private Method CreateMethod (MethodInfo info) => new() {
+        Name = info.Name,
+        Assembly = info.DeclaringType!.Assembly.GetName().Name,
+        Arguments = info.GetParameters().Select(CreateArgument).ToArray(),
+        ReturnType = ConvertType(info.ReturnType),
+        Async = TypeConversion.IsAwaitable(info.ReturnType)
+    };
+
+    private Argument CreateArgument (ParameterInfo info) => new() {
+        Name = info.Name == "function" ? "fn" : info.Name,
+        Type = ConvertType(info.ParameterType)
+    };
+
+    private string ConvertType (Type type)
+    {
+        if (Type.GetTypeCode(type) == TypeCode.Object)
+            objectTypes.Add(type);
+        return TypeConversion.ToTypeScript(type);
     }
 
     private static string ReadBase64 (string filePath)

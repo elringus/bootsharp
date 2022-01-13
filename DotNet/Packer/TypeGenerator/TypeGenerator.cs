@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using TypeScriptModelsGenerator;
 using static Packer.Utilities;
 
 namespace Packer;
@@ -26,7 +27,8 @@ internal class TypeGenerator
         var methods = inspector.InvokableMethods.Concat(inspector.FunctionMethods).ToArray();
         var methodsContent = methodGenerator.Generate(methods);
         var runtimeContent = JoinLines(definitions.Select(GenerateForDefinition), 0);
-        return JoinLines(0, runtimeContent, methodsContent) + "\n";
+        var tsContent = JoinLines(inspector.TypeScriptFiles.Select(GenerateForTypeScriptFile), 0);
+        return JoinLines(0, runtimeContent, tsContent, methodsContent) + "\n";
     }
 
     private string GenerateForDefinition (TypeDefinition definition)
@@ -37,6 +39,11 @@ internal class TypeGenerator
             if (line.StartsWith("import"))
                 source = source.Replace(line, GetSourceForImportLine(line));
         return ModifyInternalDeclarations(source);
+    }
+
+    private string GenerateForTypeScriptFile (TypeScriptFile file)
+    {
+        return "";
     }
 
     private static bool ShouldExportDefinition (TypeDefinition definition)

@@ -127,9 +127,21 @@ public class TypesTest : ContentTest
     }
 
     [Fact]
-    public void OtherTypesTranslatedToAny ()
+    public void DefinitionIsGeneratedForObjectType ()
     {
-        Data.AddAssembly("[JSInvokable] public static Type Method (Type t) => default;");
+        Data.AddAssembly(
+            "public class Foo { public string Bar { get; set; } }" +
+            "[JSInvokable] public static Foo Method (Foo t) => default;"
+        );
+        Task.Execute();
+        Matches(@"export class Foo {\s*bar: string;\s*}");
+        Contains("Method: (t: Foo) => Foo");
+    }
+
+    [Fact]
+    public void OtherTypesAreTranslatedToAny ()
+    {
+        Data.AddAssembly("[JSInvokable] public static DBNull Method (DBNull t) => default;");
         Task.Execute();
         Contains("Method: (t: any) => any");
     }

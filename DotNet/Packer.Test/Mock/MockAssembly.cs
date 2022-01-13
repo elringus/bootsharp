@@ -6,6 +6,7 @@ using DotNetJS;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.JSInterop;
+using TypeScriptModelsGenerator;
 using Xunit;
 
 namespace Packer.Test;
@@ -35,7 +36,8 @@ public static class MockAssembly
             MetadataReference.CreateFromFile(Path.Combine(coreDir, "System.Runtime.dll")),
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(JSFunctionAttribute).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JSInvokableAttribute).Assembly.Location)
+            MetadataReference.CreateFromFile(typeof(JSInvokableAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(TypeScriptModelsGeneration).Assembly.Location)
         };
     }
 

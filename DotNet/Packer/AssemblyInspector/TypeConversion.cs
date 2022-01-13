@@ -26,6 +26,7 @@ internal static class TypeConversion
             case TypeCode.Char:
             case TypeCode.String: return "string";
             case TypeCode.DateTime: return "Date";
+            case TypeCode.Object: return type.Name;
             default: return "any";
         }
     }

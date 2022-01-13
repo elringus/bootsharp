@@ -1,23 +1,9 @@
-﻿using System.Reflection;
+﻿namespace Packer;
 
-namespace Packer;
-
-internal class Argument
+internal record Argument
 {
-    public string Name { get; }
-    public string Type { get; }
-
-    public Argument (ParameterInfo info)
-    {
-        Name = GetJavaScriptName(info.Name);
-        Type = TypeConversion.ToTypeScript(info.ParameterType);
-    }
+    public string Name { get; init; }
+    public string Type { get; init; }
 
     public override string ToString () => $"{Name}: {Type}";
-
-    private string GetJavaScriptName (string dotnetName)
-    {
-        if (dotnetName == "function") return "fn";
-        return dotnetName;
-    }
 }
