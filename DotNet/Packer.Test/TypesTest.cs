@@ -197,4 +197,15 @@ public class TypesTest : ContentTest
         Task.Execute();
         Contains("Method: (t: any) => any");
     }
+
+    [Fact]
+    public void StaticPropertiesAreNotIncluded ()
+    {
+        Data.AddAssembly(
+            "public class Foo { public static string Soo { get; } }" +
+            "[JSInvokable] public static Foo Bar () => default;"
+        );
+        Task.Execute();
+        Matches(@"export class Foo {\s*}");
+    }
 }
