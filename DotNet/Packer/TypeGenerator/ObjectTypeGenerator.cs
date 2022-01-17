@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using TypeScriptModelsGenerator;
 using TypeScriptModelsGenerator.Options;
 using static Packer.TypeConversion;
 using static Packer.Utilities;
@@ -25,7 +26,7 @@ internal class ObjectTypeGenerator
     {
         Setup(types, Configure).Execute(out var result);
         foreach (var file in result.Files)
-            GenerateForContent(file.Content);
+            GenerateForFile(file);
         foreach (var enumType in types.Where(t => t.IsEnum))
             GenerateForEnum(enumType);
         return builder.ToString();
@@ -62,11 +63,23 @@ internal class ObjectTypeGenerator
         builder.Append("\n}\n");
     }
 
-    private void GenerateForContent (string content)
+    private void GenerateForFile (TypeScriptFile file)
     {
-        foreach (var line in SplitLines(content))
-            if (!line.StartsWith("import"))
+        var staticProps = GetStaticPropertyNames(file.Type);
+        foreach (var line in SplitLines(file.Content))
+            if (!line.StartsWith("import") && !DeclaresStaticProperty(line, staticProps))
                 builder.Append(ModifyLine(line)).Append('\n');
+    }
+
+    private bool DeclaresStaticProperty (string line, IEnumerable<string> staticProps)
+    {
+        return staticProps.Any(p => line.Contains($" {p}: ", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private string[] GetStaticPropertyNames (Type type)
+    {
+        return type.GetProperties().Where(p => p.GetAccessors()
+            .Any(a => a.IsStatic)).Select(p => p.Name).ToArray();
     }
 
     private string ModifyLine (string content) => content
