@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using TypeScriptModelsGenerator;
 using TypeScriptModelsGenerator.Options;
@@ -65,21 +66,35 @@ internal class ObjectTypeGenerator
 
     private void GenerateForFile (TypeScriptFile file)
     {
-        var staticProps = GetStaticPropertyNames(file.Type);
+        var excludedProps = GetExcludedPropertyNames(file.Type);
         foreach (var line in SplitLines(file.Content))
-            if (!line.StartsWith("import") && !DeclaresStaticProperty(line, staticProps))
+            if (!line.StartsWith("import") && !DeclaresExcludedProperty(line, excludedProps))
                 builder.Append(ModifyLine(line)).Append('\n');
     }
 
-    private bool DeclaresStaticProperty (string line, IEnumerable<string> staticProps)
+    private bool DeclaresExcludedProperty (string line, IEnumerable<string> excludedProps)
     {
-        return staticProps.Any(p => line.Contains($" {p}: ", StringComparison.OrdinalIgnoreCase));
+        return excludedProps.Any(p => line.Contains($" {p}: ", StringComparison.OrdinalIgnoreCase));
     }
 
-    private string[] GetStaticPropertyNames (Type type)
+    private string[] GetExcludedPropertyNames (Type type)
     {
-        return type.GetProperties().Where(p => p.GetAccessors()
-            .Any(a => a.IsStatic)).Select(p => p.Name).ToArray();
+        if (type.IsInterface) return Array.Empty<string>();
+        return type.GetProperties()
+            .Where(p => IsStatic(p) || !IsAutoProperty(p))
+            .Select(p => p.Name).ToArray();
+    }
+
+    public static bool IsStatic (PropertyInfo info)
+    {
+        return info.GetAccessors().Any(a => a.IsStatic);
+    }
+
+    public static bool IsAutoProperty (PropertyInfo info)
+    {
+        var backingFieldName = $"<{info.Name}>k__BackingField";
+        var backingField = info.DeclaringType?.GetField(backingFieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+        return backingField != null;
     }
 
     private string ModifyLine (string content) => content
