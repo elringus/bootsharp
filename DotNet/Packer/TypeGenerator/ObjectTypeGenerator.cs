@@ -81,19 +81,19 @@ internal class ObjectTypeGenerator
     {
         if (type.IsInterface) return Array.Empty<string>();
         return type.GetProperties()
-            .Where(p => IsStatic(p) || !IsAutoProperty(p))
+            .Where(p => IsStatic(p) || !IsAutoProperty(p, type))
             .Select(p => p.Name).ToArray();
     }
 
-    public static bool IsStatic (PropertyInfo info)
+    public static bool IsStatic (PropertyInfo property)
     {
-        return info.GetAccessors().Any(a => a.IsStatic);
+        return property.GetAccessors().Any(a => a.IsStatic);
     }
 
-    public static bool IsAutoProperty (PropertyInfo info)
+    public static bool IsAutoProperty (PropertyInfo property, Type declaringType)
     {
-        var backingFieldName = $"<{info.Name}>k__BackingField";
-        var backingField = info.DeclaringType?.GetField(backingFieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+        var backingFieldName = $"<{property.Name}>k__BackingField";
+        var backingField = declaringType.GetField(backingFieldName, BindingFlags.NonPublic | BindingFlags.Instance);
         return backingField != null;
     }
 
