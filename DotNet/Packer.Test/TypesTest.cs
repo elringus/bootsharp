@@ -208,4 +208,15 @@ public class TypesTest : ContentTest
         Task.Execute();
         Matches(@"export class Foo {\s*}");
     }
+
+    [Fact]
+    public void ExpressionPropertiesAreNotIncluded ()
+    {
+        Data.AddAssembly(
+            "public class Foo { public bool Boo => true; }" +
+            "[JSInvokable] public static Foo Bar () => default;"
+        );
+        Task.Execute();
+        Matches(@"export class Foo {\s*}");
+    }
 }
