@@ -35,48 +35,59 @@ public class TypesTest : ContentTest
     }
 
     [Fact]
-    public void TypesExportAssemblyObject ()
+    public void TypesExportAssemblyNamespace ()
     {
         Data.AddAssemblyWithName("foo.dll", "[JSInvokable] public static void Bar () { }");
         Task.Execute();
-        Contains("export declare const foo: {");
+        Contains("export namespace foo {");
     }
 
     [Fact]
-    public void WhenAssemblyNameContainDotsObjectCreatedForEachPart ()
+    public void WhenAssemblyNameContainDotsNamespaceAlsoContainDots ()
     {
         Data.AddAssemblyWithName("foo.bar.nya.dll", "[JSInvokable] public static void Bar () { }");
         Task.Execute();
-        Contains("export declare const foo: { bar: { nya: {");
+        Contains("export namespace foo.bar.nya {");
     }
 
     [Fact]
-    public void BindingsFromMultipleAssembliesAssignedToRespectiveObjects ()
+    public void BindingsFromMultipleAssembliesAssignedToRespectiveNamespaces ()
     {
         Data.AddAssemblyWithName("foo.dll", "[JSInvokable] public static void Foo () { }");
         Data.AddAssemblyWithName("bar.nya.dll", "[JSFunction] public static void Fun () { }");
         Task.Execute();
-        Contains("export declare const bar: { nya: {\n    Fun: () => void,\n}};");
-        Contains("export declare const foo: {\n    Foo: () => void,\n};");
+        Contains("export namespace foo {\n    export function Foo(): void;\n}");
+        Contains("export namespace bar.nya {\n    export let Fun: () => void;\n}");
     }
 
     [Fact]
-    public void MultipleAssemblyObjectsDeclaredFromNewLine ()
+    public void ObjectTypesAndBindingsWrappedUnderNamespace ()
+    {
+        Data.AddAssemblyWithName("foo.dll",
+            "public class Foo { }" +
+            "[JSInvokable] public static Foo Bar () => default;"
+        );
+        Task.Execute();
+        Contains("export namespace foo {\n    export class Foo {\n    \n}\n    export function Foo(): void;\n}");
+    }
+
+    [Fact]
+    public void MultipleAssemblyNamespacesDeclaredFromNewLine ()
     {
         Data.AddAssemblyWithName("a.dll", "[JSInvokable] public static void Foo () { }");
         Data.AddAssemblyWithName("b.dll", "[JSInvokable] public static void Bar () { }");
         Task.Execute();
-        Contains("\nexport declare const b");
+        Contains("\nexport namespace b");
     }
 
     [Fact]
-    public void DifferentAssembliesWithSameRootAssignedToDifferentObjects ()
+    public void DifferentAssembliesWithSameRootAssignedToDifferentNamespaces ()
     {
         Data.AddAssemblyWithName("nya.bar.dll", "[JSFunction] public static void Fun () { }");
         Data.AddAssemblyWithName("nya.foo.dll", "[JSFunction] public static void Foo () { }");
         Task.Execute();
-        Contains("export declare const nya: { bar: {\n    Fun: () => void,");
-        Contains("}, foo: {\n    Foo: () => void,\n}};");
+        Contains("export namespace nya.bar {\n    export function Fun(): void;\n}");
+        Contains("export namespace nya.foo {\n    export function Foo(): void;\n}");
     }
 
     [Fact]
@@ -98,8 +109,8 @@ public class TypesTest : ContentTest
             "[JSInvokable] public static ValueTask AsyVoid () => default;"
         );
         Task.Execute();
-        Contains("AsyBool: () => Promise<boolean>");
-        Contains("AsyVoid: () => Promise<void>");
+        Contains("AsyBool(): Promise<boolean>");
+        Contains("AsyVoid(): Promise<void>");
     }
 
     [Fact]
@@ -107,7 +118,7 @@ public class TypesTest : ContentTest
     {
         Data.AddAssembly("[JSInvokable] public static void Cha (char c, string s) {}");
         Task.Execute();
-        Contains("Cha: (c: string, s: string) => void");
+        Contains("Cha(c: string, s: string): void");
     }
 
     [Fact]
@@ -115,7 +126,7 @@ public class TypesTest : ContentTest
     {
         Data.AddAssembly("[JSInvokable] public static void Boo (bool b) {}");
         Task.Execute();
-        Contains("Boo: (b: boolean) => void");
+        Contains("Boo(b: boolean): void");
     }
 
     [Fact]
@@ -123,7 +134,7 @@ public class TypesTest : ContentTest
     {
         Data.AddAssembly("[JSInvokable] public static void Doo (DateTime time) {}");
         Task.Execute();
-        Contains("Doo: (time: Date) => void");
+        Contains("Doo(time: Date): void");
     }
 
     [Fact]
@@ -131,7 +142,7 @@ public class TypesTest : ContentTest
     {
         Data.AddAssembly("[JSInvokable] public static List<string> Goo (DateTime[] d) => default;");
         Task.Execute();
-        Contains("Goo: (d: Array<Date>) => Array<string>");
+        Contains("Goo(d: Array<Date>): Array<string>");
     }
 
     [Fact]
@@ -143,7 +154,7 @@ public class TypesTest : ContentTest
         );
         Task.Execute();
         Matches(@"export class Foo {\s*str: string;\s*int: number;\s*}");
-        Contains("Method: (t: Foo) => Foo");
+        Contains("Method(t: Foo): Foo");
     }
 
     [Fact]
@@ -157,7 +168,7 @@ public class TypesTest : ContentTest
         Task.Execute();
         Matches(@"export interface Base {\s*foo: Base;\s*}");
         Matches(@"export class Derived implements Base {\s*foo: Base;\s*}");
-        Contains("Method: (b: Base) => Derived");
+        Contains("Method(b: Base): Derived");
     }
 
     [Fact]
@@ -171,7 +182,7 @@ public class TypesTest : ContentTest
         Task.Execute();
         Matches(@"export interface Item {\s*}");
         Matches(@"export class Container {\s*items: Array<Item>;\s*}");
-        Contains("Combine: (items: Array<Item>) => Container");
+        Contains("Combine(items: Array<Item>): Container");
     }
 
     [Fact]
@@ -195,7 +206,7 @@ public class TypesTest : ContentTest
     {
         Data.AddAssembly("[JSInvokable] public static DBNull Method (DBNull t) => default;");
         Task.Execute();
-        Contains("Method: (t: any) => any");
+        Contains("Method(t: any): any");
     }
 
     [Fact]
