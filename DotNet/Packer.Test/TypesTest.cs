@@ -51,24 +51,40 @@ public class TypesTest : ContentTest
     }
 
     [Fact]
-    public void BindingsFromMultipleAssembliesAssignedToRespectiveNamespaces ()
+    public void FunctionDeclarationIsExportedForInvokableMethod ()
     {
         Data.AddAssemblyWithName("foo.dll", "[JSInvokable] public static void Foo () { }");
-        Data.AddAssemblyWithName("bar.nya.dll", "[JSFunction] public static void Fun () { }");
         Task.Execute();
         Contains("export namespace foo {\n    export function Foo(): void;\n}");
-        Contains("export namespace bar.nya {\n    export let Fun: () => void;\n}");
     }
 
     [Fact]
-    public void ObjectTypesAndBindingsWrappedUnderNamespace ()
+    public void AssignableVariableIsExportedForFunctionCallback ()
+    {
+        Data.AddAssemblyWithName("foo.dll", "[JSFunction] public static void OnFoo () { }");
+        Task.Execute();
+        Contains("export namespace foo.nya {\n    export let OnFoo: () => void;\n}");
+    }
+
+    [Fact]
+    public void MembersFromSameAssemblyWrappedUnderSameNamespace ()
     {
         Data.AddAssemblyWithName("foo.dll",
             "public class Foo { }" +
-            "[JSInvokable] public static Foo Bar () => default;"
+            "[JSInvokable] public static Foo GetFoo () => default;"
         );
         Task.Execute();
-        Contains("export namespace foo {\n    export class Foo {\n    \n}\n    export function Foo(): void;\n}");
+        Contains("export namespace foo {\n    export class Foo {\n    \n}\n    export function GetFoo(): Foo;\n}");
+    }
+
+    [Fact]
+    public void MembersFromDifferentAssembliesWrappedUnderRespectiveNamespaces ()
+    {
+        Data.AddAssemblyWithName("foo.dll", "public class Foo { }");
+        Data.AddAssemblyWithName("bar.dll", "[JSInvokable] public static Foo GetFoo () => default;");
+        Task.Execute();
+        Contains("export namespace foo {\n    export class Foo {\n    \n}\n}");
+        Contains("export namespace bar {\n    export function GetFoo(): foo.Foo;\n}");
     }
 
     [Fact]
