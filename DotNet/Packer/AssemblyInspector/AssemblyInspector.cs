@@ -5,28 +5,31 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using static Packer.Utilities;
+using static Packer.TextUtilities;
+using static Packer.TypeUtilities;
 
 namespace Packer;
 
-internal class AssemblyInspector
+internal class AssemblyInspector : IDisposable
 {
     public List<Assembly> Assemblies { get; } = new();
     public List<Method> InvokableMethods { get; } = new();
     public List<Method> FunctionMethods { get; } = new();
-    public string ObjectDefinitions { get; private set; }
+    public List<Type> ObjectTypes { get; } = new();
 
     private readonly List<string> warnings = new();
-    private readonly ObjectTypeGenerator objectGenerator = new();
+    private readonly TypeConverter typeConverter = new();
+    private readonly List<MetadataLoadContext> contextsToDispose = new();
 
     public void InspectInDirectory (string directory)
     {
         var assemblyPaths = Directory.GetFiles(directory, "*.dll");
-        using var context = CreateLoadContext(assemblyPaths);
+        var context = CreateLoadContext(assemblyPaths);
         foreach (var assemblyPath in assemblyPaths)
             try { InspectAssembly(assemblyPath, context); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
-        ObjectDefinitions = objectGenerator.GenerateDefinitions();
+        ObjectTypes.AddRange(typeConverter.GetObjectTypes());
+        contextsToDispose.Add(context);
     }
 
     public void Report (TaskLoggingHelper logger)
@@ -43,6 +46,13 @@ internal class AssemblyInspector
             logger.LogWarning(warning);
     }
 
+    public void Dispose ()
+    {
+        foreach (var context in contextsToDispose)
+            context.Dispose();
+        contextsToDispose.Clear();
+    }
+
     private MetadataLoadContext CreateLoadContext (IEnumerable<string> assemblyPaths)
     {
         var resolver = new PathAssemblyResolver(assemblyPaths);
@@ -54,7 +64,7 @@ internal class AssemblyInspector
         var name = Path.GetFileName(assemblyPath);
         var base64 = ReadBase64(assemblyPath);
         Assemblies.Add(new Assembly(name, base64));
-        if (!TypeConversion.ShouldIgnoreAssembly(assemblyPath))
+        if (!ShouldIgnoreAssembly(assemblyPath))
             InspectMethods(context.LoadFromAssemblyPath(assemblyPath));
     }
 
@@ -80,21 +90,14 @@ internal class AssemblyInspector
         Name = info.Name,
         Assembly = info.DeclaringType!.Assembly.GetName().Name,
         Arguments = info.GetParameters().Select(CreateArgument).ToArray(),
-        ReturnType = ConvertType(info.ReturnType),
-        Async = TypeConversion.IsAwaitable(info.ReturnType)
+        ReturnType = typeConverter.ToTypeScript(info.ReturnType),
+        Async = IsAwaitable(info.ReturnType)
     };
 
     private Argument CreateArgument (ParameterInfo info) => new() {
         Name = info.Name == "function" ? "fn" : info.Name,
-        Type = ConvertType(info.ParameterType)
+        Type = typeConverter.ToTypeScript(info.ParameterType)
     };
-
-    private string ConvertType (Type type)
-    {
-        if (!TypeConversion.ShouldConvertToObjectType(type))
-            return TypeConversion.ToTypeScript(type);
-        return TypeConversion.ConvertToObjectType(type, objectGenerator);
-    }
 
     private static string ReadBase64 (string filePath)
     {

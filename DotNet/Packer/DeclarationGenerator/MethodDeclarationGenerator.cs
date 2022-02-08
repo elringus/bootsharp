@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Packer;
 
-internal class TypeMethodGenerator
+internal class MethodDeclarationGenerator
 {
     private readonly StringBuilder builder = new();
     private readonly List<Method> methods = new();

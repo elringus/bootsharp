@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using static Packer.Utilities;
+using static Packer.TextUtilities;
 
 namespace Packer;
 
