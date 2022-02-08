@@ -219,4 +219,30 @@ public class TypesTest : ContentTest
         Task.Execute();
         Matches(@"export class Foo {\s*}");
     }
+
+    [Fact]
+    public void NullablePropertiesHaveOptionalModificator ()
+    {
+        Data.AddAssembly(
+            "public class Foo { public bool? Bool { get; } }" +
+            "public class Bar { public Foo? Foo { get; } }" +
+            "[JSInvokable] public static Foo FooBar (Bar bar) => default;"
+        );
+        Task.Execute();
+        Matches(@"export class Foo {\s*bool\?: boolean;\s*}");
+        Matches(@"export class Bar {\s*foo\?: Foo;\s*}");
+    }
+
+    [Fact]
+    public void NullableEnumsAreCrawled ()
+    {
+        Data.AddAssembly(
+            "public enum Foo { A, B }" +
+            "public class Bar { public Foo? Foo { get; } }" +
+            "[JSInvokable] public static Bar GetBar () => default;"
+        );
+        Task.Execute();
+        Matches(@"export enum Foo {\s*A,\s*B\s*}");
+        Matches(@"export class Bar {\s*foo\?: Foo;\s*}");
+    }
 }

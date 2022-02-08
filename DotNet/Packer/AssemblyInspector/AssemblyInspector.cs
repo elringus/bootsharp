@@ -15,7 +15,7 @@ internal class AssemblyInspector : IDisposable
     public List<Assembly> Assemblies { get; } = new();
     public List<Method> InvokableMethods { get; } = new();
     public List<Method> FunctionMethods { get; } = new();
-    public List<Type> Types { get; } = new();
+    public List<Type> ObjectTypes { get; } = new();
 
     private readonly List<string> warnings = new();
     private readonly TypeConverter typeConverter = new();
@@ -28,7 +28,7 @@ internal class AssemblyInspector : IDisposable
         foreach (var assemblyPath in assemblyPaths)
             try { InspectAssembly(assemblyPath, context); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
-        Types.AddRange(typeConverter.GetCrawledTypes());
+        ObjectTypes.AddRange(typeConverter.GetObjectTypes());
         contextsToDispose.Add(context);
     }
 

@@ -26,15 +26,34 @@ internal static class TypeUtilities
             : arrayType.GenericTypeArguments[0];
     }
 
+    public static bool IsNullable (PropertyInfo property)
+    {
+        if (IsNullable(property.PropertyType)) return true;
+        var context = new NullabilityInfoContext().Create(property);
+        return context.ReadState == NullabilityState.Nullable;
+    }
+
+    public static bool IsNullable (Type type)
+    {
+        return type.IsGenericType &&
+               type.Name.Contains("Nullable`") &&
+               type.GetGenericArguments().Length == 1;
+    }
+
+    public static Type GetNullableUnderlyingType (Type type)
+    {
+        return type.GetGenericArguments()[0];
+    }
+
     public static bool IsStatic (PropertyInfo property)
     {
         return property.GetAccessors().Any(a => a.IsStatic);
     }
 
-    public static bool IsAutoProperty (PropertyInfo property, Type declaringType)
+    public static bool IsAutoProperty (PropertyInfo property)
     {
         var backingFieldName = $"<{property.Name}>k__BackingField";
-        var backingField = declaringType.GetField(backingFieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+        var backingField = property.DeclaringType!.GetField(backingFieldName, BindingFlags.NonPublic | BindingFlags.Instance);
         return backingField != null;
     }
 

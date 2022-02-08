@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using TypeScriptModelsGenerator;
 using TypeScriptModelsGenerator.Options;
 using static Packer.TextUtilities;
@@ -14,10 +16,14 @@ internal class TypeDeclarationGenerator
 {
     private readonly StringBuilder builder = new();
     private readonly TypeConverter typeConverter = new();
+    private readonly HashSet<PropertyInfo> excludedProperties = new();
+    private readonly HashSet<PropertyInfo> nullableProperties = new();
 
     public string Generate (IReadOnlyCollection<Type> types)
     {
         Setup(types, Configure).Execute(out var result);
+        foreach (var type in types)
+            ScanProperties(type);
         foreach (var file in result.Files)
             GenerateForFile(file);
         foreach (var enumType in types.Where(t => t.IsEnum))
@@ -34,6 +40,16 @@ internal class TypeDeclarationGenerator
             options.Rules.ReplaceType(code, typeConverter.ToTypeScript(Type.GetType($"System.{code}")));
     }
 
+    private void ScanProperties (Type type)
+    {
+        if (type.IsInterface) return;
+        foreach (var property in type.GetProperties())
+            if (ShouldExcludeProperty(property))
+                excludedProperties.Add(property);
+            else if (IsNullable(property))
+                nullableProperties.Add(property);
+    }
+
     private void GenerateForEnum (Type enumType)
     {
         builder.Append($"export enum {enumType.Name} {{\n");
@@ -43,26 +59,41 @@ internal class TypeDeclarationGenerator
 
     private void GenerateForFile (TypeScriptFile file)
     {
-        var excludedProps = GetExcludedPropertyNames(file.Type);
         foreach (var line in SplitLines(file.Content))
-            if (!line.StartsWith("import") && !DeclaresExcludedProperty(line, excludedProps))
-                builder.Append(ModifyLine(line)).Append('\n');
+            GenerateForLine(line, file.Type);
     }
 
-    private bool DeclaresExcludedProperty (string line, IEnumerable<string> excludedProps)
+    private void GenerateForLine (string line, Type declaringType)
     {
-        return excludedProps.Any(p => line.Contains($" {p}: ", StringComparison.OrdinalIgnoreCase));
+        if (line.StartsWith("import") || DeclaresExcludedProperty(line, declaringType)) return;
+        line = Regex.Replace(line, " extends Object", "");
+        line = Regex.Replace(line, "List<", "Array<");
+        line = Regex.Replace(line, @": Nullable<(\S+)>", ": $1");
+        if (DeclaresNullableProperty(line, declaringType))
+            line = Regex.Replace(line, @" (\S+): ", " $1?: ");
+        builder.Append(line).Append('\n');
     }
 
-    private string[] GetExcludedPropertyNames (Type type)
+    private bool ShouldExcludeProperty (PropertyInfo property)
     {
-        if (type.IsInterface) return Array.Empty<string>();
-        return type.GetProperties()
-            .Where(p => IsStatic(p) || !IsAutoProperty(p, type))
-            .Select(p => p.Name).ToArray();
+        return IsStatic(property) || !IsAutoProperty(property);
     }
 
-    private string ModifyLine (string content) => content
-        .Replace(" extends Object", "")
-        .Replace("List<", "Array<");
+    private bool DeclaresExcludedProperty (string line, Type declaringType)
+    {
+        foreach (var property in excludedProperties)
+            if (property.DeclaringType == declaringType &&
+                line.Contains($" {property.Name}: ", StringComparison.OrdinalIgnoreCase))
+                return true;
+        return false;
+    }
+
+    private bool DeclaresNullableProperty (string line, Type declaringType)
+    {
+        foreach (var property in nullableProperties)
+            if (property.DeclaringType == declaringType &&
+                line.Contains($" {property.Name}: ", StringComparison.OrdinalIgnoreCase))
+                return true;
+        return false;
+    }
 }

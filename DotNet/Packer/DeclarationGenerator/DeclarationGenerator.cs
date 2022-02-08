@@ -26,7 +26,7 @@ internal class DeclarationGenerator
     {
         var methods = inspector.InvokableMethods.Concat(inspector.FunctionMethods).ToArray();
         var methodsContent = methodsGenerator.Generate(methods);
-        var objectsContent = typesGenerator.Generate(inspector.Types);
+        var objectsContent = typesGenerator.Generate(inspector.ObjectTypes);
         var runtimeContent = JoinLines(declarations.Select(GenerateForDeclaration), 0);
         return JoinLines(0, runtimeContent, objectsContent, methodsContent) + "\n";
     }
