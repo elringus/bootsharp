@@ -16,38 +16,27 @@ public class PublishDotNetJS : Task
     public bool EmitSourceMap { get; set; }
     public bool EmitTypes { get; set; } = true;
 
-    private readonly AssemblyInspector inspector = new();
-    private readonly LibraryGenerator libraryGenerator = new();
-    private readonly TypeGenerator typeGenerator = new();
-
     public override bool Execute ()
     {
-        InspectAssemblies();
+        GenerateSources(out var library, out var declaration);
         if (Clean) CleanBaseDirectory();
-        var librarySource = GenerateLibrarySource();
-        PublishLibrary(librarySource);
+        PublishLibrary(library);
+        if (EmitTypes) PublishTypes(declaration);
         if (EmitSourceMap) PublishSourceMap();
-        if (EmitTypes) PublishTypes();
         return true;
     }
 
-    private void InspectAssemblies ()
+    private void GenerateSources (out string library, out string declaration)
     {
-        inspector.InspectInDirectory(BlazorOutDir);
-        inspector.Report(Log);
+        using var inspector = InspectAssemblies();
+        library = GenerateLibrary(inspector);
+        declaration = GenerateDeclaration(inspector);
     }
 
     private void CleanBaseDirectory ()
     {
         Directory.Delete(BaseDir, true);
         Directory.CreateDirectory(BaseDir);
-    }
-
-    private string GenerateLibrarySource ()
-    {
-        var wasm = GetRuntimeWasm();
-        var js = GetRuntimeJS();
-        return libraryGenerator.Generate(js, wasm, EntryAssemblyName, inspector);
     }
 
     private void PublishLibrary (string source)
@@ -57,6 +46,12 @@ public class PublishDotNetJS : Task
         Log.LogMessage(MessageImportance.High, $"JavaScript UMD library is published at {path}.");
     }
 
+    private void PublishTypes (string source)
+    {
+        var file = Path.Combine(BaseDir, "dotnet.d.ts");
+        File.WriteAllText(file, source);
+    }
+
     private void PublishSourceMap ()
     {
         var source = Path.Combine(JSDir, "dotnet.js.map");
@@ -64,23 +59,26 @@ public class PublishDotNetJS : Task
         File.Copy(source, destination, true);
     }
 
-    private void PublishTypes ()
+    private AssemblyInspector InspectAssemblies ()
     {
-        typeGenerator.LoadDefinitions(JSDir);
-        var source = typeGenerator.Generate(inspector);
-        var file = Path.Combine(BaseDir, "dotnet.d.ts");
-        File.WriteAllText(file, source);
+        var inspector = new AssemblyInspector();
+        inspector.InspectInDirectory(BlazorOutDir);
+        inspector.Report(Log);
+        return inspector;
     }
 
-    private string GetRuntimeJS ()
+    private string GenerateLibrary (AssemblyInspector inspector)
     {
-        var path = Path.Combine(JSDir, "dotnet.js");
-        return File.ReadAllText(path);
+        var generator = new LibraryGenerator();
+        var js = File.ReadAllText(Path.Combine(JSDir, "dotnet.js"));
+        var wasm = Convert.ToBase64String(File.ReadAllBytes(WasmFile));
+        return generator.Generate(js, wasm, EntryAssemblyName, inspector);
     }
 
-    private string GetRuntimeWasm ()
+    private string GenerateDeclaration (AssemblyInspector inspector)
     {
-        var binary = File.ReadAllBytes(WasmFile);
-        return Convert.ToBase64String(binary);
+        var generator = new DeclarationGenerator();
+        generator.LoadDeclarations(JSDir);
+        return generator.Generate(inspector);
     }
 }

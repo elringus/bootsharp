@@ -2,46 +2,48 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using static Packer.Utilities;
+using static Packer.TextUtilities;
 
 namespace Packer;
 
-internal class TypeGenerator
+internal class DeclarationGenerator
 {
-    private readonly TypeMethodGenerator methodGenerator = new();
-    private readonly List<TypeDefinition> definitions = new();
+    private readonly MethodDeclarationGenerator methodsGenerator = new();
+    private readonly TypeDeclarationGenerator typesGenerator = new();
+    private readonly List<DeclarationFile> declarations = new();
 
-    public void LoadDefinitions (string directory)
+    public void LoadDeclarations (string directory)
     {
         foreach (var path in Directory.GetFiles(directory, "*.d.ts"))
         {
             var fileName = Path.GetFileNameWithoutExtension(path)[..^2];
             var source = File.ReadAllText(path);
-            definitions.Add(new TypeDefinition(fileName, source));
+            declarations.Add(new DeclarationFile(fileName, source));
         }
     }
 
     public string Generate (AssemblyInspector inspector)
     {
         var methods = inspector.InvokableMethods.Concat(inspector.FunctionMethods).ToArray();
-        var methodsContent = methodGenerator.Generate(methods);
-        var runtimeContent = JoinLines(definitions.Select(GenerateForDefinition), 0);
-        return JoinLines(0, runtimeContent, inspector.ObjectDefinitions, methodsContent) + "\n";
+        var methodsContent = methodsGenerator.Generate(methods);
+        var objectsContent = typesGenerator.Generate(inspector.Types);
+        var runtimeContent = JoinLines(declarations.Select(GenerateForDeclaration), 0);
+        return JoinLines(0, runtimeContent, objectsContent, methodsContent) + "\n";
     }
 
-    private string GenerateForDefinition (TypeDefinition definition)
+    private string GenerateForDeclaration (DeclarationFile declaration)
     {
-        if (!ShouldExportDefinition(definition)) return "";
-        var source = definition.Source;
+        if (!ShouldExportDeclaration(declaration)) return "";
+        var source = declaration.Source;
         foreach (var line in SplitLines(source))
             if (line.StartsWith("import"))
                 source = source.Replace(line, GetSourceForImportLine(line));
         return ModifyInternalDeclarations(source);
     }
 
-    private static bool ShouldExportDefinition (TypeDefinition definition)
+    private static bool ShouldExportDeclaration (DeclarationFile declaration)
     {
-        switch (definition.FileName)
+        switch (declaration.FileName)
         {
             case "boot":
             case "interop": return true;
@@ -54,9 +56,9 @@ internal class TypeGenerator
         var importStart = line.LastIndexOf("\"./", StringComparison.Ordinal) + 3;
         var importLength = line.Length - importStart - 2;
         var import = line.Substring(importStart, importLength);
-        foreach (var definition in definitions)
-            if (definition.FileName == import)
-                return definition.Source;
+        foreach (var declaration in declarations)
+            if (declaration.FileName == import)
+                return declaration.Source;
         throw new PackerException($"Failed to find type import for '{import}'.");
     }
 

@@ -1,29 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using TypeScriptModelsGenerator;
 using TypeScriptModelsGenerator.Options;
-using static Packer.TypeConversion;
-using static Packer.Utilities;
+using static Packer.TextUtilities;
+using static Packer.TypeUtilities;
 using static TypeScriptModelsGenerator.TypeScriptModelsGeneration;
 
 namespace Packer;
 
-internal class ObjectTypeGenerator
+internal class TypeDeclarationGenerator
 {
-    private readonly HashSet<Type> types = new();
     private readonly StringBuilder builder = new();
+    private readonly TypeConverter typeConverter = new();
 
-    public void AddObjectType (Type type)
-    {
-        if (!types.Add(type)) return;
-        AddProperties(type);
-        AddBaseType(type);
-    }
-
-    public string GenerateDefinitions ()
+    public string Generate (IReadOnlyCollection<Type> types)
     {
         Setup(types, Configure).Execute(out var result);
         foreach (var file in result.Files)
@@ -33,28 +25,13 @@ internal class ObjectTypeGenerator
         return builder.ToString();
     }
 
-    private void AddProperties (Type type)
-    {
-        var propertyTypesToAdd = type.GetProperties()
-            .Select(m => m.PropertyType)
-            .Where(ShouldConvertToObjectType);
-        foreach (var propertyType in propertyTypesToAdd)
-            AddObjectType(IsArray(propertyType) ? GetArrayElementType(propertyType) : propertyType);
-    }
-
-    private void AddBaseType (Type type)
-    {
-        if (type.BaseType != null && ShouldConvertToObjectType(type.BaseType))
-            AddObjectType(type.BaseType);
-    }
-
     private void Configure (IOptions options)
     {
         options.InitializeTypes = false;
         options.GenerationMode = GenerationMode.Loose;
         options.Rules.MatchType(t => !t.IsEnum);
         foreach (var code in Enum.GetNames<TypeCode>().Where(c => c != "Object"))
-            options.Rules.ReplaceType(code, ToTypeScript(Type.GetType($"System.{code}")));
+            options.Rules.ReplaceType(code, typeConverter.ToTypeScript(Type.GetType($"System.{code}")));
     }
 
     private void GenerateForEnum (Type enumType)
@@ -83,18 +60,6 @@ internal class ObjectTypeGenerator
         return type.GetProperties()
             .Where(p => IsStatic(p) || !IsAutoProperty(p, type))
             .Select(p => p.Name).ToArray();
-    }
-
-    public static bool IsStatic (PropertyInfo property)
-    {
-        return property.GetAccessors().Any(a => a.IsStatic);
-    }
-
-    public static bool IsAutoProperty (PropertyInfo property, Type declaringType)
-    {
-        var backingFieldName = $"<{property.Name}>k__BackingField";
-        var backingField = declaringType.GetField(backingFieldName, BindingFlags.NonPublic | BindingFlags.Instance);
-        return backingField != null;
     }
 
     private string ModifyLine (string content) => content
