@@ -9,8 +9,6 @@ public class TypesTest : ContentTest
 {
     protected override string TestedContent => Data.GeneratedTypes;
 
-    public TypesTest () => Task.EmitTypes = true;
-
     [Fact]
     public void TypesContainInteropAndBootContentWithoutImport ()
     {
@@ -69,12 +67,13 @@ public class TypesTest : ContentTest
     [Fact]
     public void MembersFromSameAssemblyWrappedUnderSameNamespace ()
     {
-        Data.AddAssemblyWithName("foo.dll",
+        Data.AddAssemblyWithName("asm.dll",
             "public class Foo { }" +
             "[JSInvokable] public static Foo GetFoo () => default;"
         );
         Task.Execute();
-        Contains("export namespace foo {\n    export class Foo {\n    \n}\n    export function GetFoo(): Foo;\n}");
+        Contains("export namespace asm {\n    export class Foo {\n    \n}\n}");
+        Contains("export namespace asm {\n    export function GetFoo(): asm.Foo;\n}");
     }
 
     [Fact]
@@ -164,47 +163,47 @@ public class TypesTest : ContentTest
     [Fact]
     public void DefinitionIsGeneratedForObjectType ()
     {
-        Data.AddAssembly(
+        Data.AddAssemblyWithName("asm.dll",
             "public class Foo { public string Str { get; set; } public int Int { get; set; } }" +
             "[JSInvokable] public static Foo Method (Foo t) => default;"
         );
         Task.Execute();
         Matches(@"export class Foo {\s*str: string;\s*int: number;\s*}");
-        Contains("Method(t: Foo): Foo");
+        Contains("Method(t: asm.Foo): asm.Foo");
     }
 
     [Fact]
     public void DefinitionIsGeneratedForInterfaceAndImplementation ()
     {
-        Data.AddAssembly(
+        Data.AddAssemblyWithName("asm.dll",
             "public interface Base { Base Foo { get; } void Bar (Base b); }" +
             "public class Derived : Base { public Base Foo { get; } public void Bar (Base b) {} }" +
             "[JSInvokable] public static Derived Method (Base b) => default;"
         );
         Task.Execute();
-        Matches(@"export interface Base {\s*foo: Base;\s*}");
-        Matches(@"export class Derived implements Base {\s*foo: Base;\s*}");
-        Contains("Method(b: Base): Derived");
+        Matches(@"export interface Base {\s*foo: asm.Base;\s*}");
+        Matches(@"export class Derived implements Base {\s*foo: asm.Base;\s*}");
+        Contains("Method(b: asm.Base): asm.Derived");
     }
 
     [Fact]
     public void DefinitionIsGeneratedForTypeWithListProperty ()
     {
-        Data.AddAssembly(
+        Data.AddAssemblyWithName("asm.dll",
             "public interface Item { }" +
             "public class Container { public List<Item> Items { get; } }" +
             "[JSInvokable] public static Container Combine (List<Item> items) => default;"
         );
         Task.Execute();
         Matches(@"export interface Item {\s*}");
-        Matches(@"export class Container {\s*items: Array<Item>;\s*}");
-        Contains("Combine(items: Array<Item>): Container");
+        Matches(@"export class Container {\s*items: Array<asm.Item>;\s*}");
+        Contains("Combine(items: Array<asm.Item>): asm.Container");
     }
 
     [Fact]
     public void CanCrawlCustomTypes ()
     {
-        Data.AddAssembly(
+        Data.AddAssemblyWithName("asm.dll",
             "public enum Nyam { A, B }" +
             "public class Foo { public Nyam Nyam { get; } }" +
             "public class Bar : Foo { }" +
@@ -213,7 +212,7 @@ public class TypesTest : ContentTest
         );
         Task.Execute();
         Matches(@"export enum Nyam {\s*A,\s*B\s*}");
-        Matches(@"export class Foo {\s*nyam: Nyam;\s*}");
+        Matches(@"export class Foo {\s*nyam: asm.Nyam;\s*}");
         Matches(@"export class Bar extends Foo {\s*}");
     }
 
@@ -250,26 +249,26 @@ public class TypesTest : ContentTest
     [Fact]
     public void NullablePropertiesHaveOptionalModificator ()
     {
-        Data.AddAssembly(
+        Data.AddAssemblyWithName("asm.dll",
             "public class Foo { public bool? Bool { get; } }" +
             "public class Bar { public Foo? Foo { get; } }" +
             "[JSInvokable] public static Foo FooBar (Bar bar) => default;"
         );
         Task.Execute();
         Matches(@"export class Foo {\s*bool\?: boolean;\s*}");
-        Matches(@"export class Bar {\s*foo\?: Foo;\s*}");
+        Matches(@"export class Bar {\s*foo\?: asm.Foo;\s*}");
     }
 
     [Fact]
     public void NullableEnumsAreCrawled ()
     {
-        Data.AddAssembly(
+        Data.AddAssemblyWithName("asm.dll",
             "public enum Foo { A, B }" +
             "public class Bar { public Foo? Foo { get; } }" +
             "[JSInvokable] public static Bar GetBar () => default;"
         );
         Task.Execute();
         Matches(@"export enum Foo {\s*A,\s*B\s*}");
-        Matches(@"export class Bar {\s*foo\?: Foo;\s*}");
+        Matches(@"export class Bar {\s*foo\?: asm.Foo;\s*}");
     }
 }
