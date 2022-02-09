@@ -7,34 +7,27 @@ namespace Packer;
 internal class MethodDeclarationGenerator
 {
     private readonly StringBuilder builder = new();
-    private readonly List<Method> methods = new();
 
     private Method method => methods[index];
     private Method prevMethod => index == 0 ? null : methods[index - 1];
-    private Method nextMethod => index == methods.Count - 1 ? null : methods[index + 1];
+    private Method nextMethod => index == methods.Length - 1 ? null : methods[index + 1];
 
+    private Method[] methods;
     private int index;
 
     public string Generate (IEnumerable<Method> sourceMethods)
     {
-        ResetState(sourceMethods);
-        for (index = 0; index < methods.Count; index++)
-            ProcessMethod();
+        methods = sourceMethods.OrderBy(m => m.Namespace).ToArray();
+        for (index = 0; index < methods.Length; index++)
+            DeclareMethod();
         return builder.ToString();
     }
 
-    private void ResetState (IEnumerable<Method> sourceMethods)
-    {
-        builder.Clear();
-        methods.Clear();
-        methods.AddRange(sourceMethods.OrderBy(m => m.Namespace));
-    }
-
-    private void ProcessMethod ()
+    private void DeclareMethod ()
     {
         if (ShouldOpenNamespace()) OpenNamespace();
-        if (method.Type == MethodType.Invokable) AppendInvokable();
-        else AppendFunction();
+        if (method.Type == MethodType.Invokable) DeclareInvokable();
+        else DeclareFunction();
         if (ShouldCloseNamespace()) CloseNamespace();
     }
 
@@ -61,14 +54,14 @@ internal class MethodDeclarationGenerator
         builder.Append("\n}");
     }
 
-    private void AppendInvokable ()
+    private void DeclareInvokable ()
     {
         builder.Append($"\n    export function {method.Name}(");
         AppendArguments();
         builder.Append($"): {method.ReturnType};");
     }
 
-    private void AppendFunction ()
+    private void DeclareFunction ()
     {
         builder.Append($"\n    export let {method.Name}: (");
         AppendArguments();
