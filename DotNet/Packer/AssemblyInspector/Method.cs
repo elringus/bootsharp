@@ -7,7 +7,6 @@ internal record Method
 {
     public string Name { get; init; }
     public string Assembly { get; init; }
-    public string Namespace { get; init; }
     public IReadOnlyList<Argument> Arguments { get; init; }
     public string ReturnType { get; init; }
     public bool Async { get; init; }

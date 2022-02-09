@@ -17,7 +17,7 @@ internal class MethodDeclarationGenerator
 
     public string Generate (IEnumerable<Method> sourceMethods)
     {
-        methods = sourceMethods.OrderBy(m => m.Namespace).ToArray();
+        methods = sourceMethods.OrderBy(m => m.Assembly).ToArray();
         for (index = 0; index < methods.Length; index++)
             DeclareMethod();
         return builder.ToString();
@@ -34,19 +34,18 @@ internal class MethodDeclarationGenerator
     private bool ShouldOpenNamespace ()
     {
         if (prevMethod is null) return true;
-        return prevMethod.Namespace != method.Namespace;
+        return prevMethod.Assembly != method.Assembly;
     }
 
     private void OpenNamespace ()
     {
-        var name = method.Namespace;
-        builder.Append($"\nexport namespace {name} {{");
+        builder.Append($"\nexport namespace {method.Assembly} {{");
     }
 
     private bool ShouldCloseNamespace ()
     {
         if (nextMethod is null) return true;
-        return nextMethod.Namespace != method.Namespace;
+        return nextMethod.Assembly != method.Assembly;
     }
 
     private void CloseNamespace ()

@@ -17,8 +17,13 @@ internal class AssemblyInspector : IDisposable
     public List<Type> Types { get; } = new();
 
     private readonly List<string> warnings = new();
-    private readonly TypeConverter typeConverter = new();
-    private readonly List<MetadataLoadContext> contextsToDispose = new();
+    private readonly List<MetadataLoadContext> contexts = new();
+    private readonly TypeConverter typeConverter;
+
+    public AssemblyInspector (NamespaceBuilder namespaceBuilder)
+    {
+        typeConverter = new TypeConverter(namespaceBuilder);
+    }
 
     public void InspectInDirectory (string directory)
     {
@@ -28,7 +33,7 @@ internal class AssemblyInspector : IDisposable
             try { InspectAssembly(assemblyPath, context); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
         Types.AddRange(typeConverter.GetObjectTypes());
-        contextsToDispose.Add(context);
+        contexts.Add(context);
     }
 
     public void Report (TaskLoggingHelper logger)
@@ -45,9 +50,9 @@ internal class AssemblyInspector : IDisposable
 
     public void Dispose ()
     {
-        foreach (var context in contextsToDispose)
+        foreach (var context in contexts)
             context.Dispose();
-        contextsToDispose.Clear();
+        contexts.Clear();
     }
 
     private MetadataLoadContext CreateLoadContext (IEnumerable<string> assemblyPaths)
@@ -86,7 +91,6 @@ internal class AssemblyInspector : IDisposable
     private Method CreateMethod (MethodInfo info, MethodType type) => new() {
         Name = info.Name,
         Assembly = GetAssemblyName(info.DeclaringType),
-        Namespace = typeConverter.ToNamespace(GetAssemblyName(info.DeclaringType)),
         Arguments = info.GetParameters().Select(CreateArgument).ToArray(),
         ReturnType = typeConverter.ToTypeScript(info.ReturnType),
         Async = IsAwaitable(info.ReturnType),

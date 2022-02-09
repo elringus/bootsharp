@@ -9,8 +9,13 @@ namespace Packer;
 internal class DeclarationGenerator
 {
     private readonly MethodDeclarationGenerator methodsGenerator = new();
-    private readonly TypeDeclarationGenerator typesGenerator = new();
     private readonly List<DeclarationFile> declarations = new();
+    private readonly TypeDeclarationGenerator typesGenerator;
+
+    public DeclarationGenerator (NamespaceBuilder namespaceBuilder)
+    {
+        typesGenerator = new TypeDeclarationGenerator(namespaceBuilder);
+    }
 
     public void LoadDeclarations (string directory)
     {

@@ -33,7 +33,7 @@ public static class MockAssembly
             MetadataReference.CreateFromFile(Path.Combine(coreDir, "System.Runtime.dll")),
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(JSFunctionAttribute).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JSInvokableAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(JSInvokableAttribute).Assembly.Location)
         };
     }
 

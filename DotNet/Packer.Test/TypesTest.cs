@@ -271,4 +271,25 @@ public class TypesTest : ContentTest
         Matches(@"export enum Foo {\s*A,\s*B\s*}");
         Matches(@"export class Bar {\s*foo\?: asm.Foo;\s*}");
     }
+
+    [Fact]
+    public void WhenInvalidNamespacePatternProvidedExceptionIsThrown ()
+    {
+        Data.AddAssembly("[JSInvokable] public static void Foo () { }");
+        Task.NamespacePattern = "?";
+        Assert.Throws<PackerException>(() => Task.Execute());
+    }
+
+    [Fact]
+    public void NamespacePatternOnlyAffectTypes ()
+    {
+        Data.AddAssemblyWithName("company.product.asm.dll",
+            "public class Foo { }" +
+            "[JSInvokable] public static Foo GetFoo () => default;"
+        );
+        Task.NamespacePattern = @"company\.product\.(\S+)=>$1";
+        Task.Execute();
+        Contains("export namespace asm {\n    export class Foo {\n    }\n}");
+        Contains("export namespace company.product.asm {\n    export function GetFoo(): asm.Foo;\n}");
+    }
 }

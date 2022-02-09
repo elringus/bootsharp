@@ -11,7 +11,8 @@ namespace Packer;
 internal class TypeDeclarationGenerator
 {
     private readonly StringBuilder builder = new();
-    private readonly TypeConverter converter = new();
+    private readonly NamespaceBuilder namespaceBuilder;
+    private readonly TypeConverter converter;
 
     private Type type => types[index];
     private Type prevType => index == 0 ? null : types[index - 1];
@@ -19,6 +20,12 @@ internal class TypeDeclarationGenerator
 
     private Type[] types;
     private int index;
+
+    public TypeDeclarationGenerator (NamespaceBuilder namespaceBuilder)
+    {
+        this.namespaceBuilder = namespaceBuilder;
+        converter = new TypeConverter(namespaceBuilder);
+    }
 
     public string Generate (IEnumerable<Type> sourceTypes)
     {
@@ -93,7 +100,7 @@ internal class TypeDeclarationGenerator
     private string GetNamespace (Type type)
     {
         var assemblyName = GetAssemblyName(type);
-        return converter.ToNamespace(assemblyName);
+        return namespaceBuilder.Build(assemblyName);
     }
 
     private void AppendBaseType ()
