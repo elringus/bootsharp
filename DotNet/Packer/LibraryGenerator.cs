@@ -31,7 +31,7 @@ internal class LibraryGenerator
     public string Generate (string runtimeJS, string runtimeWasm, string entryName, AssemblyInspector inspector)
     {
         declaredObjects.Clear();
-        var initJS = GenerateInitJS(inspector.InvokableMethods, inspector.FunctionMethods);
+        var initJS = GenerateInitJS(inspector.Methods);
         var dlls = string.Join(", ", inspector.Assemblies.Select(GenerateAssembly));
         return moduleTemplate
             .Replace("%RUNTIME_JS%", runtimeJS)
@@ -46,8 +46,10 @@ internal class LibraryGenerator
         return $"{{ name: '{assembly.Name}', data: '{assembly.Base64}' }}";
     }
 
-    private string GenerateInitJS (IEnumerable<Method> invokable, IEnumerable<Method> functions)
+    private string GenerateInitJS (IReadOnlyCollection<Method> methods)
     {
+        var invokable = methods.Where(m => m.Type == MethodType.Invokable);
+        var functions = methods.Where(m => m.Type == MethodType.Function);
         return JoinLines(
             JoinLines(invokable.Select(GenerateInvokableBinding)),
             JoinLines(functions.Select(GenerateFunctionDeclaration))

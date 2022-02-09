@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -28,72 +27,51 @@ internal class MethodDeclarationGenerator
     {
         builder.Clear();
         methods.Clear();
-        methods.AddRange(sourceMethods.OrderBy(m => m.Assembly));
+        methods.AddRange(sourceMethods.OrderBy(m => m.Namespace));
     }
 
     private void ProcessMethod ()
     {
-        if (ShouldAppendHeader()) AppendHeader();
-        AppendMethod();
-        if (ShouldAppendFooter()) AppendFooter();
+        if (ShouldOpenNamespace()) OpenNamespace();
+        if (method.Type == MethodType.Invokable) AppendInvokable();
+        else AppendFunction();
+        if (ShouldCloseNamespace()) CloseNamespace();
     }
 
-    private bool ShouldAppendHeader ()
+    private bool ShouldOpenNamespace ()
     {
         if (prevMethod is null) return true;
-        return prevMethod.Assembly != method.Assembly;
+        return prevMethod.Namespace != method.Namespace;
     }
 
-    private void AppendHeader ()
+    private void OpenNamespace ()
     {
-        if (ShouldOpenRoot()) builder.Append("\nexport declare const");
-        var parts = method.Assembly.Split('.');
-        var skipCount = parts.Length - GetRootDelta(prevMethod);
-        foreach (var name in parts.Skip(skipCount))
-            builder.Append($" {name}: {{");
+        var name = method.Namespace;
+        builder.Append($"\nexport namespace {name} {{");
     }
 
-    private void AppendMethod ()
+    private bool ShouldCloseNamespace ()
     {
-        builder.Append($"\n    {method.Name}: (");
+        if (nextMethod is null) return true;
+        return nextMethod.Namespace != method.Namespace;
+    }
+
+    private void CloseNamespace ()
+    {
+        builder.Append("\n}");
+    }
+
+    private void AppendInvokable ()
+    {
+        builder.Append($"\n    export function {method.Name}(");
         builder.AppendJoin(", ", method.Arguments.Select(a => $"{a.Name}: {a.Type}"));
-        builder.Append($") => {method.ReturnType},");
+        builder.Append($"): {method.ReturnType};");
     }
 
-    private bool ShouldAppendFooter ()
+    private void AppendFunction ()
     {
-        if (nextMethod is null) return true;
-        return nextMethod.Assembly != method.Assembly;
+        builder.Append($"\n    export let {method.Name}: (");
+        builder.AppendJoin(", ", method.Arguments.Select(a => $"{a.Name}: {a.Type}"));
+        builder.Append($") => {method.ReturnType};");
     }
-
-    private void AppendFooter ()
-    {
-        var rootDelta = GetRootDelta(nextMethod);
-        builder.Append('\n').Append('}', rootDelta);
-        builder.Append(ShouldCloseRoot() ? ';' : ',');
-    }
-
-    private int GetRootDelta (Method deltaMethod)
-    {
-        var curParts = method.Assembly.Split('.');
-        var deltaParts = deltaMethod?.Assembly.Split('.') ?? Array.Empty<string>();
-        for (int i = 0; i < deltaParts.Length; i++)
-            if (i >= curParts.Length || curParts[i] != deltaParts[i])
-                return curParts.Length - i;
-        return curParts.Length;
-    }
-
-    private bool ShouldOpenRoot ()
-    {
-        if (prevMethod is null) return true;
-        return GetAssemblyRoot(prevMethod) != GetAssemblyRoot(method);
-    }
-
-    private bool ShouldCloseRoot ()
-    {
-        if (nextMethod is null) return true;
-        return GetAssemblyRoot(nextMethod) != GetAssemblyRoot(method);
-    }
-
-    private string GetAssemblyRoot (Method method) => method.Assembly.Split('.')[0];
 }

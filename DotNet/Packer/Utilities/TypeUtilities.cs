@@ -57,6 +57,11 @@ internal static class TypeUtilities
         return backingField != null;
     }
 
+    public static string GetAssemblyName (Type type)
+    {
+        return type.Assembly.GetName().Name;
+    }
+
     public static bool ShouldIgnoreAssembly (string assemblyPath)
     {
         var assemblyName = Path.GetFileName(assemblyPath);

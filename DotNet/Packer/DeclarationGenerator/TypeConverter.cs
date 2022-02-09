@@ -15,6 +15,11 @@ internal class TypeConverter
         return ConvertToSimple(type);
     }
 
+    public string ToNamespace (string assemblyName)
+    {
+        return assemblyName;
+    }
+
     public List<Type> GetObjectTypes () => objectTypes.ToList();
 
     private bool ShouldConvertToObject (Type type)
@@ -28,7 +33,8 @@ internal class TypeConverter
     {
         if (IsArray(type)) return $"Array<{ConvertToObject(GetArrayElementType(type))}>";
         CrawlObjectType(type);
-        return type.Name;
+        var space = ToNamespace(GetAssemblyName(type));
+        return $"{space}.{type.Name}";
     }
 
     private string ConvertToSimple (Type type)

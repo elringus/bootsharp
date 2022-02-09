@@ -61,7 +61,7 @@ public class TypesTest : ContentTest
     {
         Data.AddAssemblyWithName("foo.dll", "[JSFunction] public static void OnFoo () { }");
         Task.Execute();
-        Contains("export namespace foo.nya {\n    export let OnFoo: () => void;\n}");
+        Contains("export namespace foo {\n    export let OnFoo: () => void;\n}");
     }
 
     [Fact]
@@ -79,8 +79,8 @@ public class TypesTest : ContentTest
     [Fact]
     public void MembersFromDifferentAssembliesWrappedUnderRespectiveNamespaces ()
     {
-        Data.AddAssemblyWithName("foo.dll", "public class Foo { }");
-        Data.AddAssemblyWithName("bar.dll", "[JSInvokable] public static Foo GetFoo () => default;");
+        Data.AddAssemblyWithName("foo.dll", "namespace foo; public class Foo { }");
+        Data.AddAssemblyWithName("bar.dll", "[JSInvokable] public static foo.Foo GetFoo () => default;");
         Task.Execute();
         Contains("export namespace foo {\n    export class Foo {\n    \n}\n}");
         Contains("export namespace bar {\n    export function GetFoo(): foo.Foo;\n}");
@@ -98,8 +98,8 @@ public class TypesTest : ContentTest
     [Fact]
     public void DifferentAssembliesWithSameRootAssignedToDifferentNamespaces ()
     {
-        Data.AddAssemblyWithName("nya.bar.dll", "[JSFunction] public static void Fun () { }");
-        Data.AddAssemblyWithName("nya.foo.dll", "[JSFunction] public static void Foo () { }");
+        Data.AddAssemblyWithName("nya.bar.dll", "[JSInvokable] public static void Fun () { }");
+        Data.AddAssemblyWithName("nya.foo.dll", "[JSInvokable] public static void Foo () { }");
         Task.Execute();
         Contains("export namespace nya.bar {\n    export function Fun(): void;\n}");
         Contains("export namespace nya.foo {\n    export function Foo(): void;\n}");
@@ -113,7 +113,7 @@ public class TypesTest : ContentTest
         var tsArgs = string.Join(", ", nums.Select(n => $"v{Array.IndexOf(nums, n)}: number"));
         Data.AddAssembly($"[JSInvokable] public static void Num ({csArgs}) {{}}");
         Task.Execute();
-        Contains($"Num: ({tsArgs})");
+        Contains($"Num({tsArgs})");
     }
 
     [Fact]
