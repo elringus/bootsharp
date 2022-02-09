@@ -154,7 +154,7 @@ For example, to transform `Company.Product.Space` assembly into `Space` namespac
 <PropertyGroup>
     <NamespacePattern>Company\.Product\.(\S+)=>$1</NamespacePattern>
 </PropertyGroup>
-``` 
+```
 
 ## JSON Serializer Options
 
