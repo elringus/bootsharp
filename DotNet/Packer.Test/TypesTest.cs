@@ -72,7 +72,7 @@ public class TypesTest : ContentTest
             "[JSInvokable] public static Foo GetFoo () => default;"
         );
         Task.Execute();
-        Contains("export namespace asm {\n    export class Foo {\n    \n}\n}");
+        Contains("export namespace asm {\n    export class Foo {\n    }\n}");
         Contains("export namespace asm {\n    export function GetFoo(): asm.Foo;\n}");
     }
 
@@ -82,7 +82,7 @@ public class TypesTest : ContentTest
         Data.AddAssemblyWithName("foo.dll", "namespace foo; public class Foo { }");
         Data.AddAssemblyWithName("bar.dll", "[JSInvokable] public static foo.Foo GetFoo () => default;");
         Task.Execute();
-        Contains("export namespace foo {\n    export class Foo {\n    \n}\n}");
+        Contains("export namespace foo {\n    export class Foo {\n    }\n}");
         Contains("export namespace bar {\n    export function GetFoo(): foo.Foo;\n}");
     }
 
@@ -164,11 +164,11 @@ public class TypesTest : ContentTest
     public void DefinitionIsGeneratedForObjectType ()
     {
         Data.AddAssemblyWithName("asm.dll",
-            "public class Foo { public string Str { get; set; } public int Int { get; set; } }" +
+            "public class Foo { public string S { get; set; } public int I { get; set; } }" +
             "[JSInvokable] public static Foo Method (Foo t) => default;"
         );
         Task.Execute();
-        Matches(@"export class Foo {\s*str: string;\s*int: number;\s*}");
+        Matches(@"export class Foo {\s*s: string;\s*i: number;\s*}");
         Contains("Method(t: asm.Foo): asm.Foo");
     }
 
@@ -182,7 +182,7 @@ public class TypesTest : ContentTest
         );
         Task.Execute();
         Matches(@"export interface Base {\s*foo: asm.Base;\s*}");
-        Matches(@"export class Derived implements Base {\s*foo: asm.Base;\s*}");
+        Matches(@"export class Derived implements asm.Base {\s*foo: asm.Base;\s*}");
         Contains("Method(b: asm.Base): asm.Derived");
     }
 
@@ -213,7 +213,7 @@ public class TypesTest : ContentTest
         Task.Execute();
         Matches(@"export enum Nyam {\s*A,\s*B\s*}");
         Matches(@"export class Foo {\s*nyam: asm.Nyam;\s*}");
-        Matches(@"export class Bar extends Foo {\s*}");
+        Matches(@"export class Bar extends asm.Foo {\s*}");
     }
 
     [Fact]

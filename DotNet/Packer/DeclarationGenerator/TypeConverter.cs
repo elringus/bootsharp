@@ -32,6 +32,7 @@ internal class TypeConverter
     private string ConvertToObject (Type type)
     {
         if (IsArray(type)) return $"Array<{ConvertToObject(GetArrayElementType(type))}>";
+        if (IsNullable(type)) return ConvertToObject(GetNullableUnderlyingType(type));
         CrawlObjectType(type);
         var space = ToNamespace(GetAssemblyName(type));
         return $"{space}.{type.Name}";
@@ -42,6 +43,7 @@ internal class TypeConverter
         if (type.Name == "Void") return "void";
         if (IsArray(type)) return ToArray(type);
         if (IsAwaitable(type)) return ToPromise(type);
+        if (IsNullable(type)) return ConvertToSimple(GetNullableUnderlyingType(type));
         return ConvertTypeCode(Type.GetTypeCode(type));
     }
 

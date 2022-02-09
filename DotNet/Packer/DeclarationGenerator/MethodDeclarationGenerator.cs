@@ -64,14 +64,19 @@ internal class MethodDeclarationGenerator
     private void AppendInvokable ()
     {
         builder.Append($"\n    export function {method.Name}(");
-        builder.AppendJoin(", ", method.Arguments.Select(a => $"{a.Name}: {a.Type}"));
+        AppendArguments();
         builder.Append($"): {method.ReturnType};");
     }
 
     private void AppendFunction ()
     {
         builder.Append($"\n    export let {method.Name}: (");
-        builder.AppendJoin(", ", method.Arguments.Select(a => $"{a.Name}: {a.Type}"));
+        AppendArguments();
         builder.Append($") => {method.ReturnType};");
+    }
+
+    private void AppendArguments ()
+    {
+        builder.AppendJoin(", ", method.Arguments.Select(a => $"{a.Name}: {a.Type}"));
     }
 }

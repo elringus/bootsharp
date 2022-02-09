@@ -1,44 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using static Packer.TypeUtilities;
+using static Packer.TextUtilities;
 
 namespace Packer;
 
 internal class TypeDeclarationGenerator
 {
-    private readonly List<Type> types = new();
     private readonly StringBuilder builder = new();
-    private readonly TypeConverter typeConverter = new();
+    private readonly TypeConverter converter = new();
 
     private Type type => types[index];
     private Type prevType => index == 0 ? null : types[index - 1];
-    private Type nextType => index == types.Count - 1 ? null : types[index + 1];
+    private Type nextType => index == types.Length - 1 ? null : types[index + 1];
 
+    private Type[] types;
     private int index;
 
     public string Generate (IEnumerable<Type> sourceTypes)
     {
-        ResetState(sourceTypes);
-        for (index = 0; index < types.Count; index++)
-            ProcessType();
+        types = sourceTypes.OrderBy(GetNamespace).ToArray();
+        for (index = 0; index < types.Length; index++)
+            DeclareType();
         return builder.ToString();
     }
 
-    private void ResetState (IEnumerable<Type> sourceTypes)
-    {
-        builder.Clear();
-        types.Clear();
-        types.AddRange(sourceTypes.OrderBy(GetNamespace));
-    }
-
-    private void ProcessType ()
+    private void DeclareType ()
     {
         if (ShouldOpenNamespace()) OpenNamespace();
-        if (type.IsClass) ProcessClass();
-        if (type.IsInterface) ProcessInterface();
-        if (type.IsEnum) ProcessEnum();
+        if (type.IsClass) DeclareClass();
+        if (type.IsInterface) DeclareInterface();
+        if (type.IsEnum) DeclareEnum();
         if (ShouldCloseNamespace()) CloseNamespace();
     }
 
@@ -51,7 +46,7 @@ internal class TypeDeclarationGenerator
     private void OpenNamespace ()
     {
         var name = GetNamespace(type);
-        builder.Append($"\nexport namespace {name} {{");
+        AppendLine($"export namespace {name} {{", 0);
     }
 
     private bool ShouldCloseNamespace ()
@@ -62,14 +57,30 @@ internal class TypeDeclarationGenerator
 
     private void CloseNamespace ()
     {
-        builder.Append("\n}");
+        AppendLine("}", 0);
     }
 
-    private void ProcessClass () { }
+    private void DeclareClass ()
+    {
+        AppendLine($"export class {type.Name}", 1);
+        AppendBaseType();
+        AppendInterfaces();
+        builder.Append(" {");
+        AppendProperties();
+        AppendLine("}", 1);
+    }
 
-    private void ProcessInterface () { }
+    private void DeclareInterface ()
+    {
+        AppendLine($"export interface {type.Name}", 1);
+        AppendBaseType();
+        AppendInterfaces();
+        builder.Append(" {");
+        AppendProperties();
+        AppendLine("}", 1);
+    }
 
-    private void ProcessEnum ()
+    private void DeclareEnum ()
     {
         AppendLine($"export enum {type.Name} {{", 1);
         var names = Enum.GetNames(type);
@@ -82,7 +93,36 @@ internal class TypeDeclarationGenerator
     private string GetNamespace (Type type)
     {
         var assemblyName = GetAssemblyName(type);
-        return typeConverter.ToNamespace(assemblyName);
+        return converter.ToNamespace(assemblyName);
+    }
+
+    private void AppendBaseType ()
+    {
+        if (type.BaseType is { } baseType && types.Contains(baseType))
+            builder.Append($" extends {converter.ToTypeScript(baseType)}");
+    }
+
+    private void AppendInterfaces ()
+    {
+        var interfaces = type.GetInterfaces().Where(i => types.Contains(i)).ToArray();
+        if (interfaces.Length == 0) return;
+        builder.Append(" implements ");
+        builder.AppendJoin(", ", interfaces.Select(converter.ToTypeScript));
+    }
+
+    private void AppendProperties ()
+    {
+        var flags = BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance;
+        foreach (var property in type.GetProperties(flags))
+            if (IsAutoProperty(property) || type.IsInterface)
+                AppendProperty(property);
+    }
+
+    private void AppendProperty (PropertyInfo property)
+    {
+        AppendLine(ToFirstLower(property.Name), 2);
+        if (IsNullable(property)) builder.Append('?');
+        builder.Append($": {converter.ToTypeScript(property.PropertyType)};");
     }
 
     private void AppendLine (string content, int level)

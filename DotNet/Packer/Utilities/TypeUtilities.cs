@@ -45,11 +45,6 @@ internal static class TypeUtilities
         return type.GetGenericArguments()[0];
     }
 
-    public static bool IsStatic (PropertyInfo property)
-    {
-        return property.GetAccessors().Any(a => a.IsStatic);
-    }
-
     public static bool IsAutoProperty (PropertyInfo property)
     {
         var backingFieldName = $"<{property.Name}>k__BackingField";
