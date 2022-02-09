@@ -45,16 +45,16 @@ internal static class TypeUtilities
         return type.GetGenericArguments()[0];
     }
 
-    public static bool IsStatic (PropertyInfo property)
-    {
-        return property.GetAccessors().Any(a => a.IsStatic);
-    }
-
     public static bool IsAutoProperty (PropertyInfo property)
     {
         var backingFieldName = $"<{property.Name}>k__BackingField";
         var backingField = property.DeclaringType!.GetField(backingFieldName, BindingFlags.NonPublic | BindingFlags.Instance);
         return backingField != null;
+    }
+
+    public static string GetAssemblyName (Type type)
+    {
+        return type.Assembly.GetName().Name;
     }
 
     public static bool ShouldIgnoreAssembly (string assemblyPath)

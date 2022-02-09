@@ -9,8 +9,13 @@ namespace Packer;
 internal class DeclarationGenerator
 {
     private readonly MethodDeclarationGenerator methodsGenerator = new();
-    private readonly TypeDeclarationGenerator typesGenerator = new();
     private readonly List<DeclarationFile> declarations = new();
+    private readonly TypeDeclarationGenerator typesGenerator;
+
+    public DeclarationGenerator (NamespaceBuilder namespaceBuilder)
+    {
+        typesGenerator = new TypeDeclarationGenerator(namespaceBuilder);
+    }
 
     public void LoadDeclarations (string directory)
     {
@@ -24,9 +29,8 @@ internal class DeclarationGenerator
 
     public string Generate (AssemblyInspector inspector)
     {
-        var methods = inspector.InvokableMethods.Concat(inspector.FunctionMethods).ToArray();
-        var methodsContent = methodsGenerator.Generate(methods);
-        var objectsContent = typesGenerator.Generate(inspector.ObjectTypes);
+        var methodsContent = methodsGenerator.Generate(inspector.Methods);
+        var objectsContent = typesGenerator.Generate(inspector.Types);
         var runtimeContent = JoinLines(declarations.Select(GenerateForDeclaration), 0);
         return JoinLines(0, runtimeContent, objectsContent, methodsContent) + "\n";
     }
@@ -43,12 +47,10 @@ internal class DeclarationGenerator
 
     private static bool ShouldExportDeclaration (DeclarationFile declaration)
     {
-        switch (declaration.FileName)
-        {
-            case "boot":
-            case "interop": return true;
-            default: return false;
-        }
+        return declaration.FileName switch {
+            "boot" or "interop" => true,
+            _ => false
+        };
     }
 
     private string GetSourceForImportLine (string line)

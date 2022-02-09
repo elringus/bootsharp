@@ -15,6 +15,7 @@ public class PublishDotNetJS : Task
     public bool Clean { get; set; } = true;
     public bool EmitSourceMap { get; set; }
     public bool EmitTypes { get; set; } = true;
+    public string NamespacePattern { get; set; }
 
     public override bool Execute ()
     {
@@ -61,7 +62,7 @@ public class PublishDotNetJS : Task
 
     private AssemblyInspector InspectAssemblies ()
     {
-        var inspector = new AssemblyInspector();
+        var inspector = new AssemblyInspector(new(NamespacePattern));
         inspector.InspectInDirectory(BlazorOutDir);
         inspector.Report(Log);
         return inspector;
@@ -77,7 +78,7 @@ public class PublishDotNetJS : Task
 
     private string GenerateDeclaration (AssemblyInspector inspector)
     {
-        var generator = new DeclarationGenerator();
+        var generator = new DeclarationGenerator(new(NamespacePattern));
         generator.LoadDeclarations(JSDir);
         return generator.Generate(inspector);
     }

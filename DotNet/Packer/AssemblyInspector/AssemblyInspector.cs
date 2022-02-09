@@ -13,13 +13,17 @@ namespace Packer;
 internal class AssemblyInspector : IDisposable
 {
     public List<Assembly> Assemblies { get; } = new();
-    public List<Method> InvokableMethods { get; } = new();
-    public List<Method> FunctionMethods { get; } = new();
-    public List<Type> ObjectTypes { get; } = new();
+    public List<Method> Methods { get; } = new();
+    public List<Type> Types { get; } = new();
 
     private readonly List<string> warnings = new();
-    private readonly TypeConverter typeConverter = new();
-    private readonly List<MetadataLoadContext> contextsToDispose = new();
+    private readonly List<MetadataLoadContext> contexts = new();
+    private readonly TypeConverter typeConverter;
+
+    public AssemblyInspector (NamespaceBuilder namespaceBuilder)
+    {
+        typeConverter = new TypeConverter(namespaceBuilder);
+    }
 
     public void InspectInDirectory (string directory)
     {
@@ -28,8 +32,8 @@ internal class AssemblyInspector : IDisposable
         foreach (var assemblyPath in assemblyPaths)
             try { InspectAssembly(assemblyPath, context); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
-        ObjectTypes.AddRange(typeConverter.GetObjectTypes());
-        contextsToDispose.Add(context);
+        Types.AddRange(typeConverter.GetObjectTypes());
+        contexts.Add(context);
     }
 
     public void Report (TaskLoggingHelper logger)
@@ -37,10 +41,8 @@ internal class AssemblyInspector : IDisposable
         logger.LogMessage(MessageImportance.Normal, "DotNetJS assembly inspection result:");
         logger.LogMessage(MessageImportance.Normal, JoinLines($"Discovered {Assemblies.Count} assemblies:",
             JoinLines(Assemblies.Select(a => a.Name))));
-        logger.LogMessage(MessageImportance.Normal, JoinLines($"Discovered {InvokableMethods.Count} JS invokable methods:",
-            JoinLines(InvokableMethods.Select(m => m.ToString()))));
-        logger.LogMessage(MessageImportance.Normal, JoinLines($"Discovered {FunctionMethods.Count} JS function methods:",
-            JoinLines(FunctionMethods.Select(m => m.ToString()))));
+        logger.LogMessage(MessageImportance.Normal, JoinLines($"Discovered {Methods.Count} JS methods:",
+            JoinLines(Methods.Select(m => m.ToString()))));
 
         foreach (var warning in warnings)
             logger.LogWarning(warning);
@@ -48,9 +50,9 @@ internal class AssemblyInspector : IDisposable
 
     public void Dispose ()
     {
-        foreach (var context in contextsToDispose)
+        foreach (var context in contexts)
             context.Dispose();
-        contextsToDispose.Clear();
+        contexts.Clear();
     }
 
     private MetadataLoadContext CreateLoadContext (IEnumerable<string> assemblyPaths)
@@ -81,17 +83,18 @@ internal class AssemblyInspector : IDisposable
         foreach (var method in GetStaticMethods(assembly))
         foreach (var attribute in method.CustomAttributes)
             if (attribute.AttributeType.Name == Attributes.Invokable)
-                InvokableMethods.Add(CreateMethod(method));
+                Methods.Add(CreateMethod(method, MethodType.Invokable));
             else if (attribute.AttributeType.Name == Attributes.Function)
-                FunctionMethods.Add(CreateMethod(method));
+                Methods.Add(CreateMethod(method, MethodType.Function));
     }
 
-    private Method CreateMethod (MethodInfo info) => new() {
+    private Method CreateMethod (MethodInfo info, MethodType type) => new() {
         Name = info.Name,
-        Assembly = info.DeclaringType!.Assembly.GetName().Name,
+        Assembly = GetAssemblyName(info.DeclaringType),
         Arguments = info.GetParameters().Select(CreateArgument).ToArray(),
         ReturnType = typeConverter.ToTypeScript(info.ReturnType),
-        Async = IsAwaitable(info.ReturnType)
+        Async = IsAwaitable(info.ReturnType),
+        Type = type
     };
 
     private Argument CreateArgument (ParameterInfo info) => new() {

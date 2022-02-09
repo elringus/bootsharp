@@ -3,97 +3,145 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
-using TypeScriptModelsGenerator;
-using TypeScriptModelsGenerator.Options;
-using static Packer.TextUtilities;
 using static Packer.TypeUtilities;
-using static TypeScriptModelsGenerator.TypeScriptModelsGeneration;
+using static Packer.TextUtilities;
 
 namespace Packer;
 
 internal class TypeDeclarationGenerator
 {
     private readonly StringBuilder builder = new();
-    private readonly TypeConverter typeConverter = new();
-    private readonly HashSet<PropertyInfo> excludedProperties = new();
-    private readonly HashSet<PropertyInfo> nullableProperties = new();
+    private readonly NamespaceBuilder namespaceBuilder;
+    private readonly TypeConverter converter;
 
-    public string Generate (IReadOnlyCollection<Type> types)
+    private Type type => types[index];
+    private Type prevType => index == 0 ? null : types[index - 1];
+    private Type nextType => index == types.Length - 1 ? null : types[index + 1];
+
+    private Type[] types;
+    private int index;
+
+    public TypeDeclarationGenerator (NamespaceBuilder namespaceBuilder)
     {
-        Setup(types, Configure).Execute(out var result);
-        foreach (var type in types)
-            ScanProperties(type);
-        foreach (var file in result.Files)
-            GenerateForFile(file);
-        foreach (var enumType in types.Where(t => t.IsEnum))
-            GenerateForEnum(enumType);
+        this.namespaceBuilder = namespaceBuilder;
+        converter = new TypeConverter(namespaceBuilder);
+    }
+
+    public string Generate (IEnumerable<Type> sourceTypes)
+    {
+        types = sourceTypes.OrderBy(GetNamespace).ToArray();
+        for (index = 0; index < types.Length; index++)
+            DeclareType();
         return builder.ToString();
     }
 
-    private void Configure (IOptions options)
+    private void DeclareType ()
     {
-        options.InitializeTypes = false;
-        options.GenerationMode = GenerationMode.Loose;
-        options.Rules.MatchType(t => !t.IsEnum);
-        foreach (var code in Enum.GetNames<TypeCode>().Where(c => c != "Object"))
-            options.Rules.ReplaceType(code, typeConverter.ToTypeScript(Type.GetType($"System.{code}")));
+        if (ShouldOpenNamespace()) OpenNamespace();
+        if (type.IsClass) DeclareClass();
+        if (type.IsInterface) DeclareInterface();
+        if (type.IsEnum) DeclareEnum();
+        if (ShouldCloseNamespace()) CloseNamespace();
     }
 
-    private void ScanProperties (Type type)
+    private bool ShouldOpenNamespace ()
     {
-        if (type.IsInterface) return;
-        foreach (var property in type.GetProperties())
-            if (ShouldExcludeProperty(property))
-                excludedProperties.Add(property);
-            else if (IsNullable(property))
-                nullableProperties.Add(property);
+        if (prevType is null) return true;
+        return GetNamespace(prevType) != GetNamespace(type);
     }
 
-    private void GenerateForEnum (Type enumType)
+    private void OpenNamespace ()
     {
-        builder.Append($"export enum {enumType.Name} {{\n");
-        builder.AppendJoin(",\n", Enum.GetNames(enumType).Select(e => $"    {e}"));
-        builder.Append("\n}\n");
+        var name = GetNamespace(type);
+        AppendLine($"export namespace {name} {{", 0);
     }
 
-    private void GenerateForFile (TypeScriptFile file)
+    private bool ShouldCloseNamespace ()
     {
-        foreach (var line in SplitLines(file.Content))
-            GenerateForLine(line, file.Type);
+        if (nextType is null) return true;
+        return GetNamespace(nextType) != GetNamespace(type);
     }
 
-    private void GenerateForLine (string line, Type declaringType)
+    private void CloseNamespace ()
     {
-        if (line.StartsWith("import") || DeclaresExcludedProperty(line, declaringType)) return;
-        line = Regex.Replace(line, " extends Object", "");
-        line = Regex.Replace(line, "List<", "Array<");
-        line = Regex.Replace(line, @": Nullable<(\S+)>", ": $1");
-        if (DeclaresNullableProperty(line, declaringType))
-            line = Regex.Replace(line, @" (\S+): ", " $1?: ");
-        builder.Append(line).Append('\n');
+        AppendLine("}", 0);
     }
 
-    private bool ShouldExcludeProperty (PropertyInfo property)
+    private void DeclareClass ()
     {
-        return IsStatic(property) || !IsAutoProperty(property);
+        AppendLine($"export class {type.Name}", 1);
+        AppendBaseType();
+        AppendInterfaces();
+        builder.Append(" {");
+        AppendProperties();
+        AppendLine("}", 1);
     }
 
-    private bool DeclaresExcludedProperty (string line, Type declaringType)
+    private void DeclareInterface ()
     {
-        foreach (var property in excludedProperties)
-            if (property.DeclaringType == declaringType &&
-                line.Contains($" {property.Name}: ", StringComparison.OrdinalIgnoreCase))
-                return true;
-        return false;
+        AppendLine($"export interface {type.Name}", 1);
+        AppendBaseType();
+        AppendInterfaces();
+        builder.Append(" {");
+        AppendProperties();
+        AppendLine("}", 1);
     }
 
-    private bool DeclaresNullableProperty (string line, Type declaringType)
+    private void DeclareEnum ()
     {
-        foreach (var property in nullableProperties)
-            if (property.DeclaringType == declaringType &&
-                line.Contains($" {property.Name}: ", StringComparison.OrdinalIgnoreCase))
-                return true;
-        return false;
+        AppendLine($"export enum {type.Name} {{", 1);
+        var names = Enum.GetNames(type);
+        for (int i = 0; i < names.Length; i++)
+            if (i == names.Length - 1) AppendLine(names[i], 2);
+            else AppendLine($"{names[i]},", 2);
+        AppendLine("}", 1);
+    }
+
+    private string GetNamespace (Type type)
+    {
+        var assemblyName = GetAssemblyName(type);
+        return namespaceBuilder.Build(assemblyName);
+    }
+
+    private void AppendBaseType ()
+    {
+        if (type.BaseType is { } baseType && types.Contains(baseType))
+            builder.Append($" extends {converter.ToTypeScript(baseType)}");
+    }
+
+    private void AppendInterfaces ()
+    {
+        var interfaces = type.GetInterfaces().Where(i => types.Contains(i)).ToArray();
+        if (interfaces.Length == 0) return;
+        builder.Append(" implements ");
+        builder.AppendJoin(", ", interfaces.Select(converter.ToTypeScript));
+    }
+
+    private void AppendProperties ()
+    {
+        var flags = BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance;
+        foreach (var property in type.GetProperties(flags))
+            if (IsAutoProperty(property) || type.IsInterface)
+                AppendProperty(property);
+    }
+
+    private void AppendProperty (PropertyInfo property)
+    {
+        AppendLine(ToFirstLower(property.Name), 2);
+        if (IsNullable(property)) builder.Append('?');
+        builder.Append($": {converter.ToTypeScript(property.PropertyType)};");
+    }
+
+    private void AppendLine (string content, int level)
+    {
+        builder.Append('\n');
+        Append(content, level);
+    }
+
+    private void Append (string content, int level)
+    {
+        for (int i = 0; i < level * 4; i++)
+            builder.Append(' ');
+        builder.Append(content);
     }
 }

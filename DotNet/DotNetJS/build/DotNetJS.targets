@@ -27,7 +27,8 @@
                          EntryAssemblyName="$(AssemblyName)"
                          Clean="$(Clean)"
                          EmitSourceMap="$(EmitSourceMap)"
-                         EmitTypes="$(EmitTypes)"/>
+                         EmitTypes="$(EmitTypes)"
+                         NamespacePattern="$(NamespacePattern)"/>
     </Target>
 
 </Project>

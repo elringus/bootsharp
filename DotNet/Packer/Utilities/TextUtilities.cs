@@ -24,6 +24,12 @@ internal static class TextUtilities
 
     public static string JoinLines (int indent, params string[] values) => JoinLines(values, indent);
 
+    public static string ToFirstLower (string value)
+    {
+        if (value.Length == 1) char.ToLowerInvariant(value[0]);
+        return char.ToLowerInvariant(value[0]) + value[1..];
+    }
+
     private static string RemoveEmptyLines (string content)
     {
         return Regex.Replace(content, @"^\s*$\n|\r", string.Empty, RegexOptions.Multiline).Trim();
