@@ -68,7 +68,7 @@ public class TypesTest : ContentTest
     public void MembersFromSameAssemblyWrappedUnderSameNamespace ()
     {
         Data.AddAssemblyWithName("asm.dll",
-            "public class Foo { }" +
+            "public class Foo { }",
             "[JSInvokable] public static Foo GetFoo () => default;"
         );
         Task.Execute();
@@ -164,7 +164,7 @@ public class TypesTest : ContentTest
     public void DefinitionIsGeneratedForObjectType ()
     {
         Data.AddAssemblyWithName("asm.dll",
-            "public class Foo { public string S { get; set; } public int I { get; set; } }" +
+            "public class Foo { public string S { get; set; } public int I { get; set; } }",
             "[JSInvokable] public static Foo Method (Foo t) => default;"
         );
         Task.Execute();
@@ -176,8 +176,8 @@ public class TypesTest : ContentTest
     public void DefinitionIsGeneratedForInterfaceAndImplementation ()
     {
         Data.AddAssemblyWithName("asm.dll",
-            "public interface Base { Base Foo { get; } void Bar (Base b); }" +
-            "public class Derived : Base { public Base Foo { get; } public void Bar (Base b) {} }" +
+            "public interface Base { Base Foo { get; } void Bar (Base b); }",
+            "public class Derived : Base { public Base Foo { get; } public void Bar (Base b) {} }",
             "[JSInvokable] public static Derived Method (Base b) => default;"
         );
         Task.Execute();
@@ -190,8 +190,8 @@ public class TypesTest : ContentTest
     public void DefinitionIsGeneratedForTypeWithListProperty ()
     {
         Data.AddAssemblyWithName("asm.dll",
-            "public interface Item { }" +
-            "public class Container { public List<Item> Items { get; } }" +
+            "public interface Item { }",
+            "public class Container { public List<Item> Items { get; } }",
             "[JSInvokable] public static Container Combine (List<Item> items) => default;"
         );
         Task.Execute();
@@ -204,10 +204,10 @@ public class TypesTest : ContentTest
     public void CanCrawlCustomTypes ()
     {
         Data.AddAssemblyWithName("asm.dll",
-            "public enum Nyam { A, B }" +
-            "public class Foo { public Nyam Nyam { get; } }" +
-            "public class Bar : Foo { }" +
-            "public class Barrel { public List<Bar> Bars { get; } }" +
+            "public enum Nyam { A, B }",
+            "public class Foo { public Nyam Nyam { get; } }",
+            "public class Bar : Foo { }",
+            "public class Barrel { public List<Bar> Bars { get; } }",
             "[JSInvokable] public static Barrel GetBarrel () => default;"
         );
         Task.Execute();
@@ -228,7 +228,7 @@ public class TypesTest : ContentTest
     public void StaticPropertiesAreNotIncluded ()
     {
         Data.AddAssembly(
-            "public class Foo { public static string Soo { get; } }" +
+            "public class Foo { public static string Soo { get; } }",
             "[JSInvokable] public static Foo Bar () => default;"
         );
         Task.Execute();
@@ -239,7 +239,7 @@ public class TypesTest : ContentTest
     public void ExpressionPropertiesAreNotIncluded ()
     {
         Data.AddAssembly(
-            "public class Foo { public bool Boo => true; }" +
+            "public class Foo { public bool Boo => true; }",
             "[JSInvokable] public static Foo Bar () => default;"
         );
         Task.Execute();
@@ -250,8 +250,8 @@ public class TypesTest : ContentTest
     public void NullablePropertiesHaveOptionalModificator ()
     {
         Data.AddAssemblyWithName("asm.dll",
-            "public class Foo { public bool? Bool { get; } }" +
-            "public class Bar { public Foo? Foo { get; } }" +
+            "public class Foo { public bool? Bool { get; } }",
+            "public class Bar { public Foo? Foo { get; } }",
             "[JSInvokable] public static Foo FooBar (Bar bar) => default;"
         );
         Task.Execute();
@@ -263,8 +263,8 @@ public class TypesTest : ContentTest
     public void NullableEnumsAreCrawled ()
     {
         Data.AddAssemblyWithName("asm.dll",
-            "public enum Foo { A, B }" +
-            "public class Bar { public Foo? Foo { get; } }" +
+            "public enum Foo { A, B }",
+            "public class Bar { public Foo? Foo { get; } }",
             "[JSInvokable] public static Bar GetBar () => default;"
         );
         Task.Execute();
@@ -284,7 +284,7 @@ public class TypesTest : ContentTest
     public void NamespacePatternOnlyAffectTypes ()
     {
         Data.AddAssemblyWithName("company.product.asm.dll",
-            "public class Foo { }" +
+            "public class Foo { }",
             "[JSInvokable] public static Foo GetFoo () => default;"
         );
         Task.NamespacePattern = @"company\.product\.(\S+)=>$1";
