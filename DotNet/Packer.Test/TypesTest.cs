@@ -273,6 +273,23 @@ public class TypesTest : ContentTest
     }
 
     [Fact]
+    public void WhenTypeReferencedMultipleTimesItsDeclaredOnlyOnce ()
+    {
+        Data.AddAssemblyWithName("asm.dll",
+            "public interface Foo { }",
+            "public class Bar: Foo { public Foo Foo { get; } }",
+            "public class Far: Bar { public Bar Bar { get; } }",
+            "[JSInvokable] public static Bar TakeFooGiveBar (Foo f) => default;",
+            "[JSInvokable] public static Foo TakeBarGiveFoo (Bar b) => default;",
+            "[JSInvokable] public static Far TakeAllGiveFar (Foo f, Bar b, Far ff) => default;"
+        );
+        Task.Execute();
+        Assert.Single(Matches("export interface Foo"));
+        Assert.Single(Matches("export class Bar"));
+        Assert.Single(Matches("export class Far"));
+    }
+
+    [Fact]
     public void WhenInvalidNamespacePatternProvidedExceptionIsThrown ()
     {
         Data.AddAssembly("[JSInvokable] public static void Foo () { }");
