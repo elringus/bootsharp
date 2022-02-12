@@ -3883,7 +3883,7 @@ var Module = (function () {
                     this._register_c_fn("mono_wasm_send_dbg_command", "bool", ["number", "number", "number", "number", "number"]);
                     this._register_c_fn("mono_wasm_send_dbg_command_with_parms", "bool", ["number", "number", "number", "number", "number", "number", "string"]);
                     this._debugger_buffer_len = -1;
-                    if (globalThis.dotnetDebugger) debugger; else console.debug("mono_wasm_runtime_ready", "fe00e07a-5519-4dfe-b35a-f867dbaf2e28")
+                    if (globalThis.dotnetDebugger) debugger; else {}
                 }, mono_wasm_setenv: function (name, value) {
                     if (!this.wasm_setenv) this.wasm_setenv = Module.cwrap("mono_wasm_setenv", null, ["string", "string"]);
                     this.wasm_setenv(name, value)
