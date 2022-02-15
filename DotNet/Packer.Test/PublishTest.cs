@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Xunit;
 
 namespace Packer.Test;
@@ -64,7 +65,7 @@ public class PublishTest : BuildTest
     [Fact]
     public void AllAssembliesAreInspected ()
     {
-        Data.AddAssemblyWithName("Foo.dll");
+        Data.AddAssembly("Foo.dll", Array.Empty<MockClass>());
         Task.Execute();
         Assert.Contains(Engine.Messages, w => w.Contains("Foo.dll"));
         Assert.Contains(Engine.Messages, w => w.Contains("DotNetJS.dll"));

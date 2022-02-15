@@ -1,4 +1,5 @@
 using Xunit;
+using static Packer.Test.MockAssembly;
 
 namespace Packer.Test;
 
@@ -14,71 +15,88 @@ public class LibraryTest : ContentTest
     }
 
     [Fact]
-    public void LibraryExportsAssemblyObject ()
+    public void LibraryExportsNamespaceObject ()
     {
-        Data.AddAssemblyWithName("foo.dll", "[JSInvokable] public static void Bar () { }");
+        AddAssembly(WithSpace("Foo", "[JSInvokable] public static void Bar () { }"));
         Task.Execute();
-        Contains("exports.foo = {};");
+        Contains("exports.Foo = {};");
     }
 
     [Fact]
-    public void WhenAssemblyNameContainDotsObjectCreatedForEachPartInOrder ()
+    public void WhenSpaceContainDotsObjectCreatedForEachPartInOrder ()
     {
-        Data.AddAssemblyWithName("foo.bar.nya.dll", "[JSInvokable] public static void Bar () { }");
+        AddAssembly(WithSpace("Foo.Bar.Nya", "[JSInvokable] public static void Bar () { }"));
         Task.Execute();
-        Matches(@"exports.foo = {};\s*exports.foo.bar = {};\s*exports.foo.bar.nya = {};");
+        Matches(@"exports.Foo = {};\s*exports.Foo.Bar = {};\s*exports.Foo.Bar.Nya = {};");
     }
 
     [Fact]
-    public void WhenMultipleAssembliesEachGetItsOwnObject ()
+    public void WhenMultipleSpacesEachGetItsOwnObject ()
     {
-        Data.AddAssemblyWithName("foo.dll", "[JSInvokable] public static void Foo () { }");
-        Data.AddAssemblyWithName("bar.nya.dll", "[JSFunction] public static void Fun () { }");
+        AddAssembly(WithSpace("Foo", "[JSInvokable] public static void Foo () { }")
+            .AddSpace("Bar.Nya", "[JSFunction] public static void Fun () { }"));
         Task.Execute();
-        Contains("exports.foo = {};");
-        Contains("exports.bar = {};");
-        Contains("exports.bar.nya = {};");
+        Contains("exports.Foo = {};");
+        Contains("exports.Bar = {};");
+        Contains("exports.Bar.Nya = {};");
     }
 
     [Fact]
-    public void DifferentAssembliesWithSameRootAssignedToDifferentObjects ()
+    public void WhenMultipleAssembliesWithEqualSpaceObjectDeclaredOnlyOnce ()
     {
-        Data.AddAssemblyWithName("nya.foo.dll", "[JSInvokable] public static void Foo () { }");
-        Data.AddAssemblyWithName("nya.bar.dll", "[JSFunction] public static void Fun () { }");
+        AddAssembly(WithSpace("Foo", "[JSInvokable] public static void Bar () { }"));
+        AddAssembly(WithSpace("Foo", "[JSFunction] public static void Fun () { }"));
         Task.Execute();
-        Assert.Single(Matches("exports.nya = {}"));
+        Assert.Single(Matches("Foo"));
+    }
+
+    [Fact]
+    public void DifferentSpacesWithSameRootAssignedToDifferentObjects ()
+    {
+        Data.AddAssembly("Nya.Foo", "[JSInvokable] public static void Foo () { }");
+        Data.AddAssembly("Nya.Bar", "[JSFunction] public static void Fun () { }");
+        Task.Execute();
+        Assert.Single(Matches("exports.Nya = {}"));
     }
 
     [Fact]
     public void BindingForInvokableMethodIsGenerated ()
     {
-        Data.AddAssemblyWithName("foo.bar.dll", "[JSInvokable] public static void Nya () { }");
+        Data.AddAssembly("foo.asm.dll",
+            new MockClass { Space = "Foo.Bar", Lines = new[] { "[JSInvokable] public static void Nya () { }" } }
+        );
         Task.Execute();
-        Contains("exports.foo.bar.Nya = () => exports.invoke('foo.bar', 'Nya');");
+        Contains("exports.Foo.Bar.Nya = () => exports.invoke('foo.asm', 'Nya');");
     }
 
     [Fact]
     public void BindingForFunctionMethodIsGenerated ()
     {
-        Data.AddAssemblyWithName("foo.bar.dll", "[JSFunction] public static void Fun () { }");
+        Data.AddAssembly("foo.asm.dll",
+            new MockClass { Space = "Foo.Bar", Lines = new[] { "[JSFunction] public static void Fun () { }" } }
+        );
         Task.Execute();
-        Contains("exports.foo.bar.Fun = undefined;");
+        Contains("exports.Foo.Bar.Fun = undefined;");
     }
 
     [Fact]
-    public void BindingsFromMultipleAssembliesAssignedToRespectiveObjects ()
+    public void BindingsFromMultipleSpacesAssignedToRespectiveObjects ()
     {
-        Data.AddAssemblyWithName("foo.dll", "[JSInvokable] public static void Foo () { }");
-        Data.AddAssemblyWithName("bar.nya.dll", "[JSFunction] public static void Fun () { }");
+        Data.AddAssembly("foo.asm.dll",
+            new MockClass { Space = "Foo", Lines = new[] { "[JSInvokable] public static void Foo () { }" } }
+        );
+        Data.AddAssembly("bar.nya.asm.dll",
+            new MockClass { Space = "Bar.Nya", Lines = new[] { "[JSFunction] public static void Fun () { }" } }
+        );
         Task.Execute();
-        Contains("exports.foo.Foo = () => exports.invoke('foo', 'Foo');");
-        Contains("exports.bar.nya.Fun = undefined;");
+        Contains("exports.Foo.Foo = () => exports.invoke('foo.asm', 'Foo');");
+        Contains("exports.Bar.Nya.Fun = undefined;");
     }
 
     [Fact]
     public void VariablesConflictingWithJSTypesAreRenamed ()
     {
-        Data.AddAssembly("[JSInvokable] public static void Fun (string function) { }");
+        Data.AddAssemblyTemp(new[] { "[JSInvokable] public static void Fun (string function) { }" });
         Task.Execute();
         Contains("Fun = (fn) => exports.invoke");
     }
@@ -86,12 +104,18 @@ public class LibraryTest : ContentTest
     [Fact]
     public void AsyncMethodsBindViaInvokeAsync ()
     {
-        Data.AddAssembly(
+        Data.AddAssemblyTemp(
             "[JSInvokable] public static Task Asy () => default;",
             "[JSInvokable] public static ValueTask AsyValue () => default;"
         );
         Task.Execute();
         Contains("Asy = () => exports.invokeAsync");
         Contains("AsyValue = () => exports.invokeAsync");
+    }
+
+    [Fact]
+    public void NamespacePatternOverrideObjectNames ()
+    {
+        // TODO
     }
 }

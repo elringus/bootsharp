@@ -1,68 +1,37 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using DotNetJS;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.JSInterop;
-using Xunit;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Packer.Test;
 
-public static class MockAssembly
+public class MockAssembly
 {
-    private static readonly string[] defaultUsings = {
-        "System",
-        "System.Collections.Generic",
-        "System.Threading.Tasks",
-        "DotNetJS",
-        "Microsoft.JSInterop"
-    };
+    public string Name { get; }
+    public List<MockClass> Sources { get; } = new();
 
-    public static void Emit (string assemblyPath, IEnumerable<MockClass> sources)
+    public MockAssembly (string name = null)
     {
-        var fileSource = string.Join('\n', sources.Select(BuildSource));
-        var compilation = CreateCompilation(assemblyPath, fileSource);
-        var result = compilation.Emit(assemblyPath);
-        Assert.True(result.Success);
+        Name = name ?? $"MockAssembly{Guid.NewGuid():N}.dll";
     }
 
-    public static void EmitReferences (string directory)
+    public static MockAssembly With (params string[] classLines)
     {
-        foreach (var reference in CreateReferences())
-            File.Copy(reference.FilePath, Path.Combine(directory, Path.GetFileName(reference.FilePath)));
+        return new MockAssembly().Add(classLines);
     }
 
-    private static string BuildSource (MockClass source)
+    public static MockAssembly WithSpace (string @namespace, params string[] classLines)
     {
-        return string.Join('\n', defaultUsings.Select(u => $"using {u};")) +
-               $"\nnamespace {source.Space};" +
-               $"\npublic class {source.Name} {{ {string.Join('\n', source.Lines)} }}";
+        return new MockAssembly().AddSpace(@namespace, classLines);
     }
 
-    private static PortableExecutableReference[] CreateReferences ()
+    public MockAssembly Add (params string[] classLines)
     {
-        var coreDir = Path.GetDirectoryName(typeof(object).Assembly.Location);
-        return new[] {
-            MetadataReference.CreateFromFile(Path.Combine(coreDir, "System.Runtime.dll")),
-            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JSFunctionAttribute).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(JSInvokableAttribute).Assembly.Location)
-        };
+        Sources.Add(new MockClass { Lines = classLines });
+        return this;
     }
 
-    private static CSharpCompilation CreateCompilation (string assemblyPath, string fileSource)
+    public MockAssembly AddSpace (string @namespace, params string[] classLines)
     {
-        var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
-        var tree = CSharpSyntaxTree.ParseText(fileSource);
-        var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
-        var refs = GatherReferences(Path.GetDirectoryName(assemblyPath));
-        return CSharpCompilation.Create(assemblyName, new[] { tree }, refs, options);
-    }
-
-    private static PortableExecutableReference[] GatherReferences (string directory)
-    {
-        var paths = Directory.GetFiles(directory, "*.dll");
-        return paths.Select(p => MetadataReference.CreateFromFile(p)).ToArray();
+        Sources.Add(new MockClass { Space = @namespace, Lines = classLines });
+        return this;
     }
 }

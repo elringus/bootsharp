@@ -14,4 +14,9 @@ public abstract class BuildTest : IDisposable
         Data.Dispose();
         GC.SuppressFinalize(this);
     }
+
+    public void AddAssembly (MockAssembly assembly)
+    {
+        Data.AddAssembly(assembly);
+    }
 }
