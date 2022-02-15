@@ -41,16 +41,31 @@ public sealed class MockData : IDisposable
 
     public void Dispose () => Directory.Delete(root, true);
 
-    public void AddAssembly (params string[] sources)
-    {
-        AddAssemblyWithName($"test{Guid.NewGuid():N}.dll", sources);
-    }
-
-    public void AddAssemblyWithName (string assemblyName, params string[] sources)
+    public void AddAssemblyWithName (string assemblyName, params MockClass[] classes)
     {
         var path = Path.Combine(BlazorOutDir, assemblyName);
-        MockAssembly.Emit(path, sources);
+        MockAssembly.Emit(path, classes);
         Task.EntryAssemblyName = assemblyName;
+    }
+
+    public void AddAssemblyWithName (string assemblyName, params string[] classLines)
+    {
+        AddAssemblyWithName(assemblyName, new MockClass { Lines = classLines });
+    }
+
+    public void AddAssemblyWithName (string assemblyName)
+    {
+        AddAssemblyWithName(assemblyName, Array.Empty<MockClass>());
+    }
+
+    public void AddAssembly (params MockClass[] classes)
+    {
+        AddAssemblyWithName($"MockAssembly{Guid.NewGuid():N}.dll", classes);
+    }
+
+    public void AddAssembly (params string[] classLines)
+    {
+        AddAssembly(new MockClass { Lines = classLines });
     }
 
     private string ReadGeneratedFileText (string fileName)

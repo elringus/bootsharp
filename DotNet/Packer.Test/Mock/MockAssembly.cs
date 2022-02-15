@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using DotNetJS;
@@ -12,9 +11,17 @@ namespace Packer.Test;
 
 public static class MockAssembly
 {
-    public static void Emit (string assemblyPath, IEnumerable<string> sources)
+    private static readonly string[] defaultUsings = {
+        "System",
+        "System.Collections.Generic",
+        "System.Threading.Tasks",
+        "DotNetJS",
+        "Microsoft.JSInterop"
+    };
+
+    public static void Emit (string assemblyPath, IEnumerable<MockClass> sources)
     {
-        var fileSource = BuildFileSource(sources);
+        var fileSource = string.Join('\n', sources.Select(BuildSource));
         var compilation = CreateCompilation(assemblyPath, fileSource);
         var result = compilation.Emit(assemblyPath);
         Assert.True(result.Success);
@@ -26,6 +33,13 @@ public static class MockAssembly
             File.Copy(reference.FilePath, Path.Combine(directory, Path.GetFileName(reference.FilePath)));
     }
 
+    private static string BuildSource (MockClass source)
+    {
+        return string.Join('\n', defaultUsings.Select(u => $"using {u};")) +
+               $"\nnamespace {source.Space};" +
+               $"\npublic class {source.Name} {{ {string.Join('\n', source.Lines)} }}";
+    }
+
     private static PortableExecutableReference[] CreateReferences ()
     {
         var coreDir = Path.GetDirectoryName(typeof(object).Assembly.Location);
@@ -35,15 +49,6 @@ public static class MockAssembly
             MetadataReference.CreateFromFile(typeof(JSFunctionAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(JSInvokableAttribute).Assembly.Location)
         };
-    }
-
-    private static string BuildFileSource (IEnumerable<string> sources)
-    {
-        var usings = new[] { "System", "System.Collections.Generic", "System.Threading.Tasks", "DotNetJS", "Microsoft.JSInterop" };
-        var source = string.Join('\n', sources);
-        if (!source.StartsWith("namespace"))
-            source = $"public class c{Guid.NewGuid():N} {{ {source} }}";
-        return string.Join('\n', usings.Select(u => $"using {u};")) + source;
     }
 
     private static CSharpCompilation CreateCompilation (string assemblyPath, string fileSource)

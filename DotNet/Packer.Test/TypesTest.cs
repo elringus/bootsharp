@@ -79,7 +79,7 @@ public class TypesTest : ContentTest
     [Fact]
     public void MembersFromDifferentAssembliesWrappedUnderRespectiveNamespaces ()
     {
-        Data.AddAssemblyWithName("foo.dll", "namespace foo; public class Foo { }");
+        Data.AddAssemblyWithName("foo.dll", new MockClass { Space = "foo", Name = "Foo" });
         Data.AddAssemblyWithName("bar.dll", "[JSInvokable] public static foo.Foo GetFoo () => default;");
         Task.Execute();
         Contains("export namespace foo {\n    export class Foo {\n    }\n}");
