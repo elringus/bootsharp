@@ -17,25 +17,27 @@ public class MockCompiler
         "Microsoft.JSInterop"
     };
 
-    public void Compile (IEnumerable<MockClass> classes, string assemblyPath)
+    public void Compile (IEnumerable<MockSource> sources, string assemblyPath)
     {
-        var sources = string.Join('\n', classes.Select(BuildSource));
-        var compilation = CreateCompilation(assemblyPath, sources);
+        var text = string.Join('\n', defaultUsings.Select(u => $"using {u};")) + '\n' +
+                   string.Join('\n', sources.Select(BuildSource));
+        var compilation = CreateCompilation(assemblyPath, text);
         var result = compilation.Emit(assemblyPath);
         Assert.True(result.Success);
     }
 
-    private static string BuildSource (MockClass @class)
+    private static string BuildSource (MockSource source)
     {
-        return string.Join('\n', defaultUsings.Select(u => $"using {u};")) +
-               $"\nnamespace {@class.Space};" +
-               $"\npublic class {@class.Name} {{ {string.Join('\n', @class.Lines)} }}";
+        var text = source.WrapInClass
+            ? $"public partial class MockClass {{ {source.Code} }}"
+            : source.Code;
+        return $"namespace {source.Namespace} {{ {text} }}";
     }
 
-    private static CSharpCompilation CreateCompilation (string assemblyPath, string sources)
+    private static CSharpCompilation CreateCompilation (string assemblyPath, string text)
     {
         var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
-        var tree = CSharpSyntaxTree.ParseText(sources);
+        var tree = CSharpSyntaxTree.ParseText(text);
         var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
         var refs = GatherReferences(Path.GetDirectoryName(assemblyPath));
         return CSharpCompilation.Create(assemblyName, new[] { tree }, refs, options);

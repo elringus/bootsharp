@@ -15,8 +15,23 @@ public abstract class BuildTest : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public void AddAssembly (MockAssembly assembly)
+    protected void AddAssembly (string assemblyName, params MockSource[] sources)
     {
-        Data.AddAssembly(assembly);
+        Data.AddAssembly(new(assemblyName, sources));
+    }
+
+    protected void AddAssembly (params MockSource[] sources)
+    {
+        AddAssembly($"MockAssembly{Guid.NewGuid():N}.dll", sources);
+    }
+
+    protected MockSource With (string @namespace, string code, bool wrapInClass = true)
+    {
+        return new(@namespace, code, wrapInClass);
+    }
+
+    protected MockSource With (string code)
+    {
+        return With("MockNamespace", code);
     }
 }
