@@ -30,8 +30,8 @@ public abstract class BuildTest : IDisposable
         return new(@namespace, code, wrapInClass);
     }
 
-    protected MockSource With (string code)
+    protected MockSource With (string code, bool wrapInClass = true)
     {
-        return With("MockNamespace", code);
+        return With(null, code, wrapInClass);
     }
 }

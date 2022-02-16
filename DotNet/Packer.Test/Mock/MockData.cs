@@ -63,6 +63,7 @@ public sealed class MockData : IDisposable
         BlazorOutDir = BlazorOutDir,
         JSDir = JSDir,
         WasmFile = WasmFile,
+        EntryAssemblyName = "System.Runtime.dll",
         BuildEngine = BuildEngine.Create()
     };
 

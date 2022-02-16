@@ -77,17 +77,6 @@ public class LibraryTest : ContentTest
     }
 
     [Fact]
-    public void WhenNoSpaceBindingsAreAssignedToBindingsObject ()
-    {
-        AddAssembly("asm.dll",
-            With(null, "[JSInvokable] public static void Nya () { }"),
-            With(null, "[JSFunction] public static void Fun () { }"));
-        Task.Execute();
-        Contains("exports.Bindings.Nya = () => exports.invoke('asm', 'Nya');");
-        Contains("exports.Bindings.Fun = undefined;");
-    }
-
-    [Fact]
     public void BindingsFromMultipleSpacesAssignedToRespectiveObjects ()
     {
         AddAssembly("foo.asm.dll", With("Foo", "[JSInvokable] public static void Foo () { }"));
@@ -95,6 +84,29 @@ public class LibraryTest : ContentTest
         Task.Execute();
         Contains("exports.Foo.Foo = () => exports.invoke('foo.asm', 'Foo');");
         Contains("exports.Bar.Nya.Fun = undefined;");
+    }
+
+    [Fact]
+    public void WhenNoSpaceBindingsAreAssignedToBindingsObject ()
+    {
+        AddAssembly("asm.dll",
+            With("[JSInvokable] public static void Nya () { }"),
+            With("[JSFunction] public static void Fun () { }"));
+        Task.Execute();
+        Contains("exports.Bindings.Nya = () => exports.invoke('asm', 'Nya');");
+        Contains("exports.Bindings.Fun = undefined;");
+    }
+
+    [Fact]
+    public void NamespaceAttributeOverrideObjectNames ()
+    {
+        AddAssembly("asm.dll",
+            With(@"[assembly:JSNamespace(@""Foo\.Bar\.(\S+)"", ""$1"")]", false),
+            With("Foo.Bar.Nya", "[JSInvokable] public static void GetNya () { }"),
+            With("Foo.Bar.Fun", "[JSFunction] public static void OnFun () { }"));
+        Task.Execute();
+        Contains("exports.Nya.GetNya = () => exports.invoke('asm', 'GetNya');");
+        Contains("exports.Fun.OnFun = undefined;");
     }
 
     [Fact]
@@ -114,11 +126,5 @@ public class LibraryTest : ContentTest
         Task.Execute();
         Contains("Asy = () => exports.invokeAsync");
         Contains("AsyValue = () => exports.invokeAsync");
-    }
-
-    [Fact]
-    public void NamespacePatternOverrideObjectNames ()
-    {
-        // TODO
     }
 }

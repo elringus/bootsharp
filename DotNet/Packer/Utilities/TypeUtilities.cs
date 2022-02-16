@@ -52,6 +52,13 @@ internal static class TypeUtilities
         return backingField != null;
     }
 
+    public static MetadataLoadContext CreateLoadContext (string directory)
+    {
+        var assemblyPaths = Directory.GetFiles(directory, "*.dll");
+        var resolver = new PathAssemblyResolver(assemblyPaths);
+        return new MetadataLoadContext(resolver);
+    }
+
     public static bool ShouldIgnoreAssembly (string assemblyPath)
     {
         var assemblyName = Path.GetFileName(assemblyPath);

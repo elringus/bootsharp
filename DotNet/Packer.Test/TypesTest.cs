@@ -111,11 +111,23 @@ public class TypesTest : ContentTest
     public void WhenNoSpaceTypesAreDeclaredUnderBindingsSpace ()
     {
         AddAssembly(
-            With(null, "public class Foo { }", false),
-            With(null, "[JSFunction] public static void OnFoo (Foo foo) { }"));
+            With("public class Foo { }", false),
+            With("[JSFunction] public static void OnFoo (Foo foo) { }"));
         Task.Execute();
         Contains("export namespace Bindings {\n    export class Foo {\n    }\n}");
         Contains("export namespace Bindings {\n    export let OnFoo: (foo: Bindings.Foo) => void;\n}");
+    }
+
+    [Fact]
+    public void NamespaceAttributeOverrideSpaceNames ()
+    {
+        AddAssembly(
+            With(@"[assembly:JSNamespace(@""Foo\.Bar\.(\S+)"", ""$1"")]", false),
+            With("Foo.Bar.Nya", "public class Nya { }", false),
+            With("Foo.Bar.Fun", "[JSFunction] public static void OnFun (Nya.Nya nya) { }"));
+        Task.Execute();
+        Contains("export namespace Nya {\n    export class Nya {\n    }\n}");
+        Contains("export namespace Fun {\n    export let OnFun: (nya: Nya.Nya) => void;\n}");
     }
 
     [Fact]
