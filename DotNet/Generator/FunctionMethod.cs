@@ -15,15 +15,16 @@ namespace Generator
 
         public string EmitSource (Compilation compilation)
         {
-            var assembly = GetAssemblyName(compilation);
+            var assembly = GetNamespace(compilation);
             return $"{EmitSignature()} => {EmitBody(assembly)};";
         }
 
-        private string GetAssemblyName (Compilation compilation)
+        private string GetNamespace (Compilation compilation)
         {
             var model = compilation.GetSemanticModel(syntax.SyntaxTree);
-            var symbol = model.GetEnclosingSymbol(syntax.SpanStart);
-            return symbol!.ContainingAssembly.Identity.Name;
+            var symbol = model.GetEnclosingSymbol(syntax.SpanStart)!;
+            if (symbol.ContainingNamespace.IsGlobalNamespace) return "Bindings";
+            return string.Join(".", symbol.ContainingNamespace.ConstituentNamespaces);
         }
 
         private string EmitSignature ()

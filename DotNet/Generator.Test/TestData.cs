@@ -18,13 +18,13 @@ partial class Foo
             @"
 partial class Foo
 {
-    partial void Bar () => JS.Invoke(""dotnet.TestProject.Bar"");
+    partial void Bar () => JS.Invoke(""dotnet.Bindings.Bar"");
 }
 "
         },
         new object[] {
             @"
-namespace FileScoped;
+namespace File.Scoped;
 public static partial class Foo
 {
     [JSFunction]
@@ -32,10 +32,10 @@ public static partial class Foo
 }
 ",
             @"
-namespace FileScoped;
+namespace File.Scoped;
 public static partial class Foo
 {
-    private static partial Task BarAsync (string a, int b) => JS.InvokeAsync(""dotnet.TestProject.BarAsync"", a, b);
+    private static partial Task BarAsync (string a, int b) => JS.InvokeAsync(""dotnet.File.Scoped.BarAsync"", a, b);
 }
 "
         },
@@ -57,9 +57,27 @@ namespace Classic
 {
 partial class Foo
 {
-    partial DateTime GetTime (DateTime time) => JS.Invoke<DateTime>(""dotnet.TestProject.GetTime"", time);
-    partial ValueTask<DateTime> GetTimeAsync (DateTime time) => JS.InvokeAsync<DateTime>(""dotnet.TestProject.GetTimeAsync"", time);
+    partial DateTime GetTime (DateTime time) => JS.Invoke<DateTime>(""dotnet.Classic.GetTime"", time);
+    partial ValueTask<DateTime> GetTimeAsync (DateTime time) => JS.InvokeAsync<DateTime>(""dotnet.Classic.GetTimeAsync"", time);
 }
+}
+"
+        },
+        new object[] {
+            @"
+[assembly:JSNamespace(@""Foo\.Bar\.(\S+)"", ""$1"")]
+namespace Foo.Bar.Nya;
+public static partial class Nya
+{
+    [JSFunction]
+    private static partial void OnFun (Nya nya);
+}
+",
+            @"
+namespace Foo.Bar.Nya;
+public static partial class Nya
+{
+    private static partial void OnFun (Nya nya) => JS.Invoke(""dotnet.Nya.OnFun"", nya);
 }
 "
         }
