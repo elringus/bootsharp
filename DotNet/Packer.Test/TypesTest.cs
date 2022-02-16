@@ -303,24 +303,4 @@ public class TypesTest : ContentTest
         Assert.Single(Matches("export class Bar"));
         Assert.Single(Matches("export class Far"));
     }
-
-    [Fact]
-    public void WhenInvalidNamespacePatternExceptionIsThrown ()
-    {
-        // AddAssembly(With("[JSInvokable] public static void Foo () { }"));
-        // Task.NamespacePattern = "?";
-        // Assert.Throws<PackerException>(() => Task.Execute());
-    }
-
-    [Fact]
-    public void NamespacePatternOverrideDeclaredSpaces ()
-    {
-        // AddAssembly(
-        //     With("company.product.space", "public class Foo { }"),
-        //     With("company.product.space", "[JSInvokable] public static Foo GetFoo () => default;"));
-        // Task.NamespacePattern = @"company\.product\.(\S+)=>$1";
-        // Task.Execute();
-        // Contains("export namespace space {\n    export class Foo {\n    }\n}");
-        // Contains("export namespace space {\n    export function GetFoo(): space.Foo;\n}");
-    }
 }
