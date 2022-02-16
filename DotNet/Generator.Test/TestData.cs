@@ -65,17 +65,21 @@ partial class Foo
         },
         new object[] {
             @"
+using System;
 [assembly:JSNamespace(@""Foo\.Bar\.(\S+)"", ""$1"")]
+class JSNamespaceAttribute : Attribute { JSNamespaceAttribute (string _, string __) { } }
+
 namespace Foo.Bar.Nya;
-public static partial class Nya
-{
-    [JSFunction]
-    private static partial void OnFun (Nya nya);
-}
+
+    public partial class Nya
+    {
+        [JSFunction]
+        private static partial void OnFun (Nya nya);
+    }
 ",
-            @"
+            @"using System;
 namespace Foo.Bar.Nya;
-public static partial class Nya
+public partial class Nya
 {
     private static partial void OnFun (Nya nya) => JS.Invoke(""dotnet.Nya.OnFun"", nya);
 }
