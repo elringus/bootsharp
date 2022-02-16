@@ -47,7 +47,7 @@ public class LibraryTest : ContentTest
         AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
         AddAssembly(With("Foo", "[JSFunction] public static void Fun () { }"));
         Task.Execute();
-        Assert.Single(Matches("Foo"));
+        Assert.Single(Matches("exports.Foo ="));
     }
 
     [Fact]
@@ -71,9 +71,20 @@ public class LibraryTest : ContentTest
     [Fact]
     public void BindingForFunctionMethodIsGenerated ()
     {
-        AddAssembly("foo.asm.dll", With("Foo.Bar", "[JSFunction] public static void Fun () { }"));
+        AddAssembly(With("Foo.Bar", "[JSFunction] public static void Fun () { }"));
         Task.Execute();
         Contains("exports.Foo.Bar.Fun = undefined;");
+    }
+
+    [Fact]
+    public void WhenNoSpaceBindingsAreAssignedToBindingsObject ()
+    {
+        AddAssembly("asm.dll",
+            With(null, "[JSInvokable] public static void Nya () { }"),
+            With(null, "[JSFunction] public static void Fun () { }"));
+        Task.Execute();
+        Contains("exports.Bindings.Nya = () => exports.invoke('asm', 'Nya');");
+        Contains("exports.Bindings.Fun = undefined;");
     }
 
     [Fact]

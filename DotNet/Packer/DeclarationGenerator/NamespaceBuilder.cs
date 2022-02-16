@@ -1,22 +1,24 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
 
 namespace Packer;
 
 internal class NamespaceBuilder
 {
     private const string separator = "=>";
-    private readonly string pattern, replace;
+    private readonly string? pattern, replace;
 
-    public NamespaceBuilder (string replacePattern = null)
+    public NamespaceBuilder (string? replacePattern = null)
     {
         if (!string.IsNullOrEmpty(replacePattern))
             (pattern, replace) = ParsePattern(replacePattern);
     }
 
-    public string Build (string assemblyName)
+    public string Build (Type type)
     {
-        if (pattern is null) return assemblyName;
-        return Regex.Replace(assemblyName, pattern, replace);
+        var space = type.Namespace ?? "Bindings";
+        if (pattern is null || replace is null) return space;
+        return Regex.Replace(space, pattern, replace);
     }
 
     private static (string pattern, string replace) ParsePattern (string replacePattern)

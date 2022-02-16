@@ -22,7 +22,7 @@ internal static class TypeUtilities
     public static Type GetArrayElementType (Type arrayType)
     {
         return arrayType.IsArray
-            ? arrayType.GetElementType()
+            ? arrayType.GetElementType()!
             : arrayType.GenericTypeArguments[0];
     }
 
@@ -50,11 +50,6 @@ internal static class TypeUtilities
         var backingFieldName = $"<{property.Name}>k__BackingField";
         var backingField = property.DeclaringType!.GetField(backingFieldName, BindingFlags.NonPublic | BindingFlags.Instance);
         return backingField != null;
-    }
-
-    public static string GetAssemblyName (Type type)
-    {
-        return type.Assembly.GetName().Name;
     }
 
     public static bool ShouldIgnoreAssembly (string assemblyPath)

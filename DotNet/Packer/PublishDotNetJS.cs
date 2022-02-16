@@ -7,15 +7,15 @@ namespace Packer;
 
 public class PublishDotNetJS : Task
 {
-    [Required] public string BaseDir { get; set; }
-    [Required] public string BlazorOutDir { get; set; }
-    [Required] public string JSDir { get; set; }
-    [Required] public string WasmFile { get; set; }
-    [Required] public string EntryAssemblyName { get; set; }
+    [Required] public string BaseDir { get; set; } = null!;
+    [Required] public string BlazorOutDir { get; set; } = null!;
+    [Required] public string JSDir { get; set; } = null!;
+    [Required] public string WasmFile { get; set; } = null!;
+    [Required] public string EntryAssemblyName { get; set; } = null!;
     public bool Clean { get; set; } = true;
     public bool EmitSourceMap { get; set; }
     public bool EmitTypes { get; set; } = true;
-    public string NamespacePattern { get; set; }
+    public string? NamespacePattern { get; set; }
 
     public override bool Execute ()
     {

@@ -18,11 +18,13 @@ internal class AssemblyInspector : IDisposable
 
     private readonly List<string> warnings = new();
     private readonly List<MetadataLoadContext> contexts = new();
+    private readonly NamespaceBuilder spaceBuilder;
     private readonly TypeConverter typeConverter;
 
-    public AssemblyInspector (NamespaceBuilder namespaceBuilder)
+    public AssemblyInspector (NamespaceBuilder spaceBuilder)
     {
-        typeConverter = new TypeConverter(namespaceBuilder);
+        this.spaceBuilder = spaceBuilder;
+        typeConverter = new TypeConverter(spaceBuilder);
     }
 
     public void InspectInDirectory (string directory)
@@ -90,7 +92,8 @@ internal class AssemblyInspector : IDisposable
 
     private Method CreateMethod (MethodInfo info, MethodType type) => new() {
         Name = info.Name,
-        Assembly = GetAssemblyName(info.DeclaringType),
+        Assembly = info.DeclaringType!.Assembly.GetName().Name!,
+        Namespace = spaceBuilder.Build(info.DeclaringType),
         Arguments = info.GetParameters().Select(CreateArgument).ToArray(),
         ReturnType = typeConverter.ToTypeScript(info.ReturnType),
         Async = IsAwaitable(info.ReturnType),
@@ -98,7 +101,7 @@ internal class AssemblyInspector : IDisposable
     };
 
     private Argument CreateArgument (ParameterInfo info) => new() {
-        Name = info.Name == "function" ? "fn" : info.Name,
+        Name = info.Name == "function" ? "fn" : info.Name!,
         Type = typeConverter.ToTypeScript(info.ParameterType)
     };
 

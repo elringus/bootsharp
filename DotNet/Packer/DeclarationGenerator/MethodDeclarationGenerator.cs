@@ -9,15 +9,15 @@ internal class MethodDeclarationGenerator
     private readonly StringBuilder builder = new();
 
     private Method method => methods[index];
-    private Method prevMethod => index == 0 ? null : methods[index - 1];
-    private Method nextMethod => index == methods.Length - 1 ? null : methods[index + 1];
+    private Method? prevMethod => index == 0 ? null : methods[index - 1];
+    private Method? nextMethod => index == methods.Length - 1 ? null : methods[index + 1];
 
-    private Method[] methods;
+    private Method[] methods = null!;
     private int index;
 
     public string Generate (IEnumerable<Method> sourceMethods)
     {
-        methods = sourceMethods.OrderBy(m => m.Assembly).ToArray();
+        methods = sourceMethods.OrderBy(m => m.Namespace).ToArray();
         for (index = 0; index < methods.Length; index++)
             DeclareMethod();
         return builder.ToString();
@@ -34,18 +34,18 @@ internal class MethodDeclarationGenerator
     private bool ShouldOpenNamespace ()
     {
         if (prevMethod is null) return true;
-        return prevMethod.Assembly != method.Assembly;
+        return prevMethod.Namespace != method.Namespace;
     }
 
     private void OpenNamespace ()
     {
-        builder.Append($"\nexport namespace {method.Assembly} {{");
+        builder.Append($"\nexport namespace {method.Namespace} {{");
     }
 
     private bool ShouldCloseNamespace ()
     {
         if (nextMethod is null) return true;
-        return nextMethod.Assembly != method.Assembly;
+        return nextMethod.Namespace != method.Namespace;
     }
 
     private void CloseNamespace ()

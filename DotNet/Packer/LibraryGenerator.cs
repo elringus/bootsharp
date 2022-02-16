@@ -61,8 +61,8 @@ internal class LibraryGenerator
         var funcArgs = BuildFuncArgs();
         var invoke = method.Async ? "invokeAsync" : "invoke";
         var body = $"{exports}.{invoke}({BuildMethodArgs()})";
-        var js = $"{exports}.{method.Assembly}.{method.Name} = ({funcArgs}) => {body};";
-        return EnsureAssemblyObjectsDeclared(method.Assembly, js);
+        var js = $"{exports}.{method.Namespace}.{method.Name} = ({funcArgs}) => {body};";
+        return EnsureNamespaceObjectsDeclared(method.Namespace, js);
 
         string BuildFuncArgs () => string.Join(", ", method.Arguments.Select(a => a.Name));
         string BuildMethodArgs () => $"'{method.Assembly}', '{method.Name}'" + (funcArgs == "" ? "" : $", {funcArgs}");
@@ -70,22 +70,22 @@ internal class LibraryGenerator
 
     private string GenerateFunctionDeclaration (Method method)
     {
-        var js = $"{exports}.{method.Assembly}.{method.Name} = undefined;";
-        return EnsureAssemblyObjectsDeclared(method.Assembly, js);
+        var js = $"{exports}.{method.Namespace}.{method.Name} = undefined;";
+        return EnsureNamespaceObjectsDeclared(method.Namespace, js);
     }
 
-    private string EnsureAssemblyObjectsDeclared (string assembly, string js)
+    private string EnsureNamespaceObjectsDeclared (string space, string js)
     {
-        var objects = BuildObjectNamesForAssembly(assembly);
+        var objects = BuildObjectNamesForNamespace(space);
         foreach (var obj in objects)
             if (declaredObjects.Add(obj))
                 js = JoinLines($"{exports}.{obj} = {{}};", js);
         return js;
     }
 
-    private List<string> BuildObjectNamesForAssembly (string assembly)
+    private List<string> BuildObjectNamesForNamespace (string space)
     {
-        var parts = assembly.Split('.');
+        var parts = space.Split('.');
         var names = new List<string>();
         for (int i = 0; i < parts.Length; i++)
         {

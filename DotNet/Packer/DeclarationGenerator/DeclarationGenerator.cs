@@ -12,9 +12,9 @@ internal class DeclarationGenerator
     private readonly List<DeclarationFile> declarations = new();
     private readonly TypeDeclarationGenerator typesGenerator;
 
-    public DeclarationGenerator (NamespaceBuilder namespaceBuilder)
+    public DeclarationGenerator (NamespaceBuilder spaceBuilder)
     {
-        typesGenerator = new TypeDeclarationGenerator(namespaceBuilder);
+        typesGenerator = new TypeDeclarationGenerator(spaceBuilder);
     }
 
     public void LoadDeclarations (string directory)

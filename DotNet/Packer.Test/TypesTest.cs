@@ -108,6 +108,17 @@ public class TypesTest : ContentTest
     }
 
     [Fact]
+    public void WhenNoSpaceTypesAreDeclaredUnderBindingsSpace ()
+    {
+        AddAssembly(
+            With(null, "public class Foo { }", false),
+            With(null, "[JSFunction] public static void OnFoo (Foo foo) { }"));
+        Task.Execute();
+        Contains("export namespace Bindings {\n    export class Foo {\n    }\n}");
+        Contains("export namespace Bindings {\n    export let OnFoo: (foo: Bindings.Foo) => void;\n}");
+    }
+
+    [Fact]
     public void NumericsTranslatedToNumber ()
     {
         var nums = new[] { "byte", "sbyte", "ushort", "uint", "ulong", "short", "int", "long", "decimal", "double", "float" };

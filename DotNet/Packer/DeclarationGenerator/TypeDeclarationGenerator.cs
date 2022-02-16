@@ -11,20 +11,20 @@ namespace Packer;
 internal class TypeDeclarationGenerator
 {
     private readonly StringBuilder builder = new();
-    private readonly NamespaceBuilder namespaceBuilder;
+    private readonly NamespaceBuilder spaceBuilder;
     private readonly TypeConverter converter;
 
     private Type type => types[index];
-    private Type prevType => index == 0 ? null : types[index - 1];
-    private Type nextType => index == types.Length - 1 ? null : types[index + 1];
+    private Type? prevType => index == 0 ? null : types[index - 1];
+    private Type? nextType => index == types.Length - 1 ? null : types[index + 1];
 
-    private Type[] types;
+    private Type[] types = null!;
     private int index;
 
-    public TypeDeclarationGenerator (NamespaceBuilder namespaceBuilder)
+    public TypeDeclarationGenerator (NamespaceBuilder spaceBuilder)
     {
-        this.namespaceBuilder = namespaceBuilder;
-        converter = new TypeConverter(namespaceBuilder);
+        this.spaceBuilder = spaceBuilder;
+        converter = new TypeConverter(spaceBuilder);
     }
 
     public string Generate (IEnumerable<Type> sourceTypes)
@@ -47,13 +47,13 @@ internal class TypeDeclarationGenerator
     private bool ShouldOpenNamespace ()
     {
         if (prevType is null) return true;
-        return GetNamespace(prevType) != GetNamespace(type);
+        return spaceBuilder.Build(prevType) != GetNamespace(type);
     }
 
     private void OpenNamespace ()
     {
-        var name = GetNamespace(type);
-        AppendLine($"export namespace {name} {{", 0);
+        var space = GetNamespace(type);
+        AppendLine($"export namespace {space} {{", 0);
     }
 
     private bool ShouldCloseNamespace ()
@@ -99,8 +99,7 @@ internal class TypeDeclarationGenerator
 
     private string GetNamespace (Type type)
     {
-        var assemblyName = GetAssemblyName(type);
-        return namespaceBuilder.Build(assemblyName);
+        return spaceBuilder.Build(type);
     }
 
     private void AppendBaseType ()

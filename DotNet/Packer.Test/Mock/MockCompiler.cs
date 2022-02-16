@@ -31,7 +31,9 @@ public class MockCompiler
         var text = source.WrapInClass
             ? $"public partial class MockClass {{ {source.Code} }}"
             : source.Code;
-        return $"namespace {source.Namespace} {{ {text} }}";
+        return source.Namespace is null
+            ? text
+            : $"namespace {source.Namespace} {{ {text} }}";
     }
 
     private static CSharpCompilation CreateCompilation (string assemblyPath, string text)
