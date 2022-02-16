@@ -18,7 +18,7 @@ namespace Generator
         private AttributeData[] CollectAttributes (IAssemblySymbol assembly)
         {
             return assembly.GetAttributes()
-                .Where(a => a.AttributeClass?.Name == converterAttributeName).ToArray();
+                .Where(a => a.AttributeClass!.Name == converterAttributeName).ToArray();
         }
 
         private string Convert (string @namespace, AttributeData attribute)
