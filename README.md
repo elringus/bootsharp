@@ -144,16 +144,14 @@ For example, following configuration will preserve build artifacts, emit source 
 
 ## Namespace Pattern
 
-When `EmitTypes` is enabled, the generated Type Script object definitions are wrapped under namespace equal to the corresponding assembly name of the .NET types.
+By default, all the generated JavaScript binding objects and TypeScript declarations are grouped under corresponding C# namespaces.
 
-To override the namespace, specify `NamespacePattern` build property containing `pattern` and `replacement` arguments for [Regex.Replace](https://docs.microsoft.com/en-us/dotnet/api/system.text.regularexpressions.regex.replace?view=net-6.0#system-text-regularexpressions-regex-replace(system-string-system-string-system-string)) method separated by `=>`.
+To override the generated namespaces, apply `JSNamespace` attribute to the entry assembly of the C# program. The attribute expects `pattern` and `replacement` arguments, which are provided to [Regex.Replace](https://docs.microsoft.com/en-us/dotnet/api/system.text.regularexpressions.regex.replace?view=net-6.0#system-text-regularexpressions-regex-replace(system-string-system-string-system-string)) when building the generated namespace name.
 
-For example, to transform `Company.Product.Space` assembly into `Space` namespace, use the following pattern:
+For example, to transform `Company.Product.Space` into `Space` namespace, use the following pattern:
 
-```xml
-<PropertyGroup>
-    <NamespacePattern>Company\.Product\.(\S+)=>$1</NamespacePattern>
-</PropertyGroup>
+```csharp
+[assembly:JSNamespace(@"Company\.Product\.(\S+)", "$1")]
 ```
 
 ## JSON Serializer Options

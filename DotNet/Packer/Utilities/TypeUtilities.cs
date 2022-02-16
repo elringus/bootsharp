@@ -22,7 +22,7 @@ internal static class TypeUtilities
     public static Type GetArrayElementType (Type arrayType)
     {
         return arrayType.IsArray
-            ? arrayType.GetElementType()
+            ? arrayType.GetElementType()!
             : arrayType.GenericTypeArguments[0];
     }
 
@@ -52,9 +52,11 @@ internal static class TypeUtilities
         return backingField != null;
     }
 
-    public static string GetAssemblyName (Type type)
+    public static MetadataLoadContext CreateLoadContext (string directory)
     {
-        return type.Assembly.GetName().Name;
+        var assemblyPaths = Directory.GetFiles(directory, "*.dll");
+        var resolver = new PathAssemblyResolver(assemblyPaths);
+        return new MetadataLoadContext(resolver);
     }
 
     public static bool ShouldIgnoreAssembly (string assemblyPath)

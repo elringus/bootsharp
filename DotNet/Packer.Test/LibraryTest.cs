@@ -14,71 +14,105 @@ public class LibraryTest : ContentTest
     }
 
     [Fact]
-    public void LibraryExportsAssemblyObject ()
+    public void LibraryExportsNamespaceObject ()
     {
-        Data.AddAssemblyWithName("foo.dll", "[JSInvokable] public static void Bar () { }");
+        AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
         Task.Execute();
-        Contains("exports.foo = {};");
+        Contains("exports.Foo = {};");
     }
 
     [Fact]
-    public void WhenAssemblyNameContainDotsObjectCreatedForEachPartInOrder ()
+    public void WhenSpaceContainDotsObjectCreatedForEachPartInOrder ()
     {
-        Data.AddAssemblyWithName("foo.bar.nya.dll", "[JSInvokable] public static void Bar () { }");
+        AddAssembly(With("Foo.Bar.Nya", "[JSInvokable] public static void Bar () { }"));
         Task.Execute();
-        Matches(@"exports.foo = {};\s*exports.foo.bar = {};\s*exports.foo.bar.nya = {};");
+        Matches(@"exports.Foo = {};\s*exports.Foo.Bar = {};\s*exports.Foo.Bar.Nya = {};");
     }
 
     [Fact]
-    public void WhenMultipleAssembliesEachGetItsOwnObject ()
+    public void WhenMultipleSpacesEachGetItsOwnObject ()
     {
-        Data.AddAssemblyWithName("foo.dll", "[JSInvokable] public static void Foo () { }");
-        Data.AddAssemblyWithName("bar.nya.dll", "[JSFunction] public static void Fun () { }");
+        AddAssembly(
+            With("Foo", "[JSInvokable] public static void Foo () { }"),
+            With("Bar.Nya", "[JSFunction] public static void Fun () { }"));
         Task.Execute();
-        Contains("exports.foo = {};");
-        Contains("exports.bar = {};");
-        Contains("exports.bar.nya = {};");
+        Contains("exports.Foo = {};");
+        Contains("exports.Bar = {};");
+        Contains("exports.Bar.Nya = {};");
     }
 
     [Fact]
-    public void DifferentAssembliesWithSameRootAssignedToDifferentObjects ()
+    public void WhenMultipleAssembliesWithEqualSpaceObjectDeclaredOnlyOnce ()
     {
-        Data.AddAssemblyWithName("nya.foo.dll", "[JSInvokable] public static void Foo () { }");
-        Data.AddAssemblyWithName("nya.bar.dll", "[JSFunction] public static void Fun () { }");
+        AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
+        AddAssembly(With("Foo", "[JSFunction] public static void Fun () { }"));
         Task.Execute();
-        Assert.Single(Matches("exports.nya = {}"));
+        Assert.Single(Matches("exports.Foo ="));
+    }
+
+    [Fact]
+    public void DifferentSpacesWithSameRootAssignedIndividually ()
+    {
+        AddAssembly(
+            With("Nya.Foo", "[JSInvokable] public static void Foo () { }"),
+            With("Nya.Bar", "[JSFunction] public static void Fun () { }"));
+        Task.Execute();
+        Assert.Single(Matches("exports.Nya = {}"));
     }
 
     [Fact]
     public void BindingForInvokableMethodIsGenerated ()
     {
-        Data.AddAssemblyWithName("foo.bar.dll", "[JSInvokable] public static void Nya () { }");
+        AddAssembly("foo.asm.dll", With("Foo.Bar", "[JSInvokable] public static void Nya () { }"));
         Task.Execute();
-        Contains("exports.foo.bar.Nya = () => exports.invoke('foo.bar', 'Nya');");
+        Contains("exports.Foo.Bar.Nya = () => exports.invoke('foo.asm', 'Nya');");
     }
 
     [Fact]
     public void BindingForFunctionMethodIsGenerated ()
     {
-        Data.AddAssemblyWithName("foo.bar.dll", "[JSFunction] public static void Fun () { }");
+        AddAssembly(With("Foo.Bar", "[JSFunction] public static void Fun () { }"));
         Task.Execute();
-        Contains("exports.foo.bar.Fun = undefined;");
+        Contains("exports.Foo.Bar.Fun = undefined;");
     }
 
     [Fact]
-    public void BindingsFromMultipleAssembliesAssignedToRespectiveObjects ()
+    public void BindingsFromMultipleSpacesAssignedToRespectiveObjects ()
     {
-        Data.AddAssemblyWithName("foo.dll", "[JSInvokable] public static void Foo () { }");
-        Data.AddAssemblyWithName("bar.nya.dll", "[JSFunction] public static void Fun () { }");
+        AddAssembly("foo.asm.dll", With("Foo", "[JSInvokable] public static void Foo () { }"));
+        AddAssembly("bar.nya.asm.dll", With("Bar.Nya", "[JSFunction] public static void Fun () { }"));
         Task.Execute();
-        Contains("exports.foo.Foo = () => exports.invoke('foo', 'Foo');");
-        Contains("exports.bar.nya.Fun = undefined;");
+        Contains("exports.Foo.Foo = () => exports.invoke('foo.asm', 'Foo');");
+        Contains("exports.Bar.Nya.Fun = undefined;");
+    }
+
+    [Fact]
+    public void WhenNoSpaceBindingsAreAssignedToBindingsObject ()
+    {
+        AddAssembly("asm.dll",
+            With("[JSInvokable] public static void Nya () { }"),
+            With("[JSFunction] public static void Fun () { }"));
+        Task.Execute();
+        Contains("exports.Bindings.Nya = () => exports.invoke('asm', 'Nya');");
+        Contains("exports.Bindings.Fun = undefined;");
+    }
+
+    [Fact]
+    public void NamespaceAttributeOverrideObjectNames ()
+    {
+        AddAssembly("asm.dll",
+            With(@"[assembly:JSNamespace(@""Foo\.Bar\.(\S+)"", ""$1"")]", false),
+            With("Foo.Bar.Nya", "[JSInvokable] public static void GetNya () { }"),
+            With("Foo.Bar.Fun", "[JSFunction] public static void OnFun () { }"));
+        Task.Execute();
+        Contains("exports.Nya.GetNya = () => exports.invoke('asm', 'GetNya');");
+        Contains("exports.Fun.OnFun = undefined;");
     }
 
     [Fact]
     public void VariablesConflictingWithJSTypesAreRenamed ()
     {
-        Data.AddAssembly("[JSInvokable] public static void Fun (string function) { }");
+        AddAssembly(With("[JSInvokable] public static void Fun (string function) { }"));
         Task.Execute();
         Contains("Fun = (fn) => exports.invoke");
     }
@@ -86,10 +120,9 @@ public class LibraryTest : ContentTest
     [Fact]
     public void AsyncMethodsBindViaInvokeAsync ()
     {
-        Data.AddAssembly(
-            "[JSInvokable] public static Task Asy () => default;",
-            "[JSInvokable] public static ValueTask AsyValue () => default;"
-        );
+        AddAssembly(
+            With("[JSInvokable] public static Task Asy () => default;"),
+            With("[JSInvokable] public static ValueTask AsyValue () => default;"));
         Task.Execute();
         Contains("Asy = () => exports.invokeAsync");
         Contains("AsyValue = () => exports.invokeAsync");

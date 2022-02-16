@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 
 namespace Generator
 {
@@ -15,15 +13,9 @@ namespace Generator
         public void Execute (GeneratorExecutionContext context)
         {
             if (context.SyntaxContextReceiver is SyntaxReceiver receiver)
-                context.AddSource("Functions", EmitFunctions(receiver.FunctionClasses, context.Compilation));
-        }
-
-        private string EmitFunctions (IEnumerable<FunctionClass> functionClasses, Compilation compilation)
-        {
-            var builder = new StringBuilder();
-            foreach (var functionClass in functionClasses)
-                builder.Append(functionClass.EmitSource(compilation) + '\n');
-            return builder.ToString();
+                for (int i = 0; i < receiver.FunctionClasses.Count; i++)
+                    context.AddSource($"Functions{i}",
+                        receiver.FunctionClasses[i].EmitSource(context.Compilation));
         }
     }
 }

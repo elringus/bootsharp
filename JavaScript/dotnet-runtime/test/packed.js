@@ -1,6 +1,4 @@
-﻿// noinspection JSCheckFunctionSignatures,JSUnresolvedFunction,JSUnresolvedVariable
-
-const assert = require("assert");
+﻿const assert = require("assert");
 const { packed, getGeneratedTypes, getGeneratedMap } = require("./csharp");
 
 describe("packed library", () => {

@@ -16,20 +16,24 @@ internal class AssemblyInspector : IDisposable
     public List<Method> Methods { get; } = new();
     public List<Type> Types { get; } = new();
 
+    private const string invokableAttributeName = "JSInvokableAttribute";
+    private const string functionAttributeName = "JSFunctionAttribute";
+
     private readonly List<string> warnings = new();
     private readonly List<MetadataLoadContext> contexts = new();
+    private readonly NamespaceBuilder spaceBuilder;
     private readonly TypeConverter typeConverter;
 
-    public AssemblyInspector (NamespaceBuilder namespaceBuilder)
+    public AssemblyInspector (NamespaceBuilder spaceBuilder)
     {
-        typeConverter = new TypeConverter(namespaceBuilder);
+        this.spaceBuilder = spaceBuilder;
+        typeConverter = new TypeConverter(spaceBuilder);
     }
 
     public void InspectInDirectory (string directory)
     {
-        var assemblyPaths = Directory.GetFiles(directory, "*.dll");
-        var context = CreateLoadContext(assemblyPaths);
-        foreach (var assemblyPath in assemblyPaths)
+        var context = CreateLoadContext(directory);
+        foreach (var assemblyPath in Directory.GetFiles(directory, "*.dll"))
             try { InspectAssembly(assemblyPath, context); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
         Types.AddRange(typeConverter.GetObjectTypes());
@@ -55,12 +59,6 @@ internal class AssemblyInspector : IDisposable
         contexts.Clear();
     }
 
-    private MetadataLoadContext CreateLoadContext (IEnumerable<string> assemblyPaths)
-    {
-        var resolver = new PathAssemblyResolver(assemblyPaths);
-        return new MetadataLoadContext(resolver);
-    }
-
     private void InspectAssembly (string assemblyPath, MetadataLoadContext context)
     {
         var name = Path.GetFileName(assemblyPath);
@@ -82,15 +80,16 @@ internal class AssemblyInspector : IDisposable
     {
         foreach (var method in GetStaticMethods(assembly))
         foreach (var attribute in method.CustomAttributes)
-            if (attribute.AttributeType.Name == Attributes.Invokable)
+            if (attribute.AttributeType.Name == invokableAttributeName)
                 Methods.Add(CreateMethod(method, MethodType.Invokable));
-            else if (attribute.AttributeType.Name == Attributes.Function)
+            else if (attribute.AttributeType.Name == functionAttributeName)
                 Methods.Add(CreateMethod(method, MethodType.Function));
     }
 
     private Method CreateMethod (MethodInfo info, MethodType type) => new() {
         Name = info.Name,
-        Assembly = GetAssemblyName(info.DeclaringType),
+        Assembly = info.DeclaringType!.Assembly.GetName().Name!,
+        Namespace = spaceBuilder.Build(info.DeclaringType),
         Arguments = info.GetParameters().Select(CreateArgument).ToArray(),
         ReturnType = typeConverter.ToTypeScript(info.ReturnType),
         Async = IsAwaitable(info.ReturnType),
@@ -98,7 +97,7 @@ internal class AssemblyInspector : IDisposable
     };
 
     private Argument CreateArgument (ParameterInfo info) => new() {
-        Name = info.Name == "function" ? "fn" : info.Name,
+        Name = info.Name == "function" ? "fn" : info.Name!,
         Type = typeConverter.ToTypeScript(info.ParameterType)
     };
 

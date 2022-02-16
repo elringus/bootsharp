@@ -64,7 +64,7 @@ public class PublishTest : BuildTest
     [Fact]
     public void AllAssembliesAreInspected ()
     {
-        Data.AddAssemblyWithName("Foo.dll");
+        AddAssembly("Foo.dll");
         Task.Execute();
         Assert.Contains(Engine.Messages, w => w.Contains("Foo.dll"));
         Assert.Contains(Engine.Messages, w => w.Contains("DotNetJS.dll"));

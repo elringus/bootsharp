@@ -7,19 +7,18 @@ namespace Packer;
 
 public class PublishDotNetJS : Task
 {
-    [Required] public string BaseDir { get; set; }
-    [Required] public string BlazorOutDir { get; set; }
-    [Required] public string JSDir { get; set; }
-    [Required] public string WasmFile { get; set; }
-    [Required] public string EntryAssemblyName { get; set; }
+    [Required] public string BaseDir { get; set; } = null!;
+    [Required] public string BlazorOutDir { get; set; } = null!;
+    [Required] public string JSDir { get; set; } = null!;
+    [Required] public string WasmFile { get; set; } = null!;
+    [Required] public string EntryAssemblyName { get; set; } = null!;
     public bool Clean { get; set; } = true;
     public bool EmitSourceMap { get; set; }
     public bool EmitTypes { get; set; } = true;
-    public string NamespacePattern { get; set; }
 
     public override bool Execute ()
     {
-        GenerateSources(out var library, out var declaration);
+        var (library, declaration) = GenerateSources();
         if (Clean) CleanBaseDirectory();
         PublishLibrary(library);
         if (EmitTypes) PublishTypes(declaration);
@@ -27,11 +26,11 @@ public class PublishDotNetJS : Task
         return true;
     }
 
-    private void GenerateSources (out string library, out string declaration)
+    private (string library, string declaration) GenerateSources ()
     {
-        using var inspector = InspectAssemblies();
-        library = GenerateLibrary(inspector);
-        declaration = GenerateDeclaration(inspector);
+        var builder = CreateNamespaceBuilder();
+        using var inspector = InspectAssemblies(builder);
+        return (GenerateLibrary(inspector), GenerateDeclaration(inspector, builder));
     }
 
     private void CleanBaseDirectory ()
@@ -60,9 +59,16 @@ public class PublishDotNetJS : Task
         File.Copy(source, destination, true);
     }
 
-    private AssemblyInspector InspectAssemblies ()
+    private NamespaceBuilder CreateNamespaceBuilder ()
     {
-        var inspector = new AssemblyInspector(new(NamespacePattern));
+        var builder = new NamespaceBuilder();
+        builder.CollectConverters(BlazorOutDir, EntryAssemblyName);
+        return builder;
+    }
+
+    private AssemblyInspector InspectAssemblies (NamespaceBuilder spaceBuilder)
+    {
+        var inspector = new AssemblyInspector(spaceBuilder);
         inspector.InspectInDirectory(BlazorOutDir);
         inspector.Report(Log);
         return inspector;
@@ -76,9 +82,9 @@ public class PublishDotNetJS : Task
         return generator.Generate(js, wasm, EntryAssemblyName, inspector);
     }
 
-    private string GenerateDeclaration (AssemblyInspector inspector)
+    private string GenerateDeclaration (AssemblyInspector inspector, NamespaceBuilder spaceBuilder)
     {
-        var generator = new DeclarationGenerator(new(NamespacePattern));
+        var generator = new DeclarationGenerator(spaceBuilder);
         generator.LoadDeclarations(JSDir);
         return generator.Generate(inspector);
     }

@@ -2,8 +2,8 @@
 
 internal record Argument
 {
-    public string Name { get; init; }
-    public string Type { get; init; }
+    public string Name { get; init; } = null!;
+    public string Type { get; init; } = null!;
 
     public override string ToString () => $"{Name}: {Type}";
 }

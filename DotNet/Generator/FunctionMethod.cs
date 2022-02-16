@@ -7,23 +7,27 @@ namespace Generator
     internal class FunctionMethod
     {
         private readonly MethodDeclarationSyntax syntax;
+        private readonly NamespaceConverter spaceConverter;
 
         public FunctionMethod (MethodDeclarationSyntax syntax)
         {
             this.syntax = syntax;
+            spaceConverter = new NamespaceConverter();
         }
 
         public string EmitSource (Compilation compilation)
         {
-            var assembly = GetAssemblyName(compilation);
-            return $"{EmitSignature()} => {EmitBody(assembly)};";
+            var @namespace = GetNamespace(compilation);
+            return $"{EmitSignature()} => {EmitBody(@namespace)};";
         }
 
-        private string GetAssemblyName (Compilation compilation)
+        private string GetNamespace (Compilation compilation)
         {
             var model = compilation.GetSemanticModel(syntax.SyntaxTree);
-            var symbol = model.GetEnclosingSymbol(syntax.SpanStart);
-            return symbol!.ContainingAssembly.Identity.Name;
+            var symbol = model.GetEnclosingSymbol(syntax.SpanStart)!;
+            var space = symbol.ContainingNamespace.IsGlobalNamespace ? "Bindings"
+                : string.Join(".", symbol.ContainingNamespace.ConstituentNamespaces);
+            return spaceConverter.Convert(space, symbol.ContainingAssembly);
         }
 
         private string EmitSignature ()
@@ -31,10 +35,10 @@ namespace Generator
             return $"{syntax.Modifiers} {syntax.ReturnType} {syntax.Identifier} {syntax.ParameterList}";
         }
 
-        private string EmitBody (string assembly)
+        private string EmitBody (string @namespace)
         {
             var invokeMethod = GetInvokeMethod();
-            var invokeParameters = GetInvokeParameters(assembly);
+            var invokeParameters = GetInvokeParameters(@namespace);
             return $"JS.{invokeMethod}({invokeParameters})";
         }
 

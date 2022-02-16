@@ -8,11 +8,11 @@ namespace Packer;
 internal class TypeConverter
 {
     private readonly HashSet<Type> objectTypes = new();
-    private readonly NamespaceBuilder namespaceBuilder;
+    private readonly NamespaceBuilder spaceBuilder;
 
-    public TypeConverter (NamespaceBuilder namespaceBuilder)
+    public TypeConverter (NamespaceBuilder spaceBuilder)
     {
-        this.namespaceBuilder = namespaceBuilder;
+        this.spaceBuilder = spaceBuilder;
     }
 
     public string ToTypeScript (Type type)
@@ -27,7 +27,7 @@ internal class TypeConverter
     {
         type = GetUnderlyingType(type);
         return (Type.GetTypeCode(type) == TypeCode.Object || type.IsEnum) &&
-               !ShouldIgnoreAssembly(type.Assembly.FullName);
+               !ShouldIgnoreAssembly(type.Assembly.FullName!);
     }
 
     private string ConvertToObject (Type type)
@@ -35,8 +35,7 @@ internal class TypeConverter
         if (IsArray(type)) return $"Array<{ConvertToObject(GetArrayElementType(type))}>";
         if (IsNullable(type)) return ConvertToObject(GetNullableUnderlyingType(type));
         CrawlObjectType(type);
-        var space = namespaceBuilder.Build(GetAssemblyName(type));
-        return $"{space}.{type.Name}";
+        return $"{spaceBuilder.Build(type)}.{type.Name}";
     }
 
     private string ConvertToSimple (Type type)

@@ -1,7 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using DotNetJS;
 using Microsoft.Build.Utilities.ProjectCreation;
+using Microsoft.CodeAnalysis;
+using Microsoft.JSInterop;
 
 namespace Packer.Test;
 
@@ -26,6 +29,7 @@ public sealed class MockData : IDisposable
     public string GeneratedTypes => ReadGeneratedFileText("dotnet.d.ts");
 
     private readonly string root = GetRandomRoot();
+    private readonly MockCompiler compiler = new();
 
     public MockData ()
     {
@@ -41,16 +45,11 @@ public sealed class MockData : IDisposable
 
     public void Dispose () => Directory.Delete(root, true);
 
-    public void AddAssembly (params string[] sources)
+    public void AddAssembly (MockAssembly assembly)
     {
-        AddAssemblyWithName($"test{Guid.NewGuid():N}.dll", sources);
-    }
-
-    public void AddAssemblyWithName (string assemblyName, params string[] sources)
-    {
-        var path = Path.Combine(BlazorOutDir, assemblyName);
-        MockAssembly.Emit(path, sources);
-        Task.EntryAssemblyName = assemblyName;
+        var assemblyPath = Path.Combine(BlazorOutDir, assembly.Name);
+        compiler.Compile(assembly.Sources, assemblyPath);
+        Task.EntryAssemblyName = assembly.Name;
     }
 
     private string ReadGeneratedFileText (string fileName)
@@ -64,6 +63,7 @@ public sealed class MockData : IDisposable
         BlazorOutDir = BlazorOutDir,
         JSDir = JSDir,
         WasmFile = WasmFile,
+        EntryAssemblyName = "System.Runtime.dll",
         BuildEngine = BuildEngine.Create()
     };
 
@@ -77,7 +77,8 @@ public sealed class MockData : IDisposable
         File.WriteAllText(MapFile, MapFileContent);
         File.WriteAllText(Path.Combine(JSDir, "interop.d.ts"), InteropTypeContent);
         File.WriteAllText(Path.Combine(JSDir, "boot.d.ts"), BootTypeContent);
-        MockAssembly.EmitReferences(BlazorOutDir);
+        foreach (var path in GetReferencePaths())
+            File.Copy(path, Path.Combine(BlazorOutDir, Path.GetFileName(path)));
     }
 
     private static string GetRandomRoot ()
@@ -85,5 +86,16 @@ public sealed class MockData : IDisposable
         var testAssembly = Assembly.GetExecutingAssembly().Location;
         var assemblyDir = Path.Combine(Path.GetDirectoryName(testAssembly));
         return Path.Combine(assemblyDir, $"temp{Guid.NewGuid():N}");
+    }
+
+    private static string[] GetReferencePaths ()
+    {
+        var coreDir = Path.GetDirectoryName(typeof(object).Assembly.Location);
+        return new[] {
+            MetadataReference.CreateFromFile(Path.Combine(coreDir, "System.Runtime.dll")).FilePath,
+            MetadataReference.CreateFromFile(typeof(object).Assembly.Location).FilePath,
+            MetadataReference.CreateFromFile(typeof(JSFunctionAttribute).Assembly.Location).FilePath,
+            MetadataReference.CreateFromFile(typeof(JSInvokableAttribute).Assembly.Location).FilePath
+        };
     }
 }
