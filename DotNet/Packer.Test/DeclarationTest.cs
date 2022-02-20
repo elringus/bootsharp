@@ -5,12 +5,12 @@ using Xunit;
 
 namespace Packer.Test;
 
-public class TypesTest : ContentTest
+public class DeclarationTest : ContentTest
 {
     protected override string TestedContent => Data.GeneratedDeclaration;
 
     [Fact]
-    public void TypesContainInteropAndBootContentWithoutImport ()
+    public void ContainInteropAndBootContentWithoutImport ()
     {
         Task.Execute();
         Contains(MockData.InteropTypeContent);
@@ -18,7 +18,7 @@ public class TypesTest : ContentTest
     }
 
     [Fact]
-    public void TypesDontContainOtherContent ()
+    public void DoesntContainOtherContent ()
     {
         File.WriteAllText(Path.Combine(Data.JSDir, "other.d.ts"), "other");
         Task.Execute();
@@ -33,7 +33,7 @@ public class TypesTest : ContentTest
     }
 
     [Fact]
-    public void TypesExportNamespace ()
+    public void DeclaresNamespace ()
     {
         AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
         Task.Execute();
