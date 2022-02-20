@@ -24,7 +24,7 @@ public class PublishTest : BuildTest
     [Fact]
     public void BinariesNotEmbeddedWhenRequested ()
     {
-        Task.EmbedBinaries = true;
+        Task.EmbedBinaries = false;
         Task.Execute();
         Assert.DoesNotContain("bootWithData(bootData)", Data.GeneratedLibrary);
         Assert.NotEmpty(Directory.GetFiles(Task.BaseDir, "*.dll"));
