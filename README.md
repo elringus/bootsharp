@@ -114,32 +114,31 @@ Find the following sample projects in this repository:
 - [Web Extension](https://github.com/Elringus/DotNetJS/tree/main/Samples/WebExtension) — Consume the library in VS Code web extension, which works in both web and standalone versions of the IDE.
 - [Runtime Tests](https://github.com/Elringus/DotNetJS/tree/main/JavaScript/dotnet-runtime/test) — Integration tests featuring various usage scenarios: async method invocations, interop with instances, sending raw byte arrays, streaming, etc.
 
-## Build Properties
+## Sideloading Binaries
 
-Specify following optional properties in .csproj to customize the build:
+By default, DotNetJS build task will embed project's DLLs and .NET WASM runtime to the generated JS library. While convenient and even required in some cases (eg, for VS Code web extensions), this also adds about 30% of extra size due to binary->base64 conversion of the embedded files.
 
-- `<Clean>false</Clean>` — don't clean publish directory.
-- `<EmitSourceMap>true</EmitSourceMap>` — emit JavaScript source map file.
-- `<EmitTypes>false</EmitTypes>` — do not emit TypeScript type definitions file.
+To disable the embedding, set `EmbedBinaries` build property to false. You will then have to provide the required data when booting `dotnet.js`:
 
-For example, following configuration will preserve build artifacts, emit source map and do not emit type definitions:
+```js
+const bootData = {
+    wasm: {},
+    assemblies: [],
+    entryAssemblyName: "Project.dll"
+};
+await dotnet.boot(bootData);
+```
+
+— this way the binary files can be streamed directly from server to optimize traffic and initial load time.
+
+When embedding is disabled, you will probably want to preserve build artifacts as well. Set `Clean` build property to false to prevent DotNetJS from wiping them:
 
 ```xml
-
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
-
-    <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <Clean>false</Clean>
-        <EmitSourceMap>true</EmitSourceMap>
-        <EmitTypes>false</EmitTypes>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="DotNetJS" Version="*"/>
-    </ItemGroup>
-
-</Project>
+<PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <EmbedBinaries>false</EmbedBinaries>
+    <Clean>false</Clean>
+</PropertyGroup>
 ```
 
 ## Namespace Pattern

@@ -12,17 +12,16 @@ public class PublishDotNetJS : Task
     [Required] public string JSDir { get; set; } = null!;
     [Required] public string WasmFile { get; set; } = null!;
     [Required] public string EntryAssemblyName { get; set; } = null!;
+    public bool EmbedBinaries { get; set; } = true;
     public bool Clean { get; set; } = true;
-    public bool EmitSourceMap { get; set; }
-    public bool EmitTypes { get; set; } = true;
 
     public override bool Execute ()
     {
         var (library, declaration) = GenerateSources();
         if (Clean) CleanBaseDirectory();
         PublishLibrary(library);
-        if (EmitTypes) PublishTypes(declaration);
-        if (EmitSourceMap) PublishSourceMap();
+        PublishDeclaration(declaration);
+        PublishSourceMap();
         return true;
     }
 
@@ -46,7 +45,7 @@ public class PublishDotNetJS : Task
         Log.LogMessage(MessageImportance.High, $"JavaScript UMD library is published at {path}.");
     }
 
-    private void PublishTypes (string source)
+    private void PublishDeclaration (string source)
     {
         var file = Path.Combine(BaseDir, "dotnet.d.ts");
         File.WriteAllText(file, source);
@@ -77,9 +76,10 @@ public class PublishDotNetJS : Task
     private string GenerateLibrary (AssemblyInspector inspector)
     {
         var generator = new LibraryGenerator();
-        var js = File.ReadAllText(Path.Combine(JSDir, "dotnet.js"));
+        var runtimeJS = File.ReadAllText(Path.Combine(JSDir, "dotnet.js"));
+        if (!EmbedBinaries) return generator.GenerateSideLoad(runtimeJS, inspector);
         var wasm = Convert.ToBase64String(File.ReadAllBytes(WasmFile));
-        return generator.Generate(js, wasm, EntryAssemblyName, inspector);
+        return generator.GenerateEmbedded(runtimeJS, wasm, EntryAssemblyName, inspector);
     }
 
     private string GenerateDeclaration (AssemblyInspector inspector, NamespaceBuilder spaceBuilder)

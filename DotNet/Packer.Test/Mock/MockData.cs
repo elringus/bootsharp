@@ -25,8 +25,8 @@ public sealed class MockData : IDisposable
     public PublishDotNetJS Task { get; }
 
     public string GeneratedLibrary => ReadGeneratedFileText("dotnet.js");
+    public string GeneratedDeclaration => ReadGeneratedFileText("dotnet.d.ts");
     public string GeneratedMap => ReadGeneratedFileText("dotnet.js.map");
-    public string GeneratedTypes => ReadGeneratedFileText("dotnet.d.ts");
 
     private readonly string root = GetRandomRoot();
     private readonly MockCompiler compiler = new();

@@ -13,33 +13,32 @@ public class PublishTest : BuildTest
     }
 
     [Fact]
-    public void MapNotPublishedByDefault ()
+    public void DeclarationPublished ()
     {
         Task.Execute();
-        Assert.Null(Data.GeneratedMap);
+        Assert.NotNull(Data.GeneratedDeclaration);
     }
 
     [Fact]
-    public void MapPublishedWhenRequested ()
+    public void SourceMapPublished ()
     {
-        Task.EmitSourceMap = true;
         Task.Execute();
         Assert.NotNull(Data.GeneratedMap);
     }
 
     [Fact]
-    public void TypesPublishedByDefault ()
+    public void BinariesEmbeddedByDefault ()
     {
         Task.Execute();
-        Assert.NotNull(Data.GeneratedTypes);
+        Assert.Contains("bootWithData(bootData)", Data.GeneratedLibrary);
     }
 
     [Fact]
-    public void TypesNotPublishedWhenRequested ()
+    public void BinariesNotEmbeddedWhenRequested ()
     {
-        Task.EmitTypes = false;
+        Task.EmbedBinaries = false;
         Task.Execute();
-        Assert.Null(Data.GeneratedTypes);
+        Assert.DoesNotContain("bootWithData(bootData)", Data.GeneratedLibrary);
     }
 
     [Fact]

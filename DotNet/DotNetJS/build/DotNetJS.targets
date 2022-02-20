@@ -25,9 +25,8 @@
                          JSDir="$(JSDir)"
                          WasmFile="$(WasmFile)"
                          EntryAssemblyName="$(AssemblyName).dll"
-                         Clean="$(Clean)"
-                         EmitSourceMap="$(EmitSourceMap)"
-                         EmitTypes="$(EmitTypes)"/>
+                         EmbedBinaries="$(EmbedBinaries)"
+                         Clean="$(Clean)"/>
     </Target>
 
 </Project>
