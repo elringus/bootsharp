@@ -129,7 +129,7 @@ const bootData = {
 await dotnet.boot(bootData);
 ```
 
-— this way the binary files can be streamed directly from the server to optimize traffic and initial load time.
+— this way the binary files can be streamed directly from server to optimize traffic and initial load time.
 
 When embedding is disabled, you will probably want to preserve build artifacts as well. Set `Clean` build property to false to prevent DotNetJS from wiping them:
 
