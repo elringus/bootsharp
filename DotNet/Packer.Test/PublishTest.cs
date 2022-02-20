@@ -13,12 +13,24 @@ public class PublishTest : BuildTest
     }
 
     [Fact]
+    public void DeclarationPublished ()
+    {
+        Task.Execute();
+        Assert.NotNull(Data.GeneratedDeclaration);
+    }
+
+    [Fact]
+    public void SourceMapPublished ()
+    {
+        Task.Execute();
+        Assert.NotNull(Data.GeneratedMap);
+    }
+
+    [Fact]
     public void BinariesEmbeddedByDefault ()
     {
         Task.Execute();
         Assert.Contains("bootWithData(bootData)", Data.GeneratedLibrary);
-        Assert.Empty(Directory.GetFiles(Task.BaseDir, "*.dll"));
-        Assert.Empty(Directory.GetFiles(Task.BaseDir, "*.wasm"));
     }
 
     [Fact]
@@ -27,38 +39,6 @@ public class PublishTest : BuildTest
         Task.EmbedBinaries = false;
         Task.Execute();
         Assert.DoesNotContain("bootWithData(bootData)", Data.GeneratedLibrary);
-        Assert.NotEmpty(Directory.GetFiles(Task.BaseDir, "*.dll"));
-        Assert.NotEmpty(Directory.GetFiles(Task.BaseDir, "*.wasm"));
-    }
-
-    [Fact]
-    public void MapNotPublishedByDefault ()
-    {
-        Task.Execute();
-        Assert.Null(Data.GeneratedMap);
-    }
-
-    [Fact]
-    public void MapPublishedWhenRequested ()
-    {
-        Task.EmitSourceMap = true;
-        Task.Execute();
-        Assert.NotNull(Data.GeneratedMap);
-    }
-
-    [Fact]
-    public void TypesPublishedByDefault ()
-    {
-        Task.Execute();
-        Assert.NotNull(Data.GeneratedTypes);
-    }
-
-    [Fact]
-    public void TypesNotPublishedWhenRequested ()
-    {
-        Task.EmitTypes = false;
-        Task.Execute();
-        Assert.Null(Data.GeneratedTypes);
     }
 
     [Fact]

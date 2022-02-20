@@ -7,7 +7,7 @@ namespace Packer.Test;
 
 public class TypesTest : ContentTest
 {
-    protected override string TestedContent => Data.GeneratedTypes;
+    protected override string TestedContent => Data.GeneratedDeclaration;
 
     [Fact]
     public void TypesContainInteropAndBootContentWithoutImport ()
@@ -22,7 +22,7 @@ public class TypesTest : ContentTest
     {
         File.WriteAllText(Path.Combine(Data.JSDir, "other.d.ts"), "other");
         Task.Execute();
-        Assert.DoesNotContain("other", Data.GeneratedTypes);
+        Assert.DoesNotContain("other", Data.GeneratedDeclaration);
     }
 
     [Fact]

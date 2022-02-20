@@ -6,6 +6,8 @@ namespace Packer;
 
 internal class LibraryGenerator
 {
+    private readonly HashSet<string> declaredObjects = new();
+
     public string GenerateSideLoad (string runtimeJS, AssemblyInspector inspector)
     {
         return new LibraryTemplate {
@@ -56,10 +58,9 @@ internal class LibraryGenerator
 
     private string EnsureNamespaceObjectsDeclared (string space, string js)
     {
-        var declared = new HashSet<string>();
         var objects = BuildObjectNamesForNamespace(space);
         foreach (var obj in objects)
-            if (declared.Add(obj))
+            if (declaredObjects.Add(obj))
                 js = JoinLines($"exports.{obj} = {{}};", js);
         return js;
     }
