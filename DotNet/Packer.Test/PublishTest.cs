@@ -13,6 +13,25 @@ public class PublishTest : BuildTest
     }
 
     [Fact]
+    public void BinariesEmbeddedByDefault ()
+    {
+        Task.Execute();
+        Assert.Contains("bootWithData(bootData)", Data.GeneratedLibrary);
+        Assert.Empty(Directory.GetFiles(Task.BaseDir, "*.dll"));
+        Assert.Empty(Directory.GetFiles(Task.BaseDir, "*.wasm"));
+    }
+
+    [Fact]
+    public void BinariesNotEmbeddedWhenRequested ()
+    {
+        Task.EmbedBinaries = true;
+        Task.Execute();
+        Assert.DoesNotContain("bootWithData(bootData)", Data.GeneratedLibrary);
+        Assert.NotEmpty(Directory.GetFiles(Task.BaseDir, "*.dll"));
+        Assert.NotEmpty(Directory.GetFiles(Task.BaseDir, "*.wasm"));
+    }
+
+    [Fact]
     public void MapNotPublishedByDefault ()
     {
         Task.Execute();

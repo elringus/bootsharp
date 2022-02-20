@@ -15,6 +15,7 @@ public class PublishDotNetJS : Task
     public bool Clean { get; set; } = true;
     public bool EmitSourceMap { get; set; }
     public bool EmitTypes { get; set; } = true;
+    public bool EmbedBinaries { get; set; } = true;
 
     public override bool Execute ()
     {
