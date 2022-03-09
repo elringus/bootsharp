@@ -8,7 +8,7 @@
 
 The solution provides user-friendly workflow for consuming .NET C# programs and libraries in any JavaScript environment, be it web browsers, Node.js or custom restricted spaces, like [web extensions](https://code.visualstudio.com/api/extension-guides/web-extensions) for VS Code, where neither node modules nor browser APIs are available.
 
-![](https://i.gyazo.com/920943de6864d967b10d30eec261fa1c.png)
+![](https://raw.githubusercontent.com/Elringus/CDN/main/dotnetjs.png)
 
 The solution is based on two main components:
 
@@ -43,7 +43,7 @@ using Microsoft.JSInterop;
 
 namespace HelloWorld;
 
-partial class Program
+public partial class Program
 {
     // Entry point is invoked by the JavaScript runtime on boot.
     public static void Main ()
