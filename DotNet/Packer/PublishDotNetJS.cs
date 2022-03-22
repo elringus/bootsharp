@@ -29,7 +29,7 @@ public class PublishDotNetJS : Task
     {
         var builder = CreateNamespaceBuilder();
         using var inspector = InspectAssemblies(builder);
-        return (GenerateLibrary(inspector), GenerateDeclaration(inspector, builder));
+        return (GenerateLibrary(inspector, builder), GenerateDeclaration(inspector, builder));
     }
 
     private void CleanBaseDirectory ()
@@ -73,9 +73,9 @@ public class PublishDotNetJS : Task
         return inspector;
     }
 
-    private string GenerateLibrary (AssemblyInspector inspector)
+    private string GenerateLibrary (AssemblyInspector inspector, NamespaceBuilder spaceBuilder)
     {
-        var generator = new LibraryGenerator();
+        var generator = new LibraryGenerator(spaceBuilder);
         var runtimeJS = File.ReadAllText(Path.Combine(JSDir, "dotnet.js"));
         if (!EmbedBinaries) return generator.GenerateSideLoad(runtimeJS, inspector);
         var wasm = Convert.ToBase64String(File.ReadAllBytes(WasmFile));
