@@ -127,4 +127,15 @@ public class LibraryTest : ContentTest
         Contains("Asy = () => exports.invokeAsync");
         Contains("AsyValue = () => exports.invokeAsync");
     }
+
+    [Fact]
+    public void ExportedEnumsAreDeclaredInJS ()
+    {
+        AddAssembly(
+            With("n", "public enum Foo { A, B }"),
+            With("n", "[JSInvokable] public static Foo GetFoo () => default;"));
+        Task.Execute();
+        Contains("exports.n = {};");
+        Contains("exports.n.Foo = { A: \"A\", B: \"B\" };");
+    }
 }
