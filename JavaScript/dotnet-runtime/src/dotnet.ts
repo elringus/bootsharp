@@ -1,8 +1,10 @@
 ﻿import { boot, getBootStatus, terminate, BootStatus, BootData } from "./boot";
 import { invoke, invokeAsync, createObjectReference, disposeObjectReference, createStreamReference } from "./interop";
 import { Assembly } from "./mono";
+import { Event } from "./event";
 
 export const dotnet = {
+    Event: Event,
     BootStatus: BootStatus,
     getBootStatus: getBootStatus,
     boot: boot,

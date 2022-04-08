@@ -10,15 +10,19 @@ public class DeclarationTest : ContentTest
     protected override string TestedContent => Data.GeneratedDeclaration;
 
     [Fact]
-    public void ContainInteropAndBootContentWithoutImport ()
+    public void ContainsRequiredLibraryDeclarations ()
     {
+        File.WriteAllText(Path.Combine(Data.JSDir, "event.d.ts"), "event");
+        File.WriteAllText(Path.Combine(Data.JSDir, "interop.d.ts"), "interop");
+        File.WriteAllText(Path.Combine(Data.JSDir, "boot.d.ts"), "boot");
         Task.Execute();
-        Contains(MockData.InteropTypeContent);
-        Contains(MockData.BootTypeContent.Split('\n')[1]);
+        Contains("event");
+        Contains("interop");
+        Contains("boot");
     }
 
     [Fact]
-    public void DoesntContainOtherContent ()
+    public void DoesntContainOtherLibraryDeclarations ()
     {
         File.WriteAllText(Path.Combine(Data.JSDir, "other.d.ts"), "other");
         Task.Execute();
@@ -26,9 +30,20 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
-    public void WhenTypeResolveFailsExceptionIsThrown ()
+    public void ResolvesImportForRequiredLibraryDeclarations ()
     {
-        File.Delete(Path.Combine(Data.JSDir, "interop.d.ts"));
+        File.WriteAllText(Path.Combine(Data.JSDir, "dep.d.ts"), "dep");
+        File.WriteAllText(Path.Combine(Data.JSDir, "boot.d.ts"), "import from \"./dep\";\nboot");
+        Task.Execute();
+        Assert.DoesNotContain("import", TestedContent);
+        Contains("dep");
+        Contains("boot");
+    }
+
+    [Fact]
+    public void WhenImportResolveFailsExceptionIsThrown ()
+    {
+        File.WriteAllText(Path.Combine(Data.JSDir, "boot.d.ts"), "import from \"./dep\";\nboot");
         Assert.Throws<PackerException>(() => Task.Execute());
     }
 
@@ -62,6 +77,22 @@ public class DeclarationTest : ContentTest
         AddAssembly(With("Foo", "[JSFunction] public static void OnFoo () { }"));
         Task.Execute();
         Contains("export namespace Foo {\n    export let OnFoo: () => void;\n}");
+    }
+
+    [Fact]
+    public void EventSubscriberIsExportedForEventMethod ()
+    {
+        AddAssembly(With("Foo", "[JSEvent] public static void OnFoo () { }"));
+        Task.Execute();
+        Contains("export namespace Foo {\n    export const OnFoo: EventSubscriber<[]>;\n}");
+    }
+
+    [Fact]
+    public void GenericEventSubscriberIsExportedForEventMethodWithArguments ()
+    {
+        AddAssembly(With("Foo", "[JSEvent] public static void OnFoo (string bar, int nya) { }"));
+        Task.Execute();
+        Contains("export namespace Foo {\n    export const OnFoo: EventSubscriber<[string, number]>;\n}");
     }
 
     [Fact]

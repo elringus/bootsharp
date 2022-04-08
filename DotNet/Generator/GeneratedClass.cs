@@ -5,12 +5,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Generator
 {
-    internal class FunctionClass
+    internal class GeneratedClass
     {
         private readonly ClassDeclarationSyntax syntax;
-        private readonly IReadOnlyList<FunctionMethod> methods;
+        private readonly IReadOnlyList<GeneratedMethod> methods;
 
-        public FunctionClass (ClassDeclarationSyntax syntax, IReadOnlyList<FunctionMethod> methods)
+        public GeneratedClass (ClassDeclarationSyntax syntax, IReadOnlyList<GeneratedMethod> methods)
         {
             this.syntax = syntax;
             this.methods = methods;

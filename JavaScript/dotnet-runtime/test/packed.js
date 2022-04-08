@@ -31,6 +31,21 @@ describe("packed library", () => {
         assert.deepStrictEqual(packed.Test.Main.TestEchoFunction("a"), "a");
         assert.deepStrictEqual(packed.Test.Types.CountTotalSpeed(), 3);
     });
+    it("can subscribe to events declared in C#", async () => {
+        let result = "";
+        packed.Test.Main.OnEventBroadcast.subscribe(v => result = v);
+        packed.Test.Main.BroadcastEvent("foo");
+        assert.deepStrictEqual(result, "foo");
+    });
+    it("can un-subscribe from events declared in C#", async () => {
+        let result = "";
+        const assigner = v => result = v;
+        packed.Test.Main.OnEventBroadcast.subscribe(assigner);
+        packed.Test.Main.BroadcastEvent("foo");
+        packed.Test.Main.OnEventBroadcast.unsubscribe(assigner);
+        packed.Test.Main.BroadcastEvent("bar");
+        assert.deepStrictEqual(result, "foo");
+    });
     it("still can interop via strings", async () => {
         assert.deepStrictEqual(packed.invoke("Test.Main", "JoinStrings", "a", "b"), "ab");
         assert.deepStrictEqual(await packed.invokeAsync("Test.Main", "JoinStringsAsync", "a", "b"), "ab");

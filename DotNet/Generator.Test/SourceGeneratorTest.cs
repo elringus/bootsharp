@@ -31,4 +31,13 @@ public class SourceGeneratorTest
         verifier.TestState.GeneratedSources.Add((typeof(SourceGenerator), "Functions0.cs", expectedText));
         await verifier.RunAsync();
     }
+
+    [Theory, MemberData(nameof(TestData.Events), MemberType = typeof(TestData))]
+    public async Task PartialEventsAreImplemented (string source, string expected)
+    {
+        verifier.TestCode = source;
+        var expectedText = SourceText.From(expected, Encoding.UTF8);
+        verifier.TestState.GeneratedSources.Add((typeof(SourceGenerator), "Events0.cs", expectedText));
+        await verifier.RunAsync();
+    }
 }
