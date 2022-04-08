@@ -114,6 +114,30 @@ Find the following sample projects in this repository:
 - [Web Extension](https://github.com/Elringus/DotNetJS/tree/main/Samples/WebExtension) — Consume the library in VS Code web extension, which works in both web and standalone versions of the IDE.
 - [Runtime Tests](https://github.com/Elringus/DotNetJS/tree/main/JavaScript/dotnet-runtime/test) — Integration tests featuring various usage scenarios: async method invocations, interop with instances, sending raw byte arrays, streaming, etc.
 
+## Events
+
+To make a C# method act as event broadcaster for JavaScript consumers, annotate it with `[JSEvent]` attribute:
+
+```csharp
+[JSEvent]
+public static partial string OnSomethingHappened (string payload);
+```
+
+— and consume it from JavaScript as follows:
+
+```js
+dotnet.MyApp.OnSomethingHappened.subscribe(handleSomething);
+dotnet.MyApp.OnSomethingHappened.unsubscribe(handleSomething);
+
+function handleSomething (payload) {
+
+}
+```
+
+When the method in invoked in C#, subscribed JavaScript handlers will be notified.
+
+In TypeScript the event will have typed generic declaration corresponding to the event arguments.
+
 ## Sideloading Binaries
 
 By default, DotNetJS build task will embed project's DLLs and .NET WASM runtime to the generated JS library. While convenient and even required in some cases (eg, for VS Code web extensions), this also adds about 30% of extra size due to binary->base64 conversion of the embedded files.
