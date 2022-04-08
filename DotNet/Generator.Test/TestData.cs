@@ -76,4 +76,35 @@ public partial class Nya
 }"
         }
     };
+
+    public static IEnumerable<object[]> Events { get; } = new[] {
+        new object[] {
+            @"
+partial class Foo
+{
+    [JSEvent]
+    partial void OnBar ();
+}",
+            @"
+partial class Foo
+{
+    partial void OnBar () => JS.Invoke(""dotnet.Bindings.OnBar.broadcast"");
+}"
+        },
+        new object[] {
+            @"
+namespace Space;
+public static partial class Foo
+{
+    [JSEvent]
+    public static partial void OnBar (string a, int b);
+}",
+            @"
+namespace Space;
+public static partial class Foo
+{
+    public static partial void OnBar (string a, int b) => JS.Invoke(""dotnet.Space.OnBar.broadcast"", a, b);
+}"
+        }
+    };
 }

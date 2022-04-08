@@ -4,14 +4,16 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Generator
 {
-    internal class FunctionMethod
+    internal class GeneratedMethod
     {
         private readonly MethodDeclarationSyntax syntax;
         private readonly NamespaceConverter spaceConverter;
+        private readonly bool @event;
 
-        public FunctionMethod (MethodDeclarationSyntax syntax)
+        public GeneratedMethod (MethodDeclarationSyntax syntax, bool @event)
         {
             this.syntax = syntax;
+            this.@event = @event;
             spaceConverter = new NamespaceConverter();
         }
 
@@ -54,7 +56,7 @@ namespace Generator
 
         private string GetInvokeParameters (string assembly)
         {
-            var args = $"\"dotnet.{assembly}.{syntax.Identifier.ToString()}\"";
+            var args = $"\"dotnet.{assembly}.{syntax.Identifier}{(@event ? ".broadcast" : "")}\"";
             if (syntax.ParameterList.Parameters.Count == 0) return args;
             var ids = syntax.ParameterList.Parameters.Select(p => p.Identifier);
             args += $", {string.Join(", ", ids)}";
