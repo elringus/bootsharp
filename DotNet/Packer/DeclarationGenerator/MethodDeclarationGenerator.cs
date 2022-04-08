@@ -27,7 +27,8 @@ internal class MethodDeclarationGenerator
     {
         if (ShouldOpenNamespace()) OpenNamespace();
         if (method.Type == MethodType.Invokable) DeclareInvokable();
-        else DeclareFunction();
+        else if (method.Type == MethodType.Function) DeclareFunction();
+        else DeclareEvent();
         if (ShouldCloseNamespace()) CloseNamespace();
     }
 
@@ -67,8 +68,20 @@ internal class MethodDeclarationGenerator
         builder.Append($") => {method.ReturnType};");
     }
 
+    private void DeclareEvent ()
+    {
+        builder.Append($"\n    export const {method.Name}: EventSubscriber<[");
+        AppendArgumentTypes();
+        builder.Append("]>;");
+    }
+
     private void AppendArguments ()
     {
         builder.AppendJoin(", ", method.Arguments.Select(a => $"{a.Name}: {a.Type}"));
+    }
+
+    private void AppendArgumentTypes ()
+    {
+        builder.AppendJoin(", ", method.Arguments.Select(a => a.Type));
     }
 }

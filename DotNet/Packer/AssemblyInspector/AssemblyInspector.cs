@@ -18,6 +18,7 @@ internal class AssemblyInspector : IDisposable
 
     private const string invokableAttributeName = "JSInvokableAttribute";
     private const string functionAttributeName = "JSFunctionAttribute";
+    private const string eventAttributeName = "JSEventAttribute";
 
     private readonly List<string> warnings = new();
     private readonly List<MetadataLoadContext> contexts = new();
@@ -80,10 +81,17 @@ internal class AssemblyInspector : IDisposable
     {
         foreach (var method in GetStaticMethods(assembly))
         foreach (var attribute in method.CustomAttributes)
-            if (attribute.AttributeType.Name == invokableAttributeName)
-                Methods.Add(CreateMethod(method, MethodType.Invokable));
-            else if (attribute.AttributeType.Name == functionAttributeName)
-                Methods.Add(CreateMethod(method, MethodType.Function));
+            InspectMethodWithAttribute(method, attribute.AttributeType.Name);
+    }
+
+    private void InspectMethodWithAttribute (MethodInfo method, string attributeName)
+    {
+        if (attributeName == invokableAttributeName)
+            Methods.Add(CreateMethod(method, MethodType.Invokable));
+        else if (attributeName == functionAttributeName)
+            Methods.Add(CreateMethod(method, MethodType.Function));
+        else if (attributeName == eventAttributeName)
+            Methods.Add(CreateMethod(method, MethodType.Event));
     }
 
     private Method CreateMethod (MethodInfo info, MethodType type) => new() {

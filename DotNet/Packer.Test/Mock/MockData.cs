@@ -13,8 +13,6 @@ public sealed class MockData : IDisposable
     public const string WasmFileContent = "mockwasmcontent";
     public const string JSFileContent = "(function(){})();";
     public const string MapFileContent = "{version:3,file:\"dotnet.js\"}";
-    public const string InteropTypeContent = "export interface Interop {}";
-    public const string BootTypeContent = "import from \"./interop\";\nexport interface Boot {}";
 
     public string BaseDir { get; }
     public string BlazorOutDir { get; }
@@ -75,8 +73,6 @@ public sealed class MockData : IDisposable
         File.WriteAllText(WasmFile, WasmFileContent);
         File.WriteAllText(JSFile, JSFileContent);
         File.WriteAllText(MapFile, MapFileContent);
-        File.WriteAllText(Path.Combine(JSDir, "interop.d.ts"), InteropTypeContent);
-        File.WriteAllText(Path.Combine(JSDir, "boot.d.ts"), BootTypeContent);
         foreach (var path in GetReferencePaths())
             File.Copy(path, Path.Combine(BlazorOutDir, Path.GetFileName(path)));
     }

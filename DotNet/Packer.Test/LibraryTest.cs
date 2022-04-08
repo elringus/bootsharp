@@ -77,6 +77,14 @@ public class LibraryTest : ContentTest
     }
 
     [Fact]
+    public void BindingForEventMethodIsGenerated ()
+    {
+        AddAssembly(With("Asm", "[JSEvent] public static void OnFoo (string bar) { }"));
+        Task.Execute();
+        Contains("exports.Asm.OnFoo = new exports.Event();");
+    }
+
+    [Fact]
     public void BindingsFromMultipleSpacesAssignedToRespectiveObjects ()
     {
         AddAssembly("foo.asm.dll", With("Foo", "[JSInvokable] public static void Foo () { }"));

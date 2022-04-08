@@ -39,13 +39,11 @@ internal class LibraryGenerator
 
     private string GenerateInitJS (AssemblyInspector inspector)
     {
-        var invokable = inspector.Methods.Where(m => m.Type == MethodType.Invokable);
-        var functions = inspector.Methods.Where(m => m.Type == MethodType.Function);
-        var enums = inspector.Types.Where(t => t.IsEnum);
         return JoinLines(
-            JoinLines(invokable.Select(GenerateInvokableBinding)),
-            JoinLines(functions.Select(GenerateFunctionDeclaration)),
-            JoinLines(enums.Select(GenerateEnumDeclaration))
+            JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Invokable).Select(GenerateInvokableBinding)),
+            JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Function).Select(GenerateFunctionDeclaration)),
+            JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Event).Select(GenerateEventDeclaration)),
+            JoinLines(inspector.Types.Where(t => t.IsEnum).Select(GenerateEnumDeclaration))
         );
     }
 
@@ -62,6 +60,12 @@ internal class LibraryGenerator
     private string GenerateFunctionDeclaration (Method method)
     {
         var js = $"exports.{method.Namespace}.{method.Name} = undefined;";
+        return EnsureNamespaceObjectsDeclared(method.Namespace, js);
+    }
+
+    private string GenerateEventDeclaration (Method method)
+    {
+        var js = $"exports.{method.Namespace}.{method.Name} = new exports.Event();";
         return EnsureNamespaceObjectsDeclared(method.Namespace, js);
     }
 

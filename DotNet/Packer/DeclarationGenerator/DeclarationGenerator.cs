@@ -48,7 +48,7 @@ internal class DeclarationGenerator
     private static bool ShouldExportDeclaration (DeclarationFile declaration)
     {
         return declaration.FileName switch {
-            "boot" or "interop" => true,
+            "boot" or "interop" or "event" => true,
             _ => false
         };
     }

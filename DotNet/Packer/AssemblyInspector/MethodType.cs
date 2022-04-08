@@ -3,5 +3,6 @@
 internal enum MethodType
 {
     Invokable,
-    Function
+    Function,
+    Event
 }
