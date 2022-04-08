@@ -12,9 +12,12 @@ namespace Generator
 
         public void Execute (GeneratorExecutionContext context)
         {
-            var receiver = context.SyntaxContextReceiver as SyntaxReceiver;
-            if (receiver is null) return;
+            if (context.SyntaxContextReceiver is SyntaxReceiver receiver)
+                AddSources(context, receiver);
+        }
 
+        private void AddSources (GeneratorExecutionContext context, SyntaxReceiver receiver)
+        {
             for (int i = 0; i < receiver.FunctionClasses.Count; i++)
                 context.AddSource($"Functions{i}", receiver.FunctionClasses[i].EmitSource(context.Compilation));
             for (int i = 0; i < receiver.EventClasses.Count; i++)
