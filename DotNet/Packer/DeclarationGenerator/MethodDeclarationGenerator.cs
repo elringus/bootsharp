@@ -70,7 +70,7 @@ internal class MethodDeclarationGenerator
 
     private void DeclareEvent ()
     {
-        builder.Append($"\n    export const {method.Name}: EventSubscriber<[");
+        builder.Append($"\n    export const {method.Name}: Event<[");
         AppendArgumentTypes();
         builder.Append("]>;");
     }

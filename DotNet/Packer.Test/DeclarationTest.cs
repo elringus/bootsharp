@@ -80,19 +80,19 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
-    public void EventSubscriberIsExportedForEventMethod ()
+    public void EventPropertyIsExportedForEventMethod ()
     {
         AddAssembly(With("Foo", "[JSEvent] public static void OnFoo () { }"));
         Task.Execute();
-        Contains("export namespace Foo {\n    export const OnFoo: EventSubscriber<[]>;\n}");
+        Contains("export namespace Foo {\n    export const OnFoo: Event<[]>;\n}");
     }
 
     [Fact]
-    public void GenericEventSubscriberIsExportedForEventMethodWithArguments ()
+    public void GenericEventIsExportedForEventMethodWithArguments ()
     {
         AddAssembly(With("Foo", "[JSEvent] public static void OnFoo (string bar, int nya) { }"));
         Task.Execute();
-        Contains("export namespace Foo {\n    export const OnFoo: EventSubscriber<[string, number]>;\n}");
+        Contains("export namespace Foo {\n    export const OnFoo: Event<[string, number]>;\n}");
     }
 
     [Fact]
