@@ -16,6 +16,47 @@ Open console (Ctrl+Shift+I) to see the output.
     window.onload = async function () {
         // Booting the DotNet runtime and invoking entry point.
         await dotnet.boot();
+        
+        // OR Manually booting would work like this:
+        // assemblyFiles = [
+        //     "Microsoft.JSInterop.WebAssembly.dll",
+        //     "System.Collections.Concurrent.dll",
+        //     "System.Private.Runtime.InteropServices.JavaScript.dll",
+        //     "System.Collections.dll",
+        //     "Microsoft.AspNetCore.Components.Web.dll",
+        //     "System.Memory.dll",
+        //     "Microsoft.JSInterop.dll",
+        //     "Microsoft.AspNetCore.Components.WebAssembly.dll",
+        //     "System.Runtime.dll",
+        //     "System.Text.Json.dll",
+        //     "Microsoft.AspNetCore.Components.dll",
+        //     "System.Private.Uri.dll",
+        //     "System.Private.CoreLib.dll",
+        //     "System.Runtime.CompilerServices.Unsafe.dll",
+        //     "System.Console.dll",
+        //     "DotNetJS.dll",
+        //     "System.Text.Encodings.Web.dll",
+        //     "HelloWorld.dll",
+        // ];
+
+        // const bootData = {
+        //     wasm: await loadfile("dotnet.wasm"),
+        //     assemblies: await Promise.all(
+        //         assemblyFiles.map(async (file) => {
+        //             data = await loadfile(
+        //                 "Project/bin/Debug/net6.0/publish/wwwroot/_framework/" +
+        //                     file
+        //             );
+        //             return {
+        //                 name: file,
+        //                 data: data,
+        //             };
+        //         })
+        //     ),
+        //     entryAssemblyName: "HelloWorld.dll",
+        // };
+        // await dotnet.boot(bootData);
+        
         // Invoking 'GetName()' C# method defined in 'HelloWorld' assembly.
         const guestName = dotnet.HelloWorld.GetName();
         console.log(`Welcome, ${guestName}! Enjoy your global space.`);
