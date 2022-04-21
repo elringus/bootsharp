@@ -146,7 +146,7 @@ To disable the embedding, set `EmbedBinaries` build property to false. You will 
 
 ```js
 const bootData = {
-    wasm: {},
+    wasm: {}, // Currently you have to use this pre-compiled file: https://github.com/Elringus/DotNetJS/blob/main/JavaScript/dotnet-runtime/native/dotnet.wasm
     assemblies: [],
     entryAssemblyName: "Project.dll"
 };
