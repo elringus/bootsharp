@@ -175,6 +175,9 @@ When embedding is disabled, you will probably want to preserve build artifacts a
     
     <!-- Because of https://github.com/Elringus/DotNetJS/issues/20 we must use the pre-compiled dotnet.wasm runtime -->
     <ItemGroup>
+        <PackageReference Include="DotNetJS" Version="0.9.1" GeneratePathProperty="true"/>
+    </ItemGroup>
+    <ItemGroup>
         <None Include="$(PkgDotNetJS)\js\dotnet.wasm" TargetPath="wwwroot\_framework\dotnet.wasm" CopyToOutputDirectory="Always" />
         <None Include="$(PkgDotNetJS)\js\dotnet.wasm" TargetPath="dotnet.wasm" CopyToOutputDirectory="Always" />
     </ItemGroup>
