@@ -146,23 +146,38 @@ To disable the embedding, set `EmbedBinaries` build property to false. You will 
 
 ```js
 const bootData = {
-    wasm: {}, // Currently you have to use this pre-compiled file: https://github.com/Elringus/DotNetJS/blob/main/JavaScript/dotnet-runtime/native/dotnet.wasm
-    assemblies: [],
+    wasm: <Uint8Array>, // Currently you have to use this pre-compiled file: https://github.com/Elringus/DotNetJS/blob/main/JavaScript/dotnet-runtime/native/dotnet.wasm
+    assemblies: [{
+            name: "Microsoft.JSInterop.WebAssembly.dll",
+            data: <Uint8Array>
+        },
+        ...,
+        {
+            name: "Project.dll",
+            data: <Uint8Array>
+        }
+    ],
     entryAssemblyName: "Project.dll"
 };
 await dotnet.boot(bootData);
 ```
 
-— this way the binary files can be streamed directly from server to optimize traffic and initial load time.
+— this way the binary files can be streamed directly from server to optimize traffic and initial load time. Have a look at the [samples](https://github.com/Elringus/DotNetJS/tree/main/Samples/HelloWorld) for an implementation reference.
 
 When embedding is disabled, you will probably want to preserve build artifacts as well. Set `Clean` build property to false to prevent DotNetJS from wiping them:
 
 ```xml
-<PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <EmbedBinaries>false</EmbedBinaries>
-    <Clean>false</Clean>
-</PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <EmbedBinaries>false</EmbedBinaries>
+        <Clean>false</Clean>
+    </PropertyGroup>
+    
+    <!-- Because of https://github.com/Elringus/DotNetJS/issues/20 we must use the pre-compiled dotnet.wasm runtime -->
+    <ItemGroup>
+        <None Include="$(PkgDotNetJS)\js\dotnet.wasm" TargetPath="wwwroot\_framework\dotnet.wasm" CopyToOutputDirectory="Always" />
+        <None Include="$(PkgDotNetJS)\js\dotnet.wasm" TargetPath="dotnet.wasm" CopyToOutputDirectory="Always" />
+    </ItemGroup>
 ```
 
 ## Namespace Pattern
