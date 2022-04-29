@@ -11,10 +11,12 @@ internal class DeclarationGenerator
     private readonly MethodDeclarationGenerator methodsGenerator = new();
     private readonly List<DeclarationFile> declarations = new();
     private readonly TypeDeclarationGenerator typesGenerator;
+    private readonly bool embedded;
 
-    public DeclarationGenerator (NamespaceBuilder spaceBuilder)
+    public DeclarationGenerator (NamespaceBuilder spaceBuilder, bool embedded)
     {
         typesGenerator = new TypeDeclarationGenerator(spaceBuilder);
+        this.embedded = embedded;
     }
 
     public void LoadDeclarations (string directory)
@@ -64,9 +66,9 @@ internal class DeclarationGenerator
         throw new PackerException($"Failed to find type import for '{import}'.");
     }
 
-    private static string ModifyInternalDeclarations (string source)
+    private string ModifyInternalDeclarations (string source)
     {
-        source = source.Replace("boot(bootData: BootData):", "boot():");
+        if (embedded) source = source.Replace("boot(bootData: BootData):", "boot():");
         source = source.Replace("export declare function initializeInterop(): void;", "");
         source = source.Replace("export declare function initializeMono(assemblies: Assembly[]): void;", "");
         source = source.Replace("export declare function callEntryPoint(assemblyName: string): Promise<any>;", "");
