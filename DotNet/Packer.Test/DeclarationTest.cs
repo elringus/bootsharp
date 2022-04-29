@@ -48,6 +48,24 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void WhenEmbeddedOverridesBootSignature ()
+    {
+        File.WriteAllText(Path.Combine(Data.JSDir, "boot.d.ts"), "boot(bootData: BootData): Promise<void>");
+        Task.EmbedBinaries = true;
+        Task.Execute();
+        Contains("boot(): Promise<void>");
+    }
+
+    [Fact]
+    public void WhenSideLoadDoesntOverrideBootSignature ()
+    {
+        File.WriteAllText(Path.Combine(Data.JSDir, "boot.d.ts"), "boot(bootData: BootData): Promise<void>");
+        Task.EmbedBinaries = false;
+        Task.Execute();
+        Contains("boot(bootData: BootData): Promise<void>");
+    }
+
+    [Fact]
     public void DeclaresNamespace ()
     {
         AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
