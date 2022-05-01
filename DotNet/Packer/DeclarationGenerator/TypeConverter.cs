@@ -50,7 +50,15 @@ internal class TypeConverter
     private string ToArray (Type type)
     {
         var elementType = GetArrayElementType(type);
-        return $"Array<{ConvertToSimple(elementType)}>";
+        return Type.GetTypeCode(elementType) switch {
+            TypeCode.Byte => "Uint8Array",
+            TypeCode.SByte => "Int8Array",
+            TypeCode.UInt16 => "Uint16Array",
+            TypeCode.Int16 => "Int16Array",
+            TypeCode.UInt32 => "Uint32Array",
+            TypeCode.Int32 => "Int32Array",
+            _ => $"Array<{ConvertToSimple(elementType)}>"
+        };
     }
 
     private string ToPromise (Type type)

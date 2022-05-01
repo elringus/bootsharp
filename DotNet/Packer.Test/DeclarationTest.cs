@@ -234,6 +234,26 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void IntArraysTranslatedToRelatedTypes ()
+    {
+        AddAssembly(
+            With("[JSInvokable] public static void Uint8 (byte[] foo) {}"),
+            With("[JSInvokable] public static void Int8 (sbyte[] foo) {}"),
+            With("[JSInvokable] public static void Uint16 (ushort[] foo) {}"),
+            With("[JSInvokable] public static void Int16 (short[] foo) {}"),
+            With("[JSInvokable] public static void Uint32 (uint[] foo) {}"),
+            With("[JSInvokable] public static void Int32 (int[] foo) {}")
+        );
+        Task.Execute();
+        Contains("Uint8(foo: Uint8Array): void");
+        Contains("Int8(foo: Int8Array): void");
+        Contains("Uint16(foo: Uint16Array): void");
+        Contains("Int16(foo: Int16Array): void");
+        Contains("Uint32(foo: Uint32Array): void");
+        Contains("Int32(foo: Int32Array): void");
+    }
+
+    [Fact]
     public void DefinitionIsGeneratedForObjectType ()
     {
         AddAssembly(
