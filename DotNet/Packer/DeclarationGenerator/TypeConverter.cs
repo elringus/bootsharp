@@ -50,13 +50,15 @@ internal class TypeConverter
     private string ToArray (Type type)
     {
         var elementType = GetArrayElementType(type);
-        if (Type.GetTypeCode(elementType) == TypeCode.Byte) return "Uint8Array";
-        if (Type.GetTypeCode(elementType) == TypeCode.SByte) return "Int8Array";
-        if (Type.GetTypeCode(elementType) == TypeCode.UInt16) return "Uint16Array";
-        if (Type.GetTypeCode(elementType) == TypeCode.Int16) return "Int16Array";
-        if (Type.GetTypeCode(elementType) == TypeCode.UInt32) return "Uint32Array";
-        if (Type.GetTypeCode(elementType) == TypeCode.Int32) return "Int32Array";
-        return $"Array<{ConvertToSimple(elementType)}>";
+        return Type.GetTypeCode(elementType) switch {
+            TypeCode.Byte => "Uint8Array",
+            TypeCode.SByte => "Int8Array",
+            TypeCode.UInt16 => "Uint16Array",
+            TypeCode.Int16 => "Int16Array",
+            TypeCode.UInt32 => "Uint32Array",
+            TypeCode.Int32 => "Int32Array",
+            _ => $"Array<{ConvertToSimple(elementType)}>"
+        };
     }
 
     private string ToPromise (Type type)
