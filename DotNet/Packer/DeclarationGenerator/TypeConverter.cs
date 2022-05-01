@@ -51,6 +51,11 @@ internal class TypeConverter
     {
         var elementType = GetArrayElementType(type);
         if (Type.GetTypeCode(elementType) == TypeCode.Byte) return "Uint8Array";
+        if (Type.GetTypeCode(elementType) == TypeCode.SByte) return "Int8Array";
+        if (Type.GetTypeCode(elementType) == TypeCode.UInt16) return "Uint16Array";
+        if (Type.GetTypeCode(elementType) == TypeCode.Int16) return "Int16Array";
+        if (Type.GetTypeCode(elementType) == TypeCode.UInt32) return "Uint32Array";
+        if (Type.GetTypeCode(elementType) == TypeCode.Int32) return "Int32Array";
         return $"Array<{ConvertToSimple(elementType)}>";
     }
 
