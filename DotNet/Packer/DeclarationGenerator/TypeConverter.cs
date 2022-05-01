@@ -50,6 +50,7 @@ internal class TypeConverter
     private string ToArray (Type type)
     {
         var elementType = GetArrayElementType(type);
+        if (Type.GetTypeCode(elementType) == TypeCode.Byte) return "Uint8Array";
         return $"Array<{ConvertToSimple(elementType)}>";
     }
 
