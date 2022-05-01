@@ -234,6 +234,14 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void ByteArrayTranslatedToUint8Array ()
+    {
+        AddAssembly(With("[JSInvokable] public static void Foo (byte[] bar) {}"));
+        Task.Execute();
+        Contains("Foo(bar: Uint8Array): void");
+    }
+
+    [Fact]
     public void DefinitionIsGeneratedForObjectType ()
     {
         AddAssembly(
