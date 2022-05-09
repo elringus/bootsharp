@@ -9,7 +9,8 @@ export default [
         input: pkg.source,
         output: {
             file: pkg.main,
-            format: "esm",
+            format: "umd",
+            name: "dotnet",
         },
         external: ["dotnet-js-interop"],
         plugins: [esbuild(), commonjs(), resolve()],

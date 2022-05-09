@@ -9,7 +9,7 @@
         "runtime",
         "WebAssembly",
         "interop",
-        "ESM"
+        "UMD"
     ],
     "repository": "https://github.com/Elringus/DotNetJS",
     "license": "MIT",
@@ -18,7 +18,7 @@
         "dist/*"
     ],
     "source": "src/dotnet.ts",
-    "main": "dist/dotnet.mjs",
+    "main": "dist/dotnet.js",
     "types": "dist/dotnet.d.ts",
     "scripts": {
         "build": "rollup -c",
