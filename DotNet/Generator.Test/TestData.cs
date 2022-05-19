@@ -35,6 +35,21 @@ public static partial class Foo
         },
         new object[] {
             @"
+namespace File.Scoped;
+public static partial class Foo
+{
+    [JSFunction]
+    private static partial Task<string?> BarAsync ();
+}",
+            @"
+namespace File.Scoped;
+public static partial class Foo
+{
+    private static partial Task<string?> BarAsync () => JS.InvokeAsync<string?>(""dotnet.File.Scoped.BarAsync"");
+}"
+        },
+        new object[] {
+            @"
 namespace Classic
 {
     partial class Foo
