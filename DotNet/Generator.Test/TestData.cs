@@ -30,7 +30,7 @@ public static partial class Foo
 namespace File.Scoped;
 public static partial class Foo
 {
-    private static partial Task BarAsync (string a, int b) => JS.InvokeAsync(""dotnet.File.Scoped.BarAsync"", a, b);
+    private static partial Task BarAsync (string a, int b) => JS.InvokeAsync(""dotnet.File.Scoped.BarAsync"", a, b).AsTask();
 }"
         },
         new object[] {
@@ -45,7 +45,7 @@ public static partial class Foo
 namespace File.Scoped;
 public static partial class Foo
 {
-    private static partial Task<string?> BarAsync () => JS.InvokeAsync<string?>(""dotnet.File.Scoped.BarAsync"");
+    private static partial Task<string?> BarAsync () => JS.InvokeAsync<string?>(""dotnet.File.Scoped.BarAsync"").AsTask();
 }"
         },
         new object[] {
