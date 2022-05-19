@@ -41,7 +41,8 @@ namespace Generator
         {
             var invokeMethod = GetInvokeMethod();
             var invokeParameters = GetInvokeParameters(@namespace);
-            return $"JS.{invokeMethod}({invokeParameters})";
+            var convertTask = syntax.ReturnType.ToString().StartsWith("Task") ? ".AsTask()" : "";
+            return $"JS.{invokeMethod}({invokeParameters}){convertTask}";
         }
 
         private string GetInvokeMethod ()
