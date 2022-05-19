@@ -50,7 +50,8 @@ namespace Generator
             return
                 returnType is "void" ? "Invoke" :
                 returnType is "ValueTask" || returnType is "Task" ? "InvokeAsync" :
-                returnType.Contains("Task") ? $"InvokeAsync<{returnType.Substring(10, returnType.Length - 11)}>" :
+                returnType.StartsWith("Task<") ? $"InvokeAsync<{returnType.Substring(5, returnType.Length - 6)}>" :
+                returnType.StartsWith("ValueTask<") ? $"InvokeAsync<{returnType.Substring(10, returnType.Length - 11)}>" :
                 $"Invoke<{returnType}>";
         }
 
