@@ -100,13 +100,15 @@ internal class AssemblyInspector : IDisposable
         Namespace = spaceBuilder.Build(info.DeclaringType),
         Arguments = info.GetParameters().Select(CreateArgument).ToArray(),
         ReturnType = typeConverter.ToTypeScript(info.ReturnType),
+        ReturnNullable = IsNullable(info),
         Async = IsAwaitable(info.ReturnType),
         Type = type
     };
 
     private Argument CreateArgument (ParameterInfo info) => new() {
         Name = info.Name == "function" ? "fn" : info.Name!,
-        Type = typeConverter.ToTypeScript(info.ParameterType)
+        Type = typeConverter.ToTypeScript(info.ParameterType),
+        Nullable = IsNullable(info)
     };
 
     private static string ReadBase64 (string filePath)

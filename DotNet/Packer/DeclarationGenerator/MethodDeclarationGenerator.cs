@@ -57,31 +57,34 @@ internal class MethodDeclarationGenerator
     private void DeclareInvokable ()
     {
         builder.Append($"\n    export function {method.Name}(");
-        AppendArguments();
-        builder.Append($"): {method.ReturnType};");
+        builder.AppendJoin(", ", method.Arguments.Select(BuildArgumentDeclaration));
+        builder.Append($"): {BuildReturnDeclaration(method)};");
     }
 
     private void DeclareFunction ()
     {
         builder.Append($"\n    export let {method.Name}: (");
-        AppendArguments();
-        builder.Append($") => {method.ReturnType};");
+        builder.AppendJoin(", ", method.Arguments.Select(BuildArgumentDeclaration));
+        builder.Append($") => {BuildReturnDeclaration(method)};");
     }
 
     private void DeclareEvent ()
     {
         builder.Append($"\n    export const {method.Name}: Event<[");
-        AppendArgumentTypes();
+        builder.AppendJoin(", ", method.Arguments.Select(a => $"{a.Type}{(a.Nullable ? "?" : "")}"));
         builder.Append("]>;");
     }
 
-    private void AppendArguments ()
+    private string BuildArgumentDeclaration (Argument arg)
     {
-        builder.AppendJoin(", ", method.Arguments.Select(a => $"{a.Name}: {a.Type}"));
+        return $"{arg.Name}{(arg.Nullable ? "?" : "")}: {arg.Type}";
     }
 
-    private void AppendArgumentTypes ()
+    private string BuildReturnDeclaration (Method method)
     {
-        builder.AppendJoin(", ", method.Arguments.Select(a => a.Type));
+        if (!method.ReturnNullable) return method.ReturnType;
+        if (!method.Async) return $"{method.ReturnType} | undefined";
+        var insertIndex = method.ReturnType.Length - 1;
+        return method.ReturnType.Insert(insertIndex, " | undefined");
     }
 }

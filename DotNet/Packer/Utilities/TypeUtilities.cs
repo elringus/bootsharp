@@ -33,6 +33,21 @@ internal static class TypeUtilities
         return context.ReadState == NullabilityState.Nullable;
     }
 
+    public static bool IsNullable (ParameterInfo parameter)
+    {
+        if (IsNullable(parameter.ParameterType)) return true;
+        var context = new NullabilityInfoContext().Create(parameter);
+        return context.ReadState == NullabilityState.Nullable;
+    }
+
+    public static bool IsNullable (MethodInfo method)
+    {
+        if (IsNullable(method.ReturnParameter)) return true;
+        if (!IsAwaitable(method.ReturnType)) return false;
+        var context = new NullabilityInfoContext().Create(method.ReturnParameter);
+        return context.GenericTypeArguments.FirstOrDefault()?.ReadState == NullabilityState.Nullable;
+    }
+
     public static bool IsNullable (Type type)
     {
         return type.IsGenericType &&
