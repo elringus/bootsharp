@@ -336,9 +336,13 @@ public class DeclarationTest : ContentTest
     [Fact]
     public void NullableMethodArgumentsHaveOptionalModificator ()
     {
-        AddAssembly(With("[JSInvokable] public static void Foo (string? bar, byte[]? nya) { }"));
+        AddAssembly(
+            With("[JSInvokable] public static void Foo (string? bar) { }"),
+            With("[JSFunction] public static void Fun (byte[]? nya) { }")
+        );
         Task.Execute();
-        Contains("export function Foo(bar?: string, nya?: Uint8Array): void;");
+        Contains("export function Foo(bar?: string): void;");
+        Contains("export let Fun: (nya?: Uint8Array) => void;");
     }
 
     [Fact]
@@ -347,12 +351,12 @@ public class DeclarationTest : ContentTest
         AddAssembly(
             With("[JSInvokable] public static string? Foo () => default;"),
             With("[JSInvokable] public static Task<byte[]?> Bar () => default;"),
-            With("[JSInvokable] public static ValueTask<List<string>?> Nya () => default;")
+            With("[JSFunction] public static ValueTask<List<string>?> Nya () => default;")
         );
         Task.Execute();
         Contains("export function Foo(): string | undefined;");
         Contains("export function Bar(): Promise<Uint8Array | undefined>;");
-        Contains("export function Nya(): Promise<Array<string> | undefined>;");
+        Contains("export let Nya: () => Promise<Array<string> | undefined>;");
     }
 
     [Fact]
@@ -377,6 +381,14 @@ public class DeclarationTest : ContentTest
         Task.Execute();
         Matches(@"export enum Foo {\s*A,\s*B\s*}");
         Matches(@"export class Bar {\s*foo\?: n.Foo;\s*}");
+    }
+
+    [Fact]
+    public void NullableEventTypesHaveOptionalModificator ()
+    {
+        AddAssembly(With("[JSEvent] public static void OnFoo (string? bar) { }"));
+        Task.Execute();
+        Contains("export const OnFoo: Event<[string?]>;");
     }
 
     [Fact]
