@@ -334,15 +334,15 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
-    public void NullableMethodArgumentsHaveOptionalModificator ()
+    public void NullableMethodArgumentsUnionWithUndefined ()
     {
         AddAssembly(
             With("[JSInvokable] public static void Foo (string? bar) { }"),
             With("[JSFunction] public static void Fun (int? nya) { }")
         );
         Task.Execute();
-        Contains("export function Foo(bar?: string): void;");
-        Contains("export let Fun: (nya?: number) => void;");
+        Contains("export function Foo(bar: string | undefined): void;");
+        Contains("export let Fun: (nya: number | undefined) => void;");
     }
 
     [Fact]
@@ -384,11 +384,11 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
-    public void NullableEventTypesHaveOptionalModificator ()
+    public void NullableEventTypesUnionWithUndefined ()
     {
         AddAssembly(With("[JSEvent] public static void OnFoo (string? bar) { }"));
         Task.Execute();
-        Contains("export const OnFoo: Event<[string?]>;");
+        Contains("export const OnFoo: Event<[string | undefined]>;");
     }
 
     [Fact]
