@@ -334,6 +334,28 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void NullableMethodArgumentsHaveOptionalModificator ()
+    {
+        AddAssembly(With("[JSInvokable] public static void Foo (string? bar, byte[]? nya) { }"));
+        Task.Execute();
+        Contains("export function Foo(bar?: string, nya?: Uint8Array): void;");
+    }
+
+    [Fact]
+    public void NullableMethodReturnTypesUnionWithUndefined ()
+    {
+        AddAssembly(
+            With("[JSInvokable] public static string? Foo () => default;"),
+            With("[JSInvokable] public static Task<byte[]?> Bar () => default;"),
+            With("[JSInvokable] public static ValueTask<List<string>?> Nya () => default;")
+        );
+        Task.Execute();
+        Contains("export function Foo(): string | undefined;");
+        Contains("export function Bar(): Promise<Uint8Array | undefined>;");
+        Contains("export function Nya(): Promise<Array<string> | undefined>;");
+    }
+
+    [Fact]
     public void NullablePropertiesHaveOptionalModificator ()
     {
         AddAssembly(
