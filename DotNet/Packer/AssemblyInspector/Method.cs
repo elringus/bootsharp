@@ -10,6 +10,7 @@ internal record Method
     public string Namespace { get; init; } = null!;
     public IReadOnlyList<Argument> Arguments { get; init; } = null!;
     public string ReturnType { get; init; } = null!;
+    public bool ReturnNullable { get; init; }
     public bool Async { get; init; }
     public MethodType Type { get; init; }
 
