@@ -338,11 +338,11 @@ public class DeclarationTest : ContentTest
     {
         AddAssembly(
             With("[JSInvokable] public static void Foo (string? bar) { }"),
-            With("[JSFunction] public static void Fun (byte[]? nya) { }")
+            With("[JSFunction] public static void Fun (int? nya) { }")
         );
         Task.Execute();
         Contains("export function Foo(bar?: string): void;");
-        Contains("export let Fun: (nya?: Uint8Array) => void;");
+        Contains("export let Fun: (nya?: number) => void;");
     }
 
     [Fact]
