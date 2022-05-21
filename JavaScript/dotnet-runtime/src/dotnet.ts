@@ -1,7 +1,6 @@
-﻿import { boot, getBootStatus, terminate, BootStatus, BootData } from "./boot";
+﻿import { BootStatus, getBootStatus, boot, terminate, type BootData } from "./boot";
 import { invoke, invokeAsync, createObjectReference, disposeObjectReference, createStreamReference } from "./interop";
-import { Assembly } from "./mono";
-import { Event } from "./event";
+import type { Assembly } from "./mono";
 
 export const dotnet = {
     Event: Event,
