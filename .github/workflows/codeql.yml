@@ -35,6 +35,7 @@ jobs:
       run: |
           dotnet build DotNet/DotNetJS.sln
           cd JavaScript/dotnet-runtime
+          rm -rf ./node_modules
           npm ci
           npm run build
           dotnet publish test/csharp/Test.sln
