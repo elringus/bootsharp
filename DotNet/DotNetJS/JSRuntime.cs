@@ -77,7 +77,7 @@ public class JSRuntime : IJSRuntime
 
     private static JsonSerializerOptions GetJsonSerializerOptions (WebAssemblyJSRuntime runtime)
     {
-        return (JsonSerializerOptions)typeof(Microsoft.JSInterop.JSRuntime).GetProperty(nameof(System.Text.Json.JsonSerializerOptions),
+        return (JsonSerializerOptions)typeof(Microsoft.JSInterop.JSRuntime).GetProperty("JsonSerializerOptions",
             BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(runtime)!;
     }
 }
