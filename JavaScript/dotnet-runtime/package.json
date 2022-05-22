@@ -17,7 +17,7 @@
     "devDependencies": {
         "typescript": "^4.6.3",
         "@types/emscripten": "^1.39.6",
-        "dotnet-js-interop": "^6.0.8",
+        "dotnet-js-interop": "file:../dotnet-js-interop",
         "js-base64": "^3.7.2",
         "webpack": "^5.72.0",
         "webpack-cli": "^4.9.2",
