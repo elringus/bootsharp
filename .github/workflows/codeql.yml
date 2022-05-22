@@ -35,7 +35,7 @@ jobs:
       run: |
           dotnet build DotNet/DotNetJS.sln
           cd JavaScript/dotnet-runtime
-          npm install
+          npm ci
           npm run build
           dotnet publish test/csharp/Test.sln
     - name: analyze
