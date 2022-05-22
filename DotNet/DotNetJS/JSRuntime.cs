@@ -1,36 +1,74 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.JSInterop.WebAssembly;
 
 namespace DotNetJS;
 
 /// <inheritdoc cref="WebAssemblyJSRuntime"/>
-public class JSRuntime : WebAssemblyJSRuntime, IJSRuntime
+public class JSRuntime : IJSRuntime
 {
     /// <summary>
-    /// JSON serializer options of the runtime used for calls from .NET to JavaScript.
+    /// JSON serializer options of the JS interop runtime.
     /// </summary>
-    public JsonSerializerOptions OutboundJsonOptions => JsonSerializerOptions;
+    public JsonSerializerOptions JsonSerializerOptions { get; }
+
+    private readonly WebAssemblyJSRuntime defaultRuntime;
+
     /// <summary>
-    /// JSON serializer options of the runtime used for calls from JavaScript to .NET.
+    /// Constructs new instance of the JS interop runtime.
     /// </summary>
-    public JsonSerializerOptions InboundJsonOptions => GetInboundJsonOptions();
+    public JSRuntime ()
+    {
+        defaultRuntime = GetDefaultRuntime();
+        JsonSerializerOptions = GetJsonSerializerOptions(defaultRuntime);
+    }
 
     /// <inheritdoc/>
     public void ConfigureJson (Action<JsonSerializerOptions> action)
     {
-        action.Invoke(OutboundJsonOptions);
-        action.Invoke(InboundJsonOptions);
+        action.Invoke(JsonSerializerOptions);
     }
 
-    private static JsonSerializerOptions GetInboundJsonOptions ()
-    {
-        var inboundRuntime = GetInboundRuntime();
-        return GetJsonSerializerOptions(inboundRuntime);
-    }
+    /// <inheritdoc/>
+    [ExcludeFromCodeCoverage]
+    public ValueTask<TValue> InvokeAsync<TValue> (string identifier, object?[]? args)
+        => defaultRuntime.InvokeAsync<TValue>(identifier, args);
 
-    private static WebAssemblyJSRuntime GetInboundRuntime ()
+    /// <inheritdoc/>
+    [ExcludeFromCodeCoverage]
+    public ValueTask<TValue> InvokeAsync<TValue> (string identifier, CancellationToken cancellationToken, object?[]? args)
+        => defaultRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args);
+
+    /// <inheritdoc/>
+    [ExcludeFromCodeCoverage]
+    public TResult Invoke<TResult> (string identifier, params object?[]? args)
+        => defaultRuntime.Invoke<TResult>(identifier, args);
+
+    /// <inheritdoc/>
+    [ExcludeFromCodeCoverage]
+    public TResult InvokeUnmarshalled<TResult> (string identifier)
+        => defaultRuntime.InvokeUnmarshalled<TResult>(identifier);
+
+    /// <inheritdoc/>
+    [ExcludeFromCodeCoverage]
+    public TResult InvokeUnmarshalled<T0, TResult> (string identifier, T0 arg0)
+        => defaultRuntime.InvokeUnmarshalled<T0, TResult>(identifier, arg0);
+
+    /// <inheritdoc/>
+    [ExcludeFromCodeCoverage]
+    public TResult InvokeUnmarshalled<T0, T1, TResult> (string identifier, T0 arg0, T1 arg1)
+        => defaultRuntime.InvokeUnmarshalled<T0, T1, TResult>(identifier, arg0, arg1);
+
+    /// <inheritdoc/>
+    [ExcludeFromCodeCoverage]
+    public TResult InvokeUnmarshalled<T0, T1, T2, TResult> (string identifier, T0 arg0, T1 arg1, T2 arg2)
+        => defaultRuntime.InvokeUnmarshalled<T0, T1, T2, TResult>(identifier, arg0, arg1, arg2);
+
+    private static WebAssemblyJSRuntime GetDefaultRuntime ()
     {
         var assembly = Assembly.Load("Microsoft.AspNetCore.Components.WebAssembly");
         var type = assembly.GetType("Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime");
@@ -39,7 +77,7 @@ public class JSRuntime : WebAssemblyJSRuntime, IJSRuntime
 
     private static JsonSerializerOptions GetJsonSerializerOptions (WebAssemblyJSRuntime runtime)
     {
-        return (JsonSerializerOptions)typeof(Microsoft.JSInterop.JSRuntime).GetProperty(nameof(JsonSerializerOptions),
+        return (JsonSerializerOptions)typeof(Microsoft.JSInterop.JSRuntime).GetProperty(nameof(System.Text.Json.JsonSerializerOptions),
             BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(runtime)!;
     }
 }
