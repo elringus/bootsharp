@@ -80,18 +80,34 @@ function invokeJSFromDotNet(callInfo, arg0, arg1, arg2): any {
     const callArgs = readHeapObject(callInfo, 8);
     const targetId = readHeapUint64(callInfo, 20);
 
-    if (callArgs == null) {
-        const func = DotNet.jsCallDispatcher.findJSFunction(functionId, targetId);
-        return func.call(null, arg0, arg1, arg2);
-    }
-
-    const callHandle = readHeapUint64(callInfo, 12);
-    if (callHandle !== 0) {
-        DotNet.jsCallDispatcher.beginInvokeJSFromDotNet(callHandle, functionId, callArgs, resultType, targetId);
-        return 0;
+    if (callArgs != null) {
+        const asyncHandle = readHeapUint64(callInfo, 12);
+        if (asyncHandle !== 0) {
+            DotNet.jsCallDispatcher.beginInvokeJSFromDotNet(asyncHandle, functionId, callArgs, resultType, targetId);
+            return 0;
+        } else {
+            const resultJson = DotNet.jsCallDispatcher.invokeJSFromDotNet(functionId, callArgs, resultType, targetId)!;
+            return resultJson === null ? 0 : wasm.BINDING.js_string_to_mono_string(resultJson);
+        }
     } else {
-        const resultJson = DotNet.jsCallDispatcher.invokeJSFromDotNet(functionId, callArgs, resultType, targetId)!;
-        return resultJson === null ? 0 : wasm.BINDING.js_string_to_mono_string(resultJson);
+        const func = DotNet.jsCallDispatcher.findJSFunction(functionId, targetId);
+        const result = func.call(null, arg0, arg1, arg2);
+
+        switch (resultType) {
+            case DotNet.JSCallResultType.Default:
+                return result;
+            case DotNet.JSCallResultType.JSObjectReference:
+                return DotNet.createJSObjectReference(result).__jsObjectId;
+            case DotNet.JSCallResultType.JSStreamReference: {
+                const streamReference = DotNet.createJSStreamReference(result);
+                const resultJson = JSON.stringify(streamReference);
+                return wasm.BINDING.js_string_to_mono_string(resultJson);
+            }
+            case DotNet.JSCallResultType.JSVoidResult:
+                return null;
+            default:
+                throw new Error(`Invalid JS call result type '${resultType}'.`);
+        }
     }
 }
 
