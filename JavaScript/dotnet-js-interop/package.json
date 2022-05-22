@@ -1,11 +1,14 @@
 {
-    "private": true,
     "name": "dotnet-js-interop",
-    "version": "1.0.0",
+    "version": "6.0.10",
+    "repository": "https://github.com/Elringus/DotNetJS",
+    "license": "MIT",
     "main": "dist/main.js",
     "types": "dist/main.d.ts",
+    "files": ["dist/*"],
     "scripts": {
-        "compile": "tsc"
+        "compile": "tsc",
+        "publish-npm": "npm publish"
     },
     "devDependencies": {
         "typescript": "^4.6.4",

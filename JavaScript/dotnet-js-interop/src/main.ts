@@ -4,7 +4,7 @@
 // 2. Removed `Blob` case in createJSStreamReference (Blob is from DOM lib).
 // 3. Throw on DotNetStream::arrayBuffer (Response is from DOM lib).
 
-export module DotNet {
+export namespace DotNet {
     (global as any).DotNet = DotNet; // Ensure reachable from anywhere
 
     export type JsonReviver = ((key: any, value: any) => any);
