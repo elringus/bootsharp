@@ -120,10 +120,8 @@ function invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, args
 
 function beginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson) {
     assertHeapNotLocked();
-    if (!dotNetObjectId && !assemblyName)
-        throw Error("Either assemblyName or dotNetObjectId must have a non null value.");
     const assemblyNameOrObjectId: string = dotNetObjectId ? dotNetObjectId.toString() : assemblyName;
-    beginInvokeDotNet(callId?.toString(), assemblyNameOrObjectId, methodIdentifier, argsJson);
+    beginInvokeDotNet(callId.toString(), assemblyNameOrObjectId, methodIdentifier, argsJson);
 }
 
 function endInvokeDotNetFromJS(callId, success, resultJsonOrErrorMessage): void {
