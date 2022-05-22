@@ -55,7 +55,7 @@ function createDispatcher(): DotNet.DotNetCallDispatcher {
 }
 
 function assignBlazorGlobals(): void {
-    // "Blazor" global is hardcoded in mono wasm runtime. ¯\_(ツ)_/¯
+    // "Blazor" global is required by mono wasm runtime.
     // https://github.com/dotnet/runtime/blob/release/6.0/src/mono/wasm/runtime/dotnet_support.js#L15
     globalThis.Blazor = {
         _internal: {
