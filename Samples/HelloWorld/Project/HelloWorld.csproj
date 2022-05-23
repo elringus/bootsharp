@@ -5,7 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DotNetJS" Version="*" />
+        <PackageReference Include="DotNetJS" Version="*"/>
     </ItemGroup>
 
 </Project>

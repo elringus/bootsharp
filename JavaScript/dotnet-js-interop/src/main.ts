@@ -1,8 +1,9 @@
 ﻿// Source: https://raw.githubusercontent.com/dotnet/aspnetcore/main/src/JSInterop/Microsoft.JSInterop.JS/src/src/Microsoft.JSInterop.ts
 // Changes:
 // 1. Replaced `window` with `global` (webpack resolves to the correct global).
-// 2. Removed `Blob` case in createJSStreamReference (Blob is from DOM lib).
-// 3. Throw on DotNetStream::arrayBuffer (Response is from DOM lib).
+// 2. Removed `import` statement at line #70 (causing warnings when repacking, eg in WebExtension sample).
+// 3. Removed `Blob` case in createJSStreamReference (Blob is from DOM lib).
+// 4. Throw on DotNetStream::arrayBuffer (Response is from DOM lib).
 
 export namespace DotNet {
     (global as any).DotNet = DotNet; // Ensure reachable from anywhere
@@ -66,17 +67,17 @@ export namespace DotNet {
         [windowJSObjectId]: new JSObject(global)
     };
 
-    cachedJSObjectsById[windowJSObjectId]._cachedFunctions.set("import", (url: any) => {
-
-        // In most cases developers will want to resolve dynamic imports relative to the base HREF.
-        // However since we're the one calling the import keyword, they would be resolved relative to
-        // this framework bundle URL. Fix this by providing an absolute URL.
-        if (typeof url === "string" && url.startsWith("./")) {
-            url = document.baseURI + url.substr(2);
-        }
-
-        return import(/* webpackIgnore: true */ url);
-    });
+    // cachedJSObjectsById[windowJSObjectId]._cachedFunctions.set("import", (url: any) => {
+    //
+    //     // In most cases developers will want to resolve dynamic imports relative to the base HREF.
+    //     // However since we're the one calling the import keyword, they would be resolved relative to
+    //     // this framework bundle URL. Fix this by providing an absolute URL.
+    //     if (typeof url === "string" && url.startsWith("./")) {
+    //         url = document.baseURI + url.substr(2);
+    //     }
+    //
+    //     return import(/* webpackIgnore: true */ url);
+    // });
 
     let nextAsyncCallId = 1; // Start at 1 because zero signals "no response needed"
     let nextJsObjectId = 1; // Start at 1 because zero is reserved for "window"
