@@ -1,6 +1,6 @@
 {
     "name": "dotnet-runtime",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "description": "JavaScript runtime for .NET",
     "keywords": ["csharp", "C#", "dotnet", "runtime", "WebAssembly", "interop", "UMD"],
     "repository": "https://github.com/Elringus/DotNetJS",
@@ -17,7 +17,7 @@
     "devDependencies": {
         "typescript": "^4.6.4",
         "@types/emscripten": "^1.39.6",
-        "dotnet-js-interop": "^6.0.10",
+        "dotnet-js-interop": "^6.0.11",
         "js-base64": "^3.7.2",
         "webpack": "^5.72.1",
         "webpack-cli": "^4.9.2",
