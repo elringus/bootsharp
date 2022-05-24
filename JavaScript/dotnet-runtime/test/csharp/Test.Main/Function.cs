@@ -7,14 +7,14 @@ namespace Test.Main;
 public static partial class Function
 {
     [JSInvokable]
-    public static string[] TestEchoFunction (string[] values) => EchoFunction(values);
+    public static string TestEchoFunction (string value) => EchoFunction(value);
 
     [JSFunction]
-    public static partial string[] EchoFunction (string[] values);
+    public static partial string EchoFunction (string value);
 
     [JSInvokable]
-    public static Task<string[]> TestAsyncEchoFunction (string[] values) => AsyncEchoFunction(values);
+    public static Task<string> TestAsyncEchoFunction (string value) => AsyncEchoFunction(value);
 
     [JSFunction]
-    public static partial Task<string[]> AsyncEchoFunction (string[] values);
+    public static partial Task<string> AsyncEchoFunction (string value);
 }

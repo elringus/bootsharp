@@ -22,16 +22,16 @@ describe("packed library", () => {
         assert.deepStrictEqual(await packed.Test.Main.JoinStringsAsync("c", "d"), "cd");
     });
     it("when function is not implemented error is thrown", async () => {
-        assert.throws(() => packed.Test.Main.TestEchoFunction([]), /.*JSException/);
-        await assert.rejects(() => packed.Test.Main.TestAsyncEchoFunction([]), /.*JSException/);
+        assert.throws(() => packed.Test.Main.TestEchoFunction(""), /.*JSException/);
+        await assert.rejects(() => packed.Test.Main.TestAsyncEchoFunction(""), /.*JSException/);
         assert.throws(() => packed.Test.Types.CountTotalSpeed(), /.*JSException/);
     });
     it("can implement functions declared in C#", async () => {
-        packed.Test.Main.EchoFunction = values => values;
-        packed.Test.Main.AsyncEchoFunction = async values => values;
+        packed.Test.Main.EchoFunction = value => value;
+        packed.Test.Main.AsyncEchoFunction = async value => value;
         packed.Test.Types.GetRegistry = () => ({ wheeled: [{ maxSpeed: 1 }], tracked: [{ maxSpeed: 2 }] });
-        assert.deepStrictEqual(packed.Test.Main.TestEchoFunction(["a", "b"]), ["a", "b"]);
-        assert.deepStrictEqual(await packed.Test.Main.TestAsyncEchoFunction(["c", "d"]), ["c", "d"]);
+        assert.deepStrictEqual(packed.Test.Main.TestEchoFunction("a"), "a");
+        assert.deepStrictEqual(await packed.Test.Main.TestAsyncEchoFunction("b"), "b");
         assert.deepStrictEqual(packed.Test.Types.CountTotalSpeed(), 3);
     });
     it("can subscribe to events declared in C#", async () => {
