@@ -17,4 +17,10 @@ public static partial class Function
 
     [JSFunction]
     public static partial Task<string> AsyncEchoFunction (string value);
+
+    [JSInvokable]
+    public static string[] TestArrayArgFunction (string[] values) => ArrayArgFunction(values);
+
+    [JSFunction]
+    public static partial string[] ArrayArgFunction (string[] values);
 }
