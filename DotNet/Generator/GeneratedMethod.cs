@@ -61,7 +61,7 @@ namespace Generator
             var args = $"\"dotnet.{assembly}.{syntax.Identifier}{(@event ? ".broadcast" : "")}\"";
             if (syntax.ParameterList.Parameters.Count == 0) return args;
             var ids = syntax.ParameterList.Parameters.Select(p => p.Identifier);
-            args += $", {string.Join(", ", ids)}";
+            args += $", new object[] {{ {string.Join(", ", ids)} }}";
             return args;
         }
     }
