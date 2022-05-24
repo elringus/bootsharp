@@ -49,6 +49,13 @@ describe("packed library", () => {
         packed.Test.Main.BroadcastEvent("bar");
         assert.deepStrictEqual(result, "foo");
     });
+    it("handles events with array args properly", () => {
+        let result = [];
+        const assigner = v => result = v;
+        packed.Test.Main.OnStringsBroadcast.subscribe(assigner);
+        packed.Test.Main.BroadcastStrings(["foo", "bar"]);
+        assert.deepStrictEqual(result, ["foo", "bar"]);
+    });
     it("still can interop via strings", async () => {
         assert.deepStrictEqual(packed.invoke("Test.Main", "JoinStrings", "a", "b"), "ab");
         assert.deepStrictEqual(await packed.invokeAsync("Test.Main", "JoinStringsAsync", "a", "b"), "ab");
