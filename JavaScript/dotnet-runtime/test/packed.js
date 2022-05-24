@@ -34,6 +34,10 @@ describe("packed library", () => {
         assert.deepStrictEqual(await packed.Test.Main.TestAsyncEchoFunction("b"), "b");
         assert.deepStrictEqual(packed.Test.Types.CountTotalSpeed(), 3);
     });
+    it("array args handled correctly", async () => {
+        packed.Test.Main.ArrayArgFunction = values => values;
+        assert.deepStrictEqual(packed.Test.Main.TestArrayArgFunction(["a", "b"]), ["a", "b"]);
+    });
     it("can subscribe to events declared in C#", async () => {
         let result = "";
         packed.Test.Main.OnEventBroadcast.subscribe(v => result = v);

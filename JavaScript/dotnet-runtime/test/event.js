@@ -43,4 +43,15 @@ describe("event", () => {
         evt.broadcast();
         assert.deepStrictEqual(result, 9);
     });
+    it("can broadcast multiple args", () => {
+        let resultA, resultB;
+        const evt = new Event();
+        evt.subscribe(function (a, b) {
+            resultA = a;
+            resultB = b;
+        });
+        evt.broadcast(["foo", "bar"], "nya");
+        assert.deepStrictEqual(resultA, ["foo", "bar"]);
+        assert.deepStrictEqual(resultB, "nya");
+    });
 });

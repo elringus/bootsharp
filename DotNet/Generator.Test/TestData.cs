@@ -30,7 +30,7 @@ public static partial class Foo
 namespace File.Scoped;
 public static partial class Foo
 {
-    private static partial Task BarAsync (string a, int b) => JS.InvokeAsync(""dotnet.File.Scoped.BarAsync"", a, b).AsTask();
+    private static partial Task BarAsync (string a, int b) => JS.InvokeAsync(""dotnet.File.Scoped.BarAsync"", new object[] { a, b }).AsTask();
 }"
         },
         new object[] {
@@ -65,8 +65,8 @@ namespace Classic
 {
 partial class Foo
 {
-    partial DateTime GetTime (DateTime time) => JS.Invoke<DateTime>(""dotnet.Classic.GetTime"", time);
-    partial ValueTask<DateTime> GetTimeAsync (DateTime time) => JS.InvokeAsync<DateTime>(""dotnet.Classic.GetTimeAsync"", time);
+    partial DateTime GetTime (DateTime time) => JS.Invoke<DateTime>(""dotnet.Classic.GetTime"", new object[] { time });
+    partial ValueTask<DateTime> GetTimeAsync (DateTime time) => JS.InvokeAsync<DateTime>(""dotnet.Classic.GetTimeAsync"", new object[] { time });
 }
 }"
         },
@@ -87,7 +87,7 @@ namespace Foo.Bar.Nya;
 namespace Foo.Bar.Nya;
 public partial class Nya
 {
-    private static partial void OnFun (Nya nya) => JS.Invoke(""dotnet.Nya.OnFun"", nya);
+    private static partial void OnFun (Nya nya) => JS.Invoke(""dotnet.Nya.OnFun"", new object[] { nya });
 }"
         }
     };
@@ -118,7 +118,7 @@ public static partial class Foo
 namespace Space;
 public static partial class Foo
 {
-    public static partial void OnBar (string a, int b) => JS.Invoke(""dotnet.Space.OnBar.broadcast"", a, b);
+    public static partial void OnBar (string a, int b) => JS.Invoke(""dotnet.Space.OnBar.broadcast"", new object[] { a, b });
 }"
         }
     };

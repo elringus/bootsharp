@@ -57,6 +57,12 @@ describe("interop", () => {
         invoke("InvokeJS", "invokeFromDotNet");
         assert(invoked);
     });
+    it("can invoke js function with array arg from dotnet", () => {
+        let result;
+        global.invokeFromDotNetWithArray = array => result = array;
+        invoke("InvokeJSWithArray", "invokeFromDotNetWithArray", ["foo", "bar"]);
+        assert.deepStrictEqual(result, ["foo", "bar"]);
+    });
     it("can invoke async js function from dotnet", async () => {
         let invoked = false;
         global.asyncInvokeFromDotNet = () => new Promise(r => setTimeout(r, 1)).then(() => invoked = true);
