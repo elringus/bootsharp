@@ -27,6 +27,9 @@ public static class Invokable
     public static void InvokeJS (string funcName) => JS.Invoke(funcName);
 
     [JSInvokable]
+    public static void InvokeJSWithArray (string funcName, string[] array) => JS.Invoke(funcName, new object[] { array });
+
+    [JSInvokable]
     public static Task InvokeAsyncJS (string funcName) => JS.InvokeAsync(funcName).AsTask();
 
     [JSInvokable]
