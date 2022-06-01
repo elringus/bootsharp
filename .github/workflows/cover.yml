@@ -24,6 +24,6 @@ jobs:
           dotnet publish test/csharp/Test.sln
           npm install -g codecov
           npm install -g nyc
-          nyc --reporter=lcov -x **/native -x **/bin -x **/dotnet-js-interop npm run test
+          nyc --reporter=lcov -x **/native -x **/bin -x ./src/dotnet-js-interop.ts npm run test
           cd ../..
           codecov
