@@ -1,8 +1,5 @@
 name: cover
 
-ignore:
-  - "**/dotnet-js-interop.ts"
-
 on:
   push:
     branches: [ main ]
@@ -12,6 +9,8 @@ on:
 jobs:
   cover:
     runs-on: ubuntu-latest
+    ignore:
+      - "**/dotnet-js-interop.ts"
     steps:
       - uses: actions/checkout@v2
       - name: setup dotnet
