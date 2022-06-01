@@ -16,8 +16,6 @@ jobs:
         with:
           dotnet-version: 6.0.x
       - name: cover
-        ignore:
-          - "**/dotnet-js-interop.ts"
         run: |
           dotnet test DotNet/DotNetJS.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
           cd JavaScript/dotnet-runtime
