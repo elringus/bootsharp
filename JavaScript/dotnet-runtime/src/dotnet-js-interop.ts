@@ -1,4 +1,5 @@
-﻿// Source: https://raw.githubusercontent.com/dotnet/aspnetcore/main/src/JSInterop/Microsoft.JSInterop.JS/src/src/Microsoft.JSInterop.ts
+﻿// Source: https://github.com/dotnet/aspnetcore/blob/main/src/JSInterop/Microsoft.JSInterop.JS/src/src/Microsoft.JSInterop.ts
+// Why: Microsoft is not planning to support any environment, except browser: https://github.com/dotnet/aspnetcore/issues/38208
 // Changes:
 // 1. Replaced `window` with `global` (webpack resolves to the correct global).
 // 2. Removed `import` statement at line #70 (causing warnings when repacking, eg in WebExtension sample).

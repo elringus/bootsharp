@@ -1,13 +1,6 @@
 {
     "name": "dotnet-runtime",
-    "version": "0.5.2",
-    "description": "JavaScript runtime for .NET",
-    "keywords": ["csharp", "C#", "dotnet", "runtime", "WebAssembly", "interop", "UMD"],
-    "repository": "https://github.com/Elringus/DotNetJS",
-    "license": "MIT",
-    "files": ["dist/*"],
-    "main": "dist/dotnet.js",
-    "types": "dist/dotnet.d.ts",
+    "private": true,
     "scripts": {
         "build": "webpack --mode production",
         "test": "mocha --exclude **/bench.js",
@@ -15,15 +8,14 @@
         "bench": "mocha test/bench.js --timeout 0"
     },
     "devDependencies": {
-        "typescript": "^4.6.4",
+        "typescript": "^4.7.2",
         "@types/emscripten": "^1.39.6",
-        "dotnet-js-interop": "^6.0.11",
         "js-base64": "^3.7.2",
         "webpack": "^5.72.1",
         "webpack-cli": "^4.9.2",
         "ts-loader": "^9.3.0",
         "mocha": "^10.0.0",
         "nyc": "^15.1.0",
-        "ws": "^8.6.0"
+        "ws": "^8.7.0"
     }
 }
