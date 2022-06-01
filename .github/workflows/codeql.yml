@@ -21,22 +21,22 @@ jobs:
       matrix:
         language: [ 'csharp', 'javascript' ]
     steps:
-    - name: checkout
-      uses: actions/checkout@v2
-    - name: setup dotnet
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 6.0.x
-    - name: initialize codeql
-      uses: github/codeql-action/init@v1
-      with:
-        languages: ${{ matrix.language }}
-    - name: build
-      run: |
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+      - name: initialize codeql
+        uses: github/codeql-action/init@v1
+        with:
+          languages: ${{ matrix.language }}
+      - name: build
+        run: |
           dotnet build DotNet/DotNetJS.sln
           cd JavaScript/dotnet-runtime
           npm ci
           npm run build
           dotnet publish test/csharp/Test.sln
-    - name: analyze
-      uses: github/codeql-action/analyze@v1
+      - name: analyze
+        uses: github/codeql-action/analyze@v1
