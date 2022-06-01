@@ -4,7 +4,7 @@
     "scripts": {
         "build": "webpack --mode production",
         "test": "mocha --exclude **/bench.js",
-        "cover": "nyc -x **/native -x **/bin -x ./src/dotnet-js-interop.ts npm run test",
+        "cover": "nyc -x **/native -x **/bin -x **/dotnet-js-interop.ts npm run test",
         "bench": "mocha test/bench.js --timeout 0"
     },
     "devDependencies": {
