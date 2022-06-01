@@ -1,6 +1,6 @@
 ﻿// Based on https://github.com/dotnet/aspnetcore/blob/release/6.0/src/Components/Web.JS/src/Platform/Mono/MonoPlatform.ts
 
-import { DotNet } from "dotnet-js-interop";
+import { DotNet } from "./dotnet-js-interop";
 import { assertHeapNotLocked, currentHeapLock } from "./heap-lock";
 import { wasm } from "./wasm";
 import { getBootStatus, BootStatus } from "./boot";
