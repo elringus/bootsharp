@@ -1,3 +1,2 @@
-coverage:
-  ignore:
-    "**/dotnet-js-interop.ts"
+ignore:
+  - "**/dotnet-js-interop.ts"
