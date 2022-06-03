@@ -28,7 +28,7 @@ public class SourceGeneratorTest
     {
         verifier.TestCode = source;
         var expectedText = SourceText.From(expected, Encoding.UTF8);
-        verifier.TestState.GeneratedSources.Add((typeof(SourceGenerator), "Functions0.cs", expectedText));
+        verifier.TestState.GeneratedSources.Add((typeof(SourceGenerator), "Functions0.g.cs", expectedText));
         await verifier.RunAsync();
     }
 
@@ -37,7 +37,7 @@ public class SourceGeneratorTest
     {
         verifier.TestCode = source;
         var expectedText = SourceText.From(expected, Encoding.UTF8);
-        verifier.TestState.GeneratedSources.Add((typeof(SourceGenerator), "Events0.cs", expectedText));
+        verifier.TestState.GeneratedSources.Add((typeof(SourceGenerator), "Events0.g.cs", expectedText));
         await verifier.RunAsync();
     }
 }
