@@ -18,13 +18,20 @@ namespace Generator
 
         public string EmitSource (Compilation compilation)
         {
-            return EmitImport() + WrapNamespace(EmitHeader() + EmitMethods(compilation) + EmitFooter());
+            return "#nullable enable\n" +
+                   EmitImport() +
+                   WrapNamespace(
+                       EmitHeader() +
+                       EmitMethods(compilation) +
+                       EmitFooter()
+                   );
         }
 
         private string EmitImport ()
         {
             var imports = syntax.SyntaxTree.GetRoot().DescendantNodesAndSelf().OfType<UsingDirectiveSyntax>();
-            return string.Join("\n", imports) + "\n";
+            var result = string.Join("\n", imports);
+            return string.IsNullOrEmpty(result) ? "" : result + "\n";
         }
 
         private string EmitHeader () => $"{syntax.Modifiers} class {syntax.Identifier}\n{{\n";
