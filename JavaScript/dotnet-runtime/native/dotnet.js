@@ -4083,7 +4083,7 @@ var Module = (function () {
                     this.isChromium = false;
                     if (globalThis.navigator) {
                         var nav = globalThis.navigator;
-                        if (nav.userAgentData && nav.userAgentData.brands) {this.isChromium = nav.userAgentData.brands.some(i => i.brand == "Chromium");} else if (globalThis.navigator.userAgent) {this.isChromium = nav.userAgent.includes("Chrome");}
+                        if (nav.userAgentData && nav.userAgentData.brands) {this.isChromium = nav.userAgentData.brands.some(i => i.brand == "Chromium");} else if ({}) {this.isChromium = nav.userAgent.includes("Chrome");}
                     }
                     this._empty_string = "";
                     this._empty_string_ptr = 0;

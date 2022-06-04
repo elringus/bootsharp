@@ -14,4 +14,5 @@ cp -f native/runtime/artifacts/bin/native/net6.0-Browser-Release-wasm/dotnet.was
 sed -i "s/require([^)]*./{}/g" native/dotnet.js
 sed -i "s/performance.now()/0/g" native/dotnet.js
 sed -i "s/console.debug(\"mono_wasm_runtime_ready.\+)/{}/g" native/dotnet.js
+sed -i "s/globalThis.navigator.userAgent/{}/g" native/dotnet.js
 read -r -p "Press Enter key to exit..."
