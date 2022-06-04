@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <PackageId>DotNetJS</PackageId>
-        <Version>0.13.6</Version>
+        <Version>0.13.7</Version>
         <Authors>Elringus</Authors>
         <PackageDescription>Compile C# project into single-file UMD JavaScript library.</PackageDescription>
         <RepositoryUrl>https://github.com/Elringus/DotNetJS</RepositoryUrl>
