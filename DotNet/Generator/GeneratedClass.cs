@@ -18,7 +18,7 @@ namespace Generator
 
         public string EmitSource (Compilation compilation)
         {
-            return "#nullable\n" +
+            return "#nullable enable\n" +
                    EmitImport() +
                    WrapNamespace(
                        EmitHeader() +

@@ -12,7 +12,7 @@ partial class Foo
     [JSFunction]
     partial void Bar ();
 }",
-            @"#nullable
+            @"#nullable enable
 partial class Foo
 {
     partial void Bar () => JS.Invoke(""dotnet.Bindings.Bar"");
@@ -26,7 +26,7 @@ public static partial class Foo
     [JSFunction]
     private static partial Task BarAsync (string a, int b);
 }",
-            @"#nullable
+            @"#nullable enable
 namespace File.Scoped;
 public static partial class Foo
 {
@@ -41,7 +41,7 @@ public static partial class Foo
     [JSFunction]
     private static partial Task<string?> BarAsync ();
 }",
-            @"#nullable
+            @"#nullable enable
 namespace File.Scoped;
 public static partial class Foo
 {
@@ -60,7 +60,7 @@ namespace Classic
         partial ValueTask<DateTime> GetTimeAsync (DateTime time);
     }
 }",
-            @"#nullable
+            @"#nullable enable
 namespace Classic
 {
 partial class Foo
@@ -83,7 +83,7 @@ namespace Foo.Bar.Nya;
         [JSFunction]
         private static partial void OnFun (Nya nya);
     }",
-            @"#nullable
+            @"#nullable enable
 using System;
 namespace Foo.Bar.Nya;
 public partial class Nya
@@ -101,7 +101,7 @@ partial class Foo
     [JSEvent]
     partial void OnBar ();
 }",
-            @"#nullable
+            @"#nullable enable
 partial class Foo
 {
     partial void OnBar () => JS.Invoke(""dotnet.Bindings.OnBar.broadcast"");
@@ -115,7 +115,7 @@ public static partial class Foo
     [JSEvent]
     public static partial void OnBar (string a, int b);
 }",
-            @"#nullable
+            @"#nullable enable
 namespace Space;
 public static partial class Foo
 {
