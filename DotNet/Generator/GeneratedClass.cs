@@ -18,13 +18,21 @@ namespace Generator
 
         public string EmitSource (Compilation compilation)
         {
-            return "#nullable enable\n" +
-                   EmitImport() +
-                   WrapNamespace(
-                       EmitHeader() +
-                       EmitMethods(compilation) +
-                       EmitFooter()
-                   );
+            return WrapDefines(
+                EmitImport() +
+                WrapNamespace(
+                    EmitHeader() +
+                    EmitMethods(compilation) +
+                    EmitFooter()
+                )
+            );
+        }
+
+        private string WrapDefines (string source)
+        {
+            return "\n#nullable enable\n#pragma warning disable\n" +
+                   source +
+                   "\n#pragma warning restore\n#nullable restore\n";
         }
 
         private string EmitImport ()
