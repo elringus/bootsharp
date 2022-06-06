@@ -18,7 +18,7 @@ jobs:
       - name: cover
         run: |
           dotnet test DotNet/DotNetJS.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-          cd JavaScript/dotnet-runtime
+          cd JavaScript
           npm ci
           npm run build
           dotnet publish test/csharp/Test.sln

@@ -6,7 +6,7 @@
         <EmitSourceMap>true</EmitSourceMap>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>
-        <DotNetRoot>../../../../../DotNet</DotNetRoot>
+        <DotNetRoot>../../../../DotNet</DotNetRoot>
         <!--<RunAOTCompilation>true</RunAOTCompilation>-->
     </PropertyGroup>
 

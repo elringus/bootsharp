@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <DotNetRoot>../../../../../DotNet</DotNetRoot>
+        <DotNetRoot>../../../../DotNet</DotNetRoot>
     </PropertyGroup>
 
     <ItemGroup>
