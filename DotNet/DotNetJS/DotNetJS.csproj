@@ -22,8 +22,8 @@
         <None Update="build/**" Pack="true" PackagePath="%(Identity)"/>
         <None Include="../../README.md" Pack="true" PackagePath="/" Visible="false"/>
         <None Include="../Generator/bin/Release/netstandard2.0/Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
-        <Content Include="../../JavaScript/dotnet-runtime/native/dotnet.wasm" Pack="true" PackagePath="js/dotnet.wasm" Visible="false"/>
-        <Content Include="../../JavaScript/dotnet-runtime/dist/**" Pack="true" PackagePath="js/" Visible="false"/>
+        <Content Include="../../JavaScript/native/dotnet.wasm" Pack="true" PackagePath="js/dotnet.wasm" Visible="false"/>
+        <Content Include="../../JavaScript/dist/**" Pack="true" PackagePath="js/" Visible="false"/>
     </ItemGroup>
 
     <Target Name="GetTasksOutputDlls" BeforeTargets="CoreCompile">
