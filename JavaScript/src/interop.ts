@@ -177,6 +177,6 @@ function readHeapUint64(baseAddress, fieldOffset): number {
     return getValueU64((baseAddress as any as number) + fieldOffset);
 }
 
-function getArrayDataPointer<T>(array): number {
+function getArrayDataPointer(array): number {
     return <number><any>array + 12;
 }
