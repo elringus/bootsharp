@@ -81,4 +81,10 @@ internal static class TypeUtilities
                assemblyName.StartsWith("Microsoft.") ||
                assemblyName.StartsWith("TypeScriptModelsGenerator");
     }
+
+    public static string GetGenericNameWithoutArgs (Type type)
+    {
+        var delimiterIndex = type.Name.IndexOf('`');
+        return type.Name[..delimiterIndex];
+    }
 }

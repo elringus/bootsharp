@@ -14,9 +14,9 @@ internal class TypeDeclarationGenerator
     private readonly NamespaceBuilder spaceBuilder;
     private readonly TypeConverter converter;
 
-    private Type type => types[index];
-    private Type? prevType => index == 0 ? null : types[index - 1];
-    private Type? nextType => index == types.Length - 1 ? null : types[index + 1];
+    private Type type => GetTypeAt(index);
+    private Type? prevType => index == 0 ? null : GetTypeAt(index - 1);
+    private Type? nextType => index == types.Length - 1 ? null : GetTypeAt(index + 1);
 
     private Type[] types = null!;
     private int index;
@@ -33,6 +33,12 @@ internal class TypeDeclarationGenerator
         for (index = 0; index < types.Length; index++)
             DeclareType();
         return builder.ToString();
+    }
+
+    private Type GetTypeAt (int index)
+    {
+        var type = types[index];
+        return type.IsGenericType ? type.GetGenericTypeDefinition() : type;
     }
 
     private void DeclareType ()
@@ -69,7 +75,7 @@ internal class TypeDeclarationGenerator
 
     private void DeclareClass ()
     {
-        AppendLine($"export class {converter.ToTypeScript(type, withNamespace: false)}", 1);
+        AppendLine($"export class {BuildTypeName(type)}", 1);
         AppendBaseType();
         AppendInterfaces();
         builder.Append(" {");
@@ -79,7 +85,7 @@ internal class TypeDeclarationGenerator
 
     private void DeclareInterface ()
     {
-        AppendLine($"export interface {converter.ToTypeScript(type, withNamespace: false)}", 1);
+        AppendLine($"export interface {BuildTypeName(type)}", 1);
         AppendBaseType();
         AppendInterfaces();
         builder.Append(" {");
@@ -128,7 +134,7 @@ internal class TypeDeclarationGenerator
     {
         AppendLine(ToFirstLower(property.Name), 2);
         if (IsNullable(property)) builder.Append('?');
-        builder.Append($": {converter.ToTypeScript(property.PropertyType)};");
+        builder.Append($": {BuildPropertyType(property.PropertyType)};");
     }
 
     private void AppendLine (string content, int level)
@@ -142,5 +148,18 @@ internal class TypeDeclarationGenerator
         for (int i = 0; i < level * 4; i++)
             builder.Append(' ');
         builder.Append(content);
+    }
+
+    private string BuildTypeName (Type type)
+    {
+        if (!type.IsGenericType) return type.Name;
+        var args = string.Join(", ", type.GetGenericArguments().Select(a => a.Name));
+        return $"{GetGenericNameWithoutArgs(type)}<{args}>";
+    }
+
+    private string BuildPropertyType (Type type)
+    {
+        if (type.IsGenericTypeParameter) return type.Name;
+        return converter.ToTypeScript(type);
     }
 }
