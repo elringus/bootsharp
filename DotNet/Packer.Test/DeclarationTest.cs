@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using Xunit;
@@ -288,6 +288,17 @@ public class DeclarationTest : ContentTest
         Matches(@"export interface Item {\s*}");
         Matches(@"export class Container {\s*items: Array<n.Item>;\s*}");
         Contains("Combine(items: Array<n.Item>): n.Container");
+    }
+
+    [Fact]
+    public void DefinitionIsGeneratedForSimpleGenericType ()
+    {
+        AddAssembly(
+            With("n", "public class GenericType<T> { public T Value { get; set; } }"),
+            With("n", "[JSInvokable] public static void Method (GenericType<string> p) { }"));
+        Task.Execute();
+        Matches(@"export class GenericType<T> {\s*value: T;\s*}");
+        Contains("Method(p: n.GenericType<string>): void");
     }
 
     [Fact]

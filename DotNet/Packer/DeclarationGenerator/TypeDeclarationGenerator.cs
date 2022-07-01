@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -69,7 +69,7 @@ internal class TypeDeclarationGenerator
 
     private void DeclareClass ()
     {
-        AppendLine($"export class {type.Name}", 1);
+        AppendLine($"export class {converter.ToTypeScript(type, withNamespace: false)}", 1);
         AppendBaseType();
         AppendInterfaces();
         builder.Append(" {");
@@ -79,7 +79,7 @@ internal class TypeDeclarationGenerator
 
     private void DeclareInterface ()
     {
-        AppendLine($"export interface {type.Name}", 1);
+        AppendLine($"export interface {converter.ToTypeScript(type, withNamespace: false)}", 1);
         AppendBaseType();
         AppendInterfaces();
         builder.Append(" {");
