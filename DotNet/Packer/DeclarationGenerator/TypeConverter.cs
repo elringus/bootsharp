@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using static Packer.TypeUtilities;
@@ -15,9 +15,12 @@ internal class TypeConverter
         this.spaceBuilder = spaceBuilder;
     }
 
-    public string ToTypeScript (Type type)
+    public string ToTypeScript(Type type) => ToTypeScript(type, true);
+
+    public string ToTypeScript (Type type, bool withNamespace)
     {
-        if (ShouldConvertToObject(type)) return ConvertToObject(type);
+        if (type.IsGenericParameter) return type.Name;
+        if (ShouldConvertToObject(type)) return ConvertToObject(type, withNamespace);
         return ConvertToSimple(type);
     }
 
@@ -27,15 +30,34 @@ internal class TypeConverter
     {
         type = GetUnderlyingType(type);
         return (Type.GetTypeCode(type) == TypeCode.Object || type.IsEnum) &&
+               !type.IsGenericTypeParameter &&
                !ShouldIgnoreAssembly(type.Assembly.FullName!);
     }
 
-    private string ConvertToObject (Type type)
+    private string ConvertToObject (Type type, bool withNamespace)
     {
-        if (IsArray(type)) return $"Array<{ConvertToObject(GetArrayElementType(type))}>";
-        if (IsNullable(type)) return ConvertToObject(GetNullableUnderlyingType(type));
+        if (IsArray(type)) return $"Array<{ConvertToObject(GetArrayElementType(type), withNamespace)}>";
+        if (IsNullable(type)) return ConvertToObject(GetNullableUnderlyingType(type), withNamespace);
+
         CrawlObjectType(type);
-        return $"{spaceBuilder.Build(type)}.{type.Name}";
+
+        string typeName = type.IsGenericType
+            ? ConvertGenericType(type)
+            : type.Name;
+        
+        return withNamespace
+            ? $"{spaceBuilder.Build(type)}.{typeName}"
+            : typeName;
+    }
+
+    public string ConvertGenericType (Type type)
+    {
+        CrawlObjectType(type);
+
+        var genericTypeName = type.Name.Substring(0, type.Name.IndexOf("`"));
+        var genericTypeArguments = string.Join(", ", type.GetGenericArguments().Select(ToTypeScript));
+        
+        return $"{genericTypeName}<{genericTypeArguments}>";
     }
 
     private string ConvertToSimple (Type type)
@@ -81,7 +103,24 @@ internal class TypeConverter
     private void CrawlObjectType (Type type)
     {
         type = GetUnderlyingType(type);
-        if (!objectTypes.Add(type)) return;
+
+        if (!type.IsGenericType || type.IsGenericTypeDefinition)
+        {
+            if (!objectTypes.Add(type)) return;
+        }
+        else
+        {
+            // don't add GenericType<string>, only its definition GenericType<T>
+            foreach (var argument in type.GenericTypeArguments)
+            {
+                if (ShouldConvertToObject(argument))
+                    CrawlObjectType(argument);
+            }
+
+            var definition = type.GetGenericTypeDefinition();
+            CrawlObjectType(definition);
+        }
+
         CrawlProperties(type);
         CrawlBaseType(type);
     }
