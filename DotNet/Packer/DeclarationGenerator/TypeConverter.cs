@@ -30,6 +30,7 @@ internal class TypeConverter
     {
         type = GetUnderlyingType(type);
         return (Type.GetTypeCode(type) == TypeCode.Object || type.IsEnum) &&
+               !type.IsGenericTypeParameter &&
                !ShouldIgnoreAssembly(type.Assembly.FullName!);
     }
 
@@ -103,8 +104,13 @@ internal class TypeConverter
     {
         type = GetUnderlyingType(type);
 
-        if (type.IsGenericType && !type.IsGenericTypeDefinition)
+        if (!type.IsGenericType || type.IsGenericTypeDefinition)
         {
+            if (!objectTypes.Add(type)) return;
+        }
+        else
+        {
+            // don't add GenericType<string>, only its definition GenericType<T>
             foreach (var argument in type.GenericTypeArguments)
             {
                 if (ShouldConvertToObject(argument))
@@ -112,11 +118,8 @@ internal class TypeConverter
             }
 
             var definition = type.GetGenericTypeDefinition();
-            if (ShouldConvertToObject(definition))
-                CrawlObjectType(definition);
+            CrawlObjectType(definition);
         }
-
-        if (!objectTypes.Add(type)) return;
 
         CrawlProperties(type);
         CrawlBaseType(type);

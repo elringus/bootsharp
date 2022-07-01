@@ -291,14 +291,49 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForSimpleGenericType ()
+    public void DefinitionIsGeneratedForGenericClass ()
     {
         AddAssembly(
-            With("n", "public class GenericType<T> { public T Value { get; set; } }"),
-            With("n", "[JSInvokable] public static void Method (GenericType<string> p) { }"));
+            With("n", "public class GenericClass<T> { public T Value { get; set; } }"),
+            With("n", "[JSInvokable] public static void Method (GenericClass<string> p) { }"));
         Task.Execute();
-        Matches(@"export class GenericType<T> {\s*value: T;\s*}");
-        Contains("Method(p: n.GenericType<string>): void");
+        Matches(@"export class GenericClass<T> {\s*value: T;\s*}");
+        Contains("Method(p: n.GenericClass<string>): void");
+    }
+
+    [Fact]
+    public void DefinitionIsGeneratedForGenericInterface()
+    {
+        AddAssembly(
+            With("n", "public interface GenericInterface<T> { public T Value { get; set; } }"),
+            With("n", "[JSInvokable] public static GenericInterface<string> Method () => default;"));
+        Task.Execute();
+        Matches(@"export interface GenericInterface<T> {\s*value: T;\s*}");
+        Contains("Method(): n.GenericInterface<string>");
+    }
+
+    [Fact]
+    public void DefinitionIsGeneratedForNestedGenericTypes()
+    {
+        AddAssembly(
+            With("Foo", "public class GenericClass<T> { public T Value { get; set; } }", false),
+            With("Bar", "public interface GenericInterface<T> { public T Value { get; set; } }", false),
+            With("n", "[JSInvokable] public static void Method (Foo.GenericClass<Bar.GenericInterface<string>> p) { }"));
+        Task.Execute();
+        Matches(@"export namespace Foo {\s*export class GenericClass<T> {\s*value: T;\s*}\s*}");
+        Matches(@"export namespace Bar {\s*export interface GenericInterface<T> {\s*value: T;\s*}\s*}");
+        Contains("Method(p: Foo.GenericClass<Bar.GenericInterface<string>>): void");
+    }
+
+    [Fact]
+    public void DefinitionIsGeneratedForGenericClassWithMultipleTypeArguments()
+    {
+        AddAssembly(
+            With("n", "public class GenericClass<T1, T2> { public T1 Key { get; set; } public T2 Value { get; set; } }"),
+            With("n", "[JSInvokable] public static void Method (GenericClass<string, int> p) { }"));
+        Task.Execute();
+        Matches(@"export class GenericClass<T1, T2> {\s*key: T1;\s*value: T2;\s*}");
+        Contains("Method(p: n.GenericClass<string, number>): void");
     }
 
     [Fact]
