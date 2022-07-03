@@ -164,6 +164,8 @@ When embedding is disabled, you will probably want to preserve build artifacts a
 </PropertyGroup>
 ```
 
+For more info and example see: https://github.com/Elringus/DotNetJS/pull/49
+
 ## Namespace Pattern
 
 By default, all the generated JavaScript binding objects and TypeScript declarations are grouped under corresponding C# namespaces.
