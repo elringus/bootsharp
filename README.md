@@ -113,6 +113,8 @@ Find the following sample projects in this repository:
 - [Web Extension](https://github.com/Elringus/DotNetJS/tree/main/Samples/WebExtension) — Consume the library in VS Code web extension, which works in both web and standalone versions of the IDE.
 - [Runtime Tests](https://github.com/Elringus/DotNetJS/tree/main/JavaScript/test) — Integration tests featuring various usage scenarios: async method invocations, interop with instances, sending raw byte arrays, streaming, etc.
 
+A real-life usage of the solution can be found in https://github.com/Naninovel/Language. The project is an implementation of language server protocol that is used in VS Code extension: https://github.com/Naninovel/VSCode.
+
 ## Events
 
 To make a C# method act as event broadcaster for JavaScript consumers, annotate it with `[JSEvent]` attribute:
