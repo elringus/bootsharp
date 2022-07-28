@@ -4398,6 +4398,7 @@ var Module = (function () {
                         case typeof js_obj === "undefined":
                             return 0;
                         case typeof js_obj === "number": {
+							var result;
                             if ((js_obj | 0) === js_obj) result = this._box_js_int(js_obj); else if (js_obj >>> 0 === js_obj) result = this._box_js_uint(js_obj); else result = this._box_js_double(js_obj);
                             if (!result) throw new Error(`Boxing failed for ${js_obj}`);
                             return result;
@@ -4739,6 +4740,7 @@ var Module = (function () {
                     this._teardown_after_call(converter, buffer, resultRoot, exceptionRoot, argsRootBuffer);
                     throw exc;
                 }, _handle_exception_and_produce_result_for_call: function (converter, buffer, resultRoot, exceptionRoot, argsRootBuffer, is_result_marshaled) {
+					var result;
                     this._handle_exception_for_call(converter, buffer, resultRoot, exceptionRoot, argsRootBuffer);
                     if (is_result_marshaled) result = this._unbox_mono_obj_root(resultRoot); else result = resultRoot.value;
                     this._teardown_after_call(converter, buffer, resultRoot, exceptionRoot, argsRootBuffer);
@@ -4778,6 +4780,8 @@ var Module = (function () {
                     } else {body.push("var argsRootBuffer = null, buffer = 0;");}
                     if (converter.is_result_definitely_unmarshaled) {body.push("var is_result_marshaled = false;");} else if (converter.is_result_possibly_unmarshaled) {body.push(`var is_result_marshaled = arguments.length !== ${converter.result_unmarshaled_if_argc};`);} else {body.push("var is_result_marshaled = true;");}
                     body.push("", "resultRoot.value = binding_support.invoke_method (method, this_arg, buffer, exceptionRoot.get_address ());", `binding_support._handle_exception_for_call (${converterKey}, buffer, resultRoot, exceptionRoot, argsRootBuffer);`, "", "var result = undefined;", "if (!is_result_marshaled) ", "    result = resultRoot.value;", "else if (resultRoot.value !== 0) {", "    var resultType = binding_support.mono_wasm_try_unbox_primitive_and_get_type (resultRoot.value, buffer);", "    switch (resultType) {", "    case 1:", "        result = Module.HEAP32[buffer / 4]; break;", "    case 25:", "        result = Module.HEAPU32[buffer / 4]; break;", "    case 24:", "        result = Module.HEAPF32[buffer / 4]; break;", "    case 2:", "        result = Module.HEAPF64[buffer / 8]; break;", "    case 8:", "        result = (Module.HEAP32[buffer / 4]) !== 0; break;", "    case 28:", "        result = String.fromCharCode(Module.HEAP32[buffer / 4]); break;", "    default:", "        result = binding_support._unbox_mono_obj_root_with_known_nonprimitive_type (resultRoot, resultType); break;", "    }", "}", "", `binding_support._teardown_after_call (${converterKey}, buffer, resultRoot, exceptionRoot, argsRootBuffer);`, "return result;");
+							   
+					var bodyJs;
                     bodyJs = body.join("\r\n");
                     if (friendly_name) {
                         var escapeRE = /[^A-Za-z0-9_]/g;
