@@ -32,6 +32,7 @@ internal class TypeConverter
 
     private string ConvertToObject (Type type)
     {
+        if (IsDictionary(type) && GetDictionaryElementType(type) is var types) return $"Map<{ToTypeScript(types.KeyType)}, {ToTypeScript(types.ValueType)}>";
         if (IsArray(type)) return $"Array<{ConvertToObject(GetArrayElementType(type))}>";
         if (IsNullable(type)) return ConvertToObject(GetNullableUnderlyingType(type));
         CrawlObjectType(type);
@@ -41,6 +42,7 @@ internal class TypeConverter
 
     private string ConvertToSimple (Type type)
     {
+        if (IsDictionary(type) && GetDictionaryElementType(type) is var types) return $"Map<{ToTypeScript(types.KeyType)}, {ToTypeScript(types.ValueType)}>";
         if (type.Name == "Void") return "void";
         if (IsArray(type)) return ToArray(type);
         if (IsAwaitable(type)) return ToPromise(type);
@@ -111,6 +113,7 @@ internal class TypeConverter
     private Type GetUnderlyingType (Type type)
     {
         if (IsNullable(type)) return GetNullableUnderlyingType(type);
+        if (IsDictionary(type)) return type;
         if (IsArray(type)) return GetArrayElementType(type);
         return type;
     }

@@ -291,6 +291,45 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void DefinitionIsGeneratedForTypeWithReadOnlyListProperty ()
+    {
+        AddAssembly(
+            With("n", "public interface Item { }"),
+            With("n", "public class Container { public IReadOnlyList<Item> Items { get; } }"),
+            With("n", "[JSInvokable] public static Container Combine (IReadOnlyList<Item> items) => default;"));
+        Task.Execute();
+        Matches(@"export interface Item {\s*}");
+        Matches(@"export class Container {\s*items: Array<n.Item>;\s*}");
+        Contains("Combine(items: Array<n.Item>): n.Container");
+    }
+
+    [Fact]
+    public void DefinitionIsGeneratedForTypeWithDictionaryProperty ()
+    {
+        AddAssembly(
+            With("n", "public interface Item { }"),
+            With("n", "public class Container { public Dictionary<string, Item> Items { get; } }"),
+            With("n", "[JSInvokable] public static Container Combine (Dictionary<string, Item> items) => default;"));
+        Task.Execute();
+        Matches(@"export interface Item {\s*}");
+        Matches(@"export class Container {\s*items: Map<string, n.Item>;\s*}");
+        Contains("Combine(items: Map<string, n.Item>): n.Container");
+    }
+
+    [Fact]
+    public void DefinitionIsGeneratedForTypeWithReadOnlyDictionaryProperty ()
+    {
+        AddAssembly(
+            With("n", "public interface Item { }"),
+            With("n", "public class Container { public IReadOnlyDictionary<string, Item> Items { get; } }"),
+            With("n", "[JSInvokable] public static Container Combine (IReadOnlyDictionary<string, Item> items) => default;"));
+        Task.Execute();
+        Matches(@"export interface Item {\s*}");
+        Matches(@"export class Container {\s*items: Map<string, n.Item>;\s*}");
+        Contains("Combine(items: Map<string, n.Item>): n.Container");
+    }
+
+    [Fact]
     public void DefinitionIsGeneratedForGenericClass ()
     {
         AddAssembly(

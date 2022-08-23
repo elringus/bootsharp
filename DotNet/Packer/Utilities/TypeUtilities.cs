@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -13,10 +14,53 @@ internal static class TypeUtilities
         return type.GetMethod(nameof(Task.GetAwaiter)) != null;
     }
 
+    public static bool IsDictionaryType(Type type)
+    {
+        if (type.IsGenericType)
+        {
+            var genericTypeDefinition = type.GetGenericTypeDefinition();
+            return genericTypeDefinition.FullName == typeof(IDictionary<,>).FullName || genericTypeDefinition.FullName == typeof(IReadOnlyDictionary<,>).FullName;
+        }
+
+        return false; // Do not support non-generics as we don't have any type info
+    }
+
+    public static bool IsDictionary (Type type)
+    {
+        return type.IsGenericType && type.GetInterfaces().Concat(new[] { type }).Any(IsDictionaryType);
+    }
+
+    public static bool IsCollectionType(Type type)
+    {
+        if (type.IsGenericType)
+        {
+            var genericTypeDefinition = type.GetGenericTypeDefinition();
+            return genericTypeDefinition.FullName == typeof(IList<>).FullName || genericTypeDefinition.FullName == typeof(IReadOnlyList<>).FullName;
+        }
+
+        return false; // Do not support non-generics as we don't have any type info
+    }
+
     public static bool IsArray (Type type)
     {
         return type.IsArray ||
-               type.IsGenericType && type.GetInterfaces().Any(i => i.Name == "IList");
+               type.IsGenericType && type.GetInterfaces().Concat(new[] { type }).Any(IsCollectionType);
+    }
+
+    public static (Type KeyType, Type ValueType) GetDictionaryElementType (Type dictionaryType)
+    {
+        var type = dictionaryType.GetInterfaces().Concat(new[] { dictionaryType }).First(x =>
+        {
+            if (x.IsGenericType)
+            {
+                var genericTypeDefinition = x.GetGenericTypeDefinition();
+                return genericTypeDefinition.FullName == typeof(IDictionary<,>).FullName || genericTypeDefinition.FullName == typeof(IReadOnlyDictionary<,>).FullName;
+            }
+
+            return false; // Do not support non-generics as we don't have any type info
+        });
+        var args = type.GetGenericArguments();
+        return (args[0], args[1]);
     }
 
     public static Type GetArrayElementType (Type arrayType)
