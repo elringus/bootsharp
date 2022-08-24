@@ -341,7 +341,7 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForGenericInterface()
+    public void DefinitionIsGeneratedForGenericInterface ()
     {
         AddAssembly(
             With("n", "public interface GenericInterface<T> { public T Value { get; set; } }"),
@@ -352,7 +352,7 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForNestedGenericTypes()
+    public void DefinitionIsGeneratedForNestedGenericTypes ()
     {
         AddAssembly(
             With("Foo", "public class GenericClass<T> { public T Value { get; set; } }", false),
@@ -365,7 +365,7 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForGenericClassWithMultipleTypeArguments()
+    public void DefinitionIsGeneratedForGenericClassWithMultipleTypeArguments ()
     {
         AddAssembly(
             With("n", "public class GenericClass<T1, T2> { public T1 Key { get; set; } public T2 Value { get; set; } }"),
