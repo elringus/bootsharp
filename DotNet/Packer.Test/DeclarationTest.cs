@@ -291,6 +291,45 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void DefinitionIsGeneratedForTypeWithReadOnlyListProperty ()
+    {
+        AddAssembly(
+            With("n", "public interface Item { }"),
+            With("n", "public class Container { public IReadOnlyList<Item> Items { get; } }"),
+            With("n", "[JSInvokable] public static Container Combine (IReadOnlyList<Item> items) => default;"));
+        Task.Execute();
+        Matches(@"export interface Item {\s*}");
+        Matches(@"export class Container {\s*items: Array<n.Item>;\s*}");
+        Contains("Combine(items: Array<n.Item>): n.Container");
+    }
+
+    [Fact]
+    public void DefinitionIsGeneratedForTypeWithDictionaryProperty ()
+    {
+        AddAssembly(
+            With("n", "public interface Item { }"),
+            With("n", "public class Container { public Dictionary<string, Item> Items { get; } }"),
+            With("n", "[JSInvokable] public static Container Combine (Dictionary<string, Item> items) => default;"));
+        Task.Execute();
+        Matches(@"export interface Item {\s*}");
+        Matches(@"export class Container {\s*items: Map<string, n.Item>;\s*}");
+        Contains("Combine(items: Map<string, n.Item>): n.Container");
+    }
+
+    [Fact]
+    public void DefinitionIsGeneratedForTypeWithReadOnlyDictionaryProperty ()
+    {
+        AddAssembly(
+            With("n", "public interface Item { }"),
+            With("n", "public class Container { public IReadOnlyDictionary<string, Item> Items { get; } }"),
+            With("n", "[JSInvokable] public static Container Combine (IReadOnlyDictionary<string, Item> items) => default;"));
+        Task.Execute();
+        Matches(@"export interface Item {\s*}");
+        Matches(@"export class Container {\s*items: Map<string, n.Item>;\s*}");
+        Contains("Combine(items: Map<string, n.Item>): n.Container");
+    }
+
+    [Fact]
     public void DefinitionIsGeneratedForGenericClass ()
     {
         AddAssembly(
@@ -302,7 +341,7 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForGenericInterface()
+    public void DefinitionIsGeneratedForGenericInterface ()
     {
         AddAssembly(
             With("n", "public interface GenericInterface<T> { public T Value { get; set; } }"),
@@ -313,7 +352,7 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForNestedGenericTypes()
+    public void DefinitionIsGeneratedForNestedGenericTypes ()
     {
         AddAssembly(
             With("Foo", "public class GenericClass<T> { public T Value { get; set; } }", false),
@@ -326,7 +365,7 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForGenericClassWithMultipleTypeArguments()
+    public void DefinitionIsGeneratedForGenericClassWithMultipleTypeArguments ()
     {
         AddAssembly(
             With("n", "public class GenericClass<T1, T2> { public T1 Key { get; set; } public T2 Value { get; set; } }"),

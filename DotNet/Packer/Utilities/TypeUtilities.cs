@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Packer;
@@ -15,8 +17,20 @@ internal static class TypeUtilities
 
     public static bool IsArray (Type type)
     {
-        return type.IsArray ||
-               type.IsGenericType && type.GetInterfaces().Any(i => i.Name == "IList");
+        return type.IsArray || IsList(type) || type.GetInterfaces().Any(IsList);
+
+        bool IsList (Type type) => type.IsGenericType &&
+                                   (type.GetGenericTypeDefinition().FullName == typeof(IList<>).FullName ||
+                                    type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyList<>).FullName);
+    }
+
+    public static bool IsDictionary (Type type)
+    {
+        return IsDict(type) || type.GetInterfaces().Any(IsDict);
+
+        bool IsDict (Type type) => type.IsGenericType &&
+                                   (type.GetGenericTypeDefinition().FullName == typeof(IDictionary<,>).FullName ||
+                                    type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyDictionary<,>).FullName);
     }
 
     public static Type GetArrayElementType (Type arrayType)
@@ -69,7 +83,10 @@ internal static class TypeUtilities
 
     public static MetadataLoadContext CreateLoadContext (string directory)
     {
-        var assemblyPaths = Directory.GetFiles(directory, "*.dll");
+        var assemblyPaths = Directory.GetFiles(RuntimeEnvironment.GetRuntimeDirectory(), "*.dll").ToList();
+        foreach (var path in Directory.GetFiles(directory, "*.dll"))
+            if (assemblyPaths.All(p => Path.GetFileName(p) != Path.GetFileName(path)))
+                assemblyPaths.Add(path);
         var resolver = new PathAssemblyResolver(assemblyPaths);
         return new MetadataLoadContext(resolver);
     }

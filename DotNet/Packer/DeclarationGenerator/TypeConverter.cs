@@ -17,6 +17,9 @@ internal class TypeConverter
 
     public string ToTypeScript (Type type)
     {
+        if (IsDictionary(type)) return $"Map<{ToTypeScript(type.GenericTypeArguments[0])}, {ToTypeScript(type.GenericTypeArguments[1])}>";
+        if (IsNullable(type)) return ToTypeScript(GetNullableUnderlyingType(type));
+        if (IsAwaitable(type)) return ToPromise(type);
         if (ShouldConvertToObject(type)) return ConvertToObject(type);
         return ConvertToSimple(type);
     }
@@ -33,7 +36,6 @@ internal class TypeConverter
     private string ConvertToObject (Type type)
     {
         if (IsArray(type)) return $"Array<{ConvertToObject(GetArrayElementType(type))}>";
-        if (IsNullable(type)) return ConvertToObject(GetNullableUnderlyingType(type));
         CrawlObjectType(type);
         var name = type.IsGenericType ? ToGeneric(type) : type.Name;
         return $"{spaceBuilder.Build(type)}.{name}";
@@ -42,9 +44,7 @@ internal class TypeConverter
     private string ConvertToSimple (Type type)
     {
         if (type.Name == "Void") return "void";
-        if (IsArray(type)) return ToArray(type);
-        if (IsAwaitable(type)) return ToPromise(type);
-        if (IsNullable(type)) return ConvertToSimple(GetNullableUnderlyingType(type));
+        if (IsArray(type)) return ToSimpleArray(type);
         return ConvertTypeCode(Type.GetTypeCode(type));
     }
 
@@ -54,7 +54,7 @@ internal class TypeConverter
         return $"{GetGenericNameWithoutArgs(type)}<{args}>";
     }
 
-    private string ToArray (Type type)
+    private string ToSimpleArray (Type type)
     {
         var elementType = GetArrayElementType(type);
         return Type.GetTypeCode(elementType) switch {
