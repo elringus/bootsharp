@@ -28,7 +28,7 @@ jobs:
         with:
           dotnet-version: 6.0.x
       - name: initialize codeql
-        uses: github/codeql-action/init@v1
+        uses: github/codeql-action/init@v2
         with:
           languages: ${{ matrix.language }}
       - name: build
@@ -39,4 +39,4 @@ jobs:
           npm run build
           dotnet publish test/csharp/Test.sln
       - name: analyze
-        uses: github/codeql-action/analyze@v1
+        uses: github/codeql-action/analyze@v2
