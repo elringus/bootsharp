@@ -96,7 +96,7 @@ internal static class TypeUtilities
         var assemblyName = Path.GetFileName(assemblyPath);
         return assemblyName.StartsWith("System.") ||
                assemblyName.StartsWith("Microsoft.") ||
-               assemblyName.StartsWith("TypeScriptModelsGenerator");
+               assemblyName.StartsWith("netstandard");
     }
 
     public static string GetGenericNameWithoutArgs (Type type)
