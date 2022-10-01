@@ -143,30 +143,49 @@ In TypeScript the event will have typed generic declaration corresponding to the
 
 By default, DotNetJS build task will embed project's DLLs and .NET WASM runtime to the generated JS library. While convenient and even required in some cases (eg, for VS Code web extensions), this also adds about 30% of extra size due to binary->base64 conversion of the embedded files.
 
-To disable the embedding, set `EmbedBinaries` build property to false. You will then have to provide the required data when booting `dotnet.js`:
+To disable the embedding, set `EmbedBinaries` build property to false:
+
+```xml
+<PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <EmbedBinaries>false</EmbedBinaries>
+</PropertyGroup>
+```
+
+The `dotnet.wasm` and solution's assemblies will be emitted in the build output directory. You will then have to provide them when booting:
 
 ```js
 const bootData = {
-    wasm: {},
-    assemblies: [],
-    entryAssemblyName: "Project.dll"
+    wasm: <Uint8Array>,
+    assemblies: [ { name: "Foo.dll", data: <Uint8Array> } ],
+    entryAssemblyName: "Foo.dll"
 };
 await dotnet.boot(bootData);
 ```
 
 — this way the binary files can be streamed directly from server to optimize traffic and initial load time.
 
-When embedding is disabled, you will probably want to preserve build artifacts as well. Set `Clean` build property to false to prevent DotNetJS from wiping them:
+Use `getBootUris()` function to get identifiers of all the resources required for boot. Below is an example on fetching the boot data; it assumes both wasm and assemblies are stored under `/bin` directory on the remote server:
 
-```xml
-<PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <EmbedBinaries>false</EmbedBinaries>
-    <Clean>false</Clean>
-</PropertyGroup>
+```js
+async function fetchBootData() {
+    const uris = getBootUris();
+    return {
+        wasm: await fetchBinary(uris.wasm),
+        assemblies: await Promise.all(uris.assemblies.map(fetchAssembly)),
+        entryAssemblyName: uris.entryAssembly
+    };
+
+    async function fetchBinary(name: string) {
+        const uri = `${process.env.PUBLIC_URL}/bin/${name}`;
+        return new Uint8Array(await (await fetch(uri)).arrayBuffer());
+    }
+
+    async function fetchAssembly(name: string) {
+        return { name, data: await fetchBinary(name) };
+    }
+}
 ```
-
-For more info and example see: https://github.com/Elringus/DotNetJS/pull/49
 
 ## Namespace Pattern
 
