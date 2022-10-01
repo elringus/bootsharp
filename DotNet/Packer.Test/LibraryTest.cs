@@ -19,7 +19,7 @@ public class LibraryTest : ContentTest
         AddAssembly("Foo.dll");
         Task.EmbedBinaries = false;
         Task.Execute();
-        Contains("exports.bootUris = {");
+        Contains("exports.getBootUris = () => ({");
         Contains("wasm: \"dotnet.wasm\"");
         Contains("entryAssembly: \"Foo.dll\"");
         Contains("assemblies: [");

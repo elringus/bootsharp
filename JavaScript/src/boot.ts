@@ -3,6 +3,12 @@ import { initializeInterop } from "./interop";
 import { Assembly, initializeMono, callEntryPoint } from "./mono";
 import { Base64 } from "js-base64";
 
+export interface BootUris {
+    wasm: string;
+    assemblies: string[];
+    entryAssembly: string;
+}
+
 export interface BootData {
     wasm: Uint8Array | string;
     assemblies: Assembly[];
@@ -17,6 +23,10 @@ export enum BootStatus {
 }
 
 let bootStatus: BootStatus = BootStatus.Standby;
+
+export function getBootUris(): BootUris | undefined {
+    return undefined;
+}
 
 export function getBootStatus(): BootStatus {
     return bootStatus;

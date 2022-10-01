@@ -54,11 +54,11 @@ internal class LibraryGenerator
     {
         var assemblies = inspector.Assemblies.Select(a => $"\"{a.Name}\",");
         return JoinLines(1,
-            "exports.bootUris = {", JoinLines(2, true,
+            "exports.getBootUris = () => ({", JoinLines(2, true,
                 $"wasm: \"{wasmUri}\",",
                 $"entryAssembly: \"{entryAssemblyUri}\",",
                 "assemblies: [", JoinLines(assemblies, 3, true), "]"),
-            "};"
+            "});"
         );
     }
 
