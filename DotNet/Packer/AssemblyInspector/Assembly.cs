@@ -1,3 +1,3 @@
 ﻿namespace Packer;
 
-internal record Assembly(string Name, string Base64);
+internal record Assembly(string Name, byte[] Bytes);

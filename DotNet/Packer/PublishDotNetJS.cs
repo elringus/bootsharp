@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -7,7 +7,7 @@ namespace Packer;
 
 public class PublishDotNetJS : Task
 {
-    [Required] public string BaseDir { get; set; } = null!;
+    [Required] public string PublishDir { get; set; } = null!;
     [Required] public string BlazorOutDir { get; set; } = null!;
     [Required] public string JSDir { get; set; } = null!;
     [Required] public string WasmFile { get; set; } = null!;
@@ -17,45 +17,59 @@ public class PublishDotNetJS : Task
 
     public override bool Execute ()
     {
-        var (library, declaration) = GenerateSources();
-        if (Clean) CleanBaseDirectory();
-        PublishLibrary(library);
-        PublishDeclaration(declaration);
+        var sources = GenerateSources();
+        if (Clean) CleanPublishDirectory();
+        PublishLibrary(sources.Library);
+        PublishDeclaration(sources.Declaration);
         PublishSourceMap();
+        if (!EmbedBinaries) PublishBinaries(sources.Assemblies);
         return true;
     }
 
-    private (string library, string declaration) GenerateSources ()
+    private (IReadOnlyList<Assembly> Assemblies,
+        string Library, string Declaration) GenerateSources ()
     {
         var builder = CreateNamespaceBuilder();
         using var inspector = InspectAssemblies(builder);
-        return (GenerateLibrary(inspector, builder), GenerateDeclaration(inspector, builder));
+        return (inspector.Assemblies,
+            GenerateLibrary(inspector, builder),
+            GenerateDeclaration(inspector, builder));
     }
 
-    private void CleanBaseDirectory ()
+    private void CleanPublishDirectory ()
     {
-        Directory.Delete(BaseDir, true);
-        Directory.CreateDirectory(BaseDir);
+        Directory.Delete(PublishDir, true);
+        Directory.CreateDirectory(PublishDir);
     }
 
     private void PublishLibrary (string source)
     {
-        var path = Path.Combine(BaseDir, "dotnet.js");
+        var path = Path.Combine(PublishDir, "dotnet.js");
         File.WriteAllText(path, source);
         Log.LogMessage(MessageImportance.High, $"JavaScript UMD library is published at {path}.");
     }
 
     private void PublishDeclaration (string source)
     {
-        var file = Path.Combine(BaseDir, "dotnet.d.ts");
+        var file = Path.Combine(PublishDir, "dotnet.d.ts");
         File.WriteAllText(file, source);
     }
 
     private void PublishSourceMap ()
     {
         var source = Path.Combine(JSDir, "dotnet.js.map");
-        var destination = Path.Combine(BaseDir, "dotnet.js.map");
+        var destination = Path.Combine(PublishDir, "dotnet.js.map");
         File.Copy(source, destination, true);
+    }
+
+    private void PublishBinaries (IEnumerable<Assembly> assemblies)
+    {
+        var wasmPath = Path.Combine(PublishDir, Path.GetFileName(WasmFile));
+        var wasmBytes = File.ReadAllBytes(WasmFile);
+        File.WriteAllBytes(wasmPath, wasmBytes);
+        Directory.CreateDirectory(Path.Combine(PublishDir, "managed"));
+        foreach (var assembly in assemblies)
+            File.WriteAllBytes(Path.Combine(PublishDir, $"managed/{assembly.Name}"), assembly.Bytes);
     }
 
     private NamespaceBuilder CreateNamespaceBuilder ()
@@ -77,9 +91,9 @@ public class PublishDotNetJS : Task
     {
         var generator = new LibraryGenerator(spaceBuilder);
         var runtimeJS = File.ReadAllText(Path.Combine(JSDir, "dotnet.js"));
-        if (!EmbedBinaries) return generator.GenerateSideLoad(runtimeJS, inspector);
-        var wasm = Convert.ToBase64String(File.ReadAllBytes(WasmFile));
-        return generator.GenerateEmbedded(runtimeJS, wasm, EntryAssemblyName, inspector);
+        return EmbedBinaries
+            ? generator.GenerateEmbedded(runtimeJS, File.ReadAllBytes(WasmFile), EntryAssemblyName, inspector)
+            : generator.GenerateSideLoad(runtimeJS, Path.GetFileName(WasmFile), EntryAssemblyName, inspector);
     }
 
     private string GenerateDeclaration (AssemblyInspector inspector, NamespaceBuilder spaceBuilder)

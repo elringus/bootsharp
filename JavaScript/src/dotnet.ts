@@ -1,4 +1,4 @@
-﻿import { boot, getBootStatus, terminate, BootStatus, BootData } from "./boot";
+﻿import { boot, getBootUris, getBootStatus, terminate, BootStatus, BootData, BootUris } from "./boot";
 import { invoke, invokeAsync, createObjectReference, disposeObjectReference, createStreamReference } from "./interop";
 import { Assembly } from "./mono";
 import { Event } from "./event";
@@ -6,6 +6,7 @@ import { Event } from "./event";
 export const dotnet = {
     Event: Event,
     BootStatus: BootStatus,
+    getBootUris: getBootUris,
     getBootStatus: getBootStatus,
     boot: boot,
     terminate: terminate,
@@ -18,6 +19,7 @@ export const dotnet = {
 
 export {
     BootStatus,
+    BootUris,
     BootData,
     Assembly
 };

@@ -62,9 +62,7 @@ internal class AssemblyInspector : IDisposable
 
     private void InspectAssembly (string assemblyPath, MetadataLoadContext context)
     {
-        var name = Path.GetFileName(assemblyPath);
-        var base64 = ReadBase64(assemblyPath);
-        Assemblies.Add(new Assembly(name, base64));
+        Assemblies.Add(CreateAssembly(assemblyPath));
         if (!ShouldIgnoreAssembly(assemblyPath))
             InspectMethods(context.LoadFromAssemblyPath(assemblyPath));
     }
@@ -75,6 +73,13 @@ internal class AssemblyInspector : IDisposable
         var message = $"Failed to inspect '{assemblyName}' assembly; " +
                       $"affected methods won't be available in JavaScript. Error: {exception.Message}";
         warnings.Add(message);
+    }
+
+    private Assembly CreateAssembly (string assemblyPath)
+    {
+        var name = Path.GetFileName(assemblyPath);
+        var bytes = File.ReadAllBytes(assemblyPath);
+        return new(name, bytes);
     }
 
     private void InspectMethods (System.Reflection.Assembly assembly)
@@ -110,12 +115,6 @@ internal class AssemblyInspector : IDisposable
         Type = typeConverter.ToTypeScript(info.ParameterType),
         Nullable = IsNullable(info)
     };
-
-    private static string ReadBase64 (string filePath)
-    {
-        var bytes = File.ReadAllBytes(filePath);
-        return Convert.ToBase64String(bytes);
-    }
 
     private static IEnumerable<MethodInfo> GetStaticMethods (System.Reflection.Assembly assembly)
     {

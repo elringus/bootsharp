@@ -14,6 +14,20 @@ public class LibraryTest : ContentTest
     }
 
     [Fact]
+    public void WhenEmbedBinariesDisabledLibraryExportsBootUris ()
+    {
+        AddAssembly("Foo.dll");
+        Task.EmbedBinaries = false;
+        Task.Execute();
+        Contains("exports.getBootUris = () => ({");
+        Contains("wasm: \"dotnet.wasm\"");
+        Contains("entryAssembly: \"Foo.dll\"");
+        Contains("assemblies: [");
+        Contains("Foo.dll");
+        Contains("DotNetJS.dll");
+    }
+
+    [Fact]
     public void LibraryExportsNamespaceObject ()
     {
         AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));

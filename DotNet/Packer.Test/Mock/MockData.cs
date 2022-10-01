@@ -14,7 +14,7 @@ public sealed class MockData : IDisposable
     public const string JSFileContent = "(function(){})();";
     public const string MapFileContent = "{version:3,file:\"dotnet.js\"}";
 
-    public string BaseDir { get; }
+    public string PublishDir { get; }
     public string BlazorOutDir { get; }
     public string JSDir { get; }
     public string WasmFile { get; }
@@ -31,8 +31,8 @@ public sealed class MockData : IDisposable
 
     public MockData ()
     {
-        BaseDir = Path.Combine(root, "base");
-        BlazorOutDir = Path.Combine(BaseDir, "blazor");
+        PublishDir = Path.Combine(root, "publish");
+        BlazorOutDir = Path.Combine(PublishDir, "blazor");
         JSDir = Path.Combine(root, "js");
         WasmFile = Path.Combine(JSDir, "dotnet.wasm");
         JSFile = Path.Combine(JSDir, "dotnet.js");
@@ -52,12 +52,12 @@ public sealed class MockData : IDisposable
 
     private string ReadGeneratedFileText (string fileName)
     {
-        var filePath = Path.Combine(BaseDir, fileName);
+        var filePath = Path.Combine(PublishDir, fileName);
         return File.Exists(filePath) ? File.ReadAllText(filePath) : null;
     }
 
     private PublishDotNetJS CreateTask () => new() {
-        BaseDir = BaseDir,
+        PublishDir = PublishDir,
         BlazorOutDir = BlazorOutDir,
         JSDir = JSDir,
         WasmFile = WasmFile,
@@ -67,7 +67,7 @@ public sealed class MockData : IDisposable
 
     private void CreateBuildResources ()
     {
-        Directory.CreateDirectory(BaseDir);
+        Directory.CreateDirectory(PublishDir);
         Directory.CreateDirectory(BlazorOutDir);
         Directory.CreateDirectory(JSDir);
         File.WriteAllText(WasmFile, WasmFileContent);
