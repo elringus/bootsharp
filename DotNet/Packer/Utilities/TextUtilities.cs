@@ -8,21 +8,21 @@ internal static class TextUtilities
 {
     public static IEnumerable<string> SplitLines (string input)
     {
-        var line = default(string);
         using var reader = new StringReader(input);
-        while ((line = reader.ReadLine()) != null)
+        while (reader.ReadLine() is { } line)
             yield return line;
     }
 
-    public static string JoinLines (IEnumerable<string> values, int indent = 1)
+    public static string JoinLines (IEnumerable<string> values, int indent = 1, bool indentFirst = false)
     {
         var separator = "\n" + new string(' ', indent * 4);
-        return RemoveEmptyLines(string.Join(separator, values));
+        var result = RemoveEmptyLines(string.Join(separator, values));
+        return indentFirst ? separator + result : result;
     }
 
     public static string JoinLines (params string[] values) => JoinLines(values, 1);
-
     public static string JoinLines (int indent, params string[] values) => JoinLines(values, indent);
+    public static string JoinLines (int indent, bool indentFirst, params string[] values) => JoinLines(values, indent, indentFirst);
 
     public static string ToFirstLower (string value)
     {

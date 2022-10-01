@@ -4,15 +4,17 @@ internal class LibraryTemplate
 {
     public string RuntimeJS { get; init; } = null!;
     public string InitJS { get; init; } = null!;
+    public string? BootUris { get; init; }
+    public string? EmbedJS { get; init; }
 
-    public string Build (string? embedJS = null) => $@"{RuntimeJS}
+    public string Build () => $@"{RuntimeJS}
 (function (root, factory) {{
     if (typeof exports === 'object' && typeof exports.nodeName !== 'string')
         factory(module.exports, global);
     else factory(root.dotnet, root);
 }}(typeof self !== 'undefined' ? self : this, function (exports, global) {{
     {InitJS}
-    {embedJS ?? ""}
+    {EmbedJS ?? BootUris}
     global.dotnet = exports;
 }}));";
 }

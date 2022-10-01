@@ -3,11 +3,18 @@ import { invoke, invokeAsync, createObjectReference, disposeObjectReference, cre
 import { Assembly } from "./mono";
 import { Event } from "./event";
 
+export type BootUris = {
+    wasm: string;
+    entryAssembly: string;
+    assemblies: string[]
+}
+
 export const dotnet = {
     Event: Event,
     BootStatus: BootStatus,
     getBootStatus: getBootStatus,
     boot: boot,
+    bootUris: undefined as BootUris | undefined,
     terminate: terminate,
     invoke: invoke,
     invokeAsync: invokeAsync,

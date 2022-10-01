@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -23,18 +22,17 @@ public class PublishDotNetJS : Task
         PublishLibrary(sources.Library);
         PublishDeclaration(sources.Declaration);
         PublishSourceMap();
-        if (!EmbedBinaries) PublishBinaries(sources.WasmBytes, sources.Assemblies);
+        if (!EmbedBinaries) PublishBinaries(sources.Assemblies);
         return true;
     }
 
-    private (byte[] WasmBytes, IReadOnlyList<Assembly> Assemblies,
+    private (IReadOnlyList<Assembly> Assemblies,
         string Library, string Declaration) GenerateSources ()
     {
         var builder = CreateNamespaceBuilder();
-        var wasmBytes = File.ReadAllBytes(WasmFile);
         using var inspector = InspectAssemblies(builder);
-        return (wasmBytes, inspector.Assemblies,
-            GenerateLibrary(wasmBytes, inspector, builder),
+        return (inspector.Assemblies,
+            GenerateLibrary(inspector, builder),
             GenerateDeclaration(inspector, builder));
     }
 
@@ -64,9 +62,11 @@ public class PublishDotNetJS : Task
         File.Copy(source, destination, true);
     }
 
-    private void PublishBinaries (byte[] wasmBytes, IEnumerable<Assembly> assemblies)
+    private void PublishBinaries (IEnumerable<Assembly> assemblies)
     {
-        File.WriteAllBytes(Path.Combine(PublishDir, Path.GetFileName(WasmFile)), wasmBytes);
+        var wasmPath = Path.Combine(PublishDir, Path.GetFileName(WasmFile));
+        var wasmBytes = File.ReadAllBytes(WasmFile);
+        File.WriteAllBytes(wasmPath, wasmBytes);
         Directory.CreateDirectory(Path.Combine(PublishDir, "managed"));
         foreach (var assembly in assemblies)
             File.WriteAllBytes(Path.Combine(PublishDir, $"managed/{assembly.Name}"), assembly.Bytes);
@@ -87,13 +87,13 @@ public class PublishDotNetJS : Task
         return inspector;
     }
 
-    private string GenerateLibrary (byte[] wasmBytes, AssemblyInspector inspector, NamespaceBuilder spaceBuilder)
+    private string GenerateLibrary (AssemblyInspector inspector, NamespaceBuilder spaceBuilder)
     {
         var generator = new LibraryGenerator(spaceBuilder);
         var runtimeJS = File.ReadAllText(Path.Combine(JSDir, "dotnet.js"));
-        if (!EmbedBinaries) return generator.GenerateSideLoad(runtimeJS, inspector);
-        var wasm64 = Convert.ToBase64String(wasmBytes);
-        return generator.GenerateEmbedded(runtimeJS, wasm64, EntryAssemblyName, inspector);
+        return EmbedBinaries
+            ? generator.GenerateEmbedded(runtimeJS, File.ReadAllBytes(WasmFile), EntryAssemblyName, inspector)
+            : generator.GenerateSideLoad(runtimeJS, Path.GetFileName(WasmFile), EntryAssemblyName, inspector);
     }
 
     private string GenerateDeclaration (AssemblyInspector inspector, NamespaceBuilder spaceBuilder)

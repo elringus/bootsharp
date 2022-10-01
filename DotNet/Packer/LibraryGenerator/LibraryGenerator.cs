@@ -15,26 +15,29 @@ internal class LibraryGenerator
         this.spaceBuilder = spaceBuilder;
     }
 
-    public string GenerateSideLoad (string runtimeJS, AssemblyInspector inspector)
+    public string GenerateSideLoad (string runtimeJS, string wasmUri,
+        string entryAssemblyUri, AssemblyInspector inspector)
     {
         return new LibraryTemplate {
             InitJS = GenerateInitJS(inspector),
-            RuntimeJS = runtimeJS
+            RuntimeJS = runtimeJS,
+            BootUris = GenerateBootUris(wasmUri, entryAssemblyUri, inspector)
         }.Build();
     }
 
-    public string GenerateEmbedded (string runtimeJS, string runtimeWasm,
+    public string GenerateEmbedded (string runtimeJS, byte[] wasmBytes,
         string entryAssemblyName, AssemblyInspector inspector)
     {
         var embedJS = new EmbedTemplate {
-            RuntimeWasm = runtimeWasm,
+            RuntimeWasm = Convert.ToBase64String(wasmBytes),
             Assemblies = inspector.Assemblies,
             EntryAssemblyName = entryAssemblyName
         }.Build();
         return new LibraryTemplate {
             InitJS = GenerateInitJS(inspector),
-            RuntimeJS = runtimeJS
-        }.Build(embedJS);
+            RuntimeJS = runtimeJS,
+            EmbedJS = embedJS
+        }.Build();
     }
 
     private string GenerateInitJS (AssemblyInspector inspector)
@@ -44,6 +47,18 @@ internal class LibraryGenerator
             JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Function).Select(GenerateFunctionDeclaration)),
             JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Event).Select(GenerateEventDeclaration)),
             JoinLines(inspector.Types.Where(t => t.IsEnum).Select(GenerateEnumDeclaration))
+        );
+    }
+
+    private string GenerateBootUris (string wasmUri, string entryAssemblyUri, AssemblyInspector inspector)
+    {
+        var assemblies = inspector.Assemblies.Select(a => $"\"{a.Name}\",");
+        return JoinLines(1,
+            "exports.bootUris = {", JoinLines(2, true,
+                $"wasm: \"{wasmUri}\",",
+                $"entryAssembly: \"{entryAssemblyUri}\",",
+                "assemblies: [", JoinLines(assemblies, 3, true), "]"),
+            "};"
         );
     }
 
