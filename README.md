@@ -156,8 +156,8 @@ The `dotnet.wasm` and solution's assemblies will be emitted in the build output 
 
 ```js
 const bootData = {
-    wasm: <Uint8Array>,
-    assemblies: [ { name: "Foo.dll", data: <Uint8Array> } ],
+    wasm: Uint8Array,
+    assemblies: [ { name: "Foo.dll", data: Uint8Array } ],
     entryAssemblyName: "Foo.dll"
 };
 await dotnet.boot(bootData);
