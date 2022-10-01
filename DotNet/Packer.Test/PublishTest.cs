@@ -42,18 +42,18 @@ public class PublishTest : BuildTest
     }
 
     [Fact]
-    public void BaseDirectoryCleanedByDefault ()
+    public void PublishDirectoryCleanedByDefault ()
     {
-        var filePath = Path.Combine(Data.BaseDir, "test");
+        var filePath = Path.Combine(Data.PublishDir, "test");
         File.WriteAllText(filePath, "");
         Task.Execute();
         Assert.False(File.Exists(filePath));
     }
 
     [Fact]
-    public void BaseDirectoryNotCleanedWhenRequested ()
+    public void PublishDirectoryNotCleanedWhenRequested ()
     {
-        var filePath = Path.Combine(Data.BaseDir, "test");
+        var filePath = Path.Combine(Data.PublishDir, "test");
         File.WriteAllText(filePath, "");
         Task.Clean = false;
         Task.Execute();

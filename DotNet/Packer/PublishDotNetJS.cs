@@ -7,7 +7,7 @@ namespace Packer;
 
 public class PublishDotNetJS : Task
 {
-    [Required] public string BaseDir { get; set; } = null!;
+    [Required] public string PublishDir { get; set; } = null!;
     [Required] public string BlazorOutDir { get; set; } = null!;
     [Required] public string JSDir { get; set; } = null!;
     [Required] public string WasmFile { get; set; } = null!;
@@ -18,7 +18,7 @@ public class PublishDotNetJS : Task
     public override bool Execute ()
     {
         var (library, declaration) = GenerateSources();
-        if (Clean) CleanBaseDirectory();
+        if (Clean) CleanPublishDirectory();
         PublishLibrary(library);
         PublishDeclaration(declaration);
         PublishSourceMap();
@@ -32,29 +32,29 @@ public class PublishDotNetJS : Task
         return (GenerateLibrary(inspector, builder), GenerateDeclaration(inspector, builder));
     }
 
-    private void CleanBaseDirectory ()
+    private void CleanPublishDirectory ()
     {
-        Directory.Delete(BaseDir, true);
-        Directory.CreateDirectory(BaseDir);
+        Directory.Delete(PublishDir, true);
+        Directory.CreateDirectory(PublishDir);
     }
 
     private void PublishLibrary (string source)
     {
-        var path = Path.Combine(BaseDir, "dotnet.js");
+        var path = Path.Combine(PublishDir, "dotnet.js");
         File.WriteAllText(path, source);
         Log.LogMessage(MessageImportance.High, $"JavaScript UMD library is published at {path}.");
     }
 
     private void PublishDeclaration (string source)
     {
-        var file = Path.Combine(BaseDir, "dotnet.d.ts");
+        var file = Path.Combine(PublishDir, "dotnet.d.ts");
         File.WriteAllText(file, source);
     }
 
     private void PublishSourceMap ()
     {
         var source = Path.Combine(JSDir, "dotnet.js.map");
-        var destination = Path.Combine(BaseDir, "dotnet.js.map");
+        var destination = Path.Combine(PublishDir, "dotnet.js.map");
         File.Copy(source, destination, true);
     }
 
