@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Packer;
@@ -22,6 +23,7 @@ internal class EmbedTemplate
 
     private static string EmbedAssembly (Assembly assembly)
     {
-        return $"{{ name: '{assembly.Name}', data: '{assembly.Base64}' }}";
+        var base64 = Convert.ToBase64String(assembly.Bytes);
+        return $"{{ name: '{assembly.Name}', data: '{base64}' }}";
     }
 }

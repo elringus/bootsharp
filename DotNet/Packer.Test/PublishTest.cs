@@ -42,6 +42,17 @@ public class PublishTest : BuildTest
     }
 
     [Fact]
+    public void AssembliesAndWasmArePublishedWhenEmbeddingDisabled ()
+    {
+        AddAssembly("Foo.dll");
+        Task.EmbedBinaries = false;
+        Task.Execute();
+        Assert.True(File.Exists(Path.Combine(Data.PublishDir, Data.WasmFile)));
+        Assert.True(File.Exists(Path.Combine(Data.PublishDir, "managed/Foo.dll")));
+        Assert.True(File.Exists(Path.Combine(Data.PublishDir, "managed/DotNetJS.dll")));
+    }
+
+    [Fact]
     public void PublishDirectoryCleanedByDefault ()
     {
         var filePath = Path.Combine(Data.PublishDir, "test");
@@ -70,7 +81,6 @@ public class PublishTest : BuildTest
         Assert.Contains(Engine.Messages, w => w.Contains("System.Runtime.dll"));
         Assert.Contains(Engine.Messages, w => w.Contains("Microsoft.JSInterop.dll"));
         Assert.Contains(Engine.Messages, w => w.Contains("System.Private.CoreLib.dll"));
-        Assert.Contains(Engine.Messages, w => w.Contains("System.Runtime.dll"));
     }
 
     [Fact]
