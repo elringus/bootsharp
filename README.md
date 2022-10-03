@@ -228,3 +228,8 @@ npm build
 scripts/compile-test.sh
 npm test
 ```
+
+## FAQ
+
+Q: I'm getting a warning that "An instance of analyzer Generator.SourceGenerator cannot be created"
+A: You are probably using an older .NET SDK. Please download the latest version.
