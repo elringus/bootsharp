@@ -18,10 +18,10 @@ internal class LibraryGenerator
     public string GenerateSideLoad (string runtimeJS, string wasmUri,
         string entryAssemblyUri, AssemblyInspector inspector)
     {
+        var bootUris = GenerateBootUris(wasmUri, entryAssemblyUri, inspector);
         return new LibraryTemplate {
-            InitJS = GenerateInitJS(inspector),
             RuntimeJS = runtimeJS,
-            BootUris = GenerateBootUris(wasmUri, entryAssemblyUri, inspector)
+            InitJS = JoinLines(GenerateInitJS(inspector), bootUris)
         }.Build();
     }
 
@@ -34,9 +34,8 @@ internal class LibraryGenerator
             EntryAssemblyName = entryAssemblyName
         }.Build();
         return new LibraryTemplate {
-            InitJS = GenerateInitJS(inspector),
             RuntimeJS = runtimeJS,
-            EmbedJS = embedJS
+            InitJS = JoinLines(GenerateInitJS(inspector), embedJS)
         }.Build();
     }
 

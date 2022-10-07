@@ -4,8 +4,6 @@ internal class LibraryTemplate
 {
     public string RuntimeJS { get; init; } = null!;
     public string InitJS { get; init; } = null!;
-    public string? BootUris { get; init; }
-    public string? EmbedJS { get; init; }
 
     public string Build () => $@"{RuntimeJS}
 (function (root, factory) {{
@@ -14,7 +12,6 @@ internal class LibraryTemplate
     else factory(root.dotnet, root);
 }}(typeof self !== 'undefined' ? self : this, function (exports, global) {{
     {InitJS}
-    {EmbedJS ?? BootUris}
     global.dotnet = exports;
 }}));";
 }
