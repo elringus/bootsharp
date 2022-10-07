@@ -9,57 +9,45 @@ internal class LibraryGenerator
 {
     private readonly HashSet<string> declaredObjects = new();
     private readonly NamespaceBuilder spaceBuilder;
+    private readonly AssemblyInspector inspector;
+    private readonly string runtimeJS;
+    private readonly string entryAssemblyName;
 
-    public LibraryGenerator (NamespaceBuilder spaceBuilder)
+    public LibraryGenerator (NamespaceBuilder spaceBuilder, AssemblyInspector inspector,
+        string runtimeJS, string entryAssemblyName)
     {
         this.spaceBuilder = spaceBuilder;
+        this.inspector = inspector;
+        this.runtimeJS = runtimeJS;
+        this.entryAssemblyName = entryAssemblyName;
     }
 
-    public string GenerateSideLoad (string runtimeJS, string wasmUri,
-        string entryAssemblyUri, AssemblyInspector inspector)
-    {
-        var bootUris = GenerateBootUris(wasmUri, entryAssemblyUri, inspector);
-        return new LibraryTemplate {
-            RuntimeJS = runtimeJS,
-            InitJS = JoinLines(GenerateInitJS(inspector), bootUris)
-        }.Build();
-    }
+    public string GenerateSideLoad (string wasmUri) =>
+        GenerateLibrary(new SideLoadTemplate {
+            WasmUri = wasmUri,
+            EntryAssemblyUri = entryAssemblyName,
+            Assemblies = inspector.Assemblies
+        }.Build());
 
-    public string GenerateEmbedded (string runtimeJS, byte[] wasmBytes,
-        string entryAssemblyName, AssemblyInspector inspector)
-    {
-        var embedJS = new EmbedTemplate {
+    public string GenerateEmbedded (byte[] wasmBytes) =>
+        GenerateLibrary(new EmbedTemplate {
             RuntimeWasm = Convert.ToBase64String(wasmBytes),
             Assemblies = inspector.Assemblies,
             EntryAssemblyName = entryAssemblyName
-        }.Build();
-        return new LibraryTemplate {
+        }.Build());
+
+    private string GenerateLibrary (string initJS) =>
+        new LibraryTemplate {
             RuntimeJS = runtimeJS,
-            InitJS = JoinLines(GenerateInitJS(inspector), embedJS)
+            InitJS = JoinLines(GenerateBindings(), initJS)
         }.Build();
-    }
 
-    private string GenerateInitJS (AssemblyInspector inspector)
-    {
-        return JoinLines(
-            JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Invokable).Select(GenerateInvokableBinding)),
-            JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Function).Select(GenerateFunctionDeclaration)),
-            JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Event).Select(GenerateEventDeclaration)),
-            JoinLines(inspector.Types.Where(t => t.IsEnum).Select(GenerateEnumDeclaration))
-        );
-    }
-
-    private string GenerateBootUris (string wasmUri, string entryAssemblyUri, AssemblyInspector inspector)
-    {
-        var assemblies = inspector.Assemblies.Select(a => $"\"{a.Name}\",");
-        return JoinLines(1,
-            "exports.getBootUris = () => ({", JoinLines(2, true,
-                $"wasm: \"{wasmUri}\",",
-                $"entryAssembly: \"{entryAssemblyUri}\",",
-                "assemblies: [", JoinLines(assemblies, 3, true), "]"),
-            "});"
-        );
-    }
+    private string GenerateBindings () => JoinLines(
+        JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Invokable).Select(GenerateInvokableBinding)),
+        JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Function).Select(GenerateFunctionDeclaration)),
+        JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Event).Select(GenerateEventDeclaration)),
+        JoinLines(inspector.Types.Where(t => t.IsEnum).Select(GenerateEnumDeclaration))
+    );
 
     private string GenerateInvokableBinding (Method method)
     {
