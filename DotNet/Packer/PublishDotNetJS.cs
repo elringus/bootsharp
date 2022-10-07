@@ -13,6 +13,7 @@ public class PublishDotNetJS : Task
     [Required] public string WasmFile { get; set; } = null!;
     [Required] public string EntryAssemblyName { get; set; } = null!;
     public bool EmbedBinaries { get; set; } = true;
+    public bool CreateWorker { get; set; } = false;
     public bool Clean { get; set; } = true;
 
     public override bool Execute ()
