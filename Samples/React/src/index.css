@@ -1,0 +1,14 @@
+html {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.donut {
+    border: 100px solid wheat;
+    border-bottom: 100px solid chocolate;
+    border-radius: 100%;
+    width: 100px;
+    height: 100px;
+}

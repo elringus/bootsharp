@@ -1,0 +1,23 @@
+{
+    "private": true,
+    "name": "react-sample",
+    "browserslist": {
+        "production": ["defaults"],
+        "development": ["last 1 version"]
+    },
+    "scripts": {
+        "start": "react-scripts start",
+        "build": "react-scripts build"
+    },
+    "dependencies": {
+        "backend": "file:./backend",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
+    },
+    "devDependencies": {
+        "@types/react": "^18.0.21",
+        "@types/react-dom": "^18.0.6",
+        "react-scripts": "^5.0.1",
+        "typescript": "^4.8.4"
+    }
+}
