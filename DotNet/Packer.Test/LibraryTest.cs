@@ -28,11 +28,11 @@ public class LibraryTest : ContentTest
     }
 
     [Fact]
-    public void WhenCreateWorkerEnabledLibraryExportsBootWorkerFunction ()
+    public void WhenCreateWorkerEnabledLibraryIsEmbeddedInWorker ()
     {
         Task.CreateWorker = true;
         Task.Execute();
-        Contains("exports.bootWorker");
+        Contains("const workerBase64 =");
     }
 
     [Fact]

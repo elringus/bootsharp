@@ -11,13 +11,12 @@ internal class DeclarationGenerator
     private readonly MethodDeclarationGenerator methodsGenerator = new();
     private readonly List<DeclarationFile> declarations = new();
     private readonly TypeDeclarationGenerator typesGenerator;
-    private readonly bool embedded, worker;
+    private readonly bool embedded;
 
-    public DeclarationGenerator (NamespaceBuilder spaceBuilder, bool embedded, bool worker)
+    public DeclarationGenerator (NamespaceBuilder spaceBuilder, bool embedded)
     {
         typesGenerator = new TypeDeclarationGenerator(spaceBuilder);
         this.embedded = embedded;
-        this.worker = worker;
     }
 
     public void LoadDeclarations (string directory)
@@ -31,15 +30,11 @@ internal class DeclarationGenerator
     }
 
     public string Generate (AssemblyInspector inspector) => JoinLines(0,
-        worker ? GenerateWorkerDeclarations() : null,
         !embedded ? GenerateSideLoadDeclarations() : null,
         JoinLines(declarations.Select(GenerateForDeclaration), 0),
         typesGenerator.Generate(inspector.Types),
         methodsGenerator.Generate(inspector.Methods)
     ) + "\n";
-
-    private string GenerateWorkerDeclarations () =>
-        "export declare function bootWorker(blob: Blob): Promise<void>;";
 
     private string GenerateSideLoadDeclarations () => JoinLines(0,
         "export interface BootUris {", JoinLines(1, true,

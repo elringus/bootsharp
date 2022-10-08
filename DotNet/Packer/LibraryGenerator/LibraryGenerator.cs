@@ -38,12 +38,14 @@ internal class LibraryGenerator
             EntryAssemblyName = entryAssemblyName
         }.Build());
 
-    private string GenerateLibrary (string initJS) =>
-        new LibraryTemplate {
+    private string GenerateLibrary (string initJS)
+    {
+        var libraryJS = new LibraryTemplate {
             RuntimeJS = runtimeJS,
-            InitJS = JoinLines(GenerateBindings(), initJS),
-            Worker = worker
+            InitJS = JoinLines(GenerateBindings(), initJS)
         }.Build();
+        return worker ? new WorkerTemplate { LibraryJS = libraryJS }.Build() : libraryJS;
+    }
 
     private string GenerateBindings () => JoinLines(
         JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Invokable).Select(GenerateInvokableBinding)),

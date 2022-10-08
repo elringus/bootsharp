@@ -53,14 +53,6 @@ public class PublishTest : BuildTest
     }
 
     [Fact]
-    public void WhenCreateWorkerEnabledWorkerIsPublished ()
-    {
-        Task.CreateWorker = true;
-        Task.Execute();
-        Assert.True(File.Exists(Path.Combine(Data.PublishDir, "dotnet-worker.js")));
-    }
-
-    [Fact]
     public void PublishDirectoryCleanedByDefault ()
     {
         var filePath = Path.Combine(Data.PublishDir, "test");
