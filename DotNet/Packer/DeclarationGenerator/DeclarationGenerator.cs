@@ -29,13 +29,12 @@ internal class DeclarationGenerator
         }
     }
 
-    public string Generate (AssemblyInspector inspector)
-    {
-        var methodsContent = methodsGenerator.Generate(inspector.Methods);
-        var objectsContent = typesGenerator.Generate(inspector.Types);
-        var runtimeContent = JoinLines(declarations.Select(GenerateForDeclaration), 0);
-        return JoinLines(0, runtimeContent, objectsContent, methodsContent) + "\n";
-    }
+    public string Generate (AssemblyInspector inspector) => JoinLines(0,
+        JoinLines(declarations.Select(GenerateForDeclaration), 0),
+        typesGenerator.Generate(inspector.Types),
+        methodsGenerator.Generate(inspector.Methods),
+        !embedded ? GenerateSideLoadDeclarations() : ""
+    ) + "\n";
 
     private string GenerateForDeclaration (DeclarationFile declaration)
     {
@@ -74,4 +73,13 @@ internal class DeclarationGenerator
         source = source.Replace("export declare function callEntryPoint(assemblyName: string): Promise<any>;", "");
         return source;
     }
+
+    private string GenerateSideLoadDeclarations () => JoinLines(0,
+        "export interface BootUris {", JoinLines(1, true,
+            "wasm: string;",
+            "assemblies: string[];",
+            "entryAssembly: string;"),
+        "}",
+        "export declare function getBootUris(): BootUris | undefined;"
+    );
 }

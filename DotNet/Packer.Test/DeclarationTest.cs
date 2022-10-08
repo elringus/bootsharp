@@ -66,6 +66,15 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void WhenSideLoadHasBootUrisDeclarations ()
+    {
+        Task.EmbedBinaries = false;
+        Task.Execute();
+        Contains("export interface BootUris");
+        Contains("export declare function getBootUris");
+    }
+
+    [Fact]
     public void DeclaresNamespace ()
     {
         AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
