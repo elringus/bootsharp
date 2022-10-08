@@ -5,7 +5,7 @@ export async function bootBackend() {
 }
 
 async function fetchBootData(): Promise<BootData> {
-    const uris = getBootUris();
+    const uris = await getBootUris();
     return {
         wasm: await fetchBinary(uris.wasm),
         assemblies: await Promise.all(uris.assemblies.map(fetchAssembly)),
