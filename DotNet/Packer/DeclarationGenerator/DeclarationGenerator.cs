@@ -30,10 +30,10 @@ internal class DeclarationGenerator
     }
 
     public string Generate (AssemblyInspector inspector) => JoinLines(0,
+        !embedded ? GenerateSideLoadDeclarations() : null,
         JoinLines(declarations.Select(GenerateForDeclaration), 0),
         typesGenerator.Generate(inspector.Types),
-        methodsGenerator.Generate(inspector.Methods),
-        !embedded ? GenerateSideLoadDeclarations() : ""
+        methodsGenerator.Generate(inspector.Methods)
     ) + "\n";
 
     private string GenerateForDeclaration (DeclarationFile declaration)
