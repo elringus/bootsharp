@@ -1,8 +1,13 @@
-﻿import { boot, BootData, getBootUris } from "backend";
+﻿import { bootWorker, BootData, getBootUris, boot } from "backend";
 
 export async function bootBackend() {
-    const bootData = await fetchBootData();
-    await boot(bootData);
+    bootWorker(await fetchWorker());
+    await boot(await fetchBootData());
+}
+
+async function fetchWorker(): Promise<Blob> {
+    const uri = `${process.env.PUBLIC_URL}/bin/dotnet-worker.js`;
+    return (await fetch(uri)).blob();
 }
 
 async function fetchBootData(): Promise<BootData> {

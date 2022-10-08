@@ -11,12 +11,13 @@ internal class DeclarationGenerator
     private readonly MethodDeclarationGenerator methodsGenerator = new();
     private readonly List<DeclarationFile> declarations = new();
     private readonly TypeDeclarationGenerator typesGenerator;
-    private readonly bool embedded;
+    private readonly bool embedded, worker;
 
-    public DeclarationGenerator (NamespaceBuilder spaceBuilder, bool embedded)
+    public DeclarationGenerator (NamespaceBuilder spaceBuilder, bool embedded, bool worker)
     {
         typesGenerator = new TypeDeclarationGenerator(spaceBuilder);
         this.embedded = embedded;
+        this.worker = worker;
     }
 
     public void LoadDeclarations (string directory)
@@ -30,11 +31,24 @@ internal class DeclarationGenerator
     }
 
     public string Generate (AssemblyInspector inspector) => JoinLines(0,
+        worker ? GenerateWorkerDeclarations() : null,
         !embedded ? GenerateSideLoadDeclarations() : null,
         JoinLines(declarations.Select(GenerateForDeclaration), 0),
         typesGenerator.Generate(inspector.Types),
         methodsGenerator.Generate(inspector.Methods)
     ) + "\n";
+
+    private string GenerateWorkerDeclarations () =>
+        "export declare function bootWorker(blob: Blob): void;";
+
+    private string GenerateSideLoadDeclarations () => JoinLines(0,
+        "export interface BootUris {", JoinLines(1, true,
+            "wasm: string;",
+            "assemblies: string[];",
+            "entryAssembly: string;"),
+        "}",
+        "export declare function getBootUris(): BootUris | undefined;"
+    );
 
     private string GenerateForDeclaration (DeclarationFile declaration)
     {
@@ -73,13 +87,4 @@ internal class DeclarationGenerator
         source = source.Replace("export declare function callEntryPoint(assemblyName: string): Promise<any>;", "");
         return source;
     }
-
-    private string GenerateSideLoadDeclarations () => JoinLines(0,
-        "export interface BootUris {", JoinLines(1, true,
-            "wasm: string;",
-            "assemblies: string[];",
-            "entryAssembly: string;"),
-        "}",
-        "export declare function getBootUris(): BootUris | undefined;"
-    );
 }

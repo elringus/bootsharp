@@ -75,6 +75,14 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void WhenCreateWorkerHasAssociatedDeclarations ()
+    {
+        Task.CreateWorker = true;
+        Task.Execute();
+        Contains("export declare function bootWorker");
+    }
+
+    [Fact]
     public void DeclaresNamespace ()
     {
         AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
