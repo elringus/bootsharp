@@ -12,21 +12,23 @@ internal class LibraryGenerator
     private readonly AssemblyInspector inspector;
     private readonly string runtimeJS;
     private readonly string entryAssemblyName;
+    private readonly bool worker;
 
     public LibraryGenerator (NamespaceBuilder spaceBuilder, AssemblyInspector inspector,
-        string runtimeJS, string entryAssemblyName)
+        string runtimeJS, string entryAssemblyName, bool worker)
     {
         this.spaceBuilder = spaceBuilder;
         this.inspector = inspector;
         this.runtimeJS = runtimeJS;
         this.entryAssemblyName = entryAssemblyName;
+        this.worker = worker;
     }
 
     public string GenerateSideLoad (string wasmUri) =>
         GenerateLibrary(new SideLoadTemplate {
             WasmUri = wasmUri,
-            EntryAssemblyUri = entryAssemblyName,
-            Assemblies = inspector.Assemblies
+            Assemblies = inspector.Assemblies,
+            EntryAssemblyUri = entryAssemblyName
         }.Build());
 
     public string GenerateEmbedded (byte[] wasmBytes) =>
@@ -39,7 +41,8 @@ internal class LibraryGenerator
     private string GenerateLibrary (string initJS) =>
         new LibraryTemplate {
             RuntimeJS = runtimeJS,
-            InitJS = JoinLines(GenerateBindings(), initJS)
+            InitJS = JoinLines(GenerateBindings(), initJS),
+            Worker = worker
         }.Build();
 
     private string GenerateBindings () => JoinLines(

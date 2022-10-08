@@ -13,7 +13,7 @@ public class PublishDotNetJS : Task
     [Required] public string WasmFile { get; set; } = null!;
     [Required] public string EntryAssemblyName { get; set; } = null!;
     public bool EmbedBinaries { get; set; } = true;
-    public bool CreateWorker { get; set; } = false;
+    public bool CreateWorker { get; set; }
     public bool Clean { get; set; } = true;
 
     public override bool Execute ()
@@ -23,18 +23,20 @@ public class PublishDotNetJS : Task
         PublishLibrary(sources.Library);
         PublishDeclaration(sources.Declaration);
         PublishSourceMap();
+        if (CreateWorker) PublishWorker(sources.Worker);
         if (!EmbedBinaries) PublishBinaries(sources.Assemblies);
         return true;
     }
 
     private (IReadOnlyList<Assembly> Assemblies,
-        string Library, string Declaration) GenerateSources ()
+        string Library, string Worker, string Declaration) GenerateSources ()
     {
         var builder = CreateNamespaceBuilder();
         using var inspector = InspectAssemblies(builder);
-        return (inspector.Assemblies,
-            GenerateLibrary(inspector, builder),
-            GenerateDeclaration(inspector, builder));
+        var library = CreateWorker ? WorkerProxy.Source : GenerateLibrary(inspector, builder);
+        var worker = CreateWorker ? GenerateLibrary(inspector, builder) : "";
+        var declaration = GenerateDeclaration(inspector, builder);
+        return (inspector.Assemblies, library, worker, declaration);
     }
 
     private void CleanPublishDirectory ()
@@ -48,6 +50,13 @@ public class PublishDotNetJS : Task
         var path = Path.Combine(PublishDir, "dotnet.js");
         File.WriteAllText(path, source);
         Log.LogMessage(MessageImportance.High, $"JavaScript UMD library is published at {path}.");
+    }
+
+    private void PublishWorker (string source)
+    {
+        var path = Path.Combine(PublishDir, "dotnet-worker.js");
+        File.WriteAllText(path, source);
+        Log.LogMessage(MessageImportance.High, $"JavaScript worker is published at {path}.");
     }
 
     private void PublishDeclaration (string source)
@@ -91,7 +100,7 @@ public class PublishDotNetJS : Task
     private string GenerateLibrary (AssemblyInspector inspector, NamespaceBuilder spaceBuilder)
     {
         var runtimeJS = File.ReadAllText(Path.Combine(JSDir, "dotnet.js"));
-        var generator = new LibraryGenerator(spaceBuilder, inspector, runtimeJS, EntryAssemblyName);
+        var generator = new LibraryGenerator(spaceBuilder, inspector, runtimeJS, EntryAssemblyName, CreateWorker);
         return EmbedBinaries
             ? generator.GenerateEmbedded(File.ReadAllBytes(WasmFile))
             : generator.GenerateSideLoad(Path.GetFileName(WasmFile));

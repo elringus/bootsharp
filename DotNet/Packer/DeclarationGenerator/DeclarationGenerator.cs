@@ -39,7 +39,7 @@ internal class DeclarationGenerator
     ) + "\n";
 
     private string GenerateWorkerDeclarations () =>
-        "export declare function bootWorker(blob: Blob): void;";
+        "export declare function bootWorker(blob: Blob): Promise<void>;";
 
     private string GenerateSideLoadDeclarations () => JoinLines(0,
         "export interface BootUris {", JoinLines(1, true,
@@ -47,7 +47,7 @@ internal class DeclarationGenerator
             "assemblies: string[];",
             "entryAssembly: string;"),
         "}",
-        "export declare function getBootUris(): BootUris | undefined;"
+        "export declare function getBootUris(): BootUris;"
     );
 
     private string GenerateForDeclaration (DeclarationFile declaration)

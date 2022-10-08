@@ -28,6 +28,14 @@ public class LibraryTest : ContentTest
     }
 
     [Fact]
+    public void WhenCreateWorkerEnabledLibraryExportsBootWorkerFunction ()
+    {
+        Task.CreateWorker = true;
+        Task.Execute();
+        Contains("exports.bootWorker");
+    }
+
+    [Fact]
     public void LibraryExportsNamespaceObject ()
     {
         AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
