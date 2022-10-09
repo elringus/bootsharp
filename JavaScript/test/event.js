@@ -5,8 +5,9 @@ describe("event", () => {
     it("can broadcast without subscribers", () => {
         assert.doesNotThrow(() => new Event().broadcast());
     });
-    it("doesn't mind un-subscribing non-existent handler", () => {
+    it("doesn't mind unsubscribing non-existent handler", () => {
         assert.doesNotThrow(() => new Event().unsubscribe(null));
+        assert.doesNotThrow(() => new Event().unsubscribeById(""));
     });
     it("invokes subscribed handlers in order", () => {
         let result = "";
@@ -33,15 +34,14 @@ describe("event", () => {
         evt.broadcast("foo");
         assert.deepStrictEqual(result, "foo");
     });
-    it("subscribes and un-subscribes same handlers independently", () => {
+    it("doesnt add same handlers multiple times", () => {
         let result = 0;
         const evt = new Event();
         const incrementer = () => result++;
         for (let i = 0; i < 10; i++)
             evt.subscribe(incrementer);
-        evt.unsubscribe(incrementer);
         evt.broadcast();
-        assert.deepStrictEqual(result, 9);
+        assert.deepStrictEqual(result, 1);
     });
     it("can broadcast multiple args", () => {
         let resultA, resultB;
@@ -53,5 +53,15 @@ describe("event", () => {
         evt.broadcast(["foo", "bar"], "nya");
         assert.deepStrictEqual(resultA, ["foo", "bar"]);
         assert.deepStrictEqual(resultB, "nya");
+    });
+    it("can un/subscribe by id", () => {
+        let result = 0;
+        const evt = new Event();
+        const incrementer = () => result++;
+        for (let i = 0; i < 10; i++)
+            evt.subscribeById(i.toString(), incrementer);
+        evt.unsubscribeById("0");
+        evt.broadcast();
+        assert.deepStrictEqual(result, 9);
     });
 });

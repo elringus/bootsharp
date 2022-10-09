@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using DotNetJS;
 using Microsoft.JSInterop;
 
@@ -6,16 +8,50 @@ namespace Backend;
 
 public static partial class Program
 {
+    private static CancellationTokenSource? cts;
+
     public static void Main () { }
 
-    [JSFunction] public static partial void Log (string message);
-    [JSFunction] public static partial Task<int> GetPrime ();
-    [JSEvent] public static partial void OnWarn (string message);
+    [JSInvokable]
+    public static Task StartStress ()
+    {
+        cts?.Cancel();
+        cts = new CancellationTokenSource();
+        _ = Stress(cts.Token);
+        return Task.CompletedTask;
+    }
 
     [JSInvokable]
-    public static async Task ComputePrime ()
+    public static Task StopStress ()
     {
-        var n = await GetPrime();
+        cts?.Cancel();
+        return Task.CompletedTask;
+    }
+
+    [JSInvokable]
+    public static Task<bool> IsStressing ()
+    {
+        return Task.FromResult(!cts?.IsCancellationRequested ?? false);
+    }
+
+    [JSFunction]
+    public static partial Task<int> GetStressPower ();
+
+    [JSEvent]
+    public static partial void OnStressIteration (int time);
+
+    private static async Task Stress (CancellationToken token)
+    {
+        while (!token.IsCancellationRequested)
+        {
+            var time = DateTime.Now;
+            ComputePrime(await GetStressPower());
+            OnStressIteration((DateTime.Now - time).Milliseconds);
+        }
+    }
+
+    private static void ComputePrime (int n)
+    {
         int count = 0;
         long a = 2;
         while (count < n)
@@ -34,7 +70,5 @@ public static partial class Program
             if (prime > 0) count++;
             a++;
         }
-        Log(a.ToString());
-        OnWarn(n.ToString());
     }
 }

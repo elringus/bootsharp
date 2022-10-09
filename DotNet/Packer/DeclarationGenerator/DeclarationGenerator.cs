@@ -81,8 +81,10 @@ internal class DeclarationGenerator
         if (worker)
             source = source
                 .Replace("getBootStatus(): BootStatus", "getBootStatus(): Promise<BootStatus>")
-                .Replace("subscribe(handler: (...args: [...T]) => void): void", "subscribe(handler: (...args: [...T]) => void): Promise<void>")
-                .Replace("unsubscribe(handler: (...args: [...T]) => void): void", "unsubscribe(handler: (...args: [...T]) => void): Promise<void>");
+                .Replace("broadcast(...args: [...T]): void", "broadcast(...args: [...T]): Promise<void>")
+                .Replace("broadcast: (...args: [...T]) => void", "broadcast: (...args: [...T]) => Promise<void>")
+                .Replace("(handler: (...args: [...T]) => void): void", "(handler: (...args: [...T]) => void): Promise<void>")
+                .Replace("(handler: (...args: [...T]) => void) => void", "(handler: (...args: [...T]) => void) => Promise<void>")
         source = source.Replace("export declare function initializeInterop(): void;", "");
         source = source.Replace("export declare function initializeMono(assemblies: Assembly[]): void;", "");
         source = source.Replace("export declare function callEntryPoint(assemblyName: string): Promise<any>;", "");

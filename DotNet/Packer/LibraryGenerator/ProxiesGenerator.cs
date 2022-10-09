@@ -41,10 +41,12 @@ internal class ProxiesGenerator
 
     private string EmitEvent (Method method)
     {
+        var path = $"{method.Namespace}.{method.Name}";
         var js = JoinLines(
-            $"exports.{method.Namespace}.{method.Name} = {{", JoinLines(2, true,
-                $"subscribe: handler => proxy.{method.Namespace}.{method.Name}.subscribe(exports.proxy(handler)),",
-                $"unsubscribe: handler => proxy.{method.Namespace}.{method.Name}.unsubscribe(exports.proxy(handler))"),
+            $"exports.{path} = {{", JoinLines(2, true,
+                $"broadcast: proxy.{path}.broadcast,",
+                $"subscribe: handler => 'inject id to handler and proxy to subById',",
+                $"unsubscribe: handler => 'get id from handler and proxy to unsubById'"),
             "};"
         );
         return objectBuilder.EnsureNamespaceObjectsDeclared(method.Namespace, js);

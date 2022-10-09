@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from "react";
+import { useEvent } from "utilities";
 import { Backend } from "backend";
 
 type Props = {
@@ -7,12 +8,7 @@ type Props = {
 };
 
 export const Donut = (props: Props) => {
-    Backend.GetPrime = async () => props.prime;
-    Backend.Log = console.log;
-    Backend.OnWarn.subscribe(m => console.log("lololol" + m));
-
     const [time, setTime] = useState<number>();
-    const [stressing, setStressing] = useState<boolean>(true);
 
     useEffect(() => {
         const handle = setInterval(() => setTime(Date.now()), props.delay);
@@ -20,16 +16,23 @@ export const Donut = (props: Props) => {
     }, [props.delay]);
 
     useEffect(() => {
-        void stress();
-        return () => setStressing(false);
+        Backend.GetStressPower = async () => props.prime;
     }, [props.prime]);
 
-    return <div className="donut" style={{ transform: `rotate(${time}deg)` }}/>;
+    useEffect(() => {
+        void Backend.StartStress();
+        return () => void Backend.StopStress();
+    }, []);
 
-    async function stress() {
-        while (stressing) {
-            await Backend.ComputePrime();
-            await new Promise(r => setTimeout(r, 1));
-        }
+    useEvent(Backend.OnStressIteration, console.log, []);
+
+    return <div className="donut"
+                onClick={toggleStress}
+                style={{ transform: `rotate(${time}deg)` }}/>;
+
+    async function toggleStress() {
+        if (await Backend.IsStressing())
+            await Backend.StopStress();
+        else await Backend.StartStress();
     }
 };

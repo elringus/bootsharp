@@ -15,7 +15,7 @@ async function renderApp() {
     const container = document.getElementById("react-app")!;
     await createRoot(container).render(
         <StrictMode>
-            <Donut delay={18} prime={6666}/>
+            <Donut delay={18} prime={66666}/>
         </StrictMode>
     );
 }
