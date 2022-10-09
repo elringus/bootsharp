@@ -75,6 +75,20 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void WhenCreateWorkerEnabledAllBuiltinMethodsAreAsync ()
+    {
+        File.WriteAllText(Path.Combine(Data.JSDir, "boot.d.ts"),
+            "export declare function getBootStatus(): BootStatus;\n" +
+            "subscribe(handler: (...args: [...T]) => void): void;\n" +
+            "unsubscribe(handler: (...args: [...T]) => void): void;");
+        Task.CreateWorker = true;
+        Task.Execute();
+        Contains("getBootStatus(): Promise<BootStatus>");
+        Contains("subscribe(handler: (...args: [...T]) => void): Promise<void>");
+        Contains("unsubscribe(handler: (...args: [...T]) => void): Promise<void>");
+    }
+
+    [Fact]
     public void DeclaresNamespace ()
     {
         AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));

@@ -11,12 +11,13 @@ internal class DeclarationGenerator
     private readonly MethodDeclarationGenerator methodsGenerator = new();
     private readonly List<DeclarationFile> declarations = new();
     private readonly TypeDeclarationGenerator typesGenerator;
-    private readonly bool embedded;
+    private readonly bool embedded, worker;
 
-    public DeclarationGenerator (NamespaceBuilder spaceBuilder, bool embedded)
+    public DeclarationGenerator (NamespaceBuilder spaceBuilder, bool embedded, bool worker)
     {
         typesGenerator = new TypeDeclarationGenerator(spaceBuilder);
         this.embedded = embedded;
+        this.worker = worker;
     }
 
     public void LoadDeclarations (string directory)
@@ -77,6 +78,11 @@ internal class DeclarationGenerator
     private string ModifyInternalDeclarations (string source)
     {
         if (embedded) source = source.Replace("boot(bootData: BootData):", "boot():");
+        if (worker)
+            source = source
+                .Replace("getBootStatus(): BootStatus", "getBootStatus(): Promise<BootStatus>")
+                .Replace("subscribe(handler: (...args: [...T]) => void): void", "subscribe(handler: (...args: [...T]) => void): Promise<void>")
+                .Replace("unsubscribe(handler: (...args: [...T]) => void): void", "unsubscribe(handler: (...args: [...T]) => void): Promise<void>");
         source = source.Replace("export declare function initializeInterop(): void;", "");
         source = source.Replace("export declare function initializeMono(assemblies: Assembly[]): void;", "");
         source = source.Replace("export declare function callEntryPoint(assemblyName: string): Promise<any>;", "");

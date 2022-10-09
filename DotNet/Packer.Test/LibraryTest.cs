@@ -28,14 +28,6 @@ public class LibraryTest : ContentTest
     }
 
     [Fact]
-    public void WhenCreateWorkerEnabledLibraryIsEmbeddedInWorker ()
-    {
-        Task.CreateWorker = true;
-        Task.Execute();
-        Contains("const workerBase64 =");
-    }
-
-    [Fact]
     public void LibraryExportsNamespaceObject ()
     {
         AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
@@ -167,5 +159,26 @@ public class LibraryTest : ContentTest
         Task.Execute();
         Contains("exports.n = {};");
         Contains("exports.n.Foo = { A: \"A\", B: \"B\" };");
+    }
+
+    [Fact]
+    public void WhenCreateWorkerEnabledProxiesAreGenerated ()
+    {
+        AddAssembly(
+            With("Space", "[JSInvokable] public static void Foo () { }"),
+            With("Space", "[JSFunction] public static void Bar () { }"),
+            With("Space", "[JSEvent] public static void OnNya (Nya nya) { }"),
+            With("Space", "public enum Nya { Far }")
+        );
+        Task.CreateWorker = true;
+        Task.Execute();
+        Contains("exports.Space.Foo = proxy.Space.Foo;");
+        Contains("Object.defineProperty(exports.Space, \"Bar\", {");
+        Contains("get: () => this.value");
+        Contains("set: value => { this.value = value; proxy.Space.Bar = exports.proxy(value); }");
+        Contains("exports.Space.Nya = { Far: \"Far\" };");
+        Contains("exports.Space.OnNya = {");
+        Contains("subscribe: handler => proxy.Space.OnNya.subscribe(exports.proxy(handler))");
+        Contains("unsubscribe: handler => proxy.Space.OnNya.unsubscribe(exports.proxy(handler))");
     }
 }

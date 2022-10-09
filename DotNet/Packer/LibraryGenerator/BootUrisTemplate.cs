@@ -4,7 +4,7 @@ using static Packer.TextUtilities;
 
 namespace Packer;
 
-internal class SideLoadTemplate
+internal class BootUrisTemplate
 {
     public string WasmUri { get; init; } = null!;
     public string EntryAssemblyUri { get; init; } = null!;

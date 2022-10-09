@@ -7,6 +7,10 @@ type Props = {
 };
 
 export const Donut = (props: Props) => {
+    Backend.GetPrime = async () => props.prime;
+    Backend.Log = console.log;
+    Backend.OnWarn.subscribe(m => console.log("lololol" + m));
+
     const [time, setTime] = useState<number>();
     const [stressing, setStressing] = useState<boolean>(true);
 
@@ -24,7 +28,7 @@ export const Donut = (props: Props) => {
 
     async function stress() {
         while (stressing) {
-            await Backend.ComputePrime(props.prime);
+            await Backend.ComputePrime();
             await new Promise(r => setTimeout(r, 1));
         }
     }

@@ -99,7 +99,7 @@ public class PublishDotNetJS : Task
 
     private string GenerateDeclaration (AssemblyInspector inspector, NamespaceBuilder spaceBuilder)
     {
-        var generator = new DeclarationGenerator(spaceBuilder, EmbedBinaries);
+        var generator = new DeclarationGenerator(spaceBuilder, EmbedBinaries, CreateWorker);
         generator.LoadDeclarations(JSDir);
         return generator.Generate(inspector);
     }
