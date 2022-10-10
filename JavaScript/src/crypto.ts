@@ -1,5 +1,5 @@
 ﻿export function injectCrypto(): void {
-    if (typeof crypto !== "undefined" && "getRandomValues" in crypto) return;
+    if (typeof crypto !== "undefined") return;
     globalThis.crypto = {
         getRandomValues: getRandomValues,
         randomUUID: randomUUID
