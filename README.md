@@ -188,7 +188,7 @@ async function fetchBootData() {
 }
 ```
 
-Find sideloading example in the [React sample](https://github.com/Elringus/DotNetJS/blob/feat/worker/Samples/React/src/boot.ts). Also, take a look at the [build script](https://github.com/Elringus/DotNetJS/blob/feat/worker/Samples/React/scripts/build-backend.sh), which automatically deploys the binaries to the react public directory after building the backend.
+Find sideloading example in the [React sample](https://github.com/Elringus/DotNetJS/blob/main/Samples/React/src/boot.ts). Also, take a look at the [build script](https://github.com/Elringus/DotNetJS/blob/main/Samples/React/scripts/build-backend.sh), which automatically deploys the binaries to the react public directory after building the backend.
 
 ## Running DotNet on Worker
 
@@ -203,7 +203,7 @@ When using dotnet as application backend, it makes sense to run the process on a
 
 The dotnet web worker will start under the hood when the library is imported; the runtime can then be booted and used the same way. The only exception are the sync APIs: as it's not possible to communicate with web workers in blocking manner, all the methods will return promise, even if they do not return task on C# side.
 
-When unit-testing applications with dotnet worker, define `muteDotNetWorker` global property to disable the worker creation on library import. Check the [React sample](https://github.com/Elringus/DotNetJS/blob/feat/worker/Samples/React/src/test/environment.ts) on setting the variable with jest.
+When unit-testing applications with dotnet worker, define `muteDotNetWorker` global property to disable the worker creation on library import. Check the [React sample](https://github.com/Elringus/DotNetJS/blob/main/Samples/React/src/test/environment.ts) on setting the variable with jest.
 
 ## Namespace Pattern
 
