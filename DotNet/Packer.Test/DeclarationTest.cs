@@ -75,13 +75,27 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
-    public void WhenCreateWorkerEnabledAllBuiltinMethodsAreAsync ()
+    public void WhenCreateWorkerEnabledMethodsExceptGetBootUrisReturnPromise ()
     {
         File.WriteAllText(Path.Combine(Data.JSDir, "boot.d.ts"),
-            "export declare function getBootStatus(): BootStatus;");
+            "export declare function getBootUris(): BootUris;\n" +
+            "export declare function terminate(): Promise<void>;\n" +
+            "export declare function getBootStatus(): BootStatus;\n" +
+            "    subscribe(handler: (...args: [...T]) => void): string;\n" +
+            "    unsubscribe(handler: (...args: [...T]) => void): void;\n" +
+            "    subscribe: (handler: (...args: [...T]) => void) => string;\n" +
+            "    unsubscribe: (handler: (...args: [...T]) => void) => void;\n");
         Task.CreateWorker = true;
+        Task.EmbedBinaries = false;
         Task.Execute();
-        Contains("getBootStatus(): Promise<BootStatus>");
+        Contains("export declare function getBootUris(): BootUris;\n");
+        Contains("export declare function terminate(): Promise<void>;\n");
+        Contains("export declare function getBootStatus(): Promise<BootStatus>;\n");
+        Contains("export declare function getBootStatus(): Promise<BootStatus>;\n");
+        Contains("    subscribe(handler: (...args: [...T]) => void): Promise<string>;\n");
+        Contains("    unsubscribe(handler: (...args: [...T]) => void): Promise<void>;\n");
+        Contains("    subscribe: (handler: (...args: [...T]) => void) => Promise<string>;\n");
+        Contains("    unsubscribe: (handler: (...args: [...T]) => void) => Promise<void>;\n");
     }
 
     [Fact]

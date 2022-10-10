@@ -41,12 +41,19 @@ internal class ProxiesGenerator
 
     private string EmitEvent (Method method)
     {
+        const string id = "dotnetEventHandlerId";
         var path = $"{method.Namespace}.{method.Name}";
         var js = JoinLines(
             $"exports.{path} = {{", JoinLines(2, true,
                 $"broadcast: proxy.{path}.broadcast,",
-                $"subscribe: handler => 'inject id to handler and proxy to subById',",
-                $"unsubscribe: handler => 'get id from handler and proxy to unsubById'"),
+                "subscribe: handler => {", JoinLines(3, true,
+                    $"const id = handler.hasOwnProperty('{id}') ? handler.{id} : (handler.{id} = crypto.randomUUID());",
+                    $"return proxy.{path}.subscribeById(id, exports.proxy(handler));"),
+                "},",
+                "unsubscribe: handler => {", JoinLines(3, true,
+                    $"if (handler.hasOwnProperty('{id}')) return proxy.{path}.unsubscribeById(handler.{id});",
+                    "console.warn(`Failed to unsubscribe event handler: handler is not subscribed. Handler: ${handler}`);"),
+                "},"),
             "};"
         );
         return objectBuilder.EnsureNamespaceObjectsDeclared(method.Namespace, js);

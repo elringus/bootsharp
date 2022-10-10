@@ -47,6 +47,7 @@ public static partial class Program
             var time = DateTime.Now;
             ComputePrime(await GetStressPower());
             OnStressIteration((DateTime.Now - time).Milliseconds);
+            await Task.Delay(1);
         }
     }
 

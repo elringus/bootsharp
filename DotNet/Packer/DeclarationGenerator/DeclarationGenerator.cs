@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using static Packer.TextUtilities;
 
 namespace Packer;
@@ -79,15 +80,26 @@ internal class DeclarationGenerator
     {
         if (embedded) source = source.Replace("boot(bootData: BootData):", "boot():");
         if (worker)
-            source = source
-                .Replace("getBootStatus(): BootStatus", "getBootStatus(): Promise<BootStatus>")
-                .Replace("broadcast(...args: [...T]): void", "broadcast(...args: [...T]): Promise<void>")
-                .Replace("broadcast: (...args: [...T]) => void", "broadcast: (...args: [...T]) => Promise<void>")
-                .Replace("(handler: (...args: [...T]) => void): void", "(handler: (...args: [...T]) => void): Promise<void>")
-                .Replace("(handler: (...args: [...T]) => void) => void", "(handler: (...args: [...T]) => void) => Promise<void>")
-        source = source.Replace("export declare function initializeInterop(): void;", "");
-        source = source.Replace("export declare function initializeMono(assemblies: Assembly[]): void;", "");
-        source = source.Replace("export declare function callEntryPoint(assemblyName: string): Promise<any>;", "");
+        {
+            ModifyMethodToReturnPromise("getBootStatus");
+            ModifyMethodToReturnPromise("broadcast");
+            ModifyMethodToReturnPromise("subscribe");
+            ModifyMethodToReturnPromise("unsubscribe");
+            RemoveLine("subscribeById");
+            RemoveLine("unsubscribeById");
+        }
+        RemoveLine("function initializeInterop");
+        RemoveLine("function initializeMono");
+        RemoveLine("function callEntryPoint");
         return source;
+
+        void RemoveLine (string lineFragment) =>
+            source = Regex.Replace(source,
+                $@"\n.*{lineFragment}.*", "");
+
+        void ModifyMethodToReturnPromise (string methodName) =>
+            source = Regex.Replace(source,
+                $@"(^.* {methodName}[(|:].+[:|=>] )(.+);",
+                "$1Promise<$2>;", RegexOptions.Multiline);
     }
 }

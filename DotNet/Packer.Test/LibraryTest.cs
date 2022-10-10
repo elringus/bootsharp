@@ -178,7 +178,8 @@ public class LibraryTest : ContentTest
         Contains("set: value => { this.value = value; proxy.Space.Bar = exports.proxy(value); }");
         Contains("exports.Space.Nya = { Far: \"Far\" };");
         Contains("exports.Space.OnNya = {");
-        Contains("subscribe:");
-        Contains("unsubscribe:");
+        Contains("broadcast: proxy.Space.OnNya.broadcast");
+        Contains("subscribe: handler => {");
+        Contains("unsubscribe: handler => {");
     }
 }
