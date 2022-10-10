@@ -5,4 +5,4 @@ export default class extends require("jest-environment-jsdom") {
         // Define a flag to prevent dotnet worker init; required for tests to work.
         Object.defineProperty(this.global, "muteDotNetWorker", { value: true });
     }
-};
+}
