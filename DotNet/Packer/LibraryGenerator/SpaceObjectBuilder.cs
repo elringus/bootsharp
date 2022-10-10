@@ -18,6 +18,11 @@ internal class SpaceObjectBuilder
         return js;
     }
 
+    public void Reset ()
+    {
+        declaredObjects.Clear();
+    }
+
     private void BuildObjectNamesForNamespace (string space)
     {
         names.Clear();

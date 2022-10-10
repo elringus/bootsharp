@@ -1,5 +1,6 @@
 ﻿import { boot, getBootStatus, terminate, BootStatus, BootData } from "./boot";
 import { invoke, invokeAsync, createObjectReference, disposeObjectReference, createStreamReference } from "./interop";
+import { injectCrypto } from "./crypto";
 import { Assembly } from "./mono";
 import { Event } from "./event";
 
@@ -32,3 +33,6 @@ export {
     disposeObjectReference,
     createStreamReference
 };
+
+// https://github.com/Elringus/DotNetJS/issues/17
+injectCrypto();

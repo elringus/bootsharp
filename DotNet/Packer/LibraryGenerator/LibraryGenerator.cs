@@ -30,10 +30,10 @@ internal class LibraryGenerator
             Assemblies = inspector.Assemblies,
             EntryAssemblyUri = entryAssemblyName
         }.Build();
-        return worker ? new WorkerTemplate {
+        return worker ? GenerateLibrary(new WorkerTemplate {
             LibraryJS = GenerateLibrary(bootUrisJS),
-            InitJS = JoinLines(proxiesGenerator.Generate(), bootUrisJS)
-        }.Build() : GenerateLibrary(bootUrisJS);
+            ProxiesJS = proxiesGenerator.Generate()
+        }.Build() + bootUrisJS) : GenerateLibrary(bootUrisJS);
     }
 
     public string GenerateEmbedded (byte[] wasmBytes)
@@ -43,10 +43,10 @@ internal class LibraryGenerator
             Assemblies = inspector.Assemblies,
             EntryAssemblyName = entryAssemblyName
         }.Build();
-        return worker ? new WorkerTemplate {
+        return worker ? GenerateLibrary(new WorkerTemplate {
             LibraryJS = GenerateLibrary(embedJS),
-            InitJS = proxiesGenerator.Generate()
-        }.Build() : GenerateLibrary(embedJS);
+            ProxiesJS = proxiesGenerator.Generate()
+        }.Build()) : GenerateLibrary(embedJS);
     }
 
     private string GenerateLibrary (string initJS) => new LibraryTemplate {

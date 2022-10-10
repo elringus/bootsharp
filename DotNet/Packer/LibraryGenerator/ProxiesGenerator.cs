@@ -15,12 +15,16 @@ internal class ProxiesGenerator
         enumGenerator = new(spaceBuilder);
     }
 
-    public string Generate () => JoinLines(
-        JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Invokable).Select(EmitInvokable)),
-        JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Function).Select(EmitFunction)),
-        JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Event).Select(EmitEvent)),
-        JoinLines(inspector.Types.Where(t => t.IsEnum).Select(e => enumGenerator.Generate(e, objectBuilder)))
-    );
+    public string Generate ()
+    {
+        objectBuilder.Reset();
+        return JoinLines(
+            JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Invokable).Select(EmitInvokable)),
+            JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Function).Select(EmitFunction)),
+            JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Event).Select(EmitEvent)),
+            JoinLines(inspector.Types.Where(t => t.IsEnum).Select(e => enumGenerator.Generate(e, objectBuilder)))
+        );
+    }
 
     private string EmitInvokable (Method method)
     {
