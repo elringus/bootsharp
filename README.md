@@ -188,7 +188,7 @@ async function fetchBootData() {
 }
 ```
 
-Find sideloading example in the [React sample](https://github.com/Elringus/DotNetJS/tree/main/Samples/React). Specifically, take a look at the [build script](https://github.com/Elringus/DotNetJS/blob/feat/worker/Samples/React/scripts/build-backend.sh), which automatically deploys the binaries to the react public directory after building the backend.
+Find sideloading example in the [React sample](https://github.com/Elringus/DotNetJS/blob/feat/worker/Samples/React/src/boot.ts). Also, take a look at the [build script](https://github.com/Elringus/DotNetJS/blob/feat/worker/Samples/React/scripts/build-backend.sh), which automatically deploys the binaries to the react public directory after building the backend.
 
 ## Running DotNet on Worker
 
