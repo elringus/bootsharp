@@ -6,32 +6,27 @@ type Props = {
 };
 
 export const Stress = (props: Props) => {
-    const [stressing, setStressing] = useState(true);
-    const [resolving, setResolving] = useState(false);
+    const [stressing, setStressing] = useState(false);
     const [iterations, setIterations] = useState("");
 
     useEffect(() => {
-        Backend.GetStressPower = async () => props.power;
+        Backend.GetStressPower = () => props.power;
     }, [props.power]);
 
     useEffect(() => {
-        void Backend.OnStressIteration.subscribe(logIteration);
-        void Backend.StartStress();
-        return () => {
-            void Backend.OnStressIteration.unsubscribe(logIteration);
-            void Backend.StopStress();
-        };
+        Backend.OnStressIteration.subscribe(logIteration);
+        return () => Backend.OnStressIteration.unsubscribe(logIteration);
     }, []);
 
     return (
         <div id="stress">
             <div>
                 This sample shows the benefit of running dotnet on worker thread.
-                The Donut is animating on the main (UI) thread, while dotnet is running stress test.
-                When built without 'CreateWorker' enabled, the animation will have a poor FPS.
+                The Donut is animating on the main (UI) thread and dotnet is running stress test.
+                When built without 'CreateWorker' enabled, the animation will perform poorly.
             </div>
-            <button onClick={toggleStress} disabled={resolving}>
-                {getButtonText()}
+            <button onClick={toggleStress}>
+                {stressing ? "STOP STRESS" : "START STRESS"}
             </button>
             <div id="iterations">
                 {iterations}
@@ -39,18 +34,10 @@ export const Stress = (props: Props) => {
         </div>
     );
 
-    async function toggleStress() {
-        setResolving(true);
-        if (await Backend.IsStressing())
-            await Backend.StopStress();
-        else await Backend.StartStress();
-        setResolving(false);
+    function toggleStress() {
+        if (Backend.IsStressing()) Backend.StopStress();
+        else Backend.StartStress();
         setStressing(!stressing);
-    }
-
-    function getButtonText() {
-        if (resolving) return "RESOLVING...";
-        return stressing ? "STOP STRESS" : "START STRESS";
     }
 
     function logIteration(time: number) {

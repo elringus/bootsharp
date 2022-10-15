@@ -6,7 +6,7 @@
         "development": ["last 1 version"]
     },
     "scripts": {
-        "test": "react-scripts test --env=./src/test/environment.ts",
+        "test": "react-scripts test",
         "start": "react-scripts start",
         "build": "react-scripts build"
     },

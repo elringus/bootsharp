@@ -26,7 +26,6 @@
                          WasmFile="$(WasmFile)"
                          EntryAssemblyName="$(AssemblyName).dll"
                          EmbedBinaries="$(EmbedBinaries)"
-                         CreateWorker="$(CreateWorker)"
                          Clean="$(Clean)"/>
     </Target>
 

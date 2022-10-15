@@ -160,26 +160,4 @@ public class LibraryTest : ContentTest
         Contains("exports.n = {};");
         Contains("exports.n.Foo = { A: \"A\", B: \"B\" };");
     }
-
-    [Fact]
-    public void WhenCreateWorkerEnabledProxiesAreGenerated ()
-    {
-        AddAssembly(
-            With("Space", "[JSInvokable] public static void Foo () { }"),
-            With("Space", "[JSFunction] public static void Bar () { }"),
-            With("Space", "[JSEvent] public static void OnNya (Nya nya) { }"),
-            With("Space", "public enum Nya { Far }")
-        );
-        Task.CreateWorker = true;
-        Task.Execute();
-        Contains("exports.Space.Foo = proxy.Space.Foo;");
-        Contains("Object.defineProperty(exports.Space, \"Bar\", {");
-        Contains("get: () => this.value");
-        Contains("set: value => { this.value = value; proxy.Space.Bar = exports.proxy(value); }");
-        Contains("exports.Space.Nya = { Far: \"Far\" };");
-        Contains("exports.Space.OnNya = {");
-        Contains("broadcast: proxy.Space.OnNya.broadcast");
-        Contains("subscribe: handler => {");
-        Contains("unsubscribe: handler => {");
-    }
 }

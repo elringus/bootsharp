@@ -4,11 +4,10 @@
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <EmbedBinaries>false</EmbedBinaries>
-        <CreateWorker>true</CreateWorker>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DotNetJS" Version="0.17.0"/>
+        <PackageReference Include="DotNetJS" Version="0.17.1"/>
     </ItemGroup>
 
 </Project>

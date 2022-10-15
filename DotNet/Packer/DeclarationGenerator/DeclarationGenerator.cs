@@ -12,13 +12,12 @@ internal class DeclarationGenerator
     private readonly MethodDeclarationGenerator methodsGenerator = new();
     private readonly List<DeclarationFile> declarations = new();
     private readonly TypeDeclarationGenerator typesGenerator;
-    private readonly bool embedded, worker;
+    private readonly bool embedded;
 
-    public DeclarationGenerator (NamespaceBuilder spaceBuilder, bool embedded, bool worker)
+    public DeclarationGenerator (NamespaceBuilder spaceBuilder, bool embedded)
     {
         typesGenerator = new TypeDeclarationGenerator(spaceBuilder);
         this.embedded = embedded;
-        this.worker = worker;
     }
 
     public void LoadDeclarations (string directory)
@@ -79,27 +78,12 @@ internal class DeclarationGenerator
     private string ModifyInternalDeclarations (string source)
     {
         if (embedded) source = source.Replace("boot(bootData: BootData):", "boot():");
-        if (worker)
-        {
-            ModifyMethodToReturnPromise("getBootStatus");
-            ModifyMethodToReturnPromise("broadcast");
-            ModifyMethodToReturnPromise("subscribe");
-            ModifyMethodToReturnPromise("unsubscribe");
-            RemoveLine("subscribeById");
-            RemoveLine("unsubscribeById");
-        }
         RemoveLine("function initializeInterop");
         RemoveLine("function initializeMono");
         RemoveLine("function callEntryPoint");
         return source;
 
         void RemoveLine (string lineFragment) =>
-            source = Regex.Replace(source,
-                $@"\n.*{lineFragment}.*", "");
-
-        void ModifyMethodToReturnPromise (string methodName) =>
-            source = Regex.Replace(source,
-                $@"(^.* {methodName}[(|:].+[:|=>] )(.+);",
-                "$1Promise<$2>;", RegexOptions.Multiline);
+            source = Regex.Replace(source, $@"^.*{lineFragment}.*", "", RegexOptions.Multiline);
     }
 }

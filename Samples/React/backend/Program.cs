@@ -13,29 +13,27 @@ public static partial class Program
     public static void Main () { }
 
     [JSInvokable]
-    public static Task StartStress ()
+    public static void StartStress ()
     {
         cts?.Cancel();
         cts = new CancellationTokenSource();
         _ = Stress(cts.Token);
-        return Task.CompletedTask;
     }
 
     [JSInvokable]
-    public static Task StopStress ()
+    public static void StopStress ()
     {
         cts?.Cancel();
-        return Task.CompletedTask;
     }
 
     [JSInvokable]
-    public static Task<bool> IsStressing ()
+    public static bool IsStressing ()
     {
-        return Task.FromResult(!cts?.IsCancellationRequested ?? false);
+        return !cts?.IsCancellationRequested ?? false;
     }
 
     [JSFunction]
-    public static partial Task<int> GetStressPower ();
+    public static partial int GetStressPower ();
 
     [JSEvent]
     public static partial void OnStressIteration (int time);
@@ -45,7 +43,7 @@ public static partial class Program
         while (!token.IsCancellationRequested)
         {
             var time = DateTime.Now;
-            ComputePrime(await GetStressPower());
+            ComputePrime(GetStressPower());
             OnStressIteration((DateTime.Now - time).Milliseconds);
             await Task.Delay(1);
         }

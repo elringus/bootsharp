@@ -13,7 +13,6 @@ public class PublishDotNetJS : Task
     [Required] public string WasmFile { get; set; } = null!;
     [Required] public string EntryAssemblyName { get; set; } = null!;
     public bool EmbedBinaries { get; set; } = true;
-    public bool CreateWorker { get; set; }
     public bool Clean { get; set; } = true;
 
     public override bool Execute ()
@@ -91,7 +90,7 @@ public class PublishDotNetJS : Task
     private string GenerateLibrary (AssemblyInspector inspector, NamespaceBuilder spaceBuilder)
     {
         var runtimeJS = File.ReadAllText(Path.Combine(JSDir, "dotnet.js"));
-        var generator = new LibraryGenerator(spaceBuilder, inspector, runtimeJS, EntryAssemblyName, CreateWorker);
+        var generator = new LibraryGenerator(spaceBuilder, inspector, runtimeJS, EntryAssemblyName);
         return EmbedBinaries
             ? generator.GenerateEmbedded(File.ReadAllBytes(WasmFile))
             : generator.GenerateSideLoad(Path.GetFileName(WasmFile));
@@ -99,7 +98,7 @@ public class PublishDotNetJS : Task
 
     private string GenerateDeclaration (AssemblyInspector inspector, NamespaceBuilder spaceBuilder)
     {
-        var generator = new DeclarationGenerator(spaceBuilder, EmbedBinaries, CreateWorker);
+        var generator = new DeclarationGenerator(spaceBuilder, EmbedBinaries);
         generator.LoadDeclarations(JSDir);
         return generator.Generate(inspector);
     }

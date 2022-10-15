@@ -30,6 +30,20 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void RemovesUnwantedDeclarations ()
+    {
+        File.WriteAllText(Path.Combine(Data.JSDir, "boot.d.ts"),
+            "export declare function initializeInterop(): void;\n" +
+            "export declare function initializeMono(assemblies: Assembly[]): void;\n" +
+            "export declare function callEntryPoint(assemblyName: string): Promise<any>;"
+        );
+        Task.Execute();
+        Assert.DoesNotContain("initializeInterop", Data.GeneratedDeclaration);
+        Assert.DoesNotContain("initializeMono", Data.GeneratedDeclaration);
+        Assert.DoesNotContain("callEntryPoint", Data.GeneratedDeclaration);
+    }
+
+    [Fact]
     public void ResolvesImportForRequiredLibraryDeclarations ()
     {
         File.WriteAllText(Path.Combine(Data.JSDir, "dep.d.ts"), "dep");
@@ -72,30 +86,6 @@ public class DeclarationTest : ContentTest
         Task.Execute();
         Contains("export interface BootUris");
         Contains("export declare function getBootUris");
-    }
-
-    [Fact]
-    public void WhenCreateWorkerEnabledMethodsExceptGetBootUrisReturnPromise ()
-    {
-        File.WriteAllText(Path.Combine(Data.JSDir, "boot.d.ts"),
-            "export declare function getBootUris(): BootUris;\n" +
-            "export declare function terminate(): Promise<void>;\n" +
-            "export declare function getBootStatus(): BootStatus;\n" +
-            "    subscribe(handler: (...args: [...T]) => void): string;\n" +
-            "    unsubscribe(handler: (...args: [...T]) => void): void;\n" +
-            "    subscribe: (handler: (...args: [...T]) => void) => string;\n" +
-            "    unsubscribe: (handler: (...args: [...T]) => void) => void;\n");
-        Task.CreateWorker = true;
-        Task.EmbedBinaries = false;
-        Task.Execute();
-        Contains("export declare function getBootUris(): BootUris;\n");
-        Contains("export declare function terminate(): Promise<void>;\n");
-        Contains("export declare function getBootStatus(): Promise<BootStatus>;\n");
-        Contains("export declare function getBootStatus(): Promise<BootStatus>;\n");
-        Contains("    subscribe(handler: (...args: [...T]) => void): Promise<string>;\n");
-        Contains("    unsubscribe(handler: (...args: [...T]) => void): Promise<void>;\n");
-        Contains("    subscribe: (handler: (...args: [...T]) => void) => Promise<string>;\n");
-        Contains("    unsubscribe: (handler: (...args: [...T]) => void) => Promise<void>;\n");
     }
 
     [Fact]

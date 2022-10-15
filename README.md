@@ -111,7 +111,7 @@ Find the following sample projects in this repository:
 
 - [Hello World](https://github.com/Elringus/DotNetJS/tree/main/Samples/HelloWorld) — Consume the produced library as a global import in browser, CommonJS or ES module in node.
 - [Web Extension](https://github.com/Elringus/DotNetJS/tree/main/Samples/WebExtension) — Consume the library in VS Code web extension, which works in both web and standalone versions of the IDE.
-- [React](https://github.com/Elringus/DotNetJS/tree/main/Samples/React) — A sample React app, which uses dotnet as backend. Features binaries side-loading, running dotnet on worker thread and mocking dotnet APIs in unit tests.
+- [React](https://github.com/Elringus/DotNetJS/tree/main/Samples/React) — A sample React app, which uses dotnet as backend. Features binaries side-loading and mocking dotnet APIs in unit tests.
 - [Runtime Tests](https://github.com/Elringus/DotNetJS/tree/main/JavaScript/test) — Integration tests featuring various usage scenarios: async method invocations, interop with instances, sending raw byte arrays, streaming, etc.
 
 A real-life usage of the solution can be found in https://github.com/Naninovel/Language. The project is an implementation of language server protocol that is used in VS Code extension: https://github.com/Naninovel/VSCode.
@@ -189,21 +189,6 @@ async function fetchBootData() {
 ```
 
 Find sideloading example in the [React sample](https://github.com/Elringus/DotNetJS/blob/main/Samples/React/src/boot.ts). Also, take a look at the [build script](https://github.com/Elringus/DotNetJS/blob/main/Samples/React/scripts/build-backend.sh), which automatically deploys the binaries to the react public directory after building the backend.
-
-## Running DotNet on Worker
-
-When using dotnet as application backend, it makes sense to run the process on a background thread to prevent stalling the main (UI) thread. Enabling `CreateWorker` build property will make dotnet run on worker thread and provide a mechanism to interact with the worker using the same APIs (via embedded [comlink](https://github.com/GoogleChromeLabs/comlink) library):
-
-```xml
-<PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <CreateWorker>true</CreateWorker>
-</PropertyGroup>
-```
-
-The dotnet web worker will start under the hood when the library is imported; the runtime can then be booted and used the same way. The only exception are the sync APIs: as it's not possible to communicate with web workers in blocking manner, all the methods will return promise, even if they do not return task on C# side.
-
-When unit-testing applications with dotnet worker, define `muteDotNetWorker` global property to disable the worker creation on library import. Check the [React sample](https://github.com/Elringus/DotNetJS/blob/main/Samples/React/src/test/environment.ts) on setting the variable with jest.
 
 ## Namespace Pattern
 
