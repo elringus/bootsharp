@@ -1,5 +1,5 @@
 ﻿const assert = require("assert");
-const { boot, terminate, getBootUris, getBootStatus, BootStatus, invoke } = require("../dist/dotnet");
+const { boot, terminate, getBootStatus, BootStatus, invoke } = require("../dist/dotnet");
 const { bootTest, getBootData } = require("./csharp");
 const { Base64 } = require("js-base64");
 
@@ -61,8 +61,5 @@ describe("boot", () => {
         await boot(data);
         assert.deepStrictEqual(getBootStatus(), BootStatus.Booted);
         terminate();
-    });
-    it("get uris return undefined when embed binaries is enabled", () => {
-        assert.strictEqual(getBootUris(), undefined);
     });
 });

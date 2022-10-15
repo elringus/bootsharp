@@ -12,7 +12,6 @@ export function initializeMono(assemblies: Assembly[]): void {
     wasm.MONO.mono_wasm_runtime_ready();
     wasm.MONO.mono_wasm_setenv("TZ", "UTC");
     wasm.MONO.mono_wasm_setenv("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT", "1");
-    injectCrypto();
 }
 
 export async function callEntryPoint(assemblyName: string): Promise<any> {
@@ -26,15 +25,4 @@ function loadAssembly(assembly: Assembly): void {
     const data = typeof assembly.data === "string" ? Base64.toUint8Array(assembly.data) : assembly.data;
     heapMemory.set(data);
     wasm.ccall("mono_wasm_add_assembly", null, ["string", "number", "number"], [assembly.name, heapAddress, dataLength]);
-}
-
-function injectCrypto(): void {
-    if (typeof crypto === "object" && typeof crypto["getRandomValues"] === "function") return;
-    // https://github.com/Elringus/DotNetJS/issues/17
-    globalThis.crypto = {
-        getRandomValues: buffer => {
-            for (let i = 0; i < buffer.length; i++)
-                buffer[i] = (Math.random() * 256) | 0;
-        }
-    } as any;
 }

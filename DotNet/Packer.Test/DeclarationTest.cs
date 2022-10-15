@@ -30,6 +30,20 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void RemovesUnwantedDeclarations ()
+    {
+        File.WriteAllText(Path.Combine(Data.JSDir, "boot.d.ts"),
+            "export declare function initializeInterop(): void;\n" +
+            "export declare function initializeMono(assemblies: Assembly[]): void;\n" +
+            "export declare function callEntryPoint(assemblyName: string): Promise<any>;"
+        );
+        Task.Execute();
+        Assert.DoesNotContain("initializeInterop", Data.GeneratedDeclaration);
+        Assert.DoesNotContain("initializeMono", Data.GeneratedDeclaration);
+        Assert.DoesNotContain("callEntryPoint", Data.GeneratedDeclaration);
+    }
+
+    [Fact]
     public void ResolvesImportForRequiredLibraryDeclarations ()
     {
         File.WriteAllText(Path.Combine(Data.JSDir, "dep.d.ts"), "dep");
@@ -63,6 +77,15 @@ public class DeclarationTest : ContentTest
         Task.EmbedBinaries = false;
         Task.Execute();
         Contains("boot(bootData: BootData): Promise<void>");
+    }
+
+    [Fact]
+    public void WhenSideLoadHasBootUrisDeclarations ()
+    {
+        Task.EmbedBinaries = false;
+        Task.Execute();
+        Contains("export interface BootUris");
+        Contains("export declare function getBootUris");
     }
 
     [Fact]

@@ -10,6 +10,7 @@
 
 node_modules
 dist
+build
 .nyc_output
 
 JavaScript/native/emsdk

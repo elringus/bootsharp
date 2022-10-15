@@ -89,11 +89,11 @@ public class PublishDotNetJS : Task
 
     private string GenerateLibrary (AssemblyInspector inspector, NamespaceBuilder spaceBuilder)
     {
-        var generator = new LibraryGenerator(spaceBuilder);
         var runtimeJS = File.ReadAllText(Path.Combine(JSDir, "dotnet.js"));
+        var generator = new LibraryGenerator(spaceBuilder, inspector, runtimeJS, EntryAssemblyName);
         return EmbedBinaries
-            ? generator.GenerateEmbedded(runtimeJS, File.ReadAllBytes(WasmFile), EntryAssemblyName, inspector)
-            : generator.GenerateSideLoad(runtimeJS, Path.GetFileName(WasmFile), EntryAssemblyName, inspector);
+            ? generator.GenerateEmbedded(File.ReadAllBytes(WasmFile))
+            : generator.GenerateSideLoad(Path.GetFileName(WasmFile));
     }
 
     private string GenerateDeclaration (AssemblyInspector inspector, NamespaceBuilder spaceBuilder)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using static Packer.TextUtilities;
 
 namespace Packer;
@@ -29,13 +30,21 @@ internal class DeclarationGenerator
         }
     }
 
-    public string Generate (AssemblyInspector inspector)
-    {
-        var methodsContent = methodsGenerator.Generate(inspector.Methods);
-        var objectsContent = typesGenerator.Generate(inspector.Types);
-        var runtimeContent = JoinLines(declarations.Select(GenerateForDeclaration), 0);
-        return JoinLines(0, runtimeContent, objectsContent, methodsContent) + "\n";
-    }
+    public string Generate (AssemblyInspector inspector) => JoinLines(0,
+        !embedded ? GenerateSideLoadDeclarations() : null,
+        JoinLines(declarations.Select(GenerateForDeclaration), 0),
+        typesGenerator.Generate(inspector.Types),
+        methodsGenerator.Generate(inspector.Methods)
+    ) + "\n";
+
+    private string GenerateSideLoadDeclarations () => JoinLines(0,
+        "export interface BootUris {", JoinLines(1, true,
+            "wasm: string;",
+            "assemblies: string[];",
+            "entryAssembly: string;"),
+        "}",
+        "export declare function getBootUris(): BootUris;"
+    );
 
     private string GenerateForDeclaration (DeclarationFile declaration)
     {
@@ -69,9 +78,12 @@ internal class DeclarationGenerator
     private string ModifyInternalDeclarations (string source)
     {
         if (embedded) source = source.Replace("boot(bootData: BootData):", "boot():");
-        source = source.Replace("export declare function initializeInterop(): void;", "");
-        source = source.Replace("export declare function initializeMono(assemblies: Assembly[]): void;", "");
-        source = source.Replace("export declare function callEntryPoint(assemblyName: string): Promise<any>;", "");
+        RemoveLine("function initializeInterop");
+        RemoveLine("function initializeMono");
+        RemoveLine("function callEntryPoint");
         return source;
+
+        void RemoveLine (string lineFragment) =>
+            source = Regex.Replace(source, $@"^.*{lineFragment}.*", "", RegexOptions.Multiline);
     }
 }

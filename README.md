@@ -111,6 +111,7 @@ Find the following sample projects in this repository:
 
 - [Hello World](https://github.com/Elringus/DotNetJS/tree/main/Samples/HelloWorld) — Consume the produced library as a global import in browser, CommonJS or ES module in node.
 - [Web Extension](https://github.com/Elringus/DotNetJS/tree/main/Samples/WebExtension) — Consume the library in VS Code web extension, which works in both web and standalone versions of the IDE.
+- [React](https://github.com/Elringus/DotNetJS/tree/main/Samples/React) — A sample React app, which uses dotnet as backend. Features binaries side-loading and mocking dotnet APIs in unit tests.
 - [Runtime Tests](https://github.com/Elringus/DotNetJS/tree/main/JavaScript/test) — Integration tests featuring various usage scenarios: async method invocations, interop with instances, sending raw byte arrays, streaming, etc.
 
 A real-life usage of the solution can be found in https://github.com/Naninovel/Language. The project is an implementation of language server protocol that is used in VS Code extension: https://github.com/Naninovel/VSCode.
@@ -186,6 +187,8 @@ async function fetchBootData() {
     }
 }
 ```
+
+Find sideloading example in the [React sample](https://github.com/Elringus/DotNetJS/blob/main/Samples/React/src/boot.ts). Also, take a look at the [build script](https://github.com/Elringus/DotNetJS/blob/main/Samples/React/scripts/build-backend.sh), which automatically deploys the binaries to the react public directory after building the backend.
 
 ## Namespace Pattern
 
