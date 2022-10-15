@@ -21,13 +21,19 @@ internal class WorkerTemplate
         exports.getBootStatus = proxy.getBootStatus;
         exports.boot = proxy.boot;
         exports.terminate = proxy.terminate;
+        exports.invoke = proxy.invoke;
+        exports.invokeAsync = proxy.invokeAsync;
+        exports.createObjectReference = proxy.createObjectReference;
+        exports.disposeObjectReference = proxy.disposeObjectReference;
+        exports.createStreamReference = proxy.createStreamReference;
         {ProxiesJS}
     }}
 ";
 
     private string EmitWorkerBase64 ()
     {
-        var js = $"{LibraryJS}{comlinkJS}Comlink.expose(dotnet);";
+        var libraryWithoutMap = LibraryJS.Replace("//# sourceMappingURL=dotnet.js.map", "");
+        var js = $@"{libraryWithoutMap}{comlinkJS}Comlink.expose(dotnet);";
         return Convert.ToBase64String(Encoding.UTF8.GetBytes(js));
     }
 }
