@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using static Generator.Common;
 
 namespace Generator
 {
@@ -11,6 +12,18 @@ namespace Generator
         {
             this.type = type;
             this.spaceConverter = spaceConverter;
+        }
+
+        public string EmitSource ()
+        {
+            return MuteNullableWarnings(
+                EmitImport() +
+                WrapNamespace(
+                    EmitHeader() +
+                    EmitMethods(compilation) +
+                    EmitFooter()
+                )
+            );
         }
     }
 }

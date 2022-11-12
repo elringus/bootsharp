@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using static Generator.Common;
 
 namespace Generator
 {
@@ -18,7 +19,7 @@ namespace Generator
 
         public string EmitSource (Compilation compilation)
         {
-            return WrapDefines(
+            return MuteNullableWarnings(
                 EmitImport() +
                 WrapNamespace(
                     EmitHeader() +
@@ -26,13 +27,6 @@ namespace Generator
                     EmitFooter()
                 )
             );
-        }
-
-        private string WrapDefines (string source)
-        {
-            return "\n#nullable enable\n#pragma warning disable\n" +
-                   source +
-                   "\n#pragma warning restore\n#nullable restore\n";
         }
 
         private string EmitImport ()

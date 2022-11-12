@@ -20,6 +20,8 @@ namespace Generator
 
         private void AddSources (GeneratorExecutionContext context, SyntaxReceiver receiver)
         {
+            for (int i = 0; i < receiver.ExportedTypes.Count; i++)
+                context.AddSource($"Exported{i}.g", receiver.ExportedTypes[i].EmitSource());
             for (int i = 0; i < receiver.FunctionClasses.Count; i++)
                 context.AddSource($"Functions{i}.g", receiver.FunctionClasses[i].EmitSource(context.Compilation));
             for (int i = 0; i < receiver.EventClasses.Count; i++)
