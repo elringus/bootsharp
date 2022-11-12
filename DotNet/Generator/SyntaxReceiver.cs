@@ -7,8 +7,9 @@ namespace Generator
 {
     internal class SyntaxReceiver : ISyntaxContextReceiver
     {
-        public List<GeneratedClass> FunctionClasses { get; } = new List<GeneratedClass>();
-        public List<GeneratedClass> EventClasses { get; } = new List<GeneratedClass>();
+        public List<ExportedType> ExportedTypes { get; } = new List<ExportedType>();
+        public List<PartialClass> FunctionClasses { get; } = new List<PartialClass>();
+        public List<PartialClass> EventClasses { get; } = new List<PartialClass>();
 
         public void OnVisitSyntaxNode (GeneratorSyntaxContext context)
         {
@@ -19,25 +20,25 @@ namespace Generator
         private void VisitClass (ClassDeclarationSyntax syntax)
         {
             var functions = GetFunctions(syntax);
-            if (functions.Count > 0) FunctionClasses.Add(new GeneratedClass(syntax, functions));
+            if (functions.Count > 0) FunctionClasses.Add(new PartialClass(syntax, functions));
             var events = GetEvents(syntax);
-            if (events.Count > 0) EventClasses.Add(new GeneratedClass(syntax, events));
+            if (events.Count > 0) EventClasses.Add(new PartialClass(syntax, events));
         }
 
-        private List<GeneratedMethod> GetFunctions (ClassDeclarationSyntax syntax)
+        private List<PartialMethod> GetFunctions (ClassDeclarationSyntax syntax)
         {
             return syntax.Members
                 .OfType<MethodDeclarationSyntax>()
                 .Where(s => HasAttribute(s, Attributes.Function))
-                .Select(m => new GeneratedMethod(m, false)).ToList();
+                .Select(m => new PartialMethod(m, false)).ToList();
         }
 
-        private List<GeneratedMethod> GetEvents (ClassDeclarationSyntax syntax)
+        private List<PartialMethod> GetEvents (ClassDeclarationSyntax syntax)
         {
             return syntax.Members
                 .OfType<MethodDeclarationSyntax>()
                 .Where(s => HasAttribute(s, Attributes.Event))
-                .Select(m => new GeneratedMethod(m, true)).ToList();
+                .Select(m => new PartialMethod(m, true)).ToList();
         }
 
         private bool HasAttribute (MethodDeclarationSyntax syntax, string attributeName)

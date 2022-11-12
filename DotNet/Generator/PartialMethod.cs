@@ -4,13 +4,13 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Generator
 {
-    internal class GeneratedMethod
+    internal class PartialMethod
     {
         private readonly MethodDeclarationSyntax syntax;
         private readonly NamespaceConverter spaceConverter;
         private readonly bool @event;
 
-        public GeneratedMethod (MethodDeclarationSyntax syntax, bool @event)
+        public PartialMethod (MethodDeclarationSyntax syntax, bool @event)
         {
             this.syntax = syntax;
             this.@event = @event;

@@ -12,6 +12,8 @@ namespace Generator
 
         public void Execute (GeneratorExecutionContext context)
         {
+            // https://stackoverflow.com/a/68733955/1202251
+
             if (context.SyntaxContextReceiver is SyntaxReceiver receiver)
                 AddSources(context, receiver);
         }
