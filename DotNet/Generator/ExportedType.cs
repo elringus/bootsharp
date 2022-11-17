@@ -3,7 +3,7 @@ using static Generator.Common;
 
 namespace Generator
 {
-    internal class ExportedType
+    internal class ExportedType // Import?
     {
         private readonly ITypeSymbol type;
         private readonly NamespaceConverter spaceConverter;
@@ -14,16 +14,16 @@ namespace Generator
             this.spaceConverter = spaceConverter;
         }
 
-        public string EmitSource ()
-        {
-            return MuteNullableWarnings(
-                EmitImport() +
-                WrapNamespace(
-                    EmitHeader() +
-                    EmitMethods(compilation) +
-                    EmitFooter()
-                )
-            );
-        }
+        // public string EmitSource ()
+        // {
+        //     return MuteNullableWarnings(
+        //         EmitImport() +
+        //         WrapNamespace(
+        //             EmitHeader() +
+        //             EmitMethods(compilation) +
+        //             EmitFooter()
+        //         )
+        //     );
+        // }
     }
 }

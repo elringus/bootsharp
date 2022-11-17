@@ -29,7 +29,7 @@ namespace Generator
         {
             return syntax.Members
                 .OfType<MethodDeclarationSyntax>()
-                .Where(s => HasAttribute(s, Attributes.Function))
+                .Where(s => HasAttribute(s, "JSFunction"))
                 .Select(m => new PartialMethod(m, false)).ToList();
         }
 
@@ -37,7 +37,7 @@ namespace Generator
         {
             return syntax.Members
                 .OfType<MethodDeclarationSyntax>()
-                .Where(s => HasAttribute(s, Attributes.Event))
+                .Where(s => HasAttribute(s, "JSEvent"))
                 .Select(m => new PartialMethod(m, true)).ToList();
         }
 

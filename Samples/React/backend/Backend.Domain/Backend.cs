@@ -1,55 +1,49 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using DotNetJS;
-using Microsoft.JSInterop;
 
-namespace Backend;
+namespace Backend.Domain;
 
-public static partial class Program
+public class Backend : IBackend
 {
-    private static CancellationTokenSource? cts;
+    private readonly IFrontend frontend;
 
-    public static void Main () { }
+    private CancellationTokenSource? cts;
 
-    [JSInvokable]
-    public static void StartStress ()
+    public Backend (IFrontend frontend)
+    {
+        this.frontend = frontend;
+    }
+
+    public void StartStress ()
     {
         cts?.Cancel();
         cts = new CancellationTokenSource();
         _ = Stress(cts.Token);
     }
 
-    [JSInvokable]
-    public static void StopStress ()
+    public void StopStress ()
     {
         cts?.Cancel();
     }
 
-    [JSInvokable]
-    public static bool IsStressing ()
+    public bool IsStressing ()
     {
         return !cts?.IsCancellationRequested ?? false;
     }
 
-    [JSFunction]
-    public static partial int GetStressPower ();
-
-    [JSEvent]
-    public static partial void OnStressIteration (int time);
-
-    private static async Task Stress (CancellationToken token)
+    private async Task Stress (CancellationToken token)
     {
         while (!token.IsCancellationRequested)
         {
             var time = DateTime.Now;
-            ComputePrime(GetStressPower());
-            OnStressIteration((DateTime.Now - time).Milliseconds);
+            ComputePrime(frontend.GetStressPower());
+            frontend.OnStressComplete((DateTime.Now - time).Milliseconds);
             await Task.Delay(1);
         }
     }
 
-    private static void ComputePrime (int n)
+    private void ComputePrime (int n)
     {
         int count = 0;
         long a = 2;
