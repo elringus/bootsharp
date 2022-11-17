@@ -1,7 +1,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backend.Domain", "Backend.Domain\Backend.Domain.csproj", "{F758E072-5DA6-499E-9F09-922D2367B201}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backend", "Backend/Backend.csproj", "{F758E072-5DA6-499E-9F09-922D2367B201}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backend.WASM", "Backend.WASM\Backend.WASM.csproj", "{44F39802-9F5D-4D7E-9F63-8BAD2E3155A2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backend.WASM", "Backend.WASM/Backend.WASM.csproj", "{44F39802-9F5D-4D7E-9F63-8BAD2E3155A2}"
 EndProject
 Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution

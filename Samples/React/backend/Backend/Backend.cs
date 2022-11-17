@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Backend.Domain;
+namespace Backend;
 
 public class Backend : IBackend
 {

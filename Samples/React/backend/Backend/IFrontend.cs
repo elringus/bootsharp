@@ -1,4 +1,4 @@
-﻿namespace Backend.Domain;
+﻿namespace Backend;
 
 public interface IFrontend
 {

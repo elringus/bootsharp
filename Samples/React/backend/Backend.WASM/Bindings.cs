@@ -1,4 +1,4 @@
-﻿using Backend.Domain;
+﻿using Backend;
 using DotNetJS;
 
 [assembly: JSExport(new[] { typeof(IBackend) })]
