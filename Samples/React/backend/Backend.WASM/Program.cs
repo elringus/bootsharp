@@ -1,4 +1,10 @@
-﻿namespace Backend.WASM;
+﻿using Backend;
+using DotNetJS;
+
+[assembly: JSExport(new[] { typeof(IBackend) })]
+[assembly: JSImport(new[] { typeof(IFrontend) })]
+
+namespace Backend.WASM;
 
 public static class Program
 {

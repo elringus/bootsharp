@@ -7,7 +7,6 @@ namespace Generator
 {
     internal class SyntaxReceiver : ISyntaxContextReceiver
     {
-        public List<ExportedType> ExportedTypes { get; } = new List<ExportedType>();
         public List<PartialClass> FunctionClasses { get; } = new List<PartialClass>();
         public List<PartialClass> EventClasses { get; } = new List<PartialClass>();
 
@@ -19,26 +18,18 @@ namespace Generator
 
         private void VisitClass (ClassDeclarationSyntax syntax)
         {
-            var functions = GetFunctions(syntax);
+            var functions = GetMethodsWithAttribute(syntax, "JSFunction");
             if (functions.Count > 0) FunctionClasses.Add(new PartialClass(syntax, functions));
-            var events = GetEvents(syntax);
+            var events = GetMethodsWithAttribute(syntax, "JSEvent");
             if (events.Count > 0) EventClasses.Add(new PartialClass(syntax, events));
         }
 
-        private List<PartialMethod> GetFunctions (ClassDeclarationSyntax syntax)
+        private List<PartialMethod> GetMethodsWithAttribute (ClassDeclarationSyntax syntax, string attribute)
         {
             return syntax.Members
                 .OfType<MethodDeclarationSyntax>()
-                .Where(s => HasAttribute(s, "JSFunction"))
-                .Select(m => new PartialMethod(m, false)).ToList();
-        }
-
-        private List<PartialMethod> GetEvents (ClassDeclarationSyntax syntax)
-        {
-            return syntax.Members
-                .OfType<MethodDeclarationSyntax>()
-                .Where(s => HasAttribute(s, "JSEvent"))
-                .Select(m => new PartialMethod(m, true)).ToList();
+                .Where(s => HasAttribute(s, attribute))
+                .Select(m => new PartialMethod(m)).ToList();
         }
 
         private bool HasAttribute (MethodDeclarationSyntax syntax, string attributeName)

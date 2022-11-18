@@ -4,8 +4,6 @@
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <EmbedBinaries>false</EmbedBinaries>
-        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-        <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>
     </PropertyGroup>
 
     <ItemGroup>

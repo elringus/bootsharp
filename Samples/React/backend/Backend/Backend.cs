@@ -45,12 +45,12 @@ public class Backend : IBackend
 
     private void ComputePrime (int n)
     {
-        int count = 0;
-        long a = 2;
+        var count = 0;
+        var a = (long)2;
         while (count < n)
         {
-            long b = 2;
-            int prime = 1;
+            var b = (long)2;
+            var prime = 1;
             while (b * b <= a)
             {
                 if (a % b == 0)
