@@ -12,16 +12,11 @@ namespace DotNetJS;
 /// which has to be implemented in JavaScript.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Assembly)]
-public sealed class JSImportAttribute : Attribute
+public sealed class JSImportAttribute : JSTypeAttribute
 {
-    /// <summary>
-    /// The types to import.
-    /// </summary>
-    public Type[] Types { get; }
-
-    /// <param name="types">The types to import.</param>
-    public JSImportAttribute (Type[] types)
-    {
-        Types = types;
-    }
+    /// <inheritdoc />
+    public JSImportAttribute (Type[] types,
+        string? namePattern = null, string? nameReplacement = null,
+        string? invokePattern = null, string? invokeReplacement = null)
+        : base(types, namePattern, nameReplacement, invokePattern, invokeReplacement) { }
 }

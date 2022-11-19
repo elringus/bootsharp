@@ -21,7 +21,7 @@ test("get stress power returns value specified in props", async () => {
 
 test("stress iteration time is written to screen", async () => {
     render(<Stress power={0}/>);
-    await act(() => Backend.OnStressIteration.broadcast(13));
+    await act(() => Backend.OnStressComplete.broadcast(13));
     expect(screen.getByText(/Stressed over 13ms/));
 });
 

@@ -18,7 +18,7 @@ namespace Generator
         {
             var model = compilation.GetSemanticModel(syntax.SyntaxTree);
             var method = (IMethodSymbol)model.GetDeclaredSymbol(syntax);
-            return $"{EmitSignature(method)} => {BuildInvoke(method, compilation)};";
+            return $"{EmitSignature(method)} => {BuildInvoke(method, method!.Name, compilation)};";
         }
 
         private string EmitSignature (IMethodSymbol method)

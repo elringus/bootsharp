@@ -34,22 +34,23 @@ public class {implType}
 
     {string.Join("\n    ", type.GetMembers().OfType<IMethodSymbol>().Select(EmitMethod))}
 }}");
-        }
-
-        private static string EmitMethod (IMethodSymbol method)
-        {
-            return $"[JSInvokable] public static {EmitSignature()} => {EmitBody()};";
-
-            string EmitSignature ()
+            string EmitMethod (IMethodSymbol method)
             {
-                var args = method.Parameters.Select(p => $"{BuildFullName(p.Type)} {p.Name}");
-                return $"{BuildFullName(method.ReturnType)} {method.Name} ({string.Join(", ", args)})";
-            }
+                return $"[JSInvokable] public static {EmitSignature()} => {EmitBody()};";
 
-            string EmitBody ()
-            {
-                var args = method.Parameters.Select(p => p.Name);
-                return $"handler.{method.Name}({string.Join(", ", args)})";
+                string EmitSignature ()
+                {
+                    var methodName = ConvertMethodName(method.Name, compilation.Assembly, ExportAttribute);
+                    var args = method.Parameters.Select(p => $"{BuildFullName(p.Type)} {p.Name}");
+                    return $"{BuildFullName(method.ReturnType)} {methodName} ({string.Join(", ", args)})";
+                }
+
+                string EmitBody ()
+                {
+                    var args = method.Parameters.Select(p => p.Name);
+                    var body = $"handler.{method.Name}({string.Join(", ", args)})";
+                    return ConvertMethodInvocation(body, compilation.Assembly, ExportAttribute);
+                }
             }
         }
     }

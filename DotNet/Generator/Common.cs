@@ -7,6 +7,12 @@ namespace Generator
 {
     internal static class Common
     {
+        public const string FunctionAttribute = "JSFunctionAttribute";
+        public const string EventAttribute = "JSEventAttribute";
+        public const string ExportAttribute = "JSExportAttribute";
+        public const string ImportAttribute = "JSImportAttribute";
+        public const string NamespaceAttribute = "JSNamespaceAttribute";
+
         public static string MuteNullableWarnings (string source)
         {
             return "#nullable enable\n#pragma warning disable\n\n" +
@@ -27,10 +33,9 @@ namespace Generator
             return $"global::{ResolveNamespace(type)}.{name}{nullable}";
         }
 
-        public static string BuildInvoke (IMethodSymbol method, Compilation compilation)
+        public static string BuildInvoke (IMethodSymbol method, string methodName, Compilation compilation)
         {
-            var @event = method.GetAttributes().Any(IsEventAttribute) ||
-                         method.ReturnsVoid && !method.GetAttributes().Any(IsFunctionAttribute);
+            var @event = IsEvent(method);
             var async = method.ReturnType.Name == "ValueTask" || method.ReturnType.Name == "Task";
             var assembly = ConvertNamespace(ResolveNamespace(method), compilation.Assembly);
             var invokeMethod = GetInvokeMethod();
@@ -50,11 +55,17 @@ namespace Generator
             string GetInvokeParameters ()
             {
                 var parameters = method.Parameters.Select(p => p.Name).ToArray();
-                var args = $"\"dotnet.{assembly}.{method.Name}{(@event ? ".broadcast" : "")}\"";
+                var args = $"\"dotnet.{assembly}.{methodName}{(@event ? ".broadcast" : "")}\"";
                 if (parameters.Length == 0) return args;
                 args += $", new object[] {{ {string.Join(", ", parameters)} }}";
                 return args;
             }
+        }
+
+        public static bool IsEvent (IMethodSymbol method)
+        {
+            return method.GetAttributes().Any(IsEventAttribute) ||
+                   method.ReturnsVoid && !method.GetAttributes().Any(IsFunctionAttribute);
         }
 
         public static bool IsGeneric (ITypeSymbol type, out ImmutableArray<ITypeSymbol> args)
@@ -81,35 +92,43 @@ namespace Generator
                     (string)attribute.ConstructorArguments[1].Value);
         }
 
-        public static bool IsFunctionAttribute (AttributeData attribute)
+        public static string ConvertMethodName (string name, IAssemblySymbol assembly, string attributeName)
         {
-            return IsDotNetJSAttribute(attribute, "JSFunctionAttribute");
+            if (assembly.GetAttributes().FirstOrDefault(a => IsJSAttribute(a, attributeName)) is { } attribute &&
+                !string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(1).Value as string) &&
+                !string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(2).Value as string))
+                return Convert(name, attribute);
+            return name;
+
+            static string Convert (string space, AttributeData attribute) =>
+                Regex.Replace(space,
+                    (string)attribute.ConstructorArguments[1].Value,
+                    (string)attribute.ConstructorArguments[2].Value);
         }
 
-        public static bool IsEventAttribute (AttributeData attribute)
+        public static string ConvertMethodInvocation (string body, IAssemblySymbol assembly, string attributeName)
         {
-            return IsDotNetJSAttribute(attribute, "JSEventAttribute");
+            if (assembly.GetAttributes().FirstOrDefault(a => IsJSAttribute(a, attributeName)) is { } attribute &&
+                !string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(3).Value as string) &&
+                !string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(4).Value as string))
+                return Convert(body, attribute);
+            return body;
+
+            static string Convert (string space, AttributeData attribute) =>
+                Regex.Replace(space,
+                    (string)attribute.ConstructorArguments[3].Value,
+                    (string)attribute.ConstructorArguments[4].Value);
         }
 
-        public static bool IsExportAttribute (AttributeData attribute)
-        {
-            return IsDotNetJSAttribute(attribute, "JSExportAttribute");
-        }
+        public static bool IsFunctionAttribute (AttributeData attribute) => IsJSAttribute(attribute, FunctionAttribute);
+        public static bool IsEventAttribute (AttributeData attribute) => IsJSAttribute(attribute, EventAttribute);
+        public static bool IsExportAttribute (AttributeData attribute) => IsJSAttribute(attribute, ExportAttribute);
+        public static bool IsImportAttribute (AttributeData attribute) => IsJSAttribute(attribute, ImportAttribute);
+        public static bool IsNamespaceAttribute (AttributeData attribute) => IsJSAttribute(attribute, NamespaceAttribute);
 
-        public static bool IsImportAttribute (AttributeData attribute)
-        {
-            return IsDotNetJSAttribute(attribute, "JSImportAttribute");
-        }
-
-        public static bool IsNamespaceAttribute (AttributeData attribute)
-        {
-            return IsDotNetJSAttribute(attribute, "JSNamespaceAttribute");
-        }
-
-        private static bool IsDotNetJSAttribute (AttributeData attribute, string name)
-        {
-            return attribute.AttributeClass != null &&
-                   attribute.AttributeClass.Name == name;
-        }
+        public static bool IsJSAttribute (AttributeData attribute, string name) =>
+            attribute.AttributeClass != null &&
+            attribute.AttributeClass.ContainingNamespace.Name == "DotNetJS" &&
+            attribute.AttributeClass.Name == name;
     }
 }

@@ -61,8 +61,8 @@ using System;
 namespace DotNetJS;
 
 public class JSNamespaceAttribute : Attribute { public JSNamespaceAttribute (string _, string __) { } }
-public class JSExportAttribute : Attribute { public JSExportAttribute (Type[] _) { } }
-public class JSImportAttribute : Attribute { public JSImportAttribute (Type[] _) { } }
+public class JSExportAttribute : Attribute { public JSExportAttribute (Type[] _, string __ = null, string ___ = null, string ____ = null, string _____ = null) { } }
+public class JSImportAttribute : Attribute { public JSImportAttribute (Type[] _, string __ = null, string ___ = null, string ____ = null, string _____ = null) { } }
 public class JSFunctionAttribute : Attribute {  }
 public class JSEventAttribute : Attribute {  }
 

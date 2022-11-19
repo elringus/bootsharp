@@ -12,16 +12,11 @@ namespace DotNetJS;
 /// which has to be instantiated with an 'IHandler' implementation instance.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Assembly)]
-public sealed class JSExportAttribute : Attribute
+public sealed class JSExportAttribute : JSTypeAttribute
 {
-    /// <summary>
-    /// The types to export.
-    /// </summary>
-    public Type[] Types { get; }
-
-    /// <param name="types">The types to export.</param>
-    public JSExportAttribute (Type[] types)
-    {
-        Types = types;
-    }
+    /// <inheritdoc />
+    public JSExportAttribute (Type[] types,
+        string? namePattern = null, string? nameReplacement = null,
+        string? invokePattern = null, string? invokeReplacement = null)
+        : base(types, namePattern, nameReplacement, invokePattern, invokeReplacement) { }
 }

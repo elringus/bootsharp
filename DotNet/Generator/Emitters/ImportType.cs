@@ -33,12 +33,21 @@ public class {implType} : {specType}
 }}");
             string EmitBinding (IMethodSymbol method)
             {
-                return $"public static {EmitSignature()} => {BuildInvoke(method, compilation)};";
+                var methodName = ConvertMethodName(method.Name, compilation.Assembly, ImportAttribute);
+                return $"{EmitAttribute()} public static {EmitSignature()} => {EmitBody()};";
+
+                string EmitAttribute () => IsEvent(method) ? "[JSEvent]" : "[JSFunction]";
 
                 string EmitSignature ()
                 {
                     var args = method.Parameters.Select(p => $"{BuildFullName(p.Type)} {p.Name}");
-                    return $"{BuildFullName(method.ReturnType)} {method.Name} ({string.Join(", ", args)})";
+                    return $"{BuildFullName(method.ReturnType)} {methodName} ({string.Join(", ", args)})";
+                }
+
+                string EmitBody ()
+                {
+                    var body = BuildInvoke(method, methodName, compilation);
+                    return ConvertMethodInvocation(body, compilation.Assembly, ImportAttribute);
                 }
             }
 
@@ -54,8 +63,9 @@ public class {implType} : {specType}
 
                 string EmitBody ()
                 {
+                    var methodName = ConvertMethodName(method.Name, compilation.Assembly, ImportAttribute);
                     var args = method.Parameters.Select(p => p.Name);
-                    return $"{method.Name}({string.Join(", ", args)})";
+                    return $"{methodName}({string.Join(", ", args)})";
                 }
             }
         }

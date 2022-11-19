@@ -14,8 +14,8 @@ export const Stress = (props: Props) => {
     }, [props.power]);
 
     useEffect(() => {
-        Backend.OnStressIteration.subscribe(logIteration);
-        return () => Backend.OnStressIteration.unsubscribe(logIteration);
+        Backend.OnStressComplete.subscribe(logIteration);
+        return () => Backend.OnStressComplete.unsubscribe(logIteration);
     }, []);
 
     return (
