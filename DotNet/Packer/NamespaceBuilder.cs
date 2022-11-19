@@ -11,7 +11,7 @@ namespace Packer;
 internal class NamespaceBuilder
 {
     private const string converterAttributeName = "JSNamespaceAttribute";
-    private readonly List<Func<string, string>> converters = new();
+    private readonly List<Func<string, string, string>> converters = new();
 
     public void CollectConverters (string outDir, string entryAssembly)
     {
@@ -26,7 +26,7 @@ internal class NamespaceBuilder
     {
         var space = type.Namespace ?? "Bindings";
         foreach (var converter in converters)
-            space = converter(space);
+            space = converter(space, type.Name);
         return space;
     }
 
@@ -40,6 +40,13 @@ internal class NamespaceBuilder
     {
         var pattern = attribute.ConstructorArguments[0].Value as string;
         var replacement = attribute.ConstructorArguments[1].Value as string;
-        converters.Add(space => Regex.Replace(space, pattern!, replacement!));
+        var appendType = (bool)attribute.ConstructorArguments[2].Value!;
+        converters.Add(Convert);
+
+        string Convert (string space, string type)
+        {
+            if (appendType) space = $"{space}.{type}";
+            return Regex.Replace(space, pattern!, replacement!);
+        }
     }
 }

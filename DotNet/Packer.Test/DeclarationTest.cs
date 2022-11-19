@@ -203,6 +203,18 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void NamespaceAttributeWithAppendTypeOverrideSpaceNames ()
+    {
+        AddAssembly(
+            With(@"[assembly:JSNamespace(@"".+\.(\S+)"", ""$1"", true)]", false),
+            With("Foo.Bar.Nya", "public class Far { }", false),
+            With("Foo.Bar.Fun", "public class Jar { [JSFunction] public static void OnFar (Nya.Far far) { } }", false));
+        Task.Execute();
+        Contains("export namespace Far {\n    export class Far {\n    }\n}");
+        Contains("export namespace Jar {\n    export let OnFar: (far: Far.Far) => void;\n}");
+    }
+
+    [Fact]
     public void NumericsTranslatedToNumber ()
     {
         var nums = new[] { "byte", "sbyte", "ushort", "uint", "ulong", "short", "int", "long", "decimal", "double", "float" };
