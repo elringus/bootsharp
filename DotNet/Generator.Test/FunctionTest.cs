@@ -107,7 +107,7 @@ namespace A.B.C;
 public partial class Foo
 {
     [JSFunction]
-    private static partial void OnFun (Foo foo);
+    public static partial void OnFun (Foo foo);
 }",
             @"
 using DotNetJS;
@@ -116,7 +116,7 @@ namespace A.B.C;
 
 public partial class Foo
 {
-    private static partial void OnFun (global::A.B.C.Foo foo) => JS.Invoke(""dotnet.C.OnFun"", new object[] { foo });
+    public static partial void OnFun (global::A.B.C.Foo foo) => JS.Invoke(""dotnet.C.OnFun"", new object[] { foo });
 }
 "
         }
