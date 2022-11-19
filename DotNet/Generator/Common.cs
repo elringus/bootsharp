@@ -28,6 +28,7 @@ namespace Generator
         public static string BuildFullName (ITypeSymbol type)
         {
             if (type.SpecialType == SpecialType.System_Void) return "void";
+            if (type is IArrayTypeSymbol arrayType) return $"{BuildFullName(arrayType.ElementType)}[]";
             var nullable = type.NullableAnnotation == NullableAnnotation.Annotated ? "?" : "";
             var name = IsGeneric(type, out var args) ? $"{type.Name}<{string.Join(", ", args.Select(BuildFullName))}>" : type.Name;
             return $"global::{ResolveNamespace(type)}.{name}{nullable}";
@@ -37,7 +38,7 @@ namespace Generator
         {
             var @event = method.ReturnsVoid;
             var async = method.ReturnType.Name == "ValueTask" || method.ReturnType.Name == "Task";
-            var assembly = ConvertNamespace(ResolveNamespace(method), compilation.Assembly);
+            var assembly = ConvertNamespace(ResolveNamespace(method), method.ContainingType.Name, compilation.Assembly);
             var invokeMethod = GetInvokeMethod();
             var invokeParameters = GetInvokeParameters();
             var convertTask = method.ReturnType.Name == "Task" ? ".AsTask()" : "";
@@ -79,16 +80,20 @@ namespace Generator
                 : string.Join(".", symbol.ContainingNamespace.ConstituentNamespaces);
         }
 
-        public static string ConvertNamespace (string space, IAssemblySymbol assembly)
+        public static string ConvertNamespace (string space, string type, IAssemblySymbol assembly)
         {
             foreach (var attribute in assembly.GetAttributes().Where(IsNamespaceAttribute))
-                space = Convert(space, attribute);
+                space = Convert(space, type, attribute);
             return space;
 
-            static string Convert (string space, AttributeData attribute) =>
-                Regex.Replace(space,
-                    (string)attribute.ConstructorArguments[0].Value,
-                    (string)attribute.ConstructorArguments[1].Value);
+            static string Convert (string space, string type, AttributeData attribute)
+            {
+                var pattern = (string)attribute.ConstructorArguments[0].Value;
+                var replacement = (string)attribute.ConstructorArguments[1].Value;
+                var appendType = (bool)attribute.ConstructorArguments[2].Value!;
+                if (appendType) space = $"{space}.{type}";
+                return Regex.Replace(space, pattern, replacement);
+            }
         }
 
         public static string ConvertMethodName (string name, IAssemblySymbol assembly, string attributeName)

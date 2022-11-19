@@ -60,7 +60,7 @@ using System;
 
 namespace DotNetJS;
 
-public class JSNamespaceAttribute : Attribute { public JSNamespaceAttribute (string _, string __) { } }
+public class JSNamespaceAttribute : Attribute { public JSNamespaceAttribute (string _, string __, bool ___ = false) { } }
 public class JSExportAttribute : Attribute { public JSExportAttribute (Type[] _, string __ = null, string ___ = null, string ____ = null, string _____ = null) { } }
 public class JSImportAttribute : Attribute { public JSImportAttribute (Type[] _, string __ = null, string ___ = null, string ____ = null, string _____ = null) { } }
 public class JSFunctionAttribute : Attribute {  }

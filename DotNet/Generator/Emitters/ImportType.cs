@@ -18,12 +18,11 @@ namespace Generator
         {
             var specType = BuildFullName(type);
             var implType = BuildBindingName(type);
-            var @namespace = ConvertNamespace(ResolveNamespace(type), compilation.Assembly);
             var methods = type.GetMembers().OfType<IMethodSymbol>().ToArray();
 
             return MuteNullableWarnings($@"using DotNetJS;
 
-namespace {@namespace};
+namespace {ResolveNamespace(type)};
 
 public class {implType} : {specType}
 {{

@@ -29,7 +29,7 @@ namespace Generator
             return syntax.Members
                 .OfType<MethodDeclarationSyntax>()
                 .Where(s => HasAttribute(s, attribute))
-                .Select(m => new PartialMethod(m, attribute == "JSEvent")).ToList();
+                .Select(m => new PartialMethod(m, syntax.Identifier.ToString(), attribute == "JSEvent")).ToList();
         }
 
         private bool HasAttribute (MethodDeclarationSyntax syntax, string attributeName)

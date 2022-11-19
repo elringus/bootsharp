@@ -21,7 +21,7 @@ namespace Generator
 
             return MuteNullableWarnings($@"using Microsoft.JSInterop;
 
-namespace {ConvertNamespace(ResolveNamespace(type), compilation.Assembly)};
+namespace {ResolveNamespace(type)};
 
 public class {implType}
 {{

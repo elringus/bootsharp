@@ -69,6 +69,33 @@ public class JSFoo : global::Bindings.IFoo
     global::System.Boolean global::Bindings.IFoo.Bar () => Bar();
 }
 "
+        },
+        new object[] {
+            @"
+using DotNetJS;
+
+[assembly:JSNamespace(@"".+\.I(\S+)"", ""$1"", true)]
+[assembly:JSImport(new[] { typeof(A.B.C.IFoo) })]
+
+namespace A.B.C;
+
+public interface IFoo
+{
+    void Foo ();
+}
+",
+            @"
+using DotNetJS;
+
+namespace A.B.C;
+
+public class JSFoo : global::A.B.C.IFoo
+{
+    [JSEvent] public static void Foo () => JS.Invoke(""dotnet.Foo.Foo.broadcast"");
+
+    void global::A.B.C.IFoo.Foo () => Foo();
+}
+"
         }
     };
 }

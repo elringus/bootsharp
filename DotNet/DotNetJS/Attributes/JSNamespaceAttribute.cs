@@ -17,12 +17,18 @@ public sealed class JSNamespaceAttribute : Attribute
     /// Replacement for the pattern matches.
     /// </summary>
     public string Replacement { get; }
+    /// <summary>
+    /// Whether to append type name to the namespace (before replace).
+    /// </summary>
+    public bool AppendType { get; }
 
     /// <param name="pattern">Regex pattern to match.</param>
     /// <param name="replacement">Replacement for the pattern matches.</param>
-    public JSNamespaceAttribute (string pattern, string replacement)
+    /// <param name="appendType">Whether to append type name to the namespace (before replace).</param>
+    public JSNamespaceAttribute (string pattern, string replacement, bool appendType = false)
     {
         Pattern = pattern;
         Replacement = replacement;
+        AppendType = appendType;
     }
 }
