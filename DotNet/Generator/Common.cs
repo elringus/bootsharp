@@ -36,7 +36,7 @@ namespace Generator
 
         public static string BuildInvoke (IMethodSymbol method, string methodName, Compilation compilation)
         {
-            var @event = method.ReturnsVoid;
+            var @event = IsEvent(method);
             var async = method.ReturnType.Name == "ValueTask" || method.ReturnType.Name == "Task";
             var assembly = ConvertNamespace(ResolveNamespace(method), method.ContainingType.Name, compilation.Assembly);
             var invokeMethod = GetInvokeMethod();
@@ -65,7 +65,7 @@ namespace Generator
 
         public static bool IsEvent (IMethodSymbol method)
         {
-            return method.ReturnsVoid;
+            return method.Name.StartsWith("Notify");
         }
 
         public static bool IsGeneric (ITypeSymbol type, out ImmutableArray<ITypeSymbol> args)

@@ -16,7 +16,7 @@ namespace Bindings;
 
 public interface IFoo
 {
-    void Foo (string foo);
+    void NotifyFoo (string foo);
     bool Bar ();
     ValueTask Nya ();
     Task<string> Far ();
@@ -29,12 +29,12 @@ namespace Bindings;
 
 public class JSFoo : global::Bindings.IFoo
 {
-    [JSEvent] public static void Foo (global::System.String foo) => JS.Invoke(""dotnet.Bindings.Foo.broadcast"", new object[] { foo });
+    [JSEvent] public static void NotifyFoo (global::System.String foo) => JS.Invoke(""dotnet.Bindings.NotifyFoo.broadcast"", new object[] { foo });
     [JSFunction] public static global::System.Boolean Bar () => JS.Invoke<global::System.Boolean>(""dotnet.Bindings.Bar"");
     [JSFunction] public static global::System.Threading.Tasks.ValueTask Nya () => JS.InvokeAsync(""dotnet.Bindings.Nya"");
     [JSFunction] public static global::System.Threading.Tasks.Task<global::System.String> Far () => JS.InvokeAsync<global::System.String>(""dotnet.Bindings.Far"").AsTask();
 
-    void global::Bindings.IFoo.Foo (global::System.String foo) => Foo(foo);
+    void global::Bindings.IFoo.NotifyFoo (global::System.String foo) => NotifyFoo(foo);
     global::System.Boolean global::Bindings.IFoo.Bar () => Bar();
     global::System.Threading.Tasks.ValueTask global::Bindings.IFoo.Nya () => Nya();
     global::System.Threading.Tasks.Task<global::System.String> global::Bindings.IFoo.Far () => Far();
@@ -91,7 +91,7 @@ namespace A.B.C;
 
 public class JSFoo : global::A.B.C.IFoo
 {
-    [JSEvent] public static void Foo () => JS.Invoke(""dotnet.Foo.Foo.broadcast"");
+    [JSFunction] public static void Foo () => JS.Invoke(""dotnet.Foo.Foo"");
 
     void global::A.B.C.IFoo.Foo () => Foo();
 }
