@@ -11,12 +11,10 @@ namespace Generator
     {
         private readonly MethodDeclarationSyntax syntax;
         private readonly bool @event;
-        private readonly string className;
 
-        public PartialMethod (MethodDeclarationSyntax syntax, string className, bool @event)
+        public PartialMethod (MethodDeclarationSyntax syntax, bool @event)
         {
             this.syntax = syntax;
-            this.className = className;
             this.@event = @event;
         }
 
@@ -32,7 +30,7 @@ namespace Generator
             var symbol = model.GetEnclosingSymbol(syntax.SpanStart)!;
             var space = symbol.ContainingNamespace.IsGlobalNamespace ? "Bindings"
                 : string.Join(".", symbol.ContainingNamespace.ConstituentNamespaces);
-            return ConvertNamespace(space, className, symbol.ContainingAssembly);
+            return ConvertNamespace(space, symbol.ContainingAssembly);
         }
 
         private string EmitSignature ()

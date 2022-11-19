@@ -17,12 +17,12 @@ namespace Generator
         public static string EmitSource (ITypeSymbol type, Compilation compilation)
         {
             var specType = BuildFullName(type);
-            var implType = BuildBindingName(type);
+            var implType = BuildBindingType(type);
             var methods = type.GetMembers().OfType<IMethodSymbol>().ToArray();
 
             return MuteNullableWarnings($@"using DotNetJS;
 
-namespace {ResolveNamespace(type)};
+namespace {BuildBindingNamespace(type)};
 
 public class {implType} : {specType}
 {{

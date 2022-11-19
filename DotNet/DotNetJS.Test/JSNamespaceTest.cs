@@ -14,10 +14,9 @@ public class JSNamespaceTest
     [Fact]
     public void ParametersEqualArguments ()
     {
-        var attribute = new JSNamespaceAttribute("foo", "bar", true);
+        var attribute = new JSNamespaceAttribute("foo", "bar");
         Assert.Equal("foo", attribute.Pattern);
         Assert.Equal("bar", attribute.Replacement);
-        Assert.True(attribute.AppendType);
     }
 
     [Fact]
@@ -30,12 +29,6 @@ public class JSNamespaceTest
     public void ReplacementParameterIsTheSecondPositionalArgument ()
     {
         Assert.Equal("replacement", attribute.ConstructorArguments[1].Value);
-    }
-
-    [Fact]
-    public void AppendTypeParameterIsTheThirdPositionalArgument ()
-    {
-        Assert.False((bool)attribute.ConstructorArguments[2].Value!);
     }
 
     private static CustomAttributeData GetAttributeData ()

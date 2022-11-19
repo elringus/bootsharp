@@ -25,7 +25,7 @@ public interface IFoo
             @"
 using Microsoft.JSInterop;
 
-namespace Bindings;
+namespace Foo;
 
 public class JSFoo
 {
@@ -59,7 +59,7 @@ public interface IFoo
             @"
 using Microsoft.JSInterop;
 
-namespace Bindings;
+namespace Foo;
 
 public class JSFoo
 {
@@ -79,7 +79,7 @@ public class JSFoo
 using DotNetJS;
 using Microsoft.JSInterop;
 
-[assembly:JSNamespace(@"".+\.I(\S+)"", ""$1"", true)]
+[assembly:JSNamespace(@""Foo"", ""Bar"")]
 [assembly:JSExport(new[] { typeof(A.B.C.IFoo) })]
 
 namespace A.B.C;
@@ -92,7 +92,7 @@ public interface IFoo
             @"
 using Microsoft.JSInterop;
 
-namespace A.B.C;
+namespace Foo;
 
 public class JSFoo
 {

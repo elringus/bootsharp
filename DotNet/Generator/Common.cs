@@ -20,9 +20,14 @@ namespace Generator
                    "\n\n#pragma warning restore\n#nullable restore\n";
         }
 
-        public static string BuildBindingName (ITypeSymbol type)
+        public static string BuildBindingType (ITypeSymbol type)
         {
             return $"JS{type.Name.Substring(1)}";
+        }
+
+        public static string BuildBindingNamespace (ITypeSymbol type)
+        {
+            return type.Name.Substring(1);
         }
 
         public static string BuildFullName (ITypeSymbol type)
@@ -38,7 +43,7 @@ namespace Generator
         {
             var @event = IsEvent(method);
             var async = method.ReturnType.Name == "ValueTask" || method.ReturnType.Name == "Task";
-            var assembly = ConvertNamespace(ResolveNamespace(method), method.ContainingType.Name, compilation.Assembly);
+            var assembly = ConvertNamespace(BuildBindingNamespace(method.ContainingType), compilation.Assembly);
             var invokeMethod = GetInvokeMethod();
             var invokeParameters = GetInvokeParameters();
             var convertTask = method.ReturnType.Name == "Task" ? ".AsTask()" : "";
@@ -80,18 +85,16 @@ namespace Generator
                 : string.Join(".", symbol.ContainingNamespace.ConstituentNamespaces);
         }
 
-        public static string ConvertNamespace (string space, string type, IAssemblySymbol assembly)
+        public static string ConvertNamespace (string space, IAssemblySymbol assembly)
         {
             foreach (var attribute in assembly.GetAttributes().Where(IsNamespaceAttribute))
-                space = Convert(space, type, attribute);
+                space = Convert(space, attribute);
             return space;
 
-            static string Convert (string space, string type, AttributeData attribute)
+            static string Convert (string space, AttributeData attribute)
             {
                 var pattern = (string)attribute.ConstructorArguments[0].Value;
                 var replacement = (string)attribute.ConstructorArguments[1].Value;
-                var appendType = (bool)attribute.ConstructorArguments[2].Value!;
-                if (appendType) space = $"{space}.{type}";
                 return Regex.Replace(space, pattern, replacement);
             }
         }

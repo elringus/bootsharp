@@ -119,30 +119,6 @@ public partial class Foo
     public static partial void OnFun (Foo foo) => JS.Invoke(""dotnet.C.OnFun"", new object[] { foo });
 }
 "
-        },
-        new object[] {
-            @"
-using DotNetJS;
-
-[assembly:JSNamespace(@"".+\.(\S+)"", ""$1"", true)]
-
-namespace A.B.C;
-
-public partial class Foo
-{
-    [JSFunction]
-    public static partial void OnFun (Foo foo);
-}",
-            @"
-using DotNetJS;
-
-namespace A.B.C;
-
-public partial class Foo
-{
-    public static partial void OnFun (Foo foo) => JS.Invoke(""dotnet.Foo.OnFun"", new object[] { foo });
-}
-"
         }
     };
 }
