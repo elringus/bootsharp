@@ -8,6 +8,7 @@ public static class ImportTest
         new object[] {
             @"
 using DotNetJS;
+using System.Threading.Tasks;
 
 [assembly:JSImport(new[] { typeof(Bindings.IFoo) })]
 
@@ -17,6 +18,8 @@ public interface IFoo
 {
     void Foo (string foo);
     bool Bar ();
+    ValueTask Nya ();
+    Task<string> Far ();
 }
 ",
             @"
@@ -28,9 +31,13 @@ public class JSFoo : global::Bindings.IFoo
 {
     [JSEvent] public static void Foo (global::System.String foo) => JS.Invoke(""dotnet.Bindings.Foo.broadcast"", new object[] { foo });
     [JSFunction] public static global::System.Boolean Bar () => JS.Invoke<global::System.Boolean>(""dotnet.Bindings.Bar"");
+    [JSFunction] public static global::System.Threading.Tasks.ValueTask Nya () => JS.InvokeAsync(""dotnet.Bindings.Nya"");
+    [JSFunction] public static global::System.Threading.Tasks.Task<global::System.String> Far () => JS.InvokeAsync<global::System.String>(""dotnet.Bindings.Far"").AsTask();
 
     void global::Bindings.IFoo.Foo (global::System.String foo) => Foo(foo);
     global::System.Boolean global::Bindings.IFoo.Bar () => Bar();
+    global::System.Threading.Tasks.ValueTask global::Bindings.IFoo.Nya () => Nya();
+    global::System.Threading.Tasks.Task<global::System.String> global::Bindings.IFoo.Far () => Far();
 }
 "
         },

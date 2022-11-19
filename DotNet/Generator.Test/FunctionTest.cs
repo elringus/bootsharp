@@ -41,7 +41,7 @@ namespace File.Scoped;
 
 public static partial class Foo
 {
-    private static partial global::System.Threading.Tasks.Task BarAsync (global::System.String a, global::System.Int32 b) => JS.InvokeAsync(""dotnet.File.Scoped.BarAsync"", new object[] { a, b }).AsTask();
+    private static partial Task BarAsync (string a, int b) => JS.InvokeAsync(""dotnet.File.Scoped.BarAsync"", new object[] { a, b }).AsTask();
 }
 "
         },
@@ -63,7 +63,7 @@ namespace File.Scoped;
 
 public static partial class Foo
 {
-    private static partial global::System.Threading.Tasks.Task<global::System.String?> BarAsync () => JS.InvokeAsync<global::System.String?>(""dotnet.File.Scoped.BarAsync"").AsTask();
+    private static partial Task<string?> BarAsync () => JS.InvokeAsync<string?>(""dotnet.File.Scoped.BarAsync"").AsTask();
 }
 "
         },
@@ -90,8 +90,8 @@ namespace Classic
 {
 partial class Foo
 {
-    partial global::System.DateTime GetTime (global::System.DateTime time) => JS.Invoke<global::System.DateTime>(""dotnet.Classic.GetTime"", new object[] { time });
-    partial global::System.Threading.Tasks.ValueTask<global::System.DateTime> GetTimeAsync (global::System.DateTime time) => JS.InvokeAsync<global::System.DateTime>(""dotnet.Classic.GetTimeAsync"", new object[] { time });
+    partial DateTime GetTime (DateTime time) => JS.Invoke<DateTime>(""dotnet.Classic.GetTime"", new object[] { time });
+    partial ValueTask<DateTime> GetTimeAsync (DateTime time) => JS.InvokeAsync<DateTime>(""dotnet.Classic.GetTimeAsync"", new object[] { time });
 }
 }
 "
@@ -116,7 +116,7 @@ namespace A.B.C;
 
 public partial class Foo
 {
-    public static partial void OnFun (global::A.B.C.Foo foo) => JS.Invoke(""dotnet.C.OnFun"", new object[] { foo });
+    public static partial void OnFun (Foo foo) => JS.Invoke(""dotnet.C.OnFun"", new object[] { foo });
 }
 "
         }

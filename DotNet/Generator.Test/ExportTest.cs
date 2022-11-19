@@ -8,6 +8,7 @@ public static class ExportTest
         new object[] {
             @"
 using DotNetJS;
+using System.Threading.Tasks;
 
 [assembly:JSExport(new[] { typeof(Bindings.IFoo) })]
 
@@ -16,6 +17,8 @@ namespace Bindings;
 public interface IFoo
 {
     void Foo (string foo);
+    ValueTask Bar ();
+    Task<string> Nya ();
 }
 ",
             @"
@@ -33,6 +36,8 @@ public class JSFoo
     }
 
     [JSInvokable] public static void Foo (global::System.String foo) => handler.Foo(foo);
+    [JSInvokable] public static global::System.Threading.Tasks.ValueTask Bar () => handler.Bar();
+    [JSInvokable] public static global::System.Threading.Tasks.Task<global::System.String> Nya () => handler.Nya();
 }
 "
         },

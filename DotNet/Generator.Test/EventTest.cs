@@ -33,7 +33,7 @@ namespace Space;
 
 public static partial class Foo
 {
-    public static partial void OnBar (global::System.String a, global::System.Int32 b) => JS.Invoke(""dotnet.Space.OnBar.broadcast"", new object[] { a, b });
+    public static partial void OnBar (string a, int b) => JS.Invoke(""dotnet.Space.OnBar.broadcast"", new object[] { a, b });
 }
 "
         }

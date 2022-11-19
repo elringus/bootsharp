@@ -35,7 +35,7 @@ namespace Generator
 
         public static string BuildInvoke (IMethodSymbol method, string methodName, Compilation compilation)
         {
-            var @event = IsEvent(method);
+            var @event = method.ReturnsVoid;
             var async = method.ReturnType.Name == "ValueTask" || method.ReturnType.Name == "Task";
             var assembly = ConvertNamespace(ResolveNamespace(method), compilation.Assembly);
             var invokeMethod = GetInvokeMethod();
@@ -64,8 +64,7 @@ namespace Generator
 
         public static bool IsEvent (IMethodSymbol method)
         {
-            return method.GetAttributes().Any(IsEventAttribute) ||
-                   method.ReturnsVoid && !method.GetAttributes().Any(IsFunctionAttribute);
+            return method.ReturnsVoid;
         }
 
         public static bool IsGeneric (ITypeSymbol type, out ImmutableArray<ITypeSymbol> args)
@@ -120,8 +119,6 @@ namespace Generator
                     (string)attribute.ConstructorArguments[4].Value);
         }
 
-        public static bool IsFunctionAttribute (AttributeData attribute) => IsJSAttribute(attribute, FunctionAttribute);
-        public static bool IsEventAttribute (AttributeData attribute) => IsJSAttribute(attribute, EventAttribute);
         public static bool IsExportAttribute (AttributeData attribute) => IsJSAttribute(attribute, ExportAttribute);
         public static bool IsImportAttribute (AttributeData attribute) => IsJSAttribute(attribute, ImportAttribute);
         public static bool IsNamespaceAttribute (AttributeData attribute) => IsJSAttribute(attribute, NamespaceAttribute);
