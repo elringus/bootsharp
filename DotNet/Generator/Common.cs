@@ -132,8 +132,7 @@ namespace Generator
         public static bool IsNamespaceAttribute (AttributeData attribute) => IsJSAttribute(attribute, NamespaceAttribute);
 
         public static bool IsJSAttribute (AttributeData attribute, string name) =>
-            attribute.AttributeClass != null &&
-            attribute.AttributeClass.ContainingNamespace.Name == "DotNetJS" &&
+            attribute.AttributeClass!.ContainingNamespace.Name == "DotNetJS" &&
             attribute.AttributeClass.Name == name;
     }
 }

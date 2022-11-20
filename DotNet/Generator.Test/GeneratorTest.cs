@@ -33,6 +33,16 @@ public class GeneratorTest
         await verifier.RunAsync();
     }
 
+    [Fact]
+    public async Task WhenAttributeIsFromOtherNamespaceItsIgnored ()
+    {
+        verifier.TestCode = @"
+[assembly:JSNamespace(@""Foo"", ""Bar"")]
+public class JSNamespaceAttribute : System.Attribute { public JSNamespaceAttribute (string _, string __) { } }
+";
+        await verifier.RunAsync();
+    }
+
     [Theory, MemberData(nameof(FunctionTest.Data), MemberType = typeof(FunctionTest))]
     public Task PartialFunctionsAreImplemented (string source, string expected)
         => Verify(source, expected, "FooFunctions.g.cs");
@@ -60,7 +70,7 @@ using System;
 
 namespace DotNetJS;
 
-public class JSNamespaceAttribute : Attribute { public JSNamespaceAttribute (string _, string __, bool ___ = false) { } }
+public class JSNamespaceAttribute : Attribute { public JSNamespaceAttribute (string _, string __) { } }
 public class JSExportAttribute : Attribute { public JSExportAttribute (Type[] _, string __ = null, string ___ = null, string ____ = null, string _____ = null) { } }
 public class JSImportAttribute : Attribute { public JSImportAttribute (Type[] _, string __ = null, string ___ = null, string ____ = null, string _____ = null) { } }
 public class JSFunctionAttribute : Attribute {  }
