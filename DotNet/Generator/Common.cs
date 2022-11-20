@@ -80,11 +80,10 @@ namespace Generator
             return args != default;
         }
 
-        [ExcludeFromCodeCoverage]
         public static string ResolveNamespace (ISymbol symbol)
         {
-            return symbol.ContainingNamespace.IsGlobalNamespace ? "Bindings"
-                : string.Join(".", symbol.ContainingNamespace.ConstituentNamespaces);
+            if (symbol.ContainingNamespace.IsGlobalNamespace) return "Bindings";
+            return string.Join(".", symbol.ContainingNamespace.ConstituentNamespaces);
         }
 
         public static string ConvertNamespace (string space, IAssemblySymbol assembly)

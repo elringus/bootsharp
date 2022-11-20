@@ -16,7 +16,7 @@ namespace Bindings;
 
 public interface IFoo
 {
-    void Foo (string foo);
+    void Foo (string? foo);
     ValueTask Bar ();
     Task<string> Nya ();
     string[] Far (int[] far);
@@ -36,7 +36,7 @@ public class JSFoo
         JSFoo.handler = handler;
     }
 
-    [JSInvokable] public static void Foo (global::System.String foo) => handler.Foo(foo);
+    [JSInvokable] public static void Foo (global::System.String? foo) => handler.Foo(foo);
     [JSInvokable] public static global::System.Threading.Tasks.ValueTask Bar () => handler.Bar();
     [JSInvokable] public static global::System.Threading.Tasks.Task<global::System.String> Nya () => handler.Nya();
     [JSInvokable] public static global::System.String[] Far (global::System.Int32[] far) => handler.Far(far);
