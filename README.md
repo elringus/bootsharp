@@ -131,7 +131,7 @@ public static partial string OnSomethingHappened (string payload);
 dotnet.MyApp.OnSomethingHappened.subscribe(handleSomething);
 dotnet.MyApp.OnSomethingHappened.unsubscribe(handleSomething);
 
-function handleSomething (payload) {
+function handleSomething(payload) {
 
 }
 ```
@@ -170,7 +170,7 @@ public class JSFrontend : IFrontend
 
     void IFrontend.NotifyDataChanged (Data data) => NotifyDataChanged(data);
     bool IFrontend.IsMuted () => IsMuted();
-    
+
 }
 ```
 
@@ -251,6 +251,7 @@ By default, DotNetJS build task will embed project's DLLs and .NET WASM runtime 
 To disable the embedding, set `EmbedBinaries` build property to false:
 
 ```xml
+
 <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <EmbedBinaries>false</EmbedBinaries>
@@ -262,7 +263,7 @@ The `dotnet.wasm` and solution's assemblies will be emitted in the build output 
 ```js
 const bootData = {
     wasm: Uint8Array,
-    assemblies: [ { name: "Foo.dll", data: Uint8Array } ],
+    assemblies: [{ name: "Foo.dll", data: Uint8Array }],
     entryAssemblyName: "Foo.dll"
 };
 await dotnet.boot(bootData);
@@ -336,8 +337,8 @@ scripts/compile-test.sh
 npm test
 ```
 
-
 ## FAQ
 
 ### I'm getting "An instance of analyzer Generator.SourceGenerator cannot be created" warning
+
 You are probably using an older .NET SDK. Please download the latest version.
