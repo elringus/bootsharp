@@ -101,11 +101,10 @@ namespace Generator
 
         public static string ConvertMethodName (string name, IAssemblySymbol assembly, string attributeName)
         {
-            if (assembly.GetAttributes().FirstOrDefault(a => IsJSAttribute(a, attributeName)) is { } attribute &&
-                !string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(1).Value as string) &&
-                !string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(2).Value as string))
-                return Convert(name, attribute);
-            return name;
+            var attribute = assembly.GetAttributes().First(a => IsJSAttribute(a, attributeName));
+            if (string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(1).Value as string) ||
+                string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(2).Value as string)) return name;
+            return Convert(name, attribute);
 
             static string Convert (string space, AttributeData attribute) =>
                 Regex.Replace(space,
@@ -115,11 +114,10 @@ namespace Generator
 
         public static string ConvertMethodInvocation (string body, IAssemblySymbol assembly, string attributeName)
         {
-            if (assembly.GetAttributes().FirstOrDefault(a => IsJSAttribute(a, attributeName)) is { } attribute &&
-                !string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(3).Value as string) &&
-                !string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(4).Value as string))
-                return Convert(body, attribute);
-            return body;
+            var attribute = assembly.GetAttributes().First(a => IsJSAttribute(a, attributeName));
+            if (string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(3).Value as string) ||
+                string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(4).Value as string)) return body;
+            return Convert(body, attribute);
 
             static string Convert (string space, AttributeData attribute) =>
                 Regex.Replace(space,

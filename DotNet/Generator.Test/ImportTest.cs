@@ -96,6 +96,30 @@ public class JSFoo : global::A.B.C.IFoo
     void global::A.B.C.IFoo.Foo () => Foo();
 }
 "
-        }
+        },
+        new object[] {
+            @"
+using DotNetJS;
+
+[assembly:JSImport(new[] { typeof(IFoo) }, ""Foo"", null, ""Foo"", null)]
+
+public interface IFoo
+{
+    void Foo ();
+}
+",
+            @"
+using DotNetJS;
+
+namespace Foo;
+
+public class JSFoo : global::Bindings.IFoo
+{
+    [JSFunction] public static void Foo () => JS.Invoke(""dotnet.Foo.Foo"");
+
+    void global::Bindings.IFoo.Foo () => Foo();
+}
+"
+        },
     };
 }
