@@ -8,13 +8,27 @@ namespace Generator
 {
     internal class ExportType
     {
-        public static IEnumerable<ITypeSymbol> Resolve (IAssemblySymbol assembly) =>
-            assembly.GetAttributes()
-                .FirstOrDefault(IsExportAttribute)?
-                .ConstructorArguments[0].Values.Select(v => v.Value).OfType<ITypeSymbol>()
-                .Where(t => t.TypeKind == TypeKind.Interface) ?? Array.Empty<ITypeSymbol>();
+        public string Name { get; }
 
-        public static string EmitSource (ITypeSymbol type, Compilation compilation)
+        private readonly ITypeSymbol type;
+        private readonly AttributeData attribute;
+
+        public ExportType (ITypeSymbol type, AttributeData attribute)
+        {
+            this.type = type;
+            this.attribute = attribute;
+            Name = type.Name;
+        }
+
+        public static IEnumerable<ExportType> Resolve (IAssemblySymbol assembly) =>
+            assembly.GetAttributes().FirstOrDefault(IsExportAttribute) is { } attribute
+                ? attribute.ConstructorArguments[0].Values
+                    .Select(v => v.Value).OfType<ITypeSymbol>()
+                    .Where(t => t.TypeKind == TypeKind.Interface)
+                    .Select(t => new ExportType(t, attribute))
+                : Array.Empty<ExportType>();
+
+        public string EmitSource ()
         {
             var specType = BuildFullName(type);
             var implType = BuildBindingType(type);
@@ -40,7 +54,7 @@ public class {implType}
 
                 string EmitSignature ()
                 {
-                    var methodName = ConvertMethodName(method.Name, compilation.Assembly, ExportAttribute);
+                    var methodName = ConvertMethodName(method.Name, attribute);
                     var args = method.Parameters.Select(p => $"{BuildFullName(p.Type)} {p.Name}");
                     return $"{BuildFullName(method.ReturnType)} {methodName} ({string.Join(", ", args)})";
                 }
@@ -49,7 +63,7 @@ public class {implType}
                 {
                     var args = method.Parameters.Select(p => p.Name);
                     var body = $"handler.{method.Name}({string.Join(", ", args)})";
-                    return ConvertMethodInvocation(body, compilation.Assembly, ExportAttribute);
+                    return ConvertMethodInvocation(body, attribute);
                 }
             }
         }

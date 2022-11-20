@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
@@ -100,34 +99,24 @@ namespace Generator
             }
         }
 
-        [ExcludeFromCodeCoverage]
-        public static string ConvertMethodName (string name, IAssemblySymbol assembly, string attributeName)
+        public static string ConvertMethodName (string name, AttributeData attribute)
         {
-            if (assembly.GetAttributes().FirstOrDefault(a => IsJSAttribute(a, attributeName)) is { } attribute &&
-                !string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(1).Value as string) &&
-                !string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(2).Value as string))
-                return Convert(name, attribute);
-            return name;
-
-            static string Convert (string space, AttributeData attribute) =>
-                Regex.Replace(space,
-                    (string)attribute.ConstructorArguments[1].Value,
-                    (string)attribute.ConstructorArguments[2].Value);
+            if (string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(1).Value as string) ||
+                string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(2).Value as string))
+                return name;
+            return Regex.Replace(name,
+                (string)attribute.ConstructorArguments[1].Value,
+                (string)attribute.ConstructorArguments[2].Value);
         }
 
-        [ExcludeFromCodeCoverage]
-        public static string ConvertMethodInvocation (string body, IAssemblySymbol assembly, string attributeName)
+        public static string ConvertMethodInvocation (string body, AttributeData attribute)
         {
-            if (assembly.GetAttributes().FirstOrDefault(a => IsJSAttribute(a, attributeName)) is { } attribute &&
-                !string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(3).Value as string) &&
-                !string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(4).Value as string))
-                return Convert(body, attribute);
-            return body;
-
-            static string Convert (string space, AttributeData attribute) =>
-                Regex.Replace(space,
-                    (string)attribute.ConstructorArguments[3].Value,
-                    (string)attribute.ConstructorArguments[4].Value);
+            if (string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(3).Value as string) ||
+                string.IsNullOrEmpty(attribute.ConstructorArguments.ElementAtOrDefault(4).Value as string))
+                return body;
+            return Regex.Replace(body,
+                (string)attribute.ConstructorArguments[3].Value,
+                (string)attribute.ConstructorArguments[4].Value);
         }
 
         public static bool IsExportAttribute (AttributeData attribute) => IsJSAttribute(attribute, ExportAttribute);

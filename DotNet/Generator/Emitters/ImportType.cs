@@ -8,13 +8,27 @@ namespace Generator
 {
     internal class ImportType
     {
-        public static IEnumerable<ITypeSymbol> Resolve (IAssemblySymbol assembly) =>
-            assembly.GetAttributes()
-                .FirstOrDefault(IsImportAttribute)?
-                .ConstructorArguments[0].Values.Select(v => v.Value).OfType<ITypeSymbol>()
-                .Where(t => t.TypeKind == TypeKind.Interface) ?? Array.Empty<ITypeSymbol>();
+        public string Name { get; }
 
-        public static string EmitSource (ITypeSymbol type, Compilation compilation)
+        private readonly ITypeSymbol type;
+        private readonly AttributeData attribute;
+
+        public ImportType (ITypeSymbol type, AttributeData attribute)
+        {
+            this.type = type;
+            this.attribute = attribute;
+            Name = type.Name;
+        }
+
+        public static IEnumerable<ImportType> Resolve (IAssemblySymbol assembly) =>
+            assembly.GetAttributes().FirstOrDefault(IsImportAttribute) is { } attribute
+                ? attribute.ConstructorArguments[0].Values
+                    .Select(v => v.Value).OfType<ITypeSymbol>()
+                    .Where(t => t.TypeKind == TypeKind.Interface)
+                    .Select(t => new ImportType(t, attribute))
+                : Array.Empty<ImportType>();
+
+        public string EmitSource (Compilation compilation)
         {
             var specType = BuildFullName(type);
             var implType = BuildBindingType(type);
@@ -32,7 +46,7 @@ public class {implType} : {specType}
 }}");
             string EmitBinding (IMethodSymbol method)
             {
-                var methodName = ConvertMethodName(method.Name, compilation.Assembly, ImportAttribute);
+                var methodName = ConvertMethodName(method.Name, attribute);
                 return $"{EmitAttribute()} public static {EmitSignature()} => {EmitBody()};";
 
                 string EmitAttribute () => IsEvent(method) ? "[JSEvent]" : "[JSFunction]";
@@ -46,7 +60,7 @@ public class {implType} : {specType}
                 string EmitBody ()
                 {
                     var body = BuildInvoke(method, methodName, compilation);
-                    return ConvertMethodInvocation(body, compilation.Assembly, ImportAttribute);
+                    return ConvertMethodInvocation(body, attribute);
                 }
             }
 
@@ -62,7 +76,7 @@ public class {implType} : {specType}
 
                 string EmitBody ()
                 {
-                    var methodName = ConvertMethodName(method.Name, compilation.Assembly, ImportAttribute);
+                    var methodName = ConvertMethodName(method.Name, attribute);
                     var args = method.Parameters.Select(p => p.Name);
                     return $"{methodName}({string.Join(", ", args)})";
                 }

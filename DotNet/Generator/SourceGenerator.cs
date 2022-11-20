@@ -20,9 +20,9 @@ namespace Generator
         private static void AddGlobal (GeneratorExecutionContext context)
         {
             foreach (var type in ExportType.Resolve(context.Compilation.Assembly))
-                context.AddSource($"{type.Name}Export.g", ExportType.EmitSource(type, context.Compilation));
+                context.AddSource($"{type.Name}Export.g", type.EmitSource());
             foreach (var type in ImportType.Resolve(context.Compilation.Assembly))
-                context.AddSource($"{type.Name}Import.g", ImportType.EmitSource(type, context.Compilation));
+                context.AddSource($"{type.Name}Import.g", type.EmitSource(context.Compilation));
         }
 
         private static void AddPartial (GeneratorExecutionContext context, SyntaxReceiver receiver)
