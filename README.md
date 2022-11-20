@@ -149,8 +149,8 @@ For example, let's say we have a JS frontend, which needs to be notified when a 
 ```csharp
 interface IFrontend
 {
-	void NotifyDataChanged (Data data);
-	bool IsMuted ();
+    void NotifyDataChanged (Data data);
+    bool IsMuted ();
 }
 ```
 
