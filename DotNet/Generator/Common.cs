@@ -80,6 +80,7 @@ namespace Generator
             return args != default;
         }
 
+        [ExcludeFromCodeCoverage]
         public static string ResolveNamespace (ISymbol symbol)
         {
             return symbol.ContainingNamespace.IsGlobalNamespace ? "Bindings"
