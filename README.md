@@ -144,7 +144,7 @@ In TypeScript the event will have typed generic declaration corresponding to the
 
 Instead of writing a binding for each method, make DotNetJS generate them automatically with `[JSImport]` and `[JSExport]` assembly attributes.
 
-For example, let's say we have a JS frontend, which needs to be notified when a data is mutated on our C# backend, so it can render the updated state; additionally, our frontend may have a setting (eg, stored in browser DB) to temporary mute notifications, which needs to be retrieved by the backend. Create the following interface in C# to describe the expected frontend APIs:
+For example, let's say we have a JS frontend, which needs to be notified when a data is mutated on our C# backend, so it can render the updated state; additionally, our frontend may have a setting (eg, stored in browser cache) to temporary mute notifications, which needs to be retrieved by the backend. Create the following interface in C# to describe the expected frontend APIs:
 
 ```csharp
 interface IFrontend
