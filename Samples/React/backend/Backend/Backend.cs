@@ -38,7 +38,7 @@ public class Backend : IBackend
         {
             var time = DateTime.Now;
             ComputePrime(frontend.GetStressPower());
-            frontend.OnStressComplete((DateTime.Now - time).Milliseconds);
+            frontend.NotifyStressComplete((DateTime.Now - time).Milliseconds);
             await Task.Delay(1);
         }
     }

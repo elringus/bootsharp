@@ -1,6 +1,6 @@
 ﻿import { render, act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Backend } from "backend";
+import { Backend, Frontend } from "backend";
 import { Stress } from "stress";
 
 beforeEach(() => {
@@ -16,12 +16,12 @@ test("stress is not running initially", () => {
 
 test("get stress power returns value specified in props", async () => {
     render(<Stress power={666}/>);
-    expect(Backend.GetStressPower()).toEqual(666);
+    expect(Frontend.GetStressPower()).toEqual(666);
 });
 
 test("stress iteration time is written to screen", async () => {
     render(<Stress power={0}/>);
-    await act(() => Backend.OnStressComplete.broadcast(13));
+    await act(() => Frontend.OnStressComplete.broadcast(13));
     expect(screen.getByText(/Stressed over 13ms/));
 });
 

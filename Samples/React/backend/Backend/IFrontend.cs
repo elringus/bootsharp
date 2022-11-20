@@ -3,5 +3,5 @@
 public interface IFrontend
 {
     int GetStressPower ();
-    void OnStressComplete (int time);
+    void NotifyStressComplete (int time);
 }
