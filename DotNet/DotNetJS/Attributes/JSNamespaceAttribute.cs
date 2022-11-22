@@ -3,7 +3,7 @@
 namespace DotNetJS;
 
 /// <summary>
-/// When applied to the main program assembly, overrides namespace
+/// When applied to WASM entry point assembly, overrides namespace
 /// generated for the JavaScript bindings and TypeScript declarations.
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]

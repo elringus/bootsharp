@@ -1,20 +1,21 @@
 ﻿using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using static Generator.Common;
 
 namespace Generator
 {
-    internal class GeneratedMethod
+    // TODO: Refactor to re-use Common.BuildInvoke (resolving symbols from compilation not working in JavaScript/test/csproj).
+
+    internal class PartialMethod
     {
         private readonly MethodDeclarationSyntax syntax;
-        private readonly NamespaceConverter spaceConverter;
         private readonly bool @event;
 
-        public GeneratedMethod (MethodDeclarationSyntax syntax, bool @event)
+        public PartialMethod (MethodDeclarationSyntax syntax, bool @event)
         {
             this.syntax = syntax;
             this.@event = @event;
-            spaceConverter = new NamespaceConverter();
         }
 
         public string EmitSource (Compilation compilation)
@@ -29,7 +30,7 @@ namespace Generator
             var symbol = model.GetEnclosingSymbol(syntax.SpanStart)!;
             var space = symbol.ContainingNamespace.IsGlobalNamespace ? "Bindings"
                 : string.Join(".", symbol.ContainingNamespace.ConstituentNamespaces);
-            return spaceConverter.Convert(space, symbol.ContainingAssembly);
+            return ConvertNamespace(space, symbol.ContainingAssembly);
         }
 
         private string EmitSignature ()

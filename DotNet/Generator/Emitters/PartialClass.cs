@@ -2,24 +2,28 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using static Generator.Common;
 
 namespace Generator
 {
-    internal class GeneratedClass
+    internal class PartialClass
     {
-        private readonly ClassDeclarationSyntax syntax;
-        private readonly IReadOnlyList<GeneratedMethod> methods;
+        public string Name { get; }
 
-        public GeneratedClass (ClassDeclarationSyntax syntax, IReadOnlyList<GeneratedMethod> methods)
+        private readonly ClassDeclarationSyntax syntax;
+        private readonly IReadOnlyList<PartialMethod> methods;
+
+        public PartialClass (ClassDeclarationSyntax syntax, IReadOnlyList<PartialMethod> methods)
         {
             this.syntax = syntax;
             this.methods = methods;
+            Name = syntax.Identifier.ToString();
         }
 
         public string EmitSource (Compilation compilation)
         {
-            return WrapDefines(
-                EmitImport() +
+            return MuteNullableWarnings(
+                EmitUsings() +
                 WrapNamespace(
                     EmitHeader() +
                     EmitMethods(compilation) +
@@ -28,18 +32,11 @@ namespace Generator
             );
         }
 
-        private string WrapDefines (string source)
-        {
-            return "\n#nullable enable\n#pragma warning disable\n" +
-                   source +
-                   "\n#pragma warning restore\n#nullable restore\n";
-        }
-
-        private string EmitImport ()
+        private string EmitUsings ()
         {
             var imports = syntax.SyntaxTree.GetRoot().DescendantNodesAndSelf().OfType<UsingDirectiveSyntax>();
             var result = string.Join("\n", imports);
-            return string.IsNullOrEmpty(result) ? "" : result + "\n";
+            return string.IsNullOrEmpty(result) ? "" : result + "\n\n";
         }
 
         private string EmitHeader () => $"{syntax.Modifiers} class {syntax.Identifier}\n{{\n";
@@ -57,7 +54,7 @@ namespace Generator
             if (syntax.Parent is NamespaceDeclarationSyntax space)
                 return $"namespace {space.Name}\n{{\n{source}\n}}";
             if (syntax.Parent is FileScopedNamespaceDeclarationSyntax fileSpace)
-                return $"namespace {fileSpace.Name};\n{source}";
+                return $"namespace {fileSpace.Name};\n\n{source}";
             return source;
         }
     }

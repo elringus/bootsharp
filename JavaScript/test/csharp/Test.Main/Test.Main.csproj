@@ -15,7 +15,7 @@
         <ProjectReference Include="../Test.Types/Test.Types.csproj"/>
     </ItemGroup>
 
-    <Import Project="$(DotNetRoot)/DotNetJS/build/DotNetJS.targets"/>
+    <Import Project="$(DotNetRoot)/DotNetJS/Build/DotNetJS.targets"/>
 
     <PropertyGroup>
         <PackerAssembly>../../../DotNet/Packer/bin/Release/net6.0/publish/Packer.dll</PackerAssembly>

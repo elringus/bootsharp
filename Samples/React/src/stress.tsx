@@ -1,5 +1,5 @@
 ﻿import { useEffect, useState } from "react";
-import { Backend } from "backend";
+import { Backend, Frontend } from "backend";
 
 type Props = {
     power: number;
@@ -10,12 +10,12 @@ export const Stress = (props: Props) => {
     const [iterations, setIterations] = useState("");
 
     useEffect(() => {
-        Backend.GetStressPower = () => props.power;
+        Frontend.GetStressPower = () => props.power;
     }, [props.power]);
 
     useEffect(() => {
-        Backend.OnStressIteration.subscribe(logIteration);
-        return () => Backend.OnStressIteration.unsubscribe(logIteration);
+        Frontend.OnStressComplete.subscribe(logIteration);
+        return () => Frontend.OnStressComplete.unsubscribe(logIteration);
     }, []);
 
     return (

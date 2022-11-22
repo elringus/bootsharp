@@ -12,16 +12,25 @@ namespace Generator
 
         public void Execute (GeneratorExecutionContext context)
         {
+            AddGlobal(context);
             if (context.SyntaxContextReceiver is SyntaxReceiver receiver)
-                AddSources(context, receiver);
+                AddPartial(context, receiver);
         }
 
-        private void AddSources (GeneratorExecutionContext context, SyntaxReceiver receiver)
+        private static void AddGlobal (GeneratorExecutionContext context)
         {
-            for (int i = 0; i < receiver.FunctionClasses.Count; i++)
-                context.AddSource($"Functions{i}.g", receiver.FunctionClasses[i].EmitSource(context.Compilation));
-            for (int i = 0; i < receiver.EventClasses.Count; i++)
-                context.AddSource($"Events{i}.g", receiver.EventClasses[i].EmitSource(context.Compilation));
+            foreach (var type in ExportType.Resolve(context.Compilation.Assembly))
+                context.AddSource($"{type.Name}Export.g", type.EmitSource());
+            foreach (var type in ImportType.Resolve(context.Compilation.Assembly))
+                context.AddSource($"{type.Name}Import.g", type.EmitSource(context.Compilation));
+        }
+
+        private static void AddPartial (GeneratorExecutionContext context, SyntaxReceiver receiver)
+        {
+            foreach (var @class in receiver.FunctionClasses)
+                context.AddSource($"{@class.Name}Functions.g", @class.EmitSource(context.Compilation));
+            foreach (var @class in receiver.EventClasses)
+                context.AddSource($"{@class.Name}Events.g", @class.EmitSource(context.Compilation));
         }
     }
 }
