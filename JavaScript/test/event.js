@@ -75,4 +75,13 @@ describe("event", () => {
         event.broadcast();
         assert.deepStrictEqual(result, 9);
     });
+    it("returns undefined last args until no broadcasts performed", () => {
+        assert.deepStrictEqual(new Event().getLast(), undefined);
+    });
+    it("returns args of the last broadcasts", () => {
+        const event = new Event();
+        event.broadcast("foo");
+        event.broadcast("bar", "nya");
+        assert.deepStrictEqual(event.getLast(), ["bar", "nya"]);
+    });
 });
