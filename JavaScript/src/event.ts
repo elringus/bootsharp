@@ -1,12 +1,14 @@
 ﻿export class Event<T extends any[]> implements EventBroadcaster<T>, EventSubscriber<T> {
     private readonly handlers = new Map<string, (...args: [...T]) => void>();
     private readonly warn: ((message: string) => void) | null;
+    private lastArgs: T | undefined;
 
     constructor(warn?: ((message: string) => void) | null) {
         this.warn = warn === undefined ? console.warn : warn;
     }
 
     public broadcast(...args: [...T]) {
+        this.lastArgs = args;
         for (const handler of this.handlers.values())
             handler(...args);
     }
@@ -35,6 +37,10 @@
         else this.warn?.(`Failed to unsubscribe event handler with ID '${id}': handler is not subscribed.`);
     }
 
+    public getLast() {
+        return this.lastArgs;
+    }
+
     private getOrDefineId(handler: (...args: [...T]) => void) {
         const idProperty = "dotnetEventHandlerId";
         if (handler.hasOwnProperty(idProperty))
@@ -56,4 +62,5 @@ export interface EventBroadcaster<T extends any[]> {
 export interface EventSubscriber<T extends any[]> {
     subscribe: (handler: (...args: [...T]) => void) => string;
     unsubscribe: (handler: (...args: [...T]) => void) => void;
+    getLast: () => T | undefined;
 }
