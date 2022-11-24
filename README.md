@@ -140,6 +140,46 @@ When the method in invoked in C#, subscribed JavaScript handlers will be notifie
 
 In TypeScript the event will have typed generic declaration corresponding to the event arguments.
 
+### React Event Hooks
+
+Below are some utility hooks, which you can use in React to bootstrap usage of the events:
+
+```ts
+import { DependencyList, useEffect, useState } from "react";
+import { EventSubscriber } from "backend";
+
+export function useEvent<T extends any[]>(
+    event: EventSubscriber<T>, handler: (...args: [...T]) => void,
+    deps?: DependencyList | undefined, destructor?: () => void) {
+    useEffect(() => {
+        event.subscribe(handler);
+        return () => {
+            event.unsubscribe(handler);
+            destructor?.();
+        };
+    }, deps);
+}
+
+export function useEventState<T extends any[]>(
+    event: EventSubscriber<T>,
+    defaultState?: T[0]): T[0] | undefined {
+    const last = event.getLast();
+    const initialState = last === undefined ? defaultState : last[0];
+    const [state, setState] = useState<T[0]>(initialState);
+    useEvent<T[0]>(event, setState, []);
+    return state;
+}
+```
+
+The `useEventState` hook will take care of both subscribing and unsubscribing from the dotnet event when component unmounts and using last event args as the default state to catch up in case the component missed a broadcast before being mounted.
+
+```tsx
+const MyComponent = () => {
+    const myData = useEventState(Backend.OnDataChanged);
+    return <>{myData}</>;
+};
+```
+
 ## Auto-generating Bindings by Interfaces
 
 Instead of writing a binding for each method, make DotNetJS generate them automatically with `[JSImport]` and `[JSExport]` assembly attributes.
