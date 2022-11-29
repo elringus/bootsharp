@@ -22,8 +22,11 @@ jobs:
           npm ci
           npm run build
           dotnet publish test/csharp/Test.sln
-          npm install -g codecov
           npm install -g nyc
           nyc --reporter=lcov -x **/native -x **/bin -x **/dotnet-js-interop.ts npm run test
-          cd ../..
-          codecov
+      - name: pwd
+        run: |
+          pwd
+          ls
+      - name: upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
