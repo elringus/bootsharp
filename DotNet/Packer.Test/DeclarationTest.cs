@@ -496,8 +496,8 @@ public class DeclarationTest : ContentTest
             With("[JSFunction] public static List<Foo?>? Fun (int?[]? bar, Foo?[]?[]? far) => default;")
         );
         Task.Execute();
-        Contains("export let Fun: (bar: Array<number | undefined> | undefined," +
-                 " far: Array<Array<Bindings.Foo | undefined> | undefined> | undefined) =>" +
+        Contains("export let Fun: (bar?: Array<number | undefined>," +
+                 " far?: Array<Array<Bindings.Foo | undefined> | undefined>) =>" +
                  " Array<Bindings.Foo | undefined> | undefined;");
     }
 
