@@ -489,6 +489,19 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void NullableCollectionElementTypesUnionWithUndefined ()
+    {
+        AddAssembly(
+            With("public class Foo { }"),
+            With("[JSFunction] public static List<Foo?>? Fun (int?[]? bar, Foo?[]?[]? far) => default;")
+        );
+        Task.Execute();
+        Contains("export let Fun: (bar: Array<number | undefined> | undefined," +
+                 " far: Array<Array<Bindings.Foo | undefined> | undefined> | undefined) =>" +
+                 " Array<Bindings.Foo | undefined> | undefined;");
+    }
+
+    [Fact]
     public void NullablePropertiesHaveOptionalModificator ()
     {
         AddAssembly(
