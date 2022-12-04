@@ -493,10 +493,11 @@ public class DeclarationTest : ContentTest
     {
         AddAssembly(
             With("public class Foo { }"),
-            With("[JSFunction] public static List<Foo?>? Fun (int?[]? bar, Foo?[]?[]? far) => default;")
+            With("[JSFunction] public static List<Foo?>? Fun (int?[]? bar, Foo[]?[]? nya, Foo?[]?[]? far) => default;")
         );
         Task.Execute();
         Contains("export let Fun: (bar?: Array<number | undefined>," +
+                 " nya?: Array<Array<Bindings.Foo> | undefined>," +
                  " far?: Array<Array<Bindings.Foo | undefined> | undefined>) =>" +
                  " Array<Bindings.Foo | undefined> | undefined;");
     }
