@@ -37,7 +37,7 @@ internal class AssemblyInspector : IDisposable
         foreach (var assemblyPath in Directory.GetFiles(directory, "*.dll"))
             try { InspectAssembly(assemblyPath, context); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
-        Types.AddRange(typeConverter.GetObjectTypes());
+        Types.AddRange(typeConverter.CrawledTypes);
         contexts.Add(context);
     }
 
