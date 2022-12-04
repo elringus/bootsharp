@@ -76,7 +76,6 @@ internal class TypeConverter
 
     private string ConvertGeneric (Type type)
     {
-        EnterNullability(type);
         var args = string.Join(", ", type.GenericTypeArguments.Select(Convert));
         return $"{spaceBuilder.Build(type)}.{GetGenericNameWithoutArgs(type)}<{args}>";
     }

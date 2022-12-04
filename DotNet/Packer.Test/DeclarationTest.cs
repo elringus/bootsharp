@@ -506,7 +506,8 @@ public class DeclarationTest : ContentTest
     public void NullableCollectionElementTypesOfCustomTypeUnionWithUndefined ()
     {
         AddAssembly(
-            With("public record Foo (List<List<Foo?>?>? Bar, Foo?[]?[]? Nya);"),
+            With("public interface IFoo { }"),
+            With("public record Foo (List<List<Foo?>?>? Bar, Foo?[]?[]? Nya) : IFoo;"),
             With("[JSFunction] public static Foo GetFoo () => default;")
         );
         Task.Execute();
