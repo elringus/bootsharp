@@ -1,62 +1,54 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using static Packer.TypeUtilities;
 
 namespace Packer;
 
 internal class TypeConverter
 {
-    private readonly HashSet<Type> objectTypes = new();
+    public IReadOnlyCollection<Type> CrawledTypes => crawler.Crawled;
+
+    private readonly TypeCrawler crawler = new();
     private readonly NamespaceBuilder spaceBuilder;
+    private NullabilityInfo? nullability;
 
     public TypeConverter (NamespaceBuilder spaceBuilder)
     {
         this.spaceBuilder = spaceBuilder;
     }
 
-    public string ToTypeScript (Type type)
+    public string ToTypeScript (Type type) => ToTypeScript(type, null);
+
+    public string ToTypeScript (Type type, NullabilityInfo? nullability)
     {
-        if (IsDictionary(type)) return $"Map<{ToTypeScript(type.GenericTypeArguments[0])}, {ToTypeScript(type.GenericTypeArguments[1])}>";
-        if (IsNullable(type)) return ToTypeScript(GetNullableUnderlyingType(type));
-        if (IsAwaitable(type)) return ToPromise(type);
-        if (ShouldConvertToObject(type)) return ConvertToObject(type);
-        return ConvertToSimple(type);
+        this.nullability = nullability;
+        // nullability of topmost type declarations is evaluated outside (method/property info)
+        if (IsNullable(type)) type = GetNullableUnderlyingType(type);
+        return Convert(type);
     }
 
-    public List<Type> GetObjectTypes () => objectTypes.ToList();
-
-    private bool ShouldConvertToObject (Type type)
+    private string Convert (Type type)
     {
-        type = GetUnderlyingType(type);
-        return (Type.GetTypeCode(type) == TypeCode.Object || type.IsEnum) &&
-               !ShouldIgnoreAssembly(type.Assembly.FullName!);
+        crawler.Crawl(type);
+        if (IsNullable(type)) return ConvertNullable(type);
+        if (IsList(type)) return ConvertList(type);
+        if (IsDictionary(type)) return ConvertDictionary(type);
+        if (IsAwaitable(type)) return ConvertAwaitable(type);
+        if (type.IsGenericType) return ConvertGeneric(type);
+        return ConvertFinal(type);
     }
 
-    private string ConvertToObject (Type type)
+    private string ConvertNullable (Type type)
     {
-        if (IsArray(type)) return $"Array<{ConvertToObject(GetArrayElementType(type))}>";
-        CrawlObjectType(type);
-        var name = type.IsGenericType ? ToGeneric(type) : type.Name;
-        return $"{spaceBuilder.Build(type)}.{name}";
+        return $"{Convert(GetNullableUnderlyingType(type))} | undefined";
     }
 
-    private string ConvertToSimple (Type type)
+    private string ConvertList (Type type)
     {
-        if (type.Name == "Void") return "void";
-        if (IsArray(type)) return ToSimpleArray(type);
-        return ConvertTypeCode(Type.GetTypeCode(type));
-    }
-
-    private string ToGeneric (Type type)
-    {
-        var args = string.Join(", ", type.GenericTypeArguments.Select(ToTypeScript));
-        return $"{GetGenericNameWithoutArgs(type)}<{args}>";
-    }
-
-    private string ToSimpleArray (Type type)
-    {
-        var elementType = GetArrayElementType(type);
+        var elementType = GetListElementType(type);
+        if (EnterNullability(type)) return $"Array<{Convert(elementType)} | undefined>";
         return Type.GetTypeCode(elementType) switch {
             TypeCode.Byte => "Uint8Array",
             TypeCode.SByte => "Int8Array",
@@ -64,54 +56,53 @@ internal class TypeConverter
             TypeCode.Int16 => "Int16Array",
             TypeCode.UInt32 => "Uint32Array",
             TypeCode.Int32 => "Int32Array",
-            _ => $"Array<{ConvertToSimple(elementType)}>"
+            _ => $"Array<{Convert(elementType)}>"
         };
     }
 
-    private string ToPromise (Type type)
+    private string ConvertDictionary (Type type)
     {
+        var keyType = type.GenericTypeArguments[0];
+        var valueType = type.GenericTypeArguments[1];
+        return $"Map<{Convert(keyType)}, {Convert(valueType)}>";
+    }
+
+    private string ConvertAwaitable (Type type)
+    {
+        EnterNullability(type);
         if (type.GenericTypeArguments.Length == 0) return "Promise<void>";
-        var resultType = ConvertToSimple(type.GenericTypeArguments[0]);
-        return $"Promise<{resultType}>";
+        return $"Promise<{Convert(type.GenericTypeArguments[0])}>";
     }
 
-    private string ConvertTypeCode (TypeCode typeCode) => typeCode switch {
-        TypeCode.Byte or TypeCode.SByte or TypeCode.UInt16 or TypeCode.UInt32 or
-            TypeCode.UInt64 or TypeCode.Int16 or TypeCode.Int32 or TypeCode.Int64 or
-            TypeCode.Decimal or TypeCode.Double or TypeCode.Single => "number",
-        TypeCode.Char or TypeCode.String => "string",
-        TypeCode.Boolean => "boolean",
-        TypeCode.DateTime => "Date",
-        _ => "any"
-    };
-
-    private void CrawlObjectType (Type type)
+    private string ConvertGeneric (Type type)
     {
-        type = GetUnderlyingType(type);
-        if (!objectTypes.Add(type)) return;
-        CrawlProperties(type);
-        CrawlBaseType(type);
+        EnterNullability(type);
+        var args = string.Join(", ", type.GenericTypeArguments.Select(Convert));
+        return $"{spaceBuilder.Build(type)}.{GetGenericNameWithoutArgs(type)}<{args}>";
     }
 
-    private void CrawlProperties (Type type)
+    private string ConvertFinal (Type type)
     {
-        var propertyTypesToAdd = type.GetProperties()
-            .Select(m => m.PropertyType)
-            .Where(ShouldConvertToObject);
-        foreach (var propertyType in propertyTypesToAdd)
-            CrawlObjectType(propertyType);
+        if (type.Name == "Void") return "void";
+        if (CrawledTypes.Contains(type)) return $"{spaceBuilder.Build(type)}.{type.Name}";
+        return Type.GetTypeCode(type) switch {
+            TypeCode.Byte or TypeCode.SByte or TypeCode.UInt16 or TypeCode.UInt32 or
+                TypeCode.UInt64 or TypeCode.Int16 or TypeCode.Int32 or TypeCode.Int64 or
+                TypeCode.Decimal or TypeCode.Double or TypeCode.Single => "number",
+            TypeCode.Char or TypeCode.String => "string",
+            TypeCode.Boolean => "boolean",
+            TypeCode.DateTime => "Date",
+            _ => "any"
+        };
     }
 
-    private void CrawlBaseType (Type type)
+    private bool EnterNullability (Type type)
     {
-        if (type.BaseType != null && ShouldConvertToObject(type.BaseType))
-            CrawlObjectType(type.BaseType);
-    }
-
-    private Type GetUnderlyingType (Type type)
-    {
-        if (IsNullable(type)) return GetNullableUnderlyingType(type);
-        if (IsArray(type)) return GetUnderlyingType(GetArrayElementType(type));
-        return type;
+        if (nullability is null) return false;
+        var nullable = nullability.ElementType?.ReadState == NullabilityState.Nullable ||
+                       nullability.GenericTypeArguments.FirstOrDefault()?.ReadState == NullabilityState.Nullable;
+        if (type.IsArray) nullability = nullability.ElementType;
+        else nullability = nullability.GenericTypeArguments.FirstOrDefault();
+        return nullable;
     }
 }

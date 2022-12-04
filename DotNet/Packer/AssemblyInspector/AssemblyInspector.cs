@@ -37,7 +37,7 @@ internal class AssemblyInspector : IDisposable
         foreach (var assemblyPath in Directory.GetFiles(directory, "*.dll"))
             try { InspectAssembly(assemblyPath, context); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
-        Types.AddRange(typeConverter.GetObjectTypes());
+        Types.AddRange(typeConverter.CrawledTypes);
         contexts.Add(context);
     }
 
@@ -104,7 +104,7 @@ internal class AssemblyInspector : IDisposable
         Assembly = info.DeclaringType!.Assembly.GetName().Name!,
         Namespace = spaceBuilder.Build(info.DeclaringType),
         Arguments = info.GetParameters().Select(CreateArgument).ToArray(),
-        ReturnType = typeConverter.ToTypeScript(info.ReturnType),
+        ReturnType = typeConverter.ToTypeScript(info.ReturnType, GetNullability(info.ReturnParameter)),
         ReturnNullable = IsNullable(info),
         Async = IsAwaitable(info.ReturnType),
         Type = type
@@ -112,7 +112,7 @@ internal class AssemblyInspector : IDisposable
 
     private Argument CreateArgument (ParameterInfo info) => new() {
         Name = info.Name == "function" ? "fn" : info.Name!,
-        Type = typeConverter.ToTypeScript(info.ParameterType),
+        Type = typeConverter.ToTypeScript(info.ParameterType, GetNullability(info)),
         Nullable = IsNullable(info)
     };
 

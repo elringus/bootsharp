@@ -463,15 +463,15 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
-    public void NullableMethodArgumentsUnionWithUndefined ()
+    public void NullableMethodArgumentsHaveOptionalModificator ()
     {
         AddAssembly(
             With("[JSInvokable] public static void Foo (string? bar) { }"),
             With("[JSFunction] public static void Fun (int? nya) { }")
         );
         Task.Execute();
-        Contains("export function Foo(bar: string | undefined): void;");
-        Contains("export let Fun: (nya: number | undefined) => void;");
+        Contains("export function Foo(bar?: string): void;");
+        Contains("export let Fun: (nya?: number) => void;");
     }
 
     [Fact]
@@ -486,6 +486,33 @@ public class DeclarationTest : ContentTest
         Contains("export function Foo(): string | undefined;");
         Contains("export function Bar(): Promise<Uint8Array | undefined>;");
         Contains("export let Nya: () => Promise<Array<string> | undefined>;");
+    }
+
+    [Fact]
+    public void NullableCollectionElementTypesUnionWithUndefined ()
+    {
+        AddAssembly(
+            With("public class Foo { }"),
+            With("[JSFunction] public static List<Foo?>? Fun (int?[]? bar, Foo[]?[]? nya, Foo?[]?[]? far) => default;")
+        );
+        Task.Execute();
+        Contains("export let Fun: (bar?: Array<number | undefined>," +
+                 " nya?: Array<Array<Bindings.Foo> | undefined>," +
+                 " far?: Array<Array<Bindings.Foo | undefined> | undefined>) =>" +
+                 " Array<Bindings.Foo | undefined> | undefined;");
+    }
+
+    [Fact]
+    public void NullableCollectionElementTypesOfCustomTypeUnionWithUndefined ()
+    {
+        AddAssembly(
+            With("public interface IFoo<T> { }"),
+            With("public record Foo (List<List<IFoo<string>?>?>? Bar, IFoo<int>?[]?[]? Nya) : IFoo<bool>;"),
+            With("[JSFunction] public static IFoo<bool> Fun (Foo foo) => default;")
+        );
+        Task.Execute();
+        Contains(@"bar?: Array<Array<Bindings.IFoo<string> | undefined> | undefined>;");
+        Contains(@"nya?: Array<Array<Bindings.IFoo<number> | undefined> | undefined>;");
     }
 
     [Fact]

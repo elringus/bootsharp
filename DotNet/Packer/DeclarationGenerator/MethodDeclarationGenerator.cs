@@ -71,13 +71,15 @@ internal class MethodDeclarationGenerator
     private void DeclareEvent ()
     {
         builder.Append($"\n    export const {method.Name}: Event<[");
-        builder.AppendJoin(", ", method.Arguments.Select(BuildTypeDeclaration));
+        builder.AppendJoin(", ", method.Arguments.Select(BuildType));
         builder.Append("]>;");
+
+        string BuildType (Argument arg) => arg.Type + (arg.Nullable ? " | undefined" : "");
     }
 
     private string BuildArgumentDeclaration (Argument arg)
     {
-        return $"{arg.Name}: {BuildTypeDeclaration(arg)}";
+        return $"{arg.Name + (arg.Nullable ? "?" : "")}: {arg.Type}";
     }
 
     private string BuildReturnDeclaration (Method method)
@@ -86,10 +88,5 @@ internal class MethodDeclarationGenerator
         if (!method.Async) return $"{method.ReturnType} | undefined";
         var insertIndex = method.ReturnType.Length - 1;
         return method.ReturnType.Insert(insertIndex, " | undefined");
-    }
-
-    private string BuildTypeDeclaration (Argument arg)
-    {
-        return arg.Type + (arg.Nullable ? " | undefined" : "");
     }
 }
