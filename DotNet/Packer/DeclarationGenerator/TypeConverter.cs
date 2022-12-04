@@ -57,6 +57,7 @@ internal class TypeConverter
     private string ToSimpleArray (Type type)
     {
         var elementType = GetArrayElementType(type);
+        if (IsNullable(elementType)) return $"Array<{ConvertToSimple(GetNullableUnderlyingType(type))} | undefined>";
         return Type.GetTypeCode(elementType) switch {
             TypeCode.Byte => "Uint8Array",
             TypeCode.SByte => "Int8Array",
