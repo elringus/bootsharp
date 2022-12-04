@@ -98,10 +98,11 @@ internal class TypeConverter
 
     private bool EnterNullability (Type type)
     {
-        var nullable = nullability?.ElementType?.ReadState == NullabilityState.Nullable ||
-                       nullability?.GenericTypeArguments.FirstOrDefault()?.ReadState == NullabilityState.Nullable;
-        if (type.IsArray) nullability = nullability?.ElementType;
-        else nullability = nullability?.GenericTypeArguments.FirstOrDefault();
+        if (nullability is null) return false;
+        var nullable = nullability.ElementType?.ReadState == NullabilityState.Nullable ||
+                       nullability.GenericTypeArguments.FirstOrDefault()?.ReadState == NullabilityState.Nullable;
+        if (type.IsArray) nullability = nullability.ElementType;
+        else nullability = nullability.GenericTypeArguments.FirstOrDefault();
         return nullable;
     }
 }
