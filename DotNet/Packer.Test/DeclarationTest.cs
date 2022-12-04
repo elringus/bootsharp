@@ -322,6 +322,19 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void DefinitionIsGeneratedForTypeWithJaggedArrayProperty ()
+    {
+        AddAssembly(
+            With("n", "public interface Item { }"),
+            With("n", "public class Container { public Item[][] Items { get; } }"),
+            With("n", "[JSInvokable] public static Container Get () => default;"));
+        Task.Execute();
+        Matches(@"export interface Item {\s*}");
+        Matches(@"export class Container {\s*items: Array<Array<n.Item>>;\s*}");
+        Contains("Get(): n.Container");
+    }
+
+    [Fact]
     public void DefinitionIsGeneratedForTypeWithReadOnlyListProperty ()
     {
         AddAssembly(
