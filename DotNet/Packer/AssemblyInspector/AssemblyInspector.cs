@@ -104,7 +104,7 @@ internal class AssemblyInspector : IDisposable
         Assembly = info.DeclaringType!.Assembly.GetName().Name!,
         Namespace = spaceBuilder.Build(info.DeclaringType),
         Arguments = info.GetParameters().Select(CreateArgument).ToArray(),
-        ReturnType = typeConverter.ToTypeScript(info.ReturnType),
+        ReturnType = typeConverter.ToTypeScript(info.ReturnType, new NullabilityInfoContext().Create(info.ReturnParameter)),
         ReturnNullable = IsNullable(info),
         Async = IsAwaitable(info.ReturnType),
         Type = type
@@ -112,7 +112,7 @@ internal class AssemblyInspector : IDisposable
 
     private Argument CreateArgument (ParameterInfo info) => new() {
         Name = info.Name == "function" ? "fn" : info.Name!,
-        Type = typeConverter.ToTypeScript(info.ParameterType),
+        Type = typeConverter.ToTypeScript(info.ParameterType, new NullabilityInfoContext().Create(info)),
         Nullable = IsNullable(info)
     };
 
