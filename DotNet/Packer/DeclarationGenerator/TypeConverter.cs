@@ -21,10 +21,10 @@ internal class TypeConverter
     {
         // nullability of topmost type declarations is evaluated outside (method/property info)
         if (IsNullable(type)) type = GetNullableUnderlyingType(type);
-        return ToTypeScriptInner(type);
+        return Convert(type);
     }
 
-    private string ToTypeScriptInner (Type type)
+    private string Convert (Type type)
     {
         crawler.Crawl(type);
         if (IsNullable(type)) return ConvertNullable(type);
@@ -37,7 +37,7 @@ internal class TypeConverter
 
     private string ConvertNullable (Type type)
     {
-        return $"{ToTypeScriptInner(GetNullableUnderlyingType(type))} | undefined";
+        return $"{Convert(GetNullableUnderlyingType(type))} | undefined";
     }
 
     private string ConvertList (Type type)
@@ -50,7 +50,7 @@ internal class TypeConverter
             TypeCode.Int16 => "Int16Array",
             TypeCode.UInt32 => "Uint32Array",
             TypeCode.Int32 => "Int32Array",
-            _ => $"Array<{ToTypeScriptInner(elementType)}>"
+            _ => $"Array<{Convert(elementType)}>"
         };
     }
 
@@ -58,18 +58,18 @@ internal class TypeConverter
     {
         var keyType = type.GenericTypeArguments[0];
         var valueType = type.GenericTypeArguments[1];
-        return $"Map<{ToTypeScriptInner(keyType)}, {ToTypeScriptInner(valueType)}>";
+        return $"Map<{Convert(keyType)}, {Convert(valueType)}>";
     }
 
     private string ConvertAwaitable (Type type)
     {
         if (type.GenericTypeArguments.Length == 0) return "Promise<void>";
-        return $"Promise<{ToTypeScriptInner(type.GenericTypeArguments[0])}>";
+        return $"Promise<{Convert(type.GenericTypeArguments[0])}>";
     }
 
     private string ConvertGeneric (Type type)
     {
-        var args = string.Join(", ", type.GenericTypeArguments.Select(ToTypeScriptInner));
+        var args = string.Join(", ", type.GenericTypeArguments.Select(Convert));
         return $"{spaceBuilder.Build(type)}.{GetGenericNameWithoutArgs(type)}<{args}>";
     }
 
