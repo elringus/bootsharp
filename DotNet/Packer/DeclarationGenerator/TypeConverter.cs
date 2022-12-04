@@ -111,7 +111,7 @@ internal class TypeConverter
     private Type GetUnderlyingType (Type type)
     {
         if (IsNullable(type)) return GetNullableUnderlyingType(type);
-        if (IsArray(type)) return GetArrayElementType(type);
+        if (IsArray(type)) return GetUnderlyingType(GetArrayElementType(type));
         return type;
     }
 }
