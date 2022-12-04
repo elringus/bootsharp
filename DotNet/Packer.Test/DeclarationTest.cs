@@ -257,6 +257,14 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void JaggedArrayAndListOfListsTranslatedToArrayOfArrays ()
+    {
+        AddAssembly(With("[JSInvokable] public static List<List<string>> Goo (DateTime[][] d) => default;"));
+        Task.Execute();
+        Contains("Goo(d: Array<Array<Date>>): Array<Array<string>>");
+    }
+
+    [Fact]
     public void IntArraysTranslatedToRelatedTypes ()
     {
         AddAssembly(
