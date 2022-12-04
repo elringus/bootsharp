@@ -40,26 +40,34 @@ internal static class TypeUtilities
             : arrayType.GenericTypeArguments[0];
     }
 
+    public static NullabilityInfo GetNullability (PropertyInfo property)
+    {
+        return new NullabilityInfoContext().Create(property);
+    }
+
+    public static NullabilityInfo GetNullability (ParameterInfo parameter)
+    {
+        return new NullabilityInfoContext().Create(parameter);
+    }
+
     public static bool IsNullable (PropertyInfo property)
     {
         if (IsNullable(property.PropertyType)) return true;
-        var context = new NullabilityInfoContext().Create(property);
-        return context.ReadState == NullabilityState.Nullable;
+        return GetNullability(property).ReadState == NullabilityState.Nullable;
     }
 
     public static bool IsNullable (ParameterInfo parameter)
     {
         if (IsNullable(parameter.ParameterType)) return true;
-        var context = new NullabilityInfoContext().Create(parameter);
-        return context.ReadState == NullabilityState.Nullable;
+        return GetNullability(parameter).ReadState == NullabilityState.Nullable;
     }
 
     public static bool IsNullable (MethodInfo method)
     {
         if (IsNullable(method.ReturnParameter)) return true;
         if (!IsAwaitable(method.ReturnType)) return false;
-        var context = new NullabilityInfoContext().Create(method.ReturnParameter);
-        return context.GenericTypeArguments.FirstOrDefault()?.ReadState == NullabilityState.Nullable;
+        return GetNullability(method.ReturnParameter).GenericTypeArguments
+            .FirstOrDefault()?.ReadState == NullabilityState.Nullable;
     }
 
     public static bool IsNullable (Type type)

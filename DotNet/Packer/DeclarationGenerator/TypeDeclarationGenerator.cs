@@ -134,7 +134,13 @@ internal class TypeDeclarationGenerator
     {
         AppendLine(ToFirstLower(property.Name), 2);
         if (IsNullable(property)) builder.Append('?');
-        builder.Append($": {BuildPropertyType(property.PropertyType)};");
+        builder.Append($": {BuildType()};");
+
+        string BuildType ()
+        {
+            if (property.PropertyType.IsGenericTypeParameter) return property.PropertyType.Name;
+            return converter.ToTypeScript(property.PropertyType, GetNullability(property));
+        }
     }
 
     private void AppendLine (string content, int level)
@@ -155,11 +161,5 @@ internal class TypeDeclarationGenerator
         if (!type.IsGenericType) return type.Name;
         var args = string.Join(", ", type.GetGenericArguments().Select(a => a.Name));
         return $"{GetGenericNameWithoutArgs(type)}<{args}>";
-    }
-
-    private string BuildPropertyType (Type type)
-    {
-        if (type.IsGenericTypeParameter) return type.Name;
-        return converter.ToTypeScript(type);
     }
 }

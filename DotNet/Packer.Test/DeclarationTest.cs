@@ -503,6 +503,18 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void NullableCollectionElementTypesOfCustomTypeUnionWithUndefined ()
+    {
+        AddAssembly(
+            With("public record Foo (List<List<Foo?>?>? Bar, Foo?[]?[]? Nya);"),
+            With("[JSFunction] public static Foo GetFoo () => default;")
+        );
+        Task.Execute();
+        Contains(@"bar?: Array<Array<Bindings.Foo | undefined> | undefined>;");
+        Contains(@"nya?: Array<Array<Bindings.Foo | undefined> | undefined>;");
+    }
+
+    [Fact]
     public void NullablePropertiesHaveOptionalModificator ()
     {
         AddAssembly(
