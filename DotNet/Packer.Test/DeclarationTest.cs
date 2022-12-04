@@ -507,12 +507,12 @@ public class DeclarationTest : ContentTest
     {
         AddAssembly(
             With("public interface IFoo<T> { }"),
-            With("public record Foo (List<List<Foo?>?>? Bar, Foo?[]?[]? Nya) : IFoo<string>;"),
-            With("[JSFunction] public static Foo GetFoo () => default;")
+            With("public record Foo (List<List<IFoo<string>?>?>? Bar, IFoo<int>?[]?[]? Nya) : IFoo<bool>;"),
+            With("[JSFunction] public static IFoo<bool> Fun (Foo foo) => default;")
         );
         Task.Execute();
-        Contains(@"bar?: Array<Array<Bindings.Foo | undefined> | undefined>;");
-        Contains(@"nya?: Array<Array<Bindings.Foo | undefined> | undefined>;");
+        Contains(@"bar?: Array<Array<Bindings.IFoo<string> | undefined> | undefined>;");
+        Contains(@"nya?: Array<Array<Bindings.IFoo<number> | undefined> | undefined>;");
     }
 
     [Fact]
