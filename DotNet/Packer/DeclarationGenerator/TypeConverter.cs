@@ -42,13 +42,13 @@ internal class TypeConverter
 
     private string ConvertNullable (Type type)
     {
-        return $"{Convert(GetNullableUnderlyingType(type))} | undefined";
+        return $"{Convert(GetNullableUnderlyingType(type))} | null";
     }
 
     private string ConvertList (Type type)
     {
         var elementType = GetListElementType(type);
-        if (EnterNullability(type)) return $"Array<{Convert(elementType)} | undefined>";
+        if (EnterNullability(type)) return $"Array<{Convert(elementType)} | null>";
         return Type.GetTypeCode(elementType) switch {
             TypeCode.Byte => "Uint8Array",
             TypeCode.SByte => "Int8Array",
