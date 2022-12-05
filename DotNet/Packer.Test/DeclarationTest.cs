@@ -489,21 +489,21 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
-    public void NullableCollectionElementTypesUnionWithUndefined ()
+    public void NullableCollectionElementTypesUnionWithNull ()
     {
         AddAssembly(
             With("public class Foo { }"),
             With("[JSFunction] public static List<Foo?>? Fun (int?[]? bar, Foo[]?[]? nya, Foo?[]?[]? far) => default;")
         );
         Task.Execute();
-        Contains("export let Fun: (bar?: Array<number | undefined>," +
-                 " nya?: Array<Array<Bindings.Foo> | undefined>," +
-                 " far?: Array<Array<Bindings.Foo | undefined> | undefined>) =>" +
-                 " Array<Bindings.Foo | undefined> | undefined;");
+        Contains("export let Fun: (bar?: Array<number | null>," +
+                 " nya?: Array<Array<Bindings.Foo> | null>," +
+                 " far?: Array<Array<Bindings.Foo | null> | null>) =>" +
+                 " Array<Bindings.Foo | null> | undefined;");
     }
 
     [Fact]
-    public void NullableCollectionElementTypesOfCustomTypeUnionWithUndefined ()
+    public void NullableCollectionElementTypesOfCustomTypeUnionWithNull ()
     {
         AddAssembly(
             With("public interface IFoo<T> { }"),
@@ -511,8 +511,8 @@ public class DeclarationTest : ContentTest
             With("[JSFunction] public static IFoo<bool> Fun (Foo foo) => default;")
         );
         Task.Execute();
-        Contains(@"bar?: Array<Array<Bindings.IFoo<string> | undefined> | undefined>;");
-        Contains(@"nya?: Array<Array<Bindings.IFoo<number> | undefined> | undefined>;");
+        Contains(@"bar?: Array<Array<Bindings.IFoo<string> | null> | null>;");
+        Contains(@"nya?: Array<Array<Bindings.IFoo<number> | null> | null>;");
     }
 
     [Fact]
