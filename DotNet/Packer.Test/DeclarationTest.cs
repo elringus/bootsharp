@@ -475,7 +475,7 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
-    public void NullableMethodReturnTypesUnionWithUndefined ()
+    public void NullableMethodReturnTypesUnionWithNull ()
     {
         AddAssembly(
             With("[JSInvokable] public static string? Foo () => default;"),
@@ -483,9 +483,9 @@ public class DeclarationTest : ContentTest
             With("[JSFunction] public static ValueTask<List<string>?> Nya () => default;")
         );
         Task.Execute();
-        Contains("export function Foo(): string | undefined;");
-        Contains("export function Bar(): Promise<Uint8Array | undefined>;");
-        Contains("export let Nya: () => Promise<Array<string> | undefined>;");
+        Contains("export function Foo(): string | null;");
+        Contains("export function Bar(): Promise<Uint8Array | null>;");
+        Contains("export let Nya: () => Promise<Array<string> | null>;");
     }
 
     [Fact]
@@ -499,7 +499,7 @@ public class DeclarationTest : ContentTest
         Contains("export let Fun: (bar?: Array<number | null>," +
                  " nya?: Array<Array<Bindings.Foo> | null>," +
                  " far?: Array<Array<Bindings.Foo | null> | null>) =>" +
-                 " Array<Bindings.Foo | null> | undefined;");
+                 " Array<Bindings.Foo | null> | null;");
     }
 
     [Fact]

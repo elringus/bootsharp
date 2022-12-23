@@ -85,8 +85,8 @@ internal class MethodDeclarationGenerator
     private string BuildReturnDeclaration (Method method)
     {
         if (!method.ReturnNullable) return method.ReturnType;
-        if (!method.Async) return $"{method.ReturnType} | undefined";
+        if (!method.Async) return $"{method.ReturnType} | null";
         var insertIndex = method.ReturnType.Length - 1;
-        return method.ReturnType.Insert(insertIndex, " | undefined");
+        return method.ReturnType.Insert(insertIndex, " | null");
     }
 }
