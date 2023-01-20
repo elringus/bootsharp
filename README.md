@@ -7,7 +7,7 @@
 
 The solution provides user-friendly workflow for consuming .NET C# programs and libraries in any JavaScript environment, be it web browsers, Node.js or custom restricted spaces, like [web extensions](https://code.visualstudio.com/api/extension-guides/web-extensions) for VS Code, where neither node modules nor browser APIs are available.
 
-![](https://raw.githubusercontent.com/Elringus/CDN/main/dotnetjs.png)
+![](https://raw.githubusercontent.com/Elringus/CDN/main/dotnetjs-2.png)
 
 The solution is based on two main components:
 
