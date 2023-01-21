@@ -19,7 +19,7 @@ using DotNetJS;
 
 partial class Foo
 {
-    partial void Bar () => JS.Invoke(""dotnet.Bindings.Bar"");
+    partial void Bar () => JS.Invoke(""dotnet.Bindings.bar"");
 }
 "
         },
@@ -41,7 +41,7 @@ namespace File.Scoped;
 
 public static partial class Foo
 {
-    private static partial Task BarAsync (string a, int b) => JS.InvokeAsync(""dotnet.File.Scoped.BarAsync"", new object[] { a, b }).AsTask();
+    private static partial Task BarAsync (string a, int b) => JS.InvokeAsync(""dotnet.File.Scoped.barAsync"", new object[] { a, b }).AsTask();
 }
 "
         },
@@ -63,7 +63,7 @@ namespace File.Scoped;
 
 public static partial class Foo
 {
-    private static partial Task<string?> BarAsync () => JS.InvokeAsync<string?>(""dotnet.File.Scoped.BarAsync"").AsTask();
+    private static partial Task<string?> BarAsync () => JS.InvokeAsync<string?>(""dotnet.File.Scoped.barAsync"").AsTask();
 }
 "
         },
@@ -90,8 +90,8 @@ namespace Classic
 {
 partial class Foo
 {
-    partial DateTime GetTime (DateTime time) => JS.Invoke<DateTime>(""dotnet.Classic.GetTime"", new object[] { time });
-    partial ValueTask<DateTime> GetTimeAsync (DateTime time) => JS.InvokeAsync<DateTime>(""dotnet.Classic.GetTimeAsync"", new object[] { time });
+    partial DateTime GetTime (DateTime time) => JS.Invoke<DateTime>(""dotnet.Classic.getTime"", new object[] { time });
+    partial ValueTask<DateTime> GetTimeAsync (DateTime time) => JS.InvokeAsync<DateTime>(""dotnet.Classic.getTimeAsync"", new object[] { time });
 }
 }
 "
@@ -116,7 +116,7 @@ namespace A.B.C;
 
 public partial class Foo
 {
-    public static partial void OnFun (Foo foo) => JS.Invoke(""dotnet.C.OnFun"", new object[] { foo });
+    public static partial void OnFun (Foo foo) => JS.Invoke(""dotnet.C.onFun"", new object[] { foo });
 }
 "
         }

@@ -29,10 +29,10 @@ namespace Foo;
 
 public class JSFoo : global::Bindings.IFoo
 {
-    [JSEvent] public static void NotifyFoo (global::System.String foo) => JS.Invoke(""dotnet.Foo.NotifyFoo.broadcast"", new object[] { foo });
-    [JSFunction] public static global::System.Boolean Bar () => JS.Invoke<global::System.Boolean>(""dotnet.Foo.Bar"");
-    [JSFunction] public static global::System.Threading.Tasks.ValueTask Nya () => JS.InvokeAsync(""dotnet.Foo.Nya"");
-    [JSFunction] public static global::System.Threading.Tasks.Task<global::System.String> Far () => JS.InvokeAsync<global::System.String>(""dotnet.Foo.Far"").AsTask();
+    [JSEvent] public static void NotifyFoo (global::System.String foo) => JS.Invoke(""dotnet.Foo.notifyFoo.broadcast"", new object[] { foo });
+    [JSFunction] public static global::System.Boolean Bar () => JS.Invoke<global::System.Boolean>(""dotnet.Foo.bar"");
+    [JSFunction] public static global::System.Threading.Tasks.ValueTask Nya () => JS.InvokeAsync(""dotnet.Foo.nya"");
+    [JSFunction] public static global::System.Threading.Tasks.Task<global::System.String> Far () => JS.InvokeAsync<global::System.String>(""dotnet.Foo.far"").AsTask();
 
     void global::Bindings.IFoo.NotifyFoo (global::System.String foo) => NotifyFoo(foo);
     global::System.Boolean global::Bindings.IFoo.Bar () => Bar();
@@ -62,8 +62,8 @@ namespace Foo;
 
 public class JSFoo : global::Bindings.IFoo
 {
-    [JSEvent] public static void OnFoo (global::System.String foo) => Try(JS.Invoke(""dotnet.Foo.OnFoo.broadcast"", new object[] { foo }));
-    [JSFunction] public static global::System.Boolean Bar () => Try(JS.Invoke<global::System.Boolean>(""dotnet.Foo.Bar""));
+    [JSEvent] public static void OnFoo (global::System.String foo) => Try(JS.Invoke(""dotnet.Foo.onFoo.broadcast"", new object[] { foo }));
+    [JSFunction] public static global::System.Boolean Bar () => Try(JS.Invoke<global::System.Boolean>(""dotnet.Foo.bar""));
 
     void global::Bindings.IFoo.NotifyFoo (global::System.String foo) => OnFoo(foo);
     global::System.Boolean global::Bindings.IFoo.Bar () => Bar();
@@ -81,7 +81,7 @@ namespace A.B.C;
 
 public interface IFoo
 {
-    void Foo ();
+    void F ();
 }
 ",
             @"
@@ -91,9 +91,9 @@ namespace Foo;
 
 public class JSFoo : global::A.B.C.IFoo
 {
-    [JSFunction] public static void Foo () => JS.Invoke(""dotnet.Bar.Foo"");
+    [JSFunction] public static void F () => JS.Invoke(""dotnet.Bar.f"");
 
-    void global::A.B.C.IFoo.Foo () => Foo();
+    void global::A.B.C.IFoo.F () => F();
 }
 "
         },
@@ -115,7 +115,7 @@ namespace Foo;
 
 public class JSFoo : global::Bindings.IFoo
 {
-    [JSFunction] public static void Foo () => JS.Invoke(""dotnet.Foo.Foo"");
+    [JSFunction] public static void Foo () => JS.Invoke(""dotnet.Foo.foo"");
 
     void global::Bindings.IFoo.Foo () => Foo();
 }

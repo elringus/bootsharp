@@ -61,7 +61,7 @@ namespace Generator
             string GetInvokeParameters ()
             {
                 var parameters = method.Parameters.Select(p => p.Name).ToArray();
-                var args = $"\"dotnet.{assembly}.{methodName}{(@event ? ".broadcast" : "")}\"";
+                var args = $"\"dotnet.{assembly}.{ToFirstLower(methodName)}{(@event ? ".broadcast" : "")}\"";
                 if (parameters.Length == 0) return args;
                 args += $", new object[] {{ {string.Join(", ", parameters)} }}";
                 return args;
@@ -126,5 +126,11 @@ namespace Generator
         public static bool IsJSAttribute (AttributeData attribute, string name) =>
             attribute.AttributeClass!.ContainingNamespace.Name == "DotNetJS" &&
             attribute.AttributeClass.Name == name;
+
+        public static string ToFirstLower (string value)
+        {
+            if (value.Length == 1) char.ToLowerInvariant(value[0]);
+            return char.ToLowerInvariant(value[0]) + value.Substring(1);
+        }
     }
 }

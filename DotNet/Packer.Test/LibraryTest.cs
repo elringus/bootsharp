@@ -79,7 +79,7 @@ public class LibraryTest : ContentTest
     {
         AddAssembly("foo.asm.dll", With("Foo.Bar", "[JSInvokable] public static void Nya () { }"));
         Task.Execute();
-        Contains("exports.Foo.Bar.Nya = () => exports.invoke('foo.asm', 'Nya');");
+        Contains("exports.Foo.Bar.nya = () => exports.invoke('foo.asm', 'Nya');");
     }
 
     [Fact]
@@ -87,7 +87,7 @@ public class LibraryTest : ContentTest
     {
         AddAssembly(With("Foo.Bar", "[JSFunction] public static void Fun () { }"));
         Task.Execute();
-        Contains("exports.Foo.Bar.Fun = undefined;");
+        Contains("exports.Foo.Bar.fun = undefined;");
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class LibraryTest : ContentTest
     {
         AddAssembly(With("Asm", "[JSEvent] public static void OnFoo (string bar) { }"));
         Task.Execute();
-        Contains("exports.Asm.OnFoo = new exports.Event();");
+        Contains("exports.Asm.onFoo = new exports.Event();");
     }
 
     [Fact]
@@ -104,8 +104,8 @@ public class LibraryTest : ContentTest
         AddAssembly("foo.asm.dll", With("Foo", "[JSInvokable] public static void Foo () { }"));
         AddAssembly("bar.nya.asm.dll", With("Bar.Nya", "[JSFunction] public static void Fun () { }"));
         Task.Execute();
-        Contains("exports.Foo.Foo = () => exports.invoke('foo.asm', 'Foo');");
-        Contains("exports.Bar.Nya.Fun = undefined;");
+        Contains("exports.Foo.foo = () => exports.invoke('foo.asm', 'Foo');");
+        Contains("exports.Bar.Nya.fun = undefined;");
     }
 
     [Fact]
@@ -115,8 +115,8 @@ public class LibraryTest : ContentTest
             With("[JSInvokable] public static void Nya () { }"),
             With("[JSFunction] public static void Fun () { }"));
         Task.Execute();
-        Contains("exports.Bindings.Nya = () => exports.invoke('asm', 'Nya');");
-        Contains("exports.Bindings.Fun = undefined;");
+        Contains("exports.Bindings.nya = () => exports.invoke('asm', 'Nya');");
+        Contains("exports.Bindings.fun = undefined;");
     }
 
     [Fact]
@@ -127,8 +127,8 @@ public class LibraryTest : ContentTest
             With("Foo.Bar.Nya", "[JSInvokable] public static void GetNya () { }"),
             With("Foo.Bar.Fun", "[JSFunction] public static void OnFun () { }"));
         Task.Execute();
-        Contains("exports.Nya.GetNya = () => exports.invoke('asm', 'GetNya');");
-        Contains("exports.Fun.OnFun = undefined;");
+        Contains("exports.Nya.getNya = () => exports.invoke('asm', 'GetNya');");
+        Contains("exports.Fun.onFun = undefined;");
     }
 
     [Fact]
@@ -136,7 +136,7 @@ public class LibraryTest : ContentTest
     {
         AddAssembly(With("[JSInvokable] public static void Fun (string function) { }"));
         Task.Execute();
-        Contains("Fun = (fn) => exports.invoke");
+        Contains("fun = (fn) => exports.invoke");
     }
 
     [Fact]
@@ -146,8 +146,8 @@ public class LibraryTest : ContentTest
             With("[JSInvokable] public static Task Asy () => default;"),
             With("[JSInvokable] public static ValueTask AsyValue () => default;"));
         Task.Execute();
-        Contains("Asy = () => exports.invokeAsync");
-        Contains("AsyValue = () => exports.invokeAsync");
+        Contains("asy = () => exports.invokeAsync");
+        Contains("asyValue = () => exports.invokeAsync");
     }
 
     [Fact]
