@@ -10,13 +10,13 @@ Open console (Ctrl+Shift+I) to see the output.
 	import * as dotnet from './Project/bin/dotnet.js'
 
     // Providing implementation for 'GetHostName' function declared in 'HelloWorld' C# assembly.
-    dotnet.HelloWorld.GetHostName = () => "Browser";
+    dotnet.HelloWorld.getHostName = () => "Browser";
 
     window.onload = async function () {
     	// Booting the DotNet runtime and invoking entry point.
         await dotnet.boot();
         // Invoking 'GetName()' C# method defined in 'HelloWorld' assembly.
-        const guestName = dotnet.HelloWorld.GetName();
+        const guestName = dotnet.HelloWorld.getName();
         console.log(`Welcome, ${guestName}! Enjoy your module space.`);
     };
 
