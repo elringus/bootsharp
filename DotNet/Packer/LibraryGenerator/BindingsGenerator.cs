@@ -32,19 +32,19 @@ internal class BindingsGenerator
         var methodArgs = $"'{method.Assembly}', '{method.Name}'" + (funcArgs == "" ? "" : $", {funcArgs}");
         var invoke = method.Async ? "invokeAsync" : "invoke";
         var body = $"exports.{invoke}({methodArgs})";
-        var js = $"exports.{method.Namespace}.{method.Name} = ({funcArgs}) => {body};";
+        var js = $"exports.{method.Namespace}.{ToFirstLower(method.Name)} = ({funcArgs}) => {body};";
         return objectBuilder.EnsureNamespaceObjectsDeclared(method.Namespace, js);
     }
 
     private string EmitFunction (Method method)
     {
-        var js = $"exports.{method.Namespace}.{method.Name} = undefined;";
+        var js = $"exports.{method.Namespace}.{ToFirstLower(method.Name)} = undefined;";
         return objectBuilder.EnsureNamespaceObjectsDeclared(method.Namespace, js);
     }
 
     private string EmitEvent (Method method)
     {
-        var js = $"exports.{method.Namespace}.{method.Name} = new exports.Event();";
+        var js = $"exports.{method.Namespace}.{ToFirstLower(method.Name)} = new exports.Event();";
         return objectBuilder.EnsureNamespaceObjectsDeclared(method.Namespace, js);
     }
 }

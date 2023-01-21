@@ -72,13 +72,13 @@ Publish the project with `dotnet publish`. A single-file `dotnet.js` library wil
 <script>
 
     // Providing implementation for 'GetHostName' function declared in 'HelloWorld' C# assembly.
-    dotnet.HelloWorld.GetHostName = () => "Browser";
+    dotnet.HelloWorld.getHostName = () => "Browser";
 
     window.onload = async function () {
         // Booting the DotNet runtime and invoking entry point.
         await dotnet.boot();
         // Invoking 'GetName()' C# method defined in 'HelloWorld' assembly.
-        const guestName = dotnet.HelloWorld.GetName();
+        const guestName = dotnet.HelloWorld.getName();
         console.log(`Welcome, ${guestName}! Enjoy your global space.`);
     };
 
@@ -94,13 +94,13 @@ const dotnet = require("dotnet");
 import dotnet from "dotnet.js";
 
 // Providing implementation for 'GetHostName' function declared in 'HelloWorld' C# assembly.
-dotnet.HelloWorld.GetHostName = () => "Node.js";
+dotnet.HelloWorld.getHostName = () => "Node.js";
 
 (async function () {
     // Booting the DotNet runtime and invoking entry point.
     await dotnet.boot();
     // Invoking 'GetName()' C# method defined in 'HelloWorld' assembly.
-    const guestName = dotnet.HelloWorld.GetName();
+    const guestName = dotnet.HelloWorld.getName();
     console.log(`Welcome, ${guestName}! Enjoy your module space.`);
 })();
 ```
@@ -128,8 +128,8 @@ public static partial string OnSomethingHappened (string payload);
 — and consume it from JavaScript as follows:
 
 ```js
-dotnet.MyApp.OnSomethingHappened.subscribe(handleSomething);
-dotnet.MyApp.OnSomethingHappened.unsubscribe(handleSomething);
+dotnet.MyApp.onSomethingHappened.subscribe(handleSomething);
+dotnet.MyApp.onSomethingHappened.unsubscribe(handleSomething);
 
 function handleSomething(payload) {
 
@@ -175,7 +175,7 @@ The `useEventState` hook will take care of both subscribing and unsubscribing fr
 
 ```tsx
 const MyComponent = () => {
-    const myData = useEventState(Backend.OnDataChanged);
+    const myData = useEventState(Backend.onDataChanged);
     return <>{myData}</>;
 };
 ```
@@ -205,8 +205,8 @@ DotNetJS will generate the following C# implementation:
 ```csharp
 public class JSFrontend : IFrontend
 {
-    [JSFunction] public static void NotifyDataChanged (Data data) => JS.Invoke("dotnet.Frontend.NotifyDataChanged.broadcast", new object[] { data });
-    [JSFunction] public static bool IsMuted () => JS.Invoke<bool>("dotnet.Frontend.IsMuted");
+    [JSFunction] public static void NotifyDataChanged (Data data) => JS.Invoke("dotnet.Frontend.notifyDataChanged.broadcast", new object[] { data });
+    [JSFunction] public static bool IsMuted () => JS.Invoke<bool>("dotnet.Frontend.isMuted");
 
     void IFrontend.NotifyDataChanged (Data data) => NotifyDataChanged(data);
     bool IFrontend.IsMuted () => IsMuted();
@@ -218,8 +218,8 @@ public class JSFrontend : IFrontend
 
 ```ts
 export namespace Frontend {
-    export const NotifyDataChanged: Event<[Data]>;
-    export let IsMuted: () => boolean;
+    export const notifyDataChanged: Event<[Data]>;
+    export let isMuted: () => boolean;
 }
 ```
 
@@ -258,7 +258,7 @@ public class JSBackend
 
 ```ts
 export namespace Backend {
-    export function AddData(data: Data): void;
+    export function addData(data: Data): void;
 }
 ```
 

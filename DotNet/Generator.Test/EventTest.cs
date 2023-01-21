@@ -15,7 +15,7 @@ partial class Foo
             @"
 partial class Foo
 {
-    partial void OnBar () => JS.Invoke(""dotnet.Bindings.OnBar.broadcast"");
+    partial void OnBar () => JS.Invoke(""dotnet.Bindings.onBar.broadcast"");
 }
 "
         },
@@ -33,7 +33,7 @@ namespace Space;
 
 public static partial class Foo
 {
-    public static partial void OnBar (string a, int b) => JS.Invoke(""dotnet.Space.OnBar.broadcast"", new object[] { a, b });
+    public static partial void OnBar (string a, int b) => JS.Invoke(""dotnet.Space.onBar.broadcast"", new object[] { a, b });
 }
 "
         }

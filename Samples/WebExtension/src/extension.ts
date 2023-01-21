@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as dotnet from "../../HelloWorld/Project/bin/dotnet";
 
 // Providing implementation for 'GetHostName' function declared in 'HelloWorld' C# assembly.
-dotnet.HelloWorld.GetHostName = () => "VS Code";
+dotnet.HelloWorld.getHostName = () => "VS Code";
 
 export async function activate(context: vscode.ExtensionContext) {
     // Booting the DotNet runtime and invoking entry point.
@@ -18,7 +18,7 @@ export async function deactivate() {
 
 function greet() {
     // Invoking 'GetName()' C# method defined in 'HelloWorld' assembly.
-    const guestName = dotnet.HelloWorld.GetName();
+    const guestName = dotnet.HelloWorld.getName();
     const message = `Welcome, ${guestName}! Enjoy your VS Code extension space.`;
     vscode.window.showInformationMessage(message);
 }

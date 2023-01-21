@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using static Packer.TextUtilities;
 
 namespace Packer;
 
@@ -56,21 +57,21 @@ internal class MethodDeclarationGenerator
 
     private void DeclareInvokable ()
     {
-        builder.Append($"\n    export function {method.Name}(");
+        builder.Append($"\n    export function {ToFirstLower(method.Name)}(");
         builder.AppendJoin(", ", method.Arguments.Select(BuildArgumentDeclaration));
         builder.Append($"): {BuildReturnDeclaration(method)};");
     }
 
     private void DeclareFunction ()
     {
-        builder.Append($"\n    export let {method.Name}: (");
+        builder.Append($"\n    export let {ToFirstLower(method.Name)}: (");
         builder.AppendJoin(", ", method.Arguments.Select(BuildArgumentDeclaration));
         builder.Append($") => {BuildReturnDeclaration(method)};");
     }
 
     private void DeclareEvent ()
     {
-        builder.Append($"\n    export const {method.Name}: Event<[");
+        builder.Append($"\n    export const {ToFirstLower(method.Name)}: Event<[");
         builder.AppendJoin(", ", method.Arguments.Select(BuildType));
         builder.Append("]>;");
 

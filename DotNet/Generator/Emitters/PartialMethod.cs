@@ -59,7 +59,7 @@ namespace Generator
 
         private string GetInvokeParameters (string assembly)
         {
-            var args = $"\"dotnet.{assembly}.{syntax.Identifier}{(@event ? ".broadcast" : "")}\"";
+            var args = $"\"dotnet.{assembly}.{ToFirstLower(syntax.Identifier.ToString())}{(@event ? ".broadcast" : "")}\"";
             if (syntax.ParameterList.Parameters.Count == 0) return args;
             var ids = syntax.ParameterList.Parameters.Select(p => p.Identifier);
             args += $", new object[] {{ {string.Join(", ", ids)} }}";

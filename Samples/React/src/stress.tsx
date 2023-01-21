@@ -10,12 +10,12 @@ export const Stress = (props: Props) => {
     const [iterations, setIterations] = useState("");
 
     useEffect(() => {
-        Frontend.GetStressPower = () => props.power;
+        Frontend.getStressPower = () => props.power;
     }, [props.power]);
 
     useEffect(() => {
-        Frontend.OnStressComplete.subscribe(logIteration);
-        return () => Frontend.OnStressComplete.unsubscribe(logIteration);
+        Frontend.onStressComplete.subscribe(logIteration);
+        return () => Frontend.onStressComplete.unsubscribe(logIteration);
     }, []);
 
     return (
@@ -35,8 +35,8 @@ export const Stress = (props: Props) => {
     );
 
     function toggleStress() {
-        if (Backend.IsStressing()) Backend.StopStress();
-        else Backend.StartStress();
+        if (Backend.isStressing()) Backend.stopStress();
+        else Backend.startStress();
         setStressing(!stressing);
     }
 
