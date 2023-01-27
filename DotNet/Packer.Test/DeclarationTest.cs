@@ -448,7 +448,7 @@ public class DeclarationTest : ContentTest
     [Fact]
     public void OtherTypesAreTranslatedToAny ()
     {
-        AddAssembly(With("[JSInvokable] public static DBNull Method (DBNull t) => default;"));
+        AddAssembly(With("[JSInvokable] public static DBNull Method (IEnumerable<string> t) => default;"));
         Task.Execute();
         Contains("method(t: any): any");
     }
