@@ -34,7 +34,7 @@ internal class TypeConverter
         crawler.Crawl(type);
         if (IsNullable(type)) return ConvertNullable(type);
         if (IsDictionary(type)) return ConvertDictionary(type);
-        if (IsList(type)) return ConvertList(type);
+        if (IsGenericEnumerable(type)) return ConvertToArray(type);
         if (IsAwaitable(type)) return ConvertAwaitable(type);
         if (type.IsGenericType) return ConvertGeneric(type);
         return ConvertFinal(type);
@@ -45,7 +45,7 @@ internal class TypeConverter
         return $"{Convert(GetNullableUnderlyingType(type))} | null";
     }
 
-    private string ConvertList (Type type)
+    private string ConvertToArray (Type type)
     {
         var elementType = GetListElementType(type);
         if (EnterNullability(type)) return $"Array<{Convert(elementType)} | null>";

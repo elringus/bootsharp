@@ -15,7 +15,7 @@ internal static class TypeUtilities
         return type.GetMethod(nameof(Task.GetAwaiter)) != null;
     }
 
-    public static bool IsList (Type type)
+    public static bool IsGenericEnumerable (Type type)
     {
         return type.FullName != typeof(string).FullName && (type.IsArray || IsGenericList(type) || type.GetInterfaces().Any(IsGenericList));
 
