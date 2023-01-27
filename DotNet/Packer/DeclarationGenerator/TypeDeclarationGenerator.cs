@@ -44,7 +44,7 @@ internal class TypeDeclarationGenerator
     private void DeclareType ()
     {
         if (ShouldOpenNamespace()) OpenNamespace();
-        if (type.IsClass) DeclareClass();
+        if (type.IsClass || IsStructType()) DeclareClass();
         if (type.IsInterface) DeclareInterface();
         if (type.IsEnum) DeclareEnum();
         if (ShouldCloseNamespace()) CloseNamespace();
@@ -102,6 +102,8 @@ internal class TypeDeclarationGenerator
             else AppendLine($"{names[i]},", 2);
         AppendLine("}", 1);
     }
+
+    private bool IsStructType () => type is { IsClass: false, IsEnum: false, IsValueType: true, IsPrimitive: false };
 
     private string GetNamespace (Type type)
     {
