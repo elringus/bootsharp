@@ -257,6 +257,14 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void EnumerableTranslatedToArray ()
+    {
+        AddAssembly(With("[JSInvokable] public static IEnumerable<string> Goo (IEnumerable<DateTime> d, IEnumerable<double> n) => default;"));
+        Task.Execute();
+        Contains("goo(d: Array<Date>, n: Array<number>): Array<string>;");
+    }
+
+    [Fact]
     public void JaggedArrayAndListOfListsTranslatedToArrayOfArrays ()
     {
         AddAssembly(With("[JSInvokable] public static List<List<string>> Goo (DateTime[][] d) => default;"));
