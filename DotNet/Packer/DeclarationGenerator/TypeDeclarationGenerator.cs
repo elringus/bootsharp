@@ -45,8 +45,7 @@ internal class TypeDeclarationGenerator
     {
         if (ShouldOpenNamespace()) OpenNamespace();
         if (type.IsEnum) DeclareEnum();
-        else if (type.IsInterface) DeclareInterface();
-        else DeclareClass();
+        else DeclareInterface();
         if (ShouldCloseNamespace()) CloseNamespace();
     }
 
@@ -73,21 +72,10 @@ internal class TypeDeclarationGenerator
         AppendLine("}", 0);
     }
 
-    private void DeclareClass ()
-    {
-        AppendLine($"export class {BuildTypeName(type)}", 1);
-        AppendBaseType();
-        AppendInterfaces();
-        builder.Append(" {");
-        AppendProperties();
-        AppendLine("}", 1);
-    }
-
     private void DeclareInterface ()
     {
         AppendLine($"export interface {BuildTypeName(type)}", 1);
-        AppendBaseType();
-        AppendInterfaces();
+        AppendExtensions();
         builder.Append(" {");
         AppendProperties();
         AppendLine("}", 1);
@@ -108,18 +96,13 @@ internal class TypeDeclarationGenerator
         return spaceBuilder.Build(type);
     }
 
-    private void AppendBaseType ()
+    private void AppendExtensions ()
     {
+        var extTypes = new List<Type>(type.GetInterfaces().Where(types.Contains));
         if (type.BaseType is { } baseType && types.Contains(baseType))
-            builder.Append($" extends {converter.ToTypeScript(baseType)}");
-    }
-
-    private void AppendInterfaces ()
-    {
-        var interfaces = type.GetInterfaces().Where(i => types.Contains(i)).ToArray();
-        if (interfaces.Length == 0) return;
-        builder.Append(" implements ");
-        builder.AppendJoin(", ", interfaces.Select(converter.ToTypeScript));
+            extTypes.Insert(0, baseType);
+        if (extTypes.Count > 0)
+            builder.Append(" extends ").AppendJoin(", ", extTypes.Select(converter.ToTypeScript));
     }
 
     private void AppendProperties ()
