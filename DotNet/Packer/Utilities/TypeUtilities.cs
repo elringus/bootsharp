@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,11 +17,9 @@ internal static class TypeUtilities
 
     public static bool IsList (Type type)
     {
-        return type.IsArray || IsGenericList(type) || type.GetInterfaces().Any(IsGenericList);
+        return type.FullName != typeof(string).FullName && (type.IsArray || IsGenericList(type) || type.GetInterfaces().Any(IsGenericList));
 
-        bool IsGenericList (Type type) => type.IsGenericType &&
-                                          (type.GetGenericTypeDefinition().FullName == typeof(IList<>).FullName ||
-                                           type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyList<>).FullName);
+        bool IsGenericList (Type type) => type.IsGenericType && type.GetGenericTypeDefinition().FullName == typeof(IEnumerable<>).FullName;
     }
 
     public static bool IsDictionary (Type type)

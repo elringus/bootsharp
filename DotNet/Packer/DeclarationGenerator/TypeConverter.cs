@@ -33,8 +33,8 @@ internal class TypeConverter
     {
         crawler.Crawl(type);
         if (IsNullable(type)) return ConvertNullable(type);
-        if (IsList(type)) return ConvertList(type);
         if (IsDictionary(type)) return ConvertDictionary(type);
+        if (IsList(type)) return ConvertList(type);
         if (IsAwaitable(type)) return ConvertAwaitable(type);
         if (type.IsGenericType) return ConvertGeneric(type);
         return ConvertFinal(type);
