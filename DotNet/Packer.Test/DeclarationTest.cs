@@ -425,13 +425,15 @@ public class DeclarationTest : ContentTest
         AddAssembly(
             With("n", "public enum Nyam { A, B }"),
             With("n", "public class Foo { public Nyam Nyam { get; } }"),
-            With("n", "public class Bar : Foo { }"),
+            With("n", "public record Baz(string Name);"),
+            With("n", "public class Bar : Foo { public Baz baz { get; } }"),
             With("n", "public class Barrel { public List<Bar> Bars { get; } }"),
             With("n", "[JSInvokable] public static Barrel GetBarrel () => default;"));
         Task.Execute();
         Matches(@"export enum Nyam {\s*A,\s*B\s*}");
         Matches(@"export class Foo {\s*nyam: n.Nyam;\s*}");
-        Matches(@"export class Bar extends n.Foo {\s*}");
+        Matches(@"export class Bar extends n.Foo {\s*baz: n.Baz;\s*}");
+        Matches(@"export class Baz {\s*name: string;\s*}");
     }
 
     [Fact]
