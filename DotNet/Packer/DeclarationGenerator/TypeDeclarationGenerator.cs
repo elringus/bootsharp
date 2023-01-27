@@ -44,9 +44,9 @@ internal class TypeDeclarationGenerator
     private void DeclareType ()
     {
         if (ShouldOpenNamespace()) OpenNamespace();
-        if (type.IsClass) DeclareClass();
-        if (type.IsInterface) DeclareInterface();
         if (type.IsEnum) DeclareEnum();
+        else if (type.IsInterface) DeclareInterface();
+        else DeclareClass();
         if (ShouldCloseNamespace()) CloseNamespace();
     }
 

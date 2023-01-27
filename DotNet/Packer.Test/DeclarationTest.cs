@@ -423,15 +423,24 @@ public class DeclarationTest : ContentTest
     public void CanCrawlCustomTypes ()
     {
         AddAssembly(
-            With("n", "public enum Nyam { A, B }"),
-            With("n", "public class Foo { public Nyam Nyam { get; } }"),
-            With("n", "public class Bar : Foo { }"),
-            With("n", "public class Barrel { public List<Bar> Bars { get; } }"),
-            With("n", "[JSInvokable] public static Barrel GetBarrel () => default;"));
+            With("n", "public struct Struct { public double A { get; set; } }"),
+            With("n", "public readonly struct ReadonlyStruct { public double A { get; init; } }"),
+            With("n", "public readonly record struct ReadonlyRecordStruct(double A);"),
+            With("n", "public record class RecordClass(double A);"),
+            With("n", "public enum Enum { A, B }"),
+            With("n", "public class Foo { public Struct S { get; } public ReadonlyStruct Rs { get; } }"),
+            With("n", "public class Bar : Foo { public ReadonlyRecordStruct Rrs { get; } public RecordClass Rc { get; } }"),
+            With("n", "public class Baz { public List<Bar> Bars { get; } public Enum E { get; } }"),
+            With("n", "[JSInvokable] public static Baz GetBaz () => default;"));
         Task.Execute();
-        Matches(@"export enum Nyam {\s*A,\s*B\s*}");
-        Matches(@"export class Foo {\s*nyam: n.Nyam;\s*}");
-        Matches(@"export class Bar extends n.Foo {\s*}");
+        Matches(@"export class Struct {\s*a: number;\s*}");
+        Matches(@"export class ReadonlyStruct {\s*a: number;\s*}");
+        Matches(@"export class ReadonlyRecordStruct {\s*a: number;\s*}");
+        Matches(@"export class RecordClass {\s*a: number;\s*}");
+        Matches(@"export enum Enum {\s*A,\s*B\s*}");
+        Matches(@"export class Foo {\s*s: n.Struct;\s*rs: n.ReadonlyStruct;\s*}");
+        Matches(@"export class Bar extends n.Foo {\s*rrs: n.ReadonlyRecordStruct;\s*rc: n.RecordClass;\s*}");
+        Matches(@"export class Baz {\s*bars: Array<n.Bar>;\s*e: n.Enum;\s*}");
     }
 
     [Fact]
