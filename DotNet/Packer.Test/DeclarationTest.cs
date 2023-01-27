@@ -143,7 +143,7 @@ public class DeclarationTest : ContentTest
             With("Foo", "public class Foo { }"),
             With("Foo", "[JSInvokable] public static Foo GetFoo () => default;"));
         Task.Execute();
-        Contains("export namespace Foo {\n    export class Foo {\n    }\n}");
+        Contains("export namespace Foo {\n    export interface Foo {\n    }\n}");
         Contains("export namespace Foo {\n    export function getFoo(): Foo.Foo;\n}");
     }
 
@@ -154,7 +154,7 @@ public class DeclarationTest : ContentTest
             With("Foo", "public class Foo { }", false),
             With("Bar", "[JSInvokable] public static Foo.Foo GetFoo () => default;"));
         Task.Execute();
-        Contains("export namespace Foo {\n    export class Foo {\n    }\n}");
+        Contains("export namespace Foo {\n    export interface Foo {\n    }\n}");
         Contains("export namespace Bar {\n    export function getFoo(): Foo.Foo;\n}");
     }
 
@@ -186,7 +186,7 @@ public class DeclarationTest : ContentTest
             With("public class Foo { }", false),
             With("[JSFunction] public static void OnFoo (Foo foo) { }"));
         Task.Execute();
-        Contains("export namespace Bindings {\n    export class Foo {\n    }\n}");
+        Contains("export namespace Bindings {\n    export interface Foo {\n    }\n}");
         Contains("export namespace Bindings {\n    export let onFoo: (foo: Bindings.Foo) => void;\n}");
     }
 
@@ -198,7 +198,7 @@ public class DeclarationTest : ContentTest
             With("Foo.Bar.Nya", "public class Nya { }", false),
             With("Foo.Bar.Fun", "[JSFunction] public static void OnFun (Nya.Nya nya) { }"));
         Task.Execute();
-        Contains("export namespace Nya {\n    export class Nya {\n    }\n}");
+        Contains("export namespace Nya {\n    export interface Nya {\n    }\n}");
         Contains("export namespace Fun {\n    export let onFun: (nya: Nya.Nya) => void;\n}");
     }
 
@@ -291,7 +291,7 @@ public class DeclarationTest : ContentTest
             With("n", "public class Foo { public string S { get; set; } public int I { get; set; } }"),
             With("n", "[JSInvokable] public static Foo Method (Foo t) => default;"));
         Task.Execute();
-        Matches(@"export class Foo {\s*s: string;\s*i: number;\s*}");
+        Matches(@"export interface Foo {\s*s: string;\s*i: number;\s*}");
         Contains("method(t: n.Foo): n.Foo");
     }
 
@@ -299,13 +299,15 @@ public class DeclarationTest : ContentTest
     public void DefinitionIsGeneratedForInterfaceAndImplementation ()
     {
         AddAssembly(
-            With("n", "public interface Base { Base Foo { get; } void Bar (Base b); }"),
-            With("n", "public class Derived : Base { public Base Foo { get; } public void Bar (Base b) {} }"),
-            With("n", "[JSInvokable] public static Derived Method (Base b) => default;"));
+            With("n", "public interface Interface { Interface Foo { get; } void Bar (Interface b); }"),
+            With("n", "public class Base { }"),
+            With("n", "public class Derived : Base, Interface { public Interface Foo { get; } public void Bar (Interface b) {} }"),
+            With("n", "[JSInvokable] public static Derived Method (Interface b) => default;"));
         Task.Execute();
-        Matches(@"export interface Base {\s*foo: n.Base;\s*}");
-        Matches(@"export class Derived implements n.Base {\s*foo: n.Base;\s*}");
-        Contains("method(b: n.Base): n.Derived");
+        Matches(@"export interface Interface {\s*foo: n.Interface;\s*}");
+        Matches(@"export interface Base {\s*}");
+        Matches(@"export interface Derived extends n.Base, n.Interface {\s*foo: n.Interface;\s*}");
+        Contains("method(b: n.Interface): n.Derived");
     }
 
     [Fact]
@@ -317,7 +319,7 @@ public class DeclarationTest : ContentTest
             With("n", "[JSInvokable] public static Container Combine (List<Item> items) => default;"));
         Task.Execute();
         Matches(@"export interface Item {\s*}");
-        Matches(@"export class Container {\s*items: Array<n.Item>;\s*}");
+        Matches(@"export interface Container {\s*items: Array<n.Item>;\s*}");
         Contains("combine(items: Array<n.Item>): n.Container");
     }
 
@@ -330,7 +332,7 @@ public class DeclarationTest : ContentTest
             With("n", "[JSInvokable] public static Container Get () => default;"));
         Task.Execute();
         Matches(@"export interface Item {\s*}");
-        Matches(@"export class Container {\s*items: Array<Array<n.Item>>;\s*}");
+        Matches(@"export interface Container {\s*items: Array<Array<n.Item>>;\s*}");
         Contains("get(): n.Container");
     }
 
@@ -343,7 +345,7 @@ public class DeclarationTest : ContentTest
             With("n", "[JSInvokable] public static Container Combine (IReadOnlyList<Item> items) => default;"));
         Task.Execute();
         Matches(@"export interface Item {\s*}");
-        Matches(@"export class Container {\s*items: Array<n.Item>;\s*}");
+        Matches(@"export interface Container {\s*items: Array<n.Item>;\s*}");
         Contains("combine(items: Array<n.Item>): n.Container");
     }
 
@@ -356,7 +358,7 @@ public class DeclarationTest : ContentTest
             With("n", "[JSInvokable] public static Container Combine (Dictionary<string, Item> items) => default;"));
         Task.Execute();
         Matches(@"export interface Item {\s*}");
-        Matches(@"export class Container {\s*items: Map<string, n.Item>;\s*}");
+        Matches(@"export interface Container {\s*items: Map<string, n.Item>;\s*}");
         Contains("combine(items: Map<string, n.Item>): n.Container");
     }
 
@@ -369,7 +371,7 @@ public class DeclarationTest : ContentTest
             With("n", "[JSInvokable] public static Container Combine (IReadOnlyDictionary<string, Item> items) => default;"));
         Task.Execute();
         Matches(@"export interface Item {\s*}");
-        Matches(@"export class Container {\s*items: Map<string, n.Item>;\s*}");
+        Matches(@"export interface Container {\s*items: Map<string, n.Item>;\s*}");
         Contains("combine(items: Map<string, n.Item>): n.Container");
     }
 
@@ -380,7 +382,7 @@ public class DeclarationTest : ContentTest
             With("n", "public class GenericClass<T> { public T Value { get; set; } }"),
             With("n", "[JSInvokable] public static void Method (GenericClass<string> p) { }"));
         Task.Execute();
-        Matches(@"export class GenericClass<T> {\s*value: T;\s*}");
+        Matches(@"export interface GenericClass<T> {\s*value: T;\s*}");
         Contains("method(p: n.GenericClass<string>): void");
     }
 
@@ -403,7 +405,7 @@ public class DeclarationTest : ContentTest
             With("Bar", "public interface GenericInterface<T> { public T Value { get; set; } }", false),
             With("n", "[JSInvokable] public static void Method (Foo.GenericClass<Bar.GenericInterface<string>> p) { }"));
         Task.Execute();
-        Matches(@"export namespace Foo {\s*export class GenericClass<T> {\s*value: T;\s*}\s*}");
+        Matches(@"export namespace Foo {\s*export interface GenericClass<T> {\s*value: T;\s*}\s*}");
         Matches(@"export namespace Bar {\s*export interface GenericInterface<T> {\s*value: T;\s*}\s*}");
         Contains("method(p: Foo.GenericClass<Bar.GenericInterface<string>>): void");
     }
@@ -415,7 +417,7 @@ public class DeclarationTest : ContentTest
             With("n", "public class GenericClass<T1, T2> { public T1 Key { get; set; } public T2 Value { get; set; } }"),
             With("n", "[JSInvokable] public static void Method (GenericClass<string, int> p) { }"));
         Task.Execute();
-        Matches(@"export class GenericClass<T1, T2> {\s*key: T1;\s*value: T2;\s*}");
+        Matches(@"export interface GenericClass<T1, T2> {\s*key: T1;\s*value: T2;\s*}");
         Contains("method(p: n.GenericClass<string, number>): void");
     }
 
@@ -433,14 +435,14 @@ public class DeclarationTest : ContentTest
             With("n", "public class Baz { public List<Bar> Bars { get; } public Enum E { get; } }"),
             With("n", "[JSInvokable] public static Baz GetBaz () => default;"));
         Task.Execute();
-        Matches(@"export class Struct {\s*a: number;\s*}");
-        Matches(@"export class ReadonlyStruct {\s*a: number;\s*}");
-        Matches(@"export class ReadonlyRecordStruct {\s*a: number;\s*}");
-        Matches(@"export class RecordClass {\s*a: number;\s*}");
+        Matches(@"export interface Struct {\s*a: number;\s*}");
+        Matches(@"export interface ReadonlyStruct {\s*a: number;\s*}");
+        Matches(@"export interface ReadonlyRecordStruct {\s*a: number;\s*}");
+        Matches(@"export interface RecordClass {\s*a: number;\s*}");
         Matches(@"export enum Enum {\s*A,\s*B\s*}");
-        Matches(@"export class Foo {\s*s: n.Struct;\s*rs: n.ReadonlyStruct;\s*}");
-        Matches(@"export class Bar extends n.Foo {\s*rrs: n.ReadonlyRecordStruct;\s*rc: n.RecordClass;\s*}");
-        Matches(@"export class Baz {\s*bars: Array<n.Bar>;\s*e: n.Enum;\s*}");
+        Matches(@"export interface Foo {\s*s: n.Struct;\s*rs: n.ReadonlyStruct;\s*}");
+        Matches(@"export interface Bar extends n.Foo {\s*rrs: n.ReadonlyRecordStruct;\s*rc: n.RecordClass;\s*}");
+        Matches(@"export interface Baz {\s*bars: Array<n.Bar>;\s*e: n.Enum;\s*}");
     }
 
     [Fact]
@@ -458,7 +460,7 @@ public class DeclarationTest : ContentTest
             With("public class Foo { public static string Soo { get; } }"),
             With("[JSInvokable] public static Foo Bar () => default;"));
         Task.Execute();
-        Matches(@"export class Foo {\s*}");
+        Matches(@"export interface Foo {\s*}");
     }
 
     [Fact]
@@ -468,7 +470,7 @@ public class DeclarationTest : ContentTest
             With("public class Foo { public bool Boo => true; }"),
             With("[JSInvokable] public static Foo Bar () => default;"));
         Task.Execute();
-        Matches(@"export class Foo {\s*}");
+        Matches(@"export interface Foo {\s*}");
     }
 
     [Fact]
@@ -532,8 +534,8 @@ public class DeclarationTest : ContentTest
             With("n", "public class Bar { public Foo? Foo { get; } }"),
             With("n", "[JSInvokable] public static Foo FooBar (Bar bar) => default;"));
         Task.Execute();
-        Matches(@"export class Foo {\s*bool\?: boolean;\s*}");
-        Matches(@"export class Bar {\s*foo\?: n.Foo;\s*}");
+        Matches(@"export interface Foo {\s*bool\?: boolean;\s*}");
+        Matches(@"export interface Bar {\s*foo\?: n.Foo;\s*}");
     }
 
     [Fact]
@@ -545,7 +547,7 @@ public class DeclarationTest : ContentTest
             With("n", "[JSInvokable] public static Bar GetBar () => default;"));
         Task.Execute();
         Matches(@"export enum Foo {\s*A,\s*B\s*}");
-        Matches(@"export class Bar {\s*foo\?: n.Foo;\s*}");
+        Matches(@"export interface Bar {\s*foo\?: n.Foo;\s*}");
     }
 
     [Fact]
@@ -568,7 +570,7 @@ public class DeclarationTest : ContentTest
             With("[JSInvokable] public static Far TakeAllGiveFar (Foo f, Bar b, Far ff) => default;"));
         Task.Execute();
         Assert.Single(Matches("export interface Foo"));
-        Assert.Single(Matches("export class Bar"));
-        Assert.Single(Matches("export class Far"));
+        Assert.Single(Matches("export interface Bar"));
+        Assert.Single(Matches("export interface Far"));
     }
 }
