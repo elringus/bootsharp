@@ -437,6 +437,23 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
+    public void CanCrawlStructTypes ()
+    {
+        AddAssembly(
+            With("n","public struct StructType { public double A { get; set; } }"),
+            With("n","public readonly struct ReadonlyStructType { public double A { get; init; } }"),
+            With("n","public readonly record struct ReadonlyRecordStructType { public double A { get; init; } }"),
+            With("n","[JSInvokable] public static StructType GetStruct () => default;"),
+            With("n","[JSInvokable] public static ReadonlyStructType GetReadonlyStruct () => default;"),
+            With("n", "[JSInvokable] public static ReadonlyRecordStructType GetReadonlyStructRecord () => default;")
+        );
+        Task.Execute();
+        Matches(@"export class StructType {\s*a: number;\s*}");
+        Matches(@"export class ReadonlyStructType {\s*a: number;\s*}");
+        Matches(@"export class ReadonlyRecordStructType {\s*a: number;\s*}");
+    }
+
+    [Fact]
     public void OtherTypesAreTranslatedToAny ()
     {
         AddAssembly(With("[JSInvokable] public static DBNull Method (DBNull t) => default;"));
