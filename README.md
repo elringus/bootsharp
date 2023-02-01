@@ -14,11 +14,17 @@ The solution is based on two main components:
 - [DotNet](https://github.com/Elringus/DotNetJS/tree/main/DotNet). Provides JavaScript interoperability layer in C# and packs project output into single-file JavaScript library via MSBuild task. Produced library contains dotnet runtime initialized with the project assemblies and ready to be used as interoperability layer for the packaged C# project. Can optionally emit type definitions to bootstrap TypeScript development.
 - [JavaScript](https://github.com/Elringus/DotNetJS/tree/main/JavaScript). Consumes compiled C# assemblies and .NET runtime WebAssembly module to provide C# interoperability layer in JavaScript. The library is environment-agnostic — it doesn't depend on platform-specific APIs, like browser DOM or node modules and can be imported as CommonJS or ECMAScript module or consumed via script tag in browsers.
 
-## Important Consideration
+## Important Considerations
 
-.NET and JavaScript are completely different runtime environments; don't expect native-like communication with arbitrary data types. While it's possible to transfer primitive data types (number, boolean, string, array) as-is, more complex types have to be marshalled with JSON.
+### Interoperability
 
-If you're looking to bring an existing .NET library to JS, you'd most likely have to implement an interop layer with JSON-serializable data structures. Instances, events, delegates, dynamic types and other runtime-specific features can't be used/passed directly to JS.
+.NET and JavaScript are completely different runtime environments; don't expect native-like communication with arbitrary data types. While it's possible to transfer primitives (number, boolean, string, array) as-is, more complex types have to be marshalled with JSON.
+
+If you're looking to bring existing .NET library to JS, you'd most likely have to implement an interop layer with JSON-serializable data structures. Instances, events, delegates, dynamic types and other runtime-specific features can't be used/passed directly to JS.
+
+### Breaking Changes
+
+.NET's WASM support is constantly evolving and this project is in early development stage as well. Expect major breaking changes until the first stable release: https://github.com/Elringus/DotNetJS/milestone/1. When (or if) this happen depends on the community interest in the project. Assistance with issues labeled "help wanted" is most appreciated.
 
 ### .NET Support
 
