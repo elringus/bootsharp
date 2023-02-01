@@ -20,6 +20,10 @@ The solution is based on two main components:
 
 If you're looking to bring an existing .NET library to JS, you'd most likely have to implement an interop layer with JSON-serializable data structures. Instances, events, delegates, dynamic types and other runtime-specific features can't be used/passed directly to JS.
 
+### .NET Support
+
+We are using custom .NET 6 branch due to compatibility issues in the stock runtime. Even if you specify .NET 7 or newer in project manifest, the code will still run on .NET 6 when built for WASM. We have plans to migrate to stock .NET runtime once the issues are resolved (https://github.com/Elringus/DotNetJS/issues/20).
+
 ## Quick Start
 
 In C# project configuration file specify `Microsoft.NET.Sdk.BlazorWebAssembly` SDK and import `DotNetJS` NuGet package:
