@@ -2,12 +2,21 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <AssemblyTitle>DotNetJS</AssemblyTitle>
+        <Title>DotNetJS</Title>
         <PackageId>DotNetJS</PackageId>
-        <Version>0.23.2</Version>
+        <Version>0.23.3</Version>
         <Authors>Elringus</Authors>
-        <PackageDescription>Compile C# project into single-file UMD JavaScript library.</PackageDescription>
-        <RepositoryUrl>https://github.com/Elringus/DotNetJS</RepositoryUrl>
+        <PackageDescription>Consume C# in JavaScript with comfort: single-file UMD library, auto-generated 2-way bindings and type definitions.</PackageDescription>
+        <Description>Consume C# in JavaScript with comfort: single-file UMD library, auto-generated 2-way bindings and type definitions.</Description>
+        <PackageTags>js umd wasm bindings interop codegen</PackageTags>
+        <RepositoryUrl>https://github.com/Elringus/DotNetJS.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageProjectUrl>https://github.com/Elringus/DotNetJS</PackageProjectUrl>
+        <PackageIconUrl>https://raw.githubusercontent.com/Elringus/DotNetJS/feat/desc/Assets/PackageIcon.svg?sanitize=true</PackageIconUrl>
+        <PackageIcon>PackageIcon.png</PackageIcon>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <NoWarn>NU5100</NoWarn>
@@ -20,7 +29,8 @@
 
     <ItemGroup>
         <None Update="Build/**" Pack="true" PackagePath="%(Identity)"/>
-        <None Include="../../README.md" Pack="true" PackagePath="/" Visible="false"/>
+        <None Include="../../README.md" Pack="true" PackagePath="/"/>
+        <None Include="$(MSBuildThisFileDirectory)../../Assets/PackageIcon.png" Pack="true" PackagePath="/"/>
         <None Include="../Generator/bin/Release/netstandard2.0/Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
         <Content Include="../../JavaScript/native/dotnet.wasm" Pack="true" PackagePath="js/dotnet.wasm" Visible="false"/>
         <Content Include="../../JavaScript/dist/**" Pack="true" PackagePath="js/" Visible="false"/>
