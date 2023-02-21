@@ -27,7 +27,7 @@ jobs:
           dotnet pack -c Release -o packages
       - name: publish to nuget
         run: |
-          dotnet nuget push "DotNet/packages/*.nupkg" -k ${{ secrets.NUGET_KEY }} -s https://www.nuget.org --skip-duplicate
+          dotnet nuget push "DotNet/packages/*.nupkg" -k ${{ secrets.NUGET_KEY }} -s https://www.nuget.org --store-password-in-clear-text --skip-duplicate
       - name: publish to github
         run: |
           dotnet nuget add source https://nuget.pkg.github.com/Elringus/index.json -n github --username Elringus --password ${{ secrets.GH_KEY }} --store-password-in-clear-text --skip-duplicate
