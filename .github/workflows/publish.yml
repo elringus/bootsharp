@@ -23,7 +23,7 @@ jobs:
           npm run build
       - name: package
         run: |
-          cd ../DotNet
+          cd ./../DotNet
           dotnet pack -c Release -o packages
       - name: publish to nuget
         run: |
