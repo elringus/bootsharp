@@ -10,7 +10,7 @@
         <PackageDescription>Consume C# in JavaScript with comfort: single-file UMD library, auto-generated 2-way bindings and type definitions.</PackageDescription>
         <Description>Consume C# in JavaScript with comfort: single-file UMD library, auto-generated 2-way bindings and type definitions.</Description>
         <PackageTags>js umd wasm bindings interop codegen</PackageTags>
-        <RepositoryUrl>https://github.com/Elringus/DotNetJS</RepositoryUrl>
+        <RepositoryUrl>https://github.com/Elringus/DotNetJS.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageProjectUrl>https://github.com/Elringus/DotNetJS</PackageProjectUrl>
         <PackageIconUrl>https://raw.githubusercontent.com/Elringus/DotNetJS/feat/desc/Assets/PackageIcon.svg?sanitize=true</PackageIconUrl>
