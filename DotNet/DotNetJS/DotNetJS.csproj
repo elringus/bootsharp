@@ -7,7 +7,6 @@
         <PackageId>DotNetJS</PackageId>
         <Version>0.23.4</Version>
         <Authors>Elringus</Authors>
-        <PackageDescription>Consume C# in JavaScript with comfort: single-file UMD library, auto-generated 2-way bindings and type definitions.</PackageDescription>
         <Description>Consume C# in JavaScript with comfort: single-file UMD library, auto-generated 2-way bindings and type definitions.</Description>
         <PackageTags>js umd wasm bindings interop codegen</PackageTags>
         <RepositoryUrl>https://github.com/Elringus/DotNetJS.git</RepositoryUrl>
