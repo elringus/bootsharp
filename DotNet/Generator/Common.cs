@@ -35,8 +35,14 @@ namespace Generator
             if (type.SpecialType == SpecialType.System_Void) return "void";
             if (type is IArrayTypeSymbol arrayType) return $"{BuildFullName(arrayType.ElementType)}[]";
             var nullable = type.NullableAnnotation == NullableAnnotation.Annotated ? "?" : "";
-            var name = IsGeneric(type, out var args) ? $"{type.Name}<{string.Join(", ", args.Select(BuildFullName))}>" : type.Name;
-            return $"global::{ResolveNamespace(type)}.{name}{nullable}";
+            if (IsGeneric(type, out var args)) return BuildGeneric(type, args) + nullable;
+            return $"global::{ResolveNamespace(type)}.{type.Name}{nullable}";
+
+            static string BuildGeneric (ITypeSymbol type, ImmutableArray<ITypeSymbol> args)
+            {
+                if (type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T) return BuildFullName(args[0]);
+                return $"global::{ResolveNamespace(type)}.{type.Name}<{string.Join(", ", args.Select(BuildFullName))}>";
+            }
         }
 
         public static string BuildInvoke (IMethodSymbol method, string methodName, Compilation compilation)
