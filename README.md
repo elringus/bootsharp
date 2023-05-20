@@ -24,7 +24,7 @@ For example, below is all you need to get fully-typed interop layer between a la
 })]
 
 [assembly: JSImport(new[] {
-    typeof(IDiagnosticPublisher)
+    typeof(IDiagnosticPublisher),
     // ... other JS API to expose to C#
 })]
 
