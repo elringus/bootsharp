@@ -34,7 +34,7 @@ public static class Program
         .AddSingleton<IDocumentRegistry, DocumentRegistry>()
         .AddSingleton<ISettingsHandler, SettingsHandler>()
         // ... other application services
-        .AddJS() // injects auto-generated services specified above
+        .AddJS() // injects auto-generated JS services specified above
         .BuildServiceProvider();
 }
 ```
