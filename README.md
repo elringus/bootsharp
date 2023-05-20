@@ -39,7 +39,7 @@ public static class Program
 }
 ```
 
-— find full sample here: [Naninovel.Language](https://github.com/Naninovel/Language). Notice, that all the bindings are specified via just two attributes applied to entry assembly; domain layer is not polluted with JS-specific behaviour, data types or attributes.
+— notice, that all the bindings are specified via just two attributes applied to entry assembly; domain layer is not polluted with JS-specific behaviour, data types or attributes. Find full sample here: [Naninovel.Language](https://github.com/Naninovel/Language).
 
 ## Important Considerations
 
