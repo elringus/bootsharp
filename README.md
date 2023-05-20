@@ -14,6 +14,33 @@ The solution is based on two main components:
 - [DotNet](https://github.com/Elringus/DotNetJS/tree/main/DotNet). Provides JavaScript interoperability layer in C# and packs project output into single-file JavaScript library via MSBuild task. Produced library contains dotnet runtime initialized with the project assemblies and ready to be used as interoperability layer for the packaged C# project. Can optionally emit type definitions to bootstrap TypeScript development.
 - [JavaScript](https://github.com/Elringus/DotNetJS/tree/main/JavaScript). Consumes compiled C# assemblies and .NET runtime WebAssembly module to provide C# interoperability layer in JavaScript. The library is environment-agnostic — it doesn't depend on platform-specific APIs, like browser DOM or node modules and can be imported as CommonJS or ECMAScript module or consumed via script tag in browsers.
 
+For example, below is all you need to get fully-typed interop layer between a language server written in C# and VS Code extension that runs in node and web browsers:
+
+```csharp
+[assembly: JSExport(new[] {
+    typeof(ICompletionHandler),
+    typeof(IHoverHandler),
+    // ... other C# API to expose to JS
+})]
+
+[assembly: JSImport(new[] {
+    typeof(IDiagnosticPublisher),
+    // ... other JS API to expose to C#
+})]
+
+public static class Program
+{
+    public static void Main () => new ServiceCollection()
+        .AddSingleton<IDocumentRegistry, DocumentRegistry>()
+        .AddSingleton<ISettingsHandler, SettingsHandler>()
+        // ... other application services
+        .AddJS() // injects auto-generated JS services specified above
+        .BuildServiceProvider();
+}
+```
+
+— notice, that all the bindings are specified via just two attributes applied to entry assembly; domain layer is not polluted with JS-specific behaviour, data types or attributes. ([full sample](https://github.com/Naninovel/Language))
+
 ## Important Considerations
 
 ### Interoperability
@@ -394,6 +421,12 @@ npm test
 ```
 
 ## FAQ
+
+### .NET 7 already provides JS interop. Why this project is still viable?
+
+Indeed, .NET now has a built-in JS interop API that's no longer coupled to Blazor components and doesn't use browser-specific APIs: https://devblogs.microsoft.com/dotnet/use-net-7-from-any-javascript-app-in-net-7.
+
+Consider DotNetJS an extension to the existing interop layer providing usability and QoL features, such as automatic JavaScript bindings generation based on C# interfaces, TypeScript definitions for the generated bindings and data types, event system, WASM binaries side-loading, etc.
 
 ### I'm getting "An instance of analyzer Generator.SourceGenerator cannot be created" warning
 
