@@ -424,7 +424,9 @@ npm test
 
 ### .NET 7 already provides JS interop. Why this project is still viable?
 
-Indeed, .NET now has a built-in JS interop API that's no longer coupled to Blazor components and doesn't use browser-specific APIs: https://devblogs.microsoft.com/dotnet/use-net-7-from-any-javascript-app-in-net-7. Consider DotNetJS an extension to the existing interop layer providing usability and QoL features, such as automatic JavaScript bindings generation based on C# interfaces, TypeScript definitions for the generated bindings and data types, event system, WASM binaries side-loading, etc.
+Indeed, .NET now has a built-in JS interop API that's no longer coupled to Blazor components and doesn't use browser-specific APIs: https://devblogs.microsoft.com/dotnet/use-net-7-from-any-javascript-app-in-net-7. 
+
+Consider DotNetJS an extension to the existing interop layer providing usability and QoL features, such as automatic JavaScript bindings generation based on C# interfaces, TypeScript definitions for the generated bindings and data types, event system, WASM binaries side-loading, etc.
 
 ### I'm getting "An instance of analyzer Generator.SourceGenerator cannot be created" warning
 
