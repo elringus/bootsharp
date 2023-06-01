@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://bootsharp.com" target="_blank" rel="noopener noreferrer">
-    <img width="200" src="https://raw.githubusercontent.com/Elringus/DotNetJS/feat/revamp/Assets/PackageIcon2.svg?v4" alt="bootsharp logo">
+    <img width="200" src="https://raw.githubusercontent.com/Elringus/DotNetJS/feat/revamp/Assets/PackageIcon2.svg" alt="bootsharp logo">
   </a>
 </p>
 <br/>
