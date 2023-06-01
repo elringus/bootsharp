@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <AssemblyTitle>Bootsharp</AssemblyTitle>
+        <Title>Bootsharp</Title>
+        <PackageId>Bootsharp</PackageId>
+        <Version>0.0.1</Version>
+        <Authors>Elringus</Authors>
+        <Description>Build web apps with C# backend.</Description>
+        <PackageTags>javascript typescript ts js wasm bindings interop codegen</PackageTags>
+        <RepositoryUrl>https://github.com/Elringus/Bootsharp.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageProjectUrl>https://bootsharp.com</PackageProjectUrl>
+        <PackageIconUrl>https://raw.githubusercontent.com/Elringus/Bootsharp/feat/desc/Assets/PackageIcon.svg</PackageIconUrl>
+        <PackageIcon>PackageIcon.png</PackageIcon>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <NoWarn>NU5100</NoWarn>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../README.md" Pack="true" PackagePath="/"/>
+        <None Include="$(MSBuildThisFileDirectory)../../Assets/PackageIcon.png" Pack="true" PackagePath="/"/>
+    </ItemGroup>
+
+</Project>

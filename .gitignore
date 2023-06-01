@@ -13,7 +13,4 @@ dist
 build
 .nyc_output
 
-JavaScript/native/emsdk
-JavaScript/native/runtime
-
-!DotNet/DotNetJS/Build
+!DotNet/Bootsharp/Build
