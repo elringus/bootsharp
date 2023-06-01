@@ -5,9 +5,9 @@
             <stop offset="0" stop-color="#46c8ff"/>
             <stop offset="1" stop-color="#bd34fe"/>
         </linearGradient>
-        <linearGradient x1="1" y1="0.75" x2="0.15" y2="0.85" id="hashGrad">
-            <stop offset="0" stop-color="#ffc12b"/>
-            <stop offset="1" stop-color="#e88d00"/>
+        <linearGradient x1="0" y1="0" x2="1" y2="0" id="hashGrad">
+        	<stop offset="0" stop-color="#e88d00"/>
+            <stop offset="1" stop-color="#ffc12b"/>
         </linearGradient>
     </defs>
     <g fill="url(#circleGrad)" transform="translate(29.5, 9.7) scale(0.27,0.27) skewX(-15)">
