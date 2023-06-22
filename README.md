@@ -401,6 +401,7 @@ static class Program
     {
         JS.Runtime.ConfigureJson(options =>
             options.Converters.Add(new JsonStringEnumConverter())
+            options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         );
     }
 
