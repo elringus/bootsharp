@@ -48,26 +48,6 @@ public class JSRuntime : IJSRuntime
     public TResult Invoke<TResult> (string identifier, params object?[]? args)
         => defaultRuntime.Invoke<TResult>(identifier, args);
 
-    /// <inheritdoc/>
-    [ExcludeFromCodeCoverage]
-    public TResult InvokeUnmarshalled<TResult> (string identifier)
-        => defaultRuntime.InvokeUnmarshalled<TResult>(identifier);
-
-    /// <inheritdoc/>
-    [ExcludeFromCodeCoverage]
-    public TResult InvokeUnmarshalled<T0, TResult> (string identifier, T0 arg0)
-        => defaultRuntime.InvokeUnmarshalled<T0, TResult>(identifier, arg0);
-
-    /// <inheritdoc/>
-    [ExcludeFromCodeCoverage]
-    public TResult InvokeUnmarshalled<T0, T1, TResult> (string identifier, T0 arg0, T1 arg1)
-        => defaultRuntime.InvokeUnmarshalled<T0, T1, TResult>(identifier, arg0, arg1);
-
-    /// <inheritdoc/>
-    [ExcludeFromCodeCoverage]
-    public TResult InvokeUnmarshalled<T0, T1, T2, TResult> (string identifier, T0 arg0, T1 arg1, T2 arg2)
-        => defaultRuntime.InvokeUnmarshalled<T0, T1, T2, TResult>(identifier, arg0, arg1, arg2);
-
     private static WebAssemblyJSRuntime GetDefaultRuntime ()
     {
         var assembly = Assembly.Load("Microsoft.AspNetCore.Components.WebAssembly");

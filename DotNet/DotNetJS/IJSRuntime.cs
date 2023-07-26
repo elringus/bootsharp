@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 namespace DotNetJS;
 
 /// <inheritdoc cref="IJSInProcessRuntime"/>
-public interface IJSRuntime : IJSInProcessRuntime, IJSUnmarshalledRuntime
+public interface IJSRuntime : IJSInProcessRuntime
 {
     /// <summary>
     /// Overrides default JSON serializer options used for marshalling the interop data.
