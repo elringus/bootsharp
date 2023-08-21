@@ -4,8 +4,10 @@ namespace Bootsharp;
 
 /// <summary>
 /// Applied to a partial method to bind it with a JavaScript function.
-/// The implementation is expected to be assigned as 'dotnet.Namespace.Method = function'.
 /// </summary>
+/// <remarks>
+/// The implementation is expected to be assigned as 'Namespace.method = function'.
+/// </remarks>
 /// <example>
 /// <code>
 /// [JSFunction]
