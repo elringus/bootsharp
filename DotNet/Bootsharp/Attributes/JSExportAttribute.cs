@@ -14,9 +14,7 @@ namespace Bootsharp;
 [AttributeUsage(AttributeTargets.Assembly)]
 public sealed class JSExportAttribute : JSTypeAttribute
 {
-    /// <inheritdoc />
-    public JSExportAttribute (Type[] types,
-        string? namePattern = null, string? nameReplacement = null,
-        string? invokePattern = null, string? invokeReplacement = null)
-        : base(types, namePattern, nameReplacement, invokePattern, invokeReplacement) { }
+    /// <inheritdoc/>
+    public JSExportAttribute (Type[] types)
+        : base(types) { }
 }

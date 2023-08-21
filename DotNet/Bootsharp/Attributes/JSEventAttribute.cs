@@ -14,4 +14,4 @@ namespace Bootsharp;
 /// </code>
 /// </example>
 [AttributeUsage(AttributeTargets.Method)]
-public sealed class JSEventAttribute : Attribute { }
+public sealed class JSEventAttribute : Attribute;

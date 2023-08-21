@@ -14,33 +14,23 @@ public abstract class JSTypeAttribute : Attribute
     /// <summary>
     /// Regex pattern to match generated method names.
     /// </summary>
-    public string? NamePattern { get; }
+    public string? NamePattern { get; init; }
     /// <summary>
     /// Replacement for the pattern matches of the generated method names.
     /// </summary>
-    public string? NameReplacement { get; }
+    public string? NameReplacement { get; init; }
     /// <summary>
     /// Regex pattern to match generated method invocations.
     /// </summary>
-    public string? InvokePattern { get; }
+    public string? InvokePattern { get; init; }
     /// <summary>
     /// Replacement for the pattern matches of the generated method invocations.
     /// </summary>
-    public string? InvokeReplacement { get; }
+    public string? InvokeReplacement { get; init; }
 
     /// <param name="types">The types to generated bindings for.</param>
-    /// <param name="namePattern">Regex pattern to match generated method names.</param>
-    /// <param name="nameReplacement">Replacement for the pattern matches of the generated method names.</param>
-    /// <param name="invokePattern">Regex pattern to match generated method invocations.</param>
-    /// <param name="invokeReplacement">Replacement for the pattern matches of the generated method invocations.</param>
-    protected JSTypeAttribute (Type[] types,
-        string? namePattern = null, string? nameReplacement = null,
-        string? invokePattern = null, string? invokeReplacement = null)
+    protected JSTypeAttribute (Type[] types)
     {
         Types = types;
-        NamePattern = namePattern;
-        NameReplacement = nameReplacement;
-        InvokePattern = invokePattern;
-        InvokeReplacement = invokeReplacement;
     }
 }

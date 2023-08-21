@@ -16,4 +16,4 @@ namespace Bootsharp;
 /// </code>
 /// </example>
 [AttributeUsage(AttributeTargets.Method)]
-public sealed class JSFunctionAttribute : Attribute { }
+public sealed class JSFunctionAttribute : Attribute;

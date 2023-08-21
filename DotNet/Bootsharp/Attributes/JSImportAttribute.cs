@@ -9,14 +9,24 @@ namespace Bootsharp;
 /// <remarks>
 /// Generated bindings have to be implemented on JavaScript side.
 /// For example, given 'IFrontend' interface is imported, 'JSFrontend' class will be generated,
-/// which has to be implemented in JavaScript.
+/// which has to be implemented in JavaScript.<br/>
+/// When an interface method starts with 'Notify', an event bindings will ge generated (instead of function);
+/// JavaScript name of the event will start with 'on' instead of 'Notify'. This behaviour can be configured
+/// with <see cref="EventPattern"/> and <see cref="EventReplacement"/> parameters.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Assembly)]
 public sealed class JSImportAttribute : JSTypeAttribute
 {
-    /// <inheritdoc />
-    public JSImportAttribute (Type[] types,
-        string? namePattern = null, string? nameReplacement = null,
-        string? invokePattern = null, string? invokeReplacement = null)
-        : base(types, namePattern, nameReplacement, invokePattern, invokeReplacement) { }
+    /// <summary>
+    /// Regex pattern to match method names indicating an event binding should generated (instead of function).
+    /// </summary>
+    public string? EventPattern { get; init; } = @"(^Notify)(\S+)";
+    /// <summary>
+    /// Replacement for the event pattern matches.
+    /// </summary>
+    public string? EventReplacement { get; init; } = "on$2";
+
+    /// <inheritdoc/>
+    public JSImportAttribute (Type[] types)
+        : base(types) { }
 }
