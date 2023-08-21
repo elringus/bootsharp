@@ -1,0 +1,28 @@
+name: cover
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  cover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 8.0.x
+      - name: cover
+        run: |
+          dotnet test DotNet/Bootsharp.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+          cd JavaScript
+          npm ci
+          npm run build
+          dotnet publish test/csharp/Test.sln
+          npm install -g nyc
+          nyc --reporter=lcov npm run test
+      - name: upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3

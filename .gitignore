@@ -1,17 +1,12 @@
 .vs
 .idea
-
-[Bb]in
-[Oo]bj
-[Pp]ackages
+.nuget
+.nyc_output
+node_modules
+packages
+dist
+bin
+obj
 
 *.suo
 *.user
-
-node_modules
-dist
-build
-.nyc_output
-.nuget
-
-!DotNet/Bootsharp/Build
