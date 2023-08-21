@@ -1,18 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <AssemblyTitle>Bootsharp</AssemblyTitle>
         <Title>Bootsharp</Title>
         <PackageId>Bootsharp</PackageId>
         <Version>0.0.1</Version>
         <Authors>Elringus</Authors>
-        <Description>Build web apps with C# backend.</Description>
+        <Description>Compile C# solution into single-file ES module with auto-generated JavaScript bindings and type definitions.</Description>
         <PackageTags>javascript typescript ts js wasm bindings interop codegen</PackageTags>
         <RepositoryUrl>https://github.com/Elringus/Bootsharp.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageProjectUrl>https://bootsharp.com</PackageProjectUrl>
-        <PackageIconUrl>https://raw.githubusercontent.com/Elringus/Bootsharp/feat/desc/Assets/PackageIcon.svg</PackageIconUrl>
+        <PackageIconUrl>https://raw.githubusercontent.com/Elringus/Bootsharp/main/Assets/PackageIcon.svg</PackageIconUrl>
         <PackageIcon>PackageIcon.png</PackageIcon>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -23,8 +23,24 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="../../README.md" Pack="true" PackagePath="/"/>
+        <None Update="Build/**" Pack="true" PackagePath="%(Identity)"/>
+        <None Include="../Generator/bin/Release/netstandard2.0/Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
         <None Include="$(MSBuildThisFileDirectory)../../Assets/PackageIcon.png" Pack="true" PackagePath="/"/>
+        <None Include="../../README.md" Pack="true" PackagePath="/"/>
+        <Content Include="../../JavaScript/dist/**" Pack="true" PackagePath="js/" Visible="false"/>
     </ItemGroup>
+
+    <Target Name="GetTasksOutputDlls" BeforeTargets="CoreCompile">
+        <MSBuild Projects="../Packer/Packer.csproj" Targets="Publish;PublishItemsOutputGroup" Properties="Configuration=Release">
+            <Output TaskParameter="TargetOutputs" ItemName="_TasksProjectOutputs"/>
+        </MSBuild>
+        <ItemGroup>
+            <Content Include="@(_TasksProjectOutputs)"
+                     Condition="'%(_TasksProjectOutputs.Extension)' == '.dll'"
+                     Pack="true"
+                     PackagePath="tasks/%(_TasksProjectOutputs.TargetPath)"
+                     KeepMetadata="Pack;PackagePath"/>
+        </ItemGroup>
+    </Target>
 
 </Project>

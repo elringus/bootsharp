@@ -1,0 +1,21 @@
+{
+    "name": "bootsharp",
+    "private": true,
+    "scripts": {
+        "build": "webpack --mode production",
+        "test": "mocha --exclude **/bench.js",
+        "cover": "nyc -x **/bin -x **/dotnet-js-interop.ts npm run test",
+        "bench": "mocha test/bench.js --timeout 0"
+    },
+    "devDependencies": {
+        "typescript": "^5.1.6",
+        "@types/emscripten": "^1.39.7",
+        "js-base64": "^3.7.5",
+        "webpack": "^5.88.2",
+        "webpack-cli": "^5.1.4",
+        "ts-loader": "^9.4.4",
+        "mocha": "^10.2.0",
+        "nyc": "^15.1.0",
+        "ws": "^8.13.0"
+    }
+}

@@ -1,0 +1,31 @@
+<Project>
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <Configuration>Release</Configuration>
+        <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <InvariantTimezone>true</InvariantTimezone>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <PackerAssembly>$(MSBuildThisFileDirectory)../tasks/Packer.dll</PackerAssembly>
+        <JSDir>$(MSBuildThisFileDirectory)../js</JSDir>
+    </PropertyGroup>
+
+    <UsingTask TaskName="Bootsharp.Packer.PublishBootsharp" AssemblyFile="$(PackerAssembly)"/>
+
+    <Target Name="BuildBootsharp" AfterTargets="_AfterWasmBuildApp">
+        <Exec Command="npm install" WorkingDirectory="$(WasmAppDir)/"/>
+        <Exec Command="npm version $(Version)" WorkingDirectory="$(WasmAppDir)/"/>
+        <Exec Command="npm run build" WorkingDirectory="$(WasmAppDir)/"/>
+    </Target>
+
+    <Target Name="PublishBootsharp" AfterTargets="BuildBootsharp">
+        <PublishBootsharp PublishDir="$(BaseOutputPath)"
+                          FrameworkDir="$(WasmAppDir)/_framework"
+                          JSDir="$(JSDir)"
+                          EntryAssemblyName="$(AssemblyName).dll"
+                          EmbedBinaries="$(EmbedBinaries)"
+                          Clean="$(Clean)"/>
+    </Target>
+
+</Project>
