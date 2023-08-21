@@ -49,7 +49,7 @@ public class PublishTest : BuildTest
         Task.Execute();
         Assert.True(File.Exists(Path.Combine(Data.PublishDir, Data.WasmFile)));
         Assert.True(File.Exists(Path.Combine(Data.PublishDir, "managed/Foo.dll")));
-        Assert.True(File.Exists(Path.Combine(Data.PublishDir, "managed/DotNetJS.dll")));
+        Assert.True(File.Exists(Path.Combine(Data.PublishDir, "managed/Bootsharp.dll")));
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public class PublishTest : BuildTest
         AddAssembly("Foo.dll");
         Task.Execute();
         Assert.Contains(Engine.Messages, w => w.Contains("Foo.dll"));
-        Assert.Contains(Engine.Messages, w => w.Contains("DotNetJS.dll"));
+        Assert.Contains(Engine.Messages, w => w.Contains("Bootsharp.dll"));
         Assert.Contains(Engine.Messages, w => w.Contains("System.Runtime.dll"));
         Assert.Contains(Engine.Messages, w => w.Contains("Microsoft.JSInterop.dll"));
         Assert.Contains(Engine.Messages, w => w.Contains("System.Private.CoreLib.dll"));

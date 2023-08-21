@@ -24,7 +24,7 @@ public class LibraryTest : ContentTest
         Contains("entryAssembly: \"Foo.dll\"");
         Contains("assemblies: [");
         Contains("Foo.dll");
-        Contains("DotNetJS.dll");
+        Contains("Bootsharp.dll");
     }
 
     [Fact]

@@ -7,7 +7,7 @@ public static class FunctionTest
     public static IEnumerable<object[]> Data { get; } = new[] {
         new object[] {
             @"
-using DotNetJS;
+using Bootsharp;
 
 partial class Foo
 {
@@ -15,7 +15,7 @@ partial class Foo
     partial void Bar ();
 }",
             @"
-using DotNetJS;
+using Bootsharp;
 
 partial class Foo
 {
@@ -98,7 +98,7 @@ partial class Foo
         },
         new object[] {
             @"
-using DotNetJS;
+using Bootsharp;
 
 [assembly:JSNamespace(@""A\.B\.(\S+)"", ""$1"")]
 
@@ -110,7 +110,7 @@ public partial class Foo
     public static partial void OnFun (Foo foo);
 }",
             @"
-using DotNetJS;
+using Bootsharp;
 
 namespace A.B.C;
 

@@ -1,10 +1,9 @@
 ﻿import { boot, getBootStatus, terminate, BootStatus, BootData } from "./boot";
 import { invoke, invokeAsync, createObjectReference, disposeObjectReference, createStreamReference } from "./interop";
 import { injectCrypto } from "./crypto";
-import { Assembly } from "./mono";
 import { Event } from "./event";
 
-export const dotnet = {
+export const bootsharp = {
     Event: Event,
     BootStatus: BootStatus,
     getBootStatus: getBootStatus,
@@ -19,8 +18,7 @@ export const dotnet = {
 
 export {
     BootStatus,
-    BootData,
-    Assembly
+    BootData
 };
 
 export {

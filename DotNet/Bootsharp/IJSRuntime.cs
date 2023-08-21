@@ -2,7 +2,7 @@
 using System.Text.Json;
 using Microsoft.JSInterop;
 
-namespace DotNetJS;
+namespace Bootsharp;
 
 /// <inheritdoc cref="IJSInProcessRuntime"/>
 public interface IJSRuntime : IJSInProcessRuntime

@@ -1,10 +1,10 @@
 module.exports = () => ({
     resolve: { extensions: [".ts"] },
     module: { rules: [{ test: /\.ts/, loader: "ts-loader" }] },
-    entry: "./src/dotnet.ts",
+    entry: "./src/bootsharp.ts",
     output: {
-        filename: "dotnet.js",
-        library: { type: "umd", name: "dotnet", export: "dotnet" },
+        filename: "bootsharp.js",
+        library: { type: "umd", name: "bootsharp", export: "bootsharp" },
         globalObject: "this",
         clean: true
     },

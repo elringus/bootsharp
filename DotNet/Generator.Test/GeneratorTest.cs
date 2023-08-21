@@ -65,10 +65,10 @@ public class JSNamespaceAttribute : System.Attribute { public JSNamespaceAttribu
                    expected +
                    "\n#pragma warning restore\n#nullable restore\n";
         verifier.TestCode = source;
-        verifier.TestState.Sources.Add(("DotNetJS.cs", @"
+        verifier.TestState.Sources.Add(("Bootsharp.cs", @"
 using System;
 
-namespace DotNetJS;
+namespace Bootsharp;
 
 public class JSNamespaceAttribute : Attribute { public JSNamespaceAttribute (string _, string __) { } }
 public class JSExportAttribute : Attribute { public JSExportAttribute (Type[] _, string __ = null, string ___ = null, string ____ = null, string _____ = null) { } }

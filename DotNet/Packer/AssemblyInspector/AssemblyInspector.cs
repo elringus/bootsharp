@@ -43,7 +43,7 @@ internal class AssemblyInspector : IDisposable
 
     public void Report (TaskLoggingHelper logger)
     {
-        logger.LogMessage(MessageImportance.Normal, "DotNetJS assembly inspection result:");
+        logger.LogMessage(MessageImportance.Normal, "Bootsharp assembly inspection result:");
         logger.LogMessage(MessageImportance.Normal, JoinLines($"Discovered {Assemblies.Count} assemblies:",
             JoinLines(Assemblies.Select(a => a.Name))));
         logger.LogMessage(MessageImportance.Normal, JoinLines($"Discovered {Methods.Count} JS methods:",

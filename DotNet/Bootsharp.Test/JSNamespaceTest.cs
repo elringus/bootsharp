@@ -1,11 +1,11 @@
 ﻿using System.Linq;
 using System.Reflection;
-using DotNetJS;
+using Bootsharp;
 using Xunit;
 
 [assembly: JSNamespace("pattern", "replacement")]
 
-namespace DotNetJS.Test;
+namespace Bootsharp.Test;
 
 public class JSNamespaceTest
 {

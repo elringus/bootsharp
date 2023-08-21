@@ -1,26 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <Clean>false</Clean>
+        <TargetFramework>net8.0</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+        <WasmMainJSPath>main.js</WasmMainJSPath>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>
-        <DotNetRoot>../../../../DotNet</DotNetRoot>
         <!--<RunAOTCompilation>true</RunAOTCompilation>-->
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="$(DotNetRoot)/DotNetJS/DotNetJS.csproj"/>
-        <ProjectReference Include="$(DotNetRoot)/Generator/Generator.csproj" OutputItemType="Analyzer"/>
-        <ProjectReference Include="../Test.Types/Test.Types.csproj"/>
+        <PackageReference Include="DotNetJS" Version="0.24.0"/>
     </ItemGroup>
-
-    <Import Project="$(DotNetRoot)/DotNetJS/Build/DotNetJS.targets"/>
-
-    <PropertyGroup>
-        <PackerAssembly>../../../DotNet/Packer/bin/Release/net6.0/publish/Packer.dll</PackerAssembly>
-        <JSDir>../../../dist</JSDir>
-        <WasmFile>../../../native/dotnet.wasm</WasmFile>
-    </PropertyGroup>
 
 </Project>

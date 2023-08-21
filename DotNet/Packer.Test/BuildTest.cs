@@ -6,7 +6,7 @@ namespace Packer.Test;
 public abstract class BuildTest : IDisposable
 {
     protected MockData Data { get; } = new();
-    protected PublishDotNetJS Task => Data.Task;
+    protected PublishBootsharp Task => Data.Task;
     protected BuildEngine Engine => (BuildEngine)Task.BuildEngine;
 
     public void Dispose ()

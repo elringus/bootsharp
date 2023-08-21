@@ -7,7 +7,7 @@ public static class ImportTest
     public static IEnumerable<object[]> Data { get; } = new[] {
         new object[] {
             @"
-using DotNetJS;
+using Bootsharp;
 using System.Threading.Tasks;
 
 [assembly:JSImport(new[] { typeof(Bindings.IFoo) })]
@@ -23,7 +23,7 @@ public interface IFoo
 }
 ",
             @"
-using DotNetJS;
+using Bootsharp;
 
 namespace Foo;
 
@@ -43,7 +43,7 @@ public class JSFoo : global::Bindings.IFoo
         },
         new object[] {
             @"
-using DotNetJS;
+using Bootsharp;
 
 [assembly:JSImport(new[] { typeof(Bindings.IFoo) }, ""Notify(.+)"", ""On$1"", ""(.+)"", ""Try($1)"")]
 
@@ -56,7 +56,7 @@ public interface IFoo
 }
 ",
             @"
-using DotNetJS;
+using Bootsharp;
 
 namespace Foo;
 
@@ -72,7 +72,7 @@ public class JSFoo : global::Bindings.IFoo
         },
         new object[] {
             @"
-using DotNetJS;
+using Bootsharp;
 
 [assembly:JSNamespace(@""Foo"", ""Bar"")]
 [assembly:JSImport(new[] { typeof(A.B.C.IFoo) })]
@@ -85,7 +85,7 @@ public interface IFoo
 }
 ",
             @"
-using DotNetJS;
+using Bootsharp;
 
 namespace Foo;
 
@@ -99,7 +99,7 @@ public class JSFoo : global::A.B.C.IFoo
         },
         new object[] {
             @"
-using DotNetJS;
+using Bootsharp;
 
 [assembly:JSImport(new[] { typeof(IFoo) }, ""Foo"", null, ""Foo"", null)]
 
@@ -109,7 +109,7 @@ public interface IFoo
 }
 ",
             @"
-using DotNetJS;
+using Bootsharp;
 
 namespace Foo;
 

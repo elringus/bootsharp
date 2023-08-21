@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using Xunit;
 
-namespace DotNetJS.Test;
+namespace Bootsharp.Test;
 
 public class JSRuntimeTest
 {

@@ -13,7 +13,7 @@ public class MockCompiler
         "System",
         "System.Collections.Generic",
         "System.Threading.Tasks",
-        "DotNetJS",
+        "Bootsharp",
         "Microsoft.JSInterop"
     };
 

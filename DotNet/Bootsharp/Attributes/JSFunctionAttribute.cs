@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DotNetJS;
+namespace Bootsharp;
 
 /// <summary>
 /// Applied to a partial method to bind it with a JavaScript function.

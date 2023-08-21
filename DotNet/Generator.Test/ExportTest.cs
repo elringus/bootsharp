@@ -7,7 +7,7 @@ public static class ExportTest
     public static IEnumerable<object[]> Data { get; } = new[] {
         new object[] {
             @"
-using DotNetJS;
+using Bootsharp;
 using System.Threading.Tasks;
 
 [assembly:JSExport(new[] { typeof(Bindings.IFoo) })]
@@ -49,7 +49,7 @@ public class JSFoo
         },
         new object[] {
             @"
-using DotNetJS;
+using Bootsharp;
 
 [assembly:JSExport(new[] { typeof(Bindings.IFoo) }, ""Foo"", ""Bar"", ""(.+)"", ""Try($1)"")]
 
@@ -80,7 +80,7 @@ public class JSFoo
         },
         new object[] {
             @"
-using DotNetJS;
+using Bootsharp;
 using Microsoft.JSInterop;
 
 [assembly:JSNamespace(@""Foo"", ""Bar"")]

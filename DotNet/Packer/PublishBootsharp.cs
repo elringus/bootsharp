@@ -5,12 +5,11 @@ using Microsoft.Build.Utilities;
 
 namespace Packer;
 
-public class PublishDotNetJS : Task
+public class PublishBootsharp : Task
 {
     [Required] public string PublishDir { get; set; } = null!;
-    [Required] public string BlazorOutDir { get; set; } = null!;
+    [Required] public string FrameworkDir { get; set; } = null!;
     [Required] public string JSDir { get; set; } = null!;
-    [Required] public string WasmFile { get; set; } = null!;
     [Required] public string EntryAssemblyName { get; set; } = null!;
     public bool EmbedBinaries { get; set; } = true;
     public bool Clean { get; set; } = true;
@@ -44,21 +43,21 @@ public class PublishDotNetJS : Task
 
     private void PublishLibrary (string source)
     {
-        var path = Path.Combine(PublishDir, "dotnet.js");
+        var path = Path.Combine(PublishDir, "bootsharp.js");
         File.WriteAllText(path, source);
         Log.LogMessage(MessageImportance.High, $"JavaScript UMD library is published at {path}.");
     }
 
     private void PublishDeclaration (string source)
     {
-        var file = Path.Combine(PublishDir, "dotnet.d.ts");
+        var file = Path.Combine(PublishDir, "bootsharp.d.ts");
         File.WriteAllText(file, source);
     }
 
     private void PublishSourceMap ()
     {
-        var source = Path.Combine(JSDir, "dotnet.js.map");
-        var destination = Path.Combine(PublishDir, "dotnet.js.map");
+        var source = Path.Combine(JSDir, "bootsharp.js.map");
+        var destination = Path.Combine(PublishDir, "bootsharp.js.map");
         File.Copy(source, destination, true);
     }
 
@@ -75,21 +74,21 @@ public class PublishDotNetJS : Task
     private NamespaceBuilder CreateNamespaceBuilder ()
     {
         var builder = new NamespaceBuilder();
-        builder.CollectConverters(BlazorOutDir, EntryAssemblyName);
+        builder.CollectConverters(FrameworkDir, EntryAssemblyName);
         return builder;
     }
 
     private AssemblyInspector InspectAssemblies (NamespaceBuilder spaceBuilder)
     {
         var inspector = new AssemblyInspector(spaceBuilder);
-        inspector.InspectInDirectory(BlazorOutDir);
+        inspector.InspectInDirectory(FrameworkDir);
         inspector.Report(Log);
         return inspector;
     }
 
     private string GenerateLibrary (AssemblyInspector inspector, NamespaceBuilder spaceBuilder)
     {
-        var runtimeJS = File.ReadAllText(Path.Combine(JSDir, "dotnet.js"));
+        var runtimeJS = File.ReadAllText(Path.Combine(JSDir, "bootsharp.js"));
         var generator = new LibraryGenerator(spaceBuilder, inspector, runtimeJS, EntryAssemblyName);
         return EmbedBinaries
             ? generator.GenerateEmbedded(File.ReadAllBytes(WasmFile))
@@ -101,5 +100,10 @@ public class PublishDotNetJS : Task
         var generator = new DeclarationGenerator(spaceBuilder, EmbedBinaries);
         generator.LoadDeclarations(JSDir);
         return generator.Generate(inspector);
+    }
+
+    private string BuildWasmPath ()
+    {
+        return
     }
 }

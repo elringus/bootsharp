@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
-namespace DotNetJS;
+namespace Bootsharp;
 
 /// <summary>
 /// Provides interop with JavaScript.

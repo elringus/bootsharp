@@ -1,11 +1,11 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetJS", "DotNetJS\DotNetJS.csproj", "{8D23B7D8-3E5D-420D-80FF-6A437B03D303}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bootsharp", "Bootsharp\Bootsharp.csproj", "{8D23B7D8-3E5D-420D-80FF-6A437B03D303}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Generator", "Generator\Generator.csproj", "{F395C565-EAFD-4F89-A7DD-4CA12761A86B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Packer", "Packer\Packer.csproj", "{4CB73FC6-D64D-470A-8490-7604A292B973}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetJS.Test", "DotNetJS.Test\DotNetJS.Test.csproj", "{AEE52DF2-26C4-479B-B62D-14B58903BCE7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bootsharp.Test", "Bootsharp.Test\Bootsharp.Test.csproj", "{AEE52DF2-26C4-479B-B62D-14B58903BCE7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Generator.Test", "Generator.Test\Generator.Test.csproj", "{B17E4577-6391-4669-9B12-083CA18ADF33}"
 EndProject

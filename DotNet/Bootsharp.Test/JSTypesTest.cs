@@ -1,6 +1,6 @@
 ﻿using Xunit;
 
-namespace DotNetJS.Test;
+namespace Bootsharp.Test;
 
 public class JSTypesTest
 {

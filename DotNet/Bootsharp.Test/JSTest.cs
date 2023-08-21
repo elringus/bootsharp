@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DotNetJS.Test;
+namespace Bootsharp.Test;
 
 public class JSTest
 {

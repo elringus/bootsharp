@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DotNetJS;
+namespace Bootsharp;
 
 /// <summary>
 /// The attribute for automatic JS bindings generation of specified types.

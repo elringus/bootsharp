@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using DotNetJS;
+using Bootsharp;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Microsoft.CodeAnalysis;
 using Microsoft.JSInterop;
@@ -20,7 +20,7 @@ public sealed class MockData : IDisposable
     public string WasmFile { get; }
     public string JSFile { get; }
     public string MapFile { get; }
-    public PublishDotNetJS Task { get; }
+    public PublishBootsharp Task { get; }
 
     public string GeneratedLibrary => ReadGeneratedFileText("dotnet.js");
     public string GeneratedDeclaration => ReadGeneratedFileText("dotnet.d.ts");
@@ -56,9 +56,9 @@ public sealed class MockData : IDisposable
         return File.Exists(filePath) ? File.ReadAllText(filePath) : null;
     }
 
-    private PublishDotNetJS CreateTask () => new() {
+    private PublishBootsharp CreateTask () => new() {
         PublishDir = PublishDir,
-        BlazorOutDir = BlazorOutDir,
+        FrameworkDir = BlazorOutDir,
         JSDir = JSDir,
         WasmFile = WasmFile,
         EntryAssemblyName = "System.Runtime.dll",

@@ -34,7 +34,7 @@ namespace Generator
             var implType = BuildBindingType(type);
             var methods = type.GetMembers().OfType<IMethodSymbol>().ToArray();
 
-            return MuteNullableWarnings($@"using DotNetJS;
+            return MuteNullableWarnings($@"using Bootsharp;
 
 namespace {BuildBindingNamespace(type)};
 

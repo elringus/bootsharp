@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DotNetJS.Test;
+namespace Bootsharp.Test;
 
 [ExcludeFromCodeCoverage]
 public class MockRuntime : IJSRuntime
