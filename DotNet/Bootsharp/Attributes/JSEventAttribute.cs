@@ -10,7 +10,7 @@ namespace Bootsharp;
 /// <code>
 /// [JSEvent]
 /// public static partial string OnSomethingHappened (string payload);
-/// exports.MyApp.onSomethingHappened.subscribe(payload => ...);
+/// Namespace.onSomethingHappened.subscribe(payload => ...);
 /// </code>
 /// </example>
 [AttributeUsage(AttributeTargets.Method)]
