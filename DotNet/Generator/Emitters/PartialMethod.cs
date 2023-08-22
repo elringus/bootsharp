@@ -7,7 +7,7 @@ namespace Generator
 {
     // TODO: Refactor to re-use Common.BuildInvoke (resolving symbols from compilation not working in JavaScript/test/csproj).
 
-    internal class PartialMethod
+    internal sealed class PartialMethod
     {
         private readonly MethodDeclarationSyntax syntax;
         private readonly bool @event;

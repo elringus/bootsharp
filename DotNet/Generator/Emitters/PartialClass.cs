@@ -6,7 +6,7 @@ using static Generator.Common;
 
 namespace Generator
 {
-    internal class PartialClass
+    internal sealed class PartialClass
     {
         public string Name { get; }
 

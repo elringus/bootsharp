@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Generator
 {
-    internal class SyntaxReceiver : ISyntaxContextReceiver
+    internal sealed class SyntaxReceiver : ISyntaxContextReceiver
     {
         public List<PartialClass> FunctionClasses { get; } = new List<PartialClass>();
         public List<PartialClass> EventClasses { get; } = new List<PartialClass>();

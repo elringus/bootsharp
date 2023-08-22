@@ -8,7 +8,7 @@ namespace Bootsharp;
 /// <summary>
 /// Handles JSON serialization of method and function arguments and return values.
 /// </summary>
-public class Serializer
+public sealed class Serializer
 {
     /// <summary>
     /// Options for <see cref="JsonSerializer"/> used under the hood.

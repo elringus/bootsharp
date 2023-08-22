@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Bootsharp;
 
-internal class MethodCache
+internal sealed class MethodCache
 {
     private readonly Dictionary<string, (MethodInfo, IReadOnlyList<ParameterInfo>, PropertyInfo?)> endpointToInfo = new();
     private readonly EndpointResolver resolver = new();

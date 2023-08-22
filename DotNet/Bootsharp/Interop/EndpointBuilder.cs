@@ -3,7 +3,7 @@
 /// <summary>
 /// Builds endpoint string from the data required for accessing associated member.
 /// </summary>
-public class EndpointBuilder
+public sealed class EndpointBuilder
 {
     /// <summary>
     /// Builds method endpoint string from specified assembly, class and method names.

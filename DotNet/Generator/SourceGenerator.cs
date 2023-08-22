@@ -3,7 +3,7 @@
 namespace Generator
 {
     [Generator]
-    public class SourceGenerator : ISourceGenerator
+    public sealed class SourceGenerator : ISourceGenerator
     {
         public void Initialize (GeneratorInitializationContext context)
         {

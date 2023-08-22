@@ -5,7 +5,7 @@ namespace Bootsharp;
 /// <summary>
 /// Resolves endpoint string to the data required for accessing associated member.
 /// </summary>
-public class EndpointResolver
+public sealed class EndpointResolver
 {
     /// <summary>
     /// Resolves assembly, class and method names from specified endpoint string.

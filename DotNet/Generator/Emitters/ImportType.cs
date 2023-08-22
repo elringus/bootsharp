@@ -6,7 +6,7 @@ using static Generator.Common;
 
 namespace Generator
 {
-    internal class ImportType
+    internal sealed class ImportType
     {
         public string Name { get; }
 
