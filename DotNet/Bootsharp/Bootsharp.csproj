@@ -26,7 +26,7 @@
     <ItemGroup>
         <None Update="Build/**" Pack="true" PackagePath="%(Identity)"/>
         <None Include="../Generator/bin/Release/netstandard2.0/Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
-        <None Include="$(MSBuildThisFileDirectory)../../Assets/PackageIcon.png" Pack="true" PackagePath="/"/>
+        <None Include="$(MSBuildThisFileDirectory)../../Assets/PackageIcon.png" Pack="true" PackagePath="/" Visible="false"/>
         <None Include="../../README.md" Pack="true" PackagePath="/"/>
         <Content Include="../../JavaScript/dist/**" Pack="true" PackagePath="js/" Visible="false"/>
     </ItemGroup>

@@ -27,7 +27,7 @@ public static partial class Function
     /// <param name="endpoint">Address of the function to invoke.</param>
     /// <param name="args">JSON-serialized arguments for the function.</param>
     [System.Runtime.InteropServices.JavaScript.JSImport("invokeVoid", "Bootsharp")]
-    public static partial string InvokeVoid (string endpoint, string[] args);
+    public static partial void InvokeVoid (string endpoint, string[] args);
 
     /// <summary>
     /// Invokes asynchronous JavaScript function with specified endpoint and arguments.
