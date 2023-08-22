@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Runtime.Versioning;
+using System.Threading.Tasks;
 
 namespace Bootsharp;
 
@@ -8,6 +9,7 @@ namespace Bootsharp;
 /// <remarks>
 /// Both arguments and return types of the functions are expected to be JSON-serializable.
 /// </remarks>
+[SupportedOSPlatform("browser")]
 public static partial class Function
 {
     /// <summary>

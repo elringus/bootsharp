@@ -20,6 +20,7 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <NoWarn>NU5100</NoWarn>
         <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>

@@ -4,7 +4,6 @@
         <OutputType>Exe</OutputType>
         <Configuration>Release</Configuration>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <InvariantTimezone>true</InvariantTimezone>
         <InvariantGlobalization>true</InvariantGlobalization>
         <PackerAssembly>$(MSBuildThisFileDirectory)../tasks/Packer.dll</PackerAssembly>

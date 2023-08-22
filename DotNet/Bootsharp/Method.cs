@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Runtime.Versioning;
+using System.Threading.Tasks;
 
 namespace Bootsharp;
 
@@ -8,7 +9,8 @@ namespace Bootsharp;
 /// <remarks>
 /// Both arguments and return types of the methods are expected to be JSON-serializable.
 /// </remarks>
-public static class Method
+[SupportedOSPlatform("browser")]
+public static partial class Method
 {
     /// <summary>
     /// Invokes C# method with specified endpoint and arguments.
