@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Text.Json;
 
 namespace Bootsharp;
@@ -30,9 +29,7 @@ public class Serializer
     /// <summary>
     /// Attempt to deserialize specified JSON string to the object of specified type.
     /// </summary>
-    public object Deserialize (string json, Type type)
-        => JsonSerializer.Deserialize(json, type, options) ??
-           throw new SerializationException($"Failed to deserialize '{json}' JSON to '{type.FullName}'.");
+    public object Deserialize (string json, Type type) => JsonSerializer.Deserialize(json, type, options)!;
 
     /// <summary>
     /// Attempts to deserialize arguments described by the specified parameters info.
@@ -40,7 +37,7 @@ public class Serializer
     public object[] DeserializeArgs (IReadOnlyList<string> args, IReadOnlyList<ParameterInfo> @params)
     {
         if (args.Count > @params.Count)
-            throw new FormatException($"Failed to deserialize '{string.Join(',', args)}' arguments: incorrect count.");
+            throw new Error($"Failed to deserialize '{string.Join(',', args)}' arguments: the method doesn't accept as many arguments.");
         var result = new object[@params.Count];
         for (int i = 0; i < args.Count; i++)
             result[i] = Deserialize(args[i], @params[i].ParameterType);

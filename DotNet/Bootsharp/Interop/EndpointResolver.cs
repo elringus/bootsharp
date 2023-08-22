@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 
 namespace Bootsharp;
 
@@ -10,13 +10,14 @@ public class EndpointResolver
     /// <summary>
     /// Resolves assembly, class and method names from specified endpoint string.
     /// </summary>
+    /// <remarks>Namespace of the method is expected to equal assembly name.</remarks>
     public (string Assembly, string Class, string Method) ResolveMethod (string endpoint)
     {
-        var parts = endpoint.Split(".", StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length != 3)
-            throw new FormatException($"Failed to resolve C# method endpoint '{endpoint}'. " +
-                                      $"The endpoint is expected to contain assembly name, " +
-                                      $"class name and method name joined with dots.");
+        var parts = endpoint.Split('/');
+        if (parts.Length != 3 || parts.Any(string.IsNullOrWhiteSpace))
+            throw new Error($"Failed to resolve C# method endpoint '{endpoint}'. " +
+                            $"The endpoint is expected to contain assembly name, " +
+                            $"class name and method name joined with forward slashes.");
         return (parts[0], parts[1], parts[2]);
     }
 
@@ -25,11 +26,11 @@ public class EndpointResolver
     /// </summary>
     public (string Namespace, string Function) ResolveFunction (string endpoint)
     {
-        var lastDotIndex = endpoint.LastIndexOf('.');
-        if (lastDotIndex < 1 || endpoint.EndsWith('.'))
-            throw new FormatException($"Failed to resolve JavaScript function endpoint '{endpoint}'. " +
-                                      $"The endpoint is expected to contain namespace, " +
-                                      $"and function name joined with dots.");
-        return (endpoint[..(endpoint.Length - lastDotIndex - 1)], endpoint[(lastDotIndex + 1)..]);
+        var parts = endpoint.Split('/');
+        if (parts.Length != 2 || parts.Any(string.IsNullOrWhiteSpace))
+            throw new Error($"Failed to resolve JavaScript function endpoint '{endpoint}'. " +
+                            $"The endpoint is expected to contain namespace, " +
+                            $"and function name joined with forward slashes.");
+        return (parts[0], parts[1]);
     }
 }
