@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using Xunit;
 
 namespace Bootsharp.Test;
@@ -45,5 +46,22 @@ public class SerializerTest
         var args = new[] { "\"baz\"" };
         Assert.Contains("the method doesn't accept as many arguments",
             Assert.Throws<Error>(() => serializer.DeserializeArgs(args, @params)).Message);
+    }
+
+    [Fact]
+    public void RespectsOptions ()
+    {
+        Assert.Equal("{\"Enum\":0}", serializer.Serialize(new MockItemWithEnum(MockEnum.Foo)));
+        Assert.Equal("{\"Enum\":null}", serializer.Serialize(new MockItemWithEnum(null)));
+        Assert.Equal(MockEnum.Foo, ((MockItemWithEnum)serializer.Deserialize("{\"Enum\":0}", typeof(MockItemWithEnum))).Enum);
+        Assert.Null(((MockItemWithEnum)serializer.Deserialize("{\"Enum\":null}", typeof(MockItemWithEnum))).Enum);
+        Serializer.Options = new JsonSerializerOptions {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            Converters = { new JsonStringEnumConverter() }
+        };
+        Assert.Equal("{\"Enum\":\"Foo\"}", serializer.Serialize(new MockItemWithEnum(MockEnum.Foo)));
+        Assert.Equal("{}", serializer.Serialize(new MockItemWithEnum(null)));
+        Assert.Equal(MockEnum.Foo, ((MockItemWithEnum)serializer.Deserialize("{\"Enum\":\"Foo\"}", typeof(MockItemWithEnum))).Enum);
+        Assert.Null(((MockItemWithEnum)serializer.Deserialize("{}", typeof(MockItemWithEnum))).Enum);
     }
 }

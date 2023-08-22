@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 
 namespace Bootsharp.Test
 {
+    public enum MockEnum { Foo, Bar }
     public record MockItem(string Id);
+    public record MockItemWithEnum(MockEnum? Enum);
     public record MockRecord(IReadOnlyList<MockItem> Items);
 
     public static class MockClass

@@ -10,26 +10,22 @@ namespace Bootsharp;
 /// </summary>
 public class Serializer
 {
-    private readonly JsonSerializerOptions options;
-    private readonly Dictionary<MethodInfo, ParameterInfo[]> methodToParams = new();
-
     /// <summary>
-    /// Creates new serializer instanced with specified options.
+    /// Options for <see cref="JsonSerializer"/> used under the hood.
     /// </summary>
-    public Serializer (JsonSerializerOptions? options = null)
-    {
-        this.options = options ?? JsonSerializerOptions.Default;
-    }
+    public static JsonSerializerOptions Options { get; set; } = JsonSerializerOptions.Default;
+
+    private readonly Dictionary<MethodInfo, ParameterInfo[]> methodToParams = new();
 
     /// <summary>
     /// Attempt to serialize specified object to JSON string.
     /// </summary>
-    public string Serialize (object @object) => JsonSerializer.Serialize(@object, options);
+    public string Serialize (object @object) => JsonSerializer.Serialize(@object, Options);
 
     /// <summary>
     /// Attempt to deserialize specified JSON string to the object of specified type.
     /// </summary>
-    public object Deserialize (string json, Type type) => JsonSerializer.Deserialize(json, type, options)!;
+    public object Deserialize (string json, Type type) => JsonSerializer.Deserialize(json, type, Options)!;
 
     /// <summary>
     /// Attempts to deserialize arguments described by the specified parameters info.
