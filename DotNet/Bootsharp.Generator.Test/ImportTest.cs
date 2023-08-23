@@ -26,7 +26,7 @@ public static class ImportTest
 
             public class JSFoo : global::Bindings.IFoo
             {
-                [JSEvent] public static void NotifyFoo (global::System.String foo) => Event.Invoke("Foo/onFoo", SerializeArgs(foo));
+                [JSEvent] public static void NotifyFoo (global::System.String foo) => Event.Broadcast("Foo/onFoo", SerializeArgs(foo));
                 [JSFunction] public static global::System.Boolean Bar () => Function.Invoke<global::System.Boolean>("Foo/bar");
                 [JSFunction] public static global::System.Threading.Tasks.Task Nya () => Function.InvokeVoidAsync("Foo/nya");
                 [JSFunction] public static global::System.Threading.Tasks.Task<global::System.String> Far () => Function.InvokeAsync<global::System.String>("Foo/far");
@@ -55,7 +55,7 @@ public static class ImportTest
 
             public class JSFoo : global::Bindings.IFoo
             {
-                [JSEvent] public static void OnFoo (global::System.String foo) => Try(JS.Invoke("Foo/onFoo/broadcast", new object[] { foo }));
+                [JSEvent] public static void OnFoo (global::System.String foo) => Try(Event.Broadcast("Foo/onFoo", foo));
                 [JSFunction] public static global::System.Boolean Bar () => Try(JS.Invoke<global::System.Boolean>("/Foo/bar"));
 
                 void global::Bindings.IFoo.NotifyFoo (global::System.String foo) => OnFoo(foo);
