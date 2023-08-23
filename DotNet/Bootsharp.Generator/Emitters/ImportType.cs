@@ -41,7 +41,7 @@ internal sealed class ImportType(ITypeSymbol type, AttributeData attribute)
             var methodName = ConvertMethodName(method.Name, attribute);
             return $"{EmitAttribute()} public static {EmitSignature()} => {EmitBody()};";
 
-            string EmitAttribute () => IsEvent(method) ? "[JSEvent]" : "[JSFunction]";
+            string EmitAttribute () => IsEvent(method) ? $"[{EventAttribute}]" : $"[{FunctionAttribute}]";
 
             string EmitSignature ()
             {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
@@ -7,12 +8,12 @@ namespace Bootsharp.Generator;
 
 internal static class Common
 {
-    public const string InvokableAttribute = "JSInvokableAttribute";
-    public const string FunctionAttribute = "JSFunctionAttribute";
-    public const string EventAttribute = "JSEventAttribute";
-    public const string ExportAttribute = "JSExportAttribute";
-    public const string ImportAttribute = "JSImportAttribute";
-    public const string NamespaceAttribute = "JSNamespaceAttribute";
+    public const string InvokableAttribute = "JSInvokable";
+    public const string FunctionAttribute = "JSFunction";
+    public const string EventAttribute = "JSEvent";
+    public const string ExportAttribute = "JSExport";
+    public const string ImportAttribute = "JSImport";
+    public const string NamespaceAttribute = "JSNamespace";
 
     public const string NamePatternArg = "NamePattern";
     public const string NameReplacementArg = "NameReplacement";
@@ -22,9 +23,10 @@ internal static class Common
     public const string EventPatternReplacementArg = "EventPatternReplacement";
 
     public static MethodType GetMethodType (string attribute) => attribute switch {
-        "JSInvokable" => MethodType.Method,
-        "JSFunction" => MethodType.Function,
-        _ => MethodType.Event
+        InvokableAttribute => MethodType.Invokable,
+        FunctionAttribute => MethodType.Function,
+        EventAttribute => MethodType.Event,
+        _ => throw new ArgumentException($"Unknown method: '{attribute}'.", nameof(attribute))
     };
 
     public static string EmitCommon (string source)
@@ -153,7 +155,7 @@ internal static class Common
 
     public static bool IsJSAttribute (AttributeData attribute, string name) =>
         attribute.AttributeClass!.ContainingNamespace.Name == "Bootsharp" &&
-        attribute.AttributeClass.Name == name;
+        attribute.AttributeClass.Name.StartsWith(name, StringComparison.Ordinal);
 
     public static string ToFirstLower (string value)
     {

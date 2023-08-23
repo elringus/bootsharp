@@ -41,7 +41,7 @@ internal sealed class ExportType(ITypeSymbol type, AttributeData attribute)
 
         string EmitMethod (IMethodSymbol method)
         {
-            return $"[JSInvokable] public static {EmitSignature()} => {EmitBody()};";
+            return $"[{InvokableAttribute}] public static {EmitSignature()} => {EmitBody()};";
 
             string EmitSignature ()
             {

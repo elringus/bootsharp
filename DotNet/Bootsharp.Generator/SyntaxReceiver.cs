@@ -8,6 +8,7 @@ namespace Bootsharp.Generator;
 
 internal sealed class SyntaxReceiver : ISyntaxContextReceiver
 {
+    public List<PartialClass> InvokableClasses { get; } = new();
     public List<PartialClass> FunctionClasses { get; } = new();
     public List<PartialClass> EventClasses { get; } = new();
 
@@ -19,11 +20,11 @@ internal sealed class SyntaxReceiver : ISyntaxContextReceiver
 
     private void VisitClass (ClassDeclarationSyntax syntax)
     {
-        var methods = GetMethodsWithAttribute(syntax, "JSInvokable");
-        if (methods.Count > 0) FunctionClasses.Add(new PartialClass(syntax, methods));
-        var functions = GetMethodsWithAttribute(syntax, "JSFunction");
+        var invokable = GetMethodsWithAttribute(syntax, InvokableAttribute);
+        if (invokable.Count > 0) InvokableClasses.Add(new PartialClass(syntax, invokable));
+        var functions = GetMethodsWithAttribute(syntax, FunctionAttribute);
         if (functions.Count > 0) FunctionClasses.Add(new PartialClass(syntax, functions));
-        var events = GetMethodsWithAttribute(syntax, "JSEvent");
+        var events = GetMethodsWithAttribute(syntax, EventAttribute);
         if (events.Count > 0) EventClasses.Add(new PartialClass(syntax, events));
     }
 

@@ -2,7 +2,7 @@
 
 internal enum MethodType
 {
-    Method,
+    Invokable,
     Function,
     Event
 }
