@@ -1,16 +1,16 @@
-﻿using System.IO;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Xunit;
-using static Bootsharp.Method;
+using static Bootsharp.Invokable;
 
 namespace Bootsharp.Test;
 
-public class MethodTest
+public class InvokableTest
 {
     [Fact]
     public void WhenEndpointNotFoundExceptionsIsThrown ()
     {
-        Assert.Throws<FileNotFoundException>(() => Invoke("Foo/Bar/Baz/Nya"));
+        Assert.Contains("assembly not found",
+            Assert.Throws<Error>(() => Invoke("Foo/Bar/Baz/Nya")).Message);
         Assert.Contains("class not found",
             Assert.Throws<Error>(() => Invoke("Bootsharp.Test/Baz/Bar/Nya")).Message);
         Assert.Contains("class not found",

@@ -28,6 +28,15 @@ public class SerializerTest
     }
 
     [Fact]
+    public void WhenArgsEmptyOrNullReturnsNull ()
+    {
+        Assert.Null(SerializeArgs(null));
+        Assert.Null(SerializeArgs());
+        Assert.Null(DeserializeArgs(null, null));
+        Assert.Null(DeserializeArgs(null));
+    }
+
+    [Fact]
     public void CanSerializeArgs ()
     {
         var args = new object[] { new MockRecord(new MockItem[] { new("foo") }), new MockItem[] { new("bar"), new("nya") }, "baz" };
@@ -38,17 +47,11 @@ public class SerializerTest
     }
 
     [Fact]
-    public void WhenArgsEmptySerializeReturnsNull ()
-    {
-        Assert.Null(SerializeArgs());
-    }
-
-    [Fact]
     public void CanDeserializeArgs ()
     {
         var @params = typeof(MockClass).GetMethod(nameof(MockClass.Copy))!.GetParameters();
         var args = new[] { "{\"Items\":[{\"Id\":\"foo\"}]}", "[{\"Id\":\"bar\"},{\"Id\":\"nya\"}]", "\"baz\"" };
-        var deserialized = DeserializeArgs(@params, args);
+        var deserialized = DeserializeArgs(@params, args)!;
         Assert.Equal(new MockItem[] { new("foo") }, ((MockRecord)deserialized[0]).Items);
         Assert.Equal(new MockItem[] { new("bar"), new("nya") }, deserialized[1]);
         Assert.Equal("baz", deserialized[2]);

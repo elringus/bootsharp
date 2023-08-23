@@ -9,8 +9,8 @@ public class EndpointTest
     [Fact]
     public void BuildsCorrectMethodEndpoint ()
     {
-        Assert.Equal("Asm/Space/Class/Method", BuildMethod("Asm", "Space", "Class", "Method"));
-        Assert.Equal("Foo.Bar.Baz/Nya.Far/Class.Nested/Method", BuildMethod("Foo.Bar.Baz", "Nya.Far", "Class.Nested", "Method"));
+        Assert.Equal("Asm/Space/Class/Method", BuildInvokable("Asm", "Space", "Class", "Method"));
+        Assert.Equal("Foo.Bar.Baz/Nya.Far/Class.Nested/Method", BuildInvokable("Foo.Bar.Baz", "Nya.Far", "Class.Nested", "Method"));
     }
 
     [Fact]
@@ -23,22 +23,22 @@ public class EndpointTest
     [Fact]
     public void CanResolveValidMethodEndpoint ()
     {
-        Assert.Equal(("Asm", "Space", "Class", "Method"), ResolveMethod("Asm/Space/Class/Method"));
-        Assert.Equal(("Foo.Bar.Baz", "Nya.Far", "Class.Nested", "Method"), ResolveMethod("Foo.Bar.Baz/Nya.Far/Class.Nested/Method"));
+        Assert.Equal(("Asm", "Space", "Class", "Method"), ResolveInvokable("Asm/Space/Class/Method"));
+        Assert.Equal(("Foo.Bar.Baz", "Nya.Far", "Class.Nested", "Method"), ResolveInvokable("Foo.Bar.Baz/Nya.Far/Class.Nested/Method"));
     }
 
     [Fact]
     public void ThrowsOnInvalidMethodEndpoint ()
     {
-        Assert.Throws<Error>(() => ResolveMethod(""));
-        Assert.Throws<Error>(() => ResolveMethod("/"));
-        Assert.Throws<Error>(() => ResolveMethod("Foo"));
-        Assert.Throws<Error>(() => ResolveMethod("Foo/Bar"));
-        Assert.Throws<Error>(() => ResolveMethod("Foo/Bar/Baz"));
-        Assert.Throws<Error>(() => ResolveMethod("Foo/Bar/Baz/"));
-        Assert.Throws<Error>(() => ResolveMethod("Foo//Nya"));
-        Assert.Throws<Error>(() => ResolveMethod("Foo/ /Nya"));
-        Assert.Throws<Error>(() => ResolveMethod("/Foo/Bar/Nya"));
+        Assert.Throws<Error>(() => ResolveInvokable(""));
+        Assert.Throws<Error>(() => ResolveInvokable("/"));
+        Assert.Throws<Error>(() => ResolveInvokable("Foo"));
+        Assert.Throws<Error>(() => ResolveInvokable("Foo/Bar"));
+        Assert.Throws<Error>(() => ResolveInvokable("Foo/Bar/Baz"));
+        Assert.Throws<Error>(() => ResolveInvokable("Foo/Bar/Baz/"));
+        Assert.Throws<Error>(() => ResolveInvokable("Foo//Nya"));
+        Assert.Throws<Error>(() => ResolveInvokable("Foo/ /Nya"));
+        Assert.Throws<Error>(() => ResolveInvokable("/Foo/Bar/Nya"));
     }
 
     [Fact]

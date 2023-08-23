@@ -11,7 +11,7 @@ public static class EndpointResolver
     /// Resolves assembly, class and method names from specified endpoint string.
     /// </summary>
     /// <remarks>Namespace of the method is expected to equal assembly name.</remarks>
-    public static (string Assembly, string Namespace, string Class, string Method) ResolveMethod (string endpoint)
+    public static (string Assembly, string Namespace, string Class, string Method) ResolveInvokable (string endpoint)
     {
         var parts = endpoint.Split('/');
         if (parts.Length != 4 || parts.Any(string.IsNullOrWhiteSpace))
