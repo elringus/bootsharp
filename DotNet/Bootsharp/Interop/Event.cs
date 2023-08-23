@@ -7,6 +7,8 @@ namespace Bootsharp;
 /// </summary>
 /// <remarks>
 /// Arguments are expected to be JSON-serializable.
+/// Event endpoint is expected in the following format: <code>namespace/event</code>
+/// — where 'namespace' is the object chain leading to the event object, joined with dots.
 /// </remarks>
 public static partial class Event
 {

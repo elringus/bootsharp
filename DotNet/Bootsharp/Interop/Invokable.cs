@@ -5,10 +5,11 @@ using static Bootsharp.Serializer;
 namespace Bootsharp;
 
 /// <summary>
-/// Provides access to C# methods via interop-specific endpoints.
+/// Provides access to C# methods invokable from JavaScript via interop-specific endpoints.
 /// </summary>
 /// <remarks>
 /// Both arguments and return types of the methods are expected to be JSON-serializable.
+/// Invokable endpoint is expected in the following format: <code>Assembly/Namespace/Class/Method</code>
 /// </remarks>
 public static partial class Invokable
 {

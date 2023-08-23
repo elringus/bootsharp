@@ -8,6 +8,8 @@ namespace Bootsharp;
 /// </summary>
 /// <remarks>
 /// Both arguments and return types of the functions are expected to be JSON-serializable.
+/// Function endpoint is expected in the following format: <code>namespace/function</code>
+/// — where 'namespace' is the object chain leading to the function, joined with dots.
 /// </remarks>
 public static partial class Function
 {
