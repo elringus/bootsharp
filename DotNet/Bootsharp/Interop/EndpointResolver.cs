@@ -11,14 +11,14 @@ public static class EndpointResolver
     /// Resolves assembly, class and method names from specified endpoint string.
     /// </summary>
     /// <remarks>Namespace of the method is expected to equal assembly name.</remarks>
-    public static (string Assembly, string Class, string Method) ResolveMethod (string endpoint)
+    public static (string Assembly, string Namespace, string Class, string Method) ResolveMethod (string endpoint)
     {
         var parts = endpoint.Split('/');
-        if (parts.Length != 3 || parts.Any(string.IsNullOrWhiteSpace))
+        if (parts.Length != 4 || parts.Any(string.IsNullOrWhiteSpace))
             throw new Error($"Failed to resolve C# method endpoint '{endpoint}'. " +
-                            $"The endpoint is expected to contain assembly name, " +
+                            $"The endpoint is expected to contain assembly name, namespace, " +
                             $"class name and method name joined with forward slashes.");
-        return (parts[0], parts[1], parts[2]);
+        return (parts[0], parts[1], parts[2], parts[3]);
     }
 
     /// <summary>

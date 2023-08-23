@@ -22,5 +22,8 @@ namespace Bootsharp.Test
 
 namespace Bootsharp.Test.Other
 {
-    public static class MockClassWithNamespaceNotEqualAssemblyName;
+    public static class MockClassWithNamespaceNotEqualAssemblyName
+    {
+        public static MockRecord Echo (MockRecord record) => record;
+    }
 }

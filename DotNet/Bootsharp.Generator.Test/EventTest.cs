@@ -16,7 +16,7 @@ public static class EventTest
             """
             partial class Foo
             {
-                partial void OnBar () => Function.InvokeVoid("Bindings.onBar.broadcast");
+                partial void OnBar () => Event.Broadcast("Bindings/onBar");
             }
             """
         },
@@ -35,7 +35,7 @@ public static class EventTest
 
             public static partial class Foo
             {
-                public static partial void OnBar (string a, int b) => Function.InvokeVoid("Space.onBar.broadcast", SerializeArgs(a, b));
+                public static partial void OnBar (string a, int b) => Event.Broadcast("Space/onBar", SerializeArgs(a, b));
             }
             """
         }
