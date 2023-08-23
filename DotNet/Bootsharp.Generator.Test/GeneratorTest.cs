@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -7,7 +10,7 @@ using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Microsoft.CodeAnalysis.Text;
 using Xunit;
 
-namespace Generator.Test;
+namespace Bootsharp.Generator.Test;
 
 public class GeneratorTest
 {
@@ -17,6 +20,7 @@ public class GeneratorTest
         protected override bool IsCompilerDiagnosticIncluded (Diagnostic _, CompilerDiagnostics __) => false;
     }
 
+    private static readonly List<(string filename, string content)> bootsharpSourcesCache = new();
     private readonly Verifier<SourceGenerator> verifier = new();
 
     [Fact]
@@ -62,45 +66,46 @@ public class GeneratorTest
 
     private Task Verify (string source, string expected, string file)
     {
-        expected = "#nullable enable\n#pragma warning disable\n" +
-                   expected +
-                   "\n#pragma warning restore\n#nullable restore\n";
-        verifier.TestCode = source;
-        verifier.TestState.Sources.Add(("Bootsharp.cs",
-            """
-            using System;
-
-            namespace Bootsharp;
-
-            public class JSFunctionAttribute : Attribute {  }
-            public class JSEventAttribute : Attribute {  }
-            public class JSTypeAttribute : Attribute {
-                public Type[] Types { get; }
-                public string? NamePattern { get; init; }
-                public string? NameReplacement { get; init; }
-                public string? InvokePattern { get; init; }
-                public string? InvokeReplacement { get; init; }
-                protected JSTypeAttribute (Type[] types) { Types = types; }
-            }
-            public class JSExportAttribute : JSTypeAttribute {
-                public JSExportAttribute (Type[] types) : base(types) { }
-            }
-            public class JSImportAttribute : JSTypeAttribute {
-                public string? EventPattern { get; init; }
-                public string? EventReplacement { get; init; }
-                public JSImportAttribute (Type[] types) : base(types) { }
-            }
-            public class JSNamespaceAttribute : Attribute {
-                public string Pattern { get; }
-                public string Replacement { get; }
-                public JSNamespaceAttribute (string pattern, string replacement) {
-                    Pattern = pattern;
-                    Replacement = replacement;
-                }
-            }
-            """));
+        IncludeCommonSource(ref source);
+        IncludeCommonExpected(ref expected);
+        IncludeBootsharpSources(verifier.TestState.Sources);
         var expectedText = SourceText.From(expected, Encoding.UTF8);
         verifier.TestState.GeneratedSources.Add((typeof(SourceGenerator), file, expectedText));
+        verifier.TestCode = source;
         return verifier.RunAsync();
     }
+
+    private static void IncludeBootsharpSources (SourceFileList sources)
+    {
+        if (bootsharpSourcesCache.Count > 0)
+        {
+            foreach (var source in bootsharpSourcesCache)
+                sources.Add(source);
+            return;
+        }
+        var root = $"{Environment.CurrentDirectory}/../../../../Bootsharp";
+        foreach (var path in Directory.EnumerateFiles($"{root}/Attributes", "*.cs"))
+            bootsharpSourcesCache.Add((Path.GetFileName(path), File.ReadAllText(path)));
+        foreach (var path in Directory.EnumerateFiles($"{root}/Interop", "*.cs"))
+            bootsharpSourcesCache.Add((Path.GetFileName(path), File.ReadAllText(path)));
+        bootsharpSourcesCache.Add(("Error.cs", File.ReadAllText($"{root}/Error.cs")));
+        IncludeBootsharpSources(sources);
+    }
+
+    private void IncludeCommonSource (ref string source) => source =
+        $"""
+         using Bootsharp;
+         {source}
+         """;
+
+    private void IncludeCommonExpected (ref string expected) => expected =
+        $"""
+         #nullable enable
+         #pragma warning disable
+         using Bootsharp;
+         using static Bootsharp.Serializer;
+         {expected}
+         #pragma warning restore
+         #nullable restore
+         """;
 }

@@ -1,0 +1,44 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using static Bootsharp.Generator.Common;
+
+namespace Bootsharp.Generator;
+
+internal sealed class SyntaxReceiver : ISyntaxContextReceiver
+{
+    public List<PartialClass> FunctionClasses { get; } = new();
+    public List<PartialClass> EventClasses { get; } = new();
+
+    public void OnVisitSyntaxNode (GeneratorSyntaxContext context)
+    {
+        if (context.Node is ClassDeclarationSyntax classSyntax)
+            VisitClass(classSyntax);
+    }
+
+    private void VisitClass (ClassDeclarationSyntax syntax)
+    {
+        var methods = GetMethodsWithAttribute(syntax, "JSInvokable");
+        if (methods.Count > 0) FunctionClasses.Add(new PartialClass(syntax, methods));
+        var functions = GetMethodsWithAttribute(syntax, "JSFunction");
+        if (functions.Count > 0) FunctionClasses.Add(new PartialClass(syntax, functions));
+        var events = GetMethodsWithAttribute(syntax, "JSEvent");
+        if (events.Count > 0) EventClasses.Add(new PartialClass(syntax, events));
+    }
+
+    private List<PartialMethod> GetMethodsWithAttribute (ClassDeclarationSyntax syntax, string attribute)
+    {
+        return syntax.Members
+            .OfType<MethodDeclarationSyntax>()
+            .Where(s => HasAttribute(s, attribute))
+            .Select(m => new PartialMethod(m, GetMethodType(attribute))).ToList();
+    }
+
+    private bool HasAttribute (MethodDeclarationSyntax syntax, string attributeName)
+    {
+        return syntax.AttributeLists
+            .SelectMany(l => l.Attributes)
+            .Any(a => a.ToString().Contains(attributeName));
+    }
+}

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Generator.Test;
+namespace Bootsharp.Generator.Test;
 
 public static class EventTest
 {
@@ -16,7 +16,7 @@ public static class EventTest
             """
             partial class Foo
             {
-                partial void OnBar () => JS.Invoke("dotnet.Bindings.onBar.broadcast");
+                partial void OnBar () => Function.InvokeVoid("Bindings.onBar.broadcast");
             }
             """
         },
@@ -35,7 +35,7 @@ public static class EventTest
 
             public static partial class Foo
             {
-                public static partial void OnBar (string a, int b) => JS.Invoke("dotnet.Space.onBar.broadcast", new object[] { a, b });
+                public static partial void OnBar (string a, int b) => Function.InvokeVoid("Space.onBar.broadcast", SerializeArgs(a, b));
             }
             """
         }

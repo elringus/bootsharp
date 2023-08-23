@@ -1,14 +1,12 @@
 ﻿using System.Collections.Generic;
 
-namespace Generator.Test;
+namespace Bootsharp.Generator.Test;
 
 public static class FunctionTest
 {
     public static IEnumerable<object[]> Data { get; } = new[] {
         new object[] {
             """
-            using Bootsharp;
-
             partial class Foo
             {
                 [JSFunction]
@@ -16,8 +14,6 @@ public static class FunctionTest
             }
             """,
             """
-            using Bootsharp;
-
             partial class Foo
             {
                 partial void Bar () => JS.Invoke("dotnet.Bindings.bar");
@@ -102,8 +98,6 @@ public static class FunctionTest
         },
         new object[] {
             """
-            using Bootsharp;
-
             [assembly:JSNamespace(@"A\.B\.(\S+)", "$1")]
 
             namespace A.B.C;
@@ -115,8 +109,6 @@ public static class FunctionTest
             }
             """,
             """
-            using Bootsharp;
-
             namespace A.B.C;
 
             public partial class Foo

@@ -24,15 +24,19 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatform">
+            <_Parameter1>browser</_Parameter1>
+        </AssemblyAttribute>
+        <InternalsVisibleTo Include="Bootsharp.Test"/>
         <None Update="Build/**" Pack="true" PackagePath="%(Identity)"/>
-        <None Include="../Generator/bin/Release/netstandard2.0/Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="../Bootsharp.Generator/bin/Release/netstandard2.0/Bootsharp.Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
         <None Include="$(MSBuildThisFileDirectory)../../Assets/PackageIcon.png" Pack="true" PackagePath="/" Visible="false"/>
         <None Include="../../README.md" Pack="true" PackagePath="/"/>
         <Content Include="../../JavaScript/dist/**" Pack="true" PackagePath="js/" Visible="false"/>
     </ItemGroup>
 
     <Target Name="GetTasksOutputDlls" BeforeTargets="CoreCompile">
-        <MSBuild Projects="../Packer/Packer.csproj" Targets="Publish;PublishItemsOutputGroup" Properties="Configuration=Release">
+        <MSBuild Projects="../Bootsharp.Packer/Bootsharp.Packer.csproj" Targets="Publish;PublishItemsOutputGroup" Properties="Configuration=Release">
             <Output TaskParameter="TargetOutputs" ItemName="_TasksProjectOutputs"/>
         </MSBuild>
         <ItemGroup>

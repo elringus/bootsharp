@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 
-namespace Generator.Test;
+namespace Bootsharp.Generator.Test;
 
 public static class ImportTest
 {
     public static IEnumerable<object[]> Data { get; } = new[] {
         new object[] {
             """
-            using Bootsharp;
             using System.Threading.Tasks;
 
             [assembly:JSImport(new[] { typeof(Bindings.IFoo) })]
@@ -23,8 +22,6 @@ public static class ImportTest
             }
             """,
             """
-            using Bootsharp;
-
             namespace Foo;
 
             public class JSFoo : global::Bindings.IFoo
@@ -43,8 +40,6 @@ public static class ImportTest
         },
         new object[] {
             """
-            using Bootsharp;
-
             [assembly:JSImport(new[] { typeof(Bindings.IFoo) }, NamePattern="Notify(.+)", NameReplacement="On$1", InvokePattern="(.+)", InvokeReplacement="Try($1)")]
 
             namespace Bindings;
@@ -56,8 +51,6 @@ public static class ImportTest
             }
             """,
             """
-            using Bootsharp;
-
             namespace Foo;
 
             public class JSFoo : global::Bindings.IFoo
@@ -72,8 +65,6 @@ public static class ImportTest
         },
         new object[] {
             """
-            using Bootsharp;
-
             [assembly:JSNamespace(@"Foo", "Bar")]
             [assembly:JSImport(new[] { typeof(A.B.C.IFoo) })]
 
@@ -85,8 +76,6 @@ public static class ImportTest
             }
             """,
             """
-            using Bootsharp;
-
             namespace Foo;
 
             public class JSFoo : global::A.B.C.IFoo
@@ -99,8 +88,6 @@ public static class ImportTest
         },
         new object[] {
             """
-            using Bootsharp;
-
             [assembly:JSImport(new[] { typeof(IFoo) }, NamePattern="Foo", InvokePattern="Foo")]
 
             public interface IFoo
@@ -109,8 +96,6 @@ public static class ImportTest
             }
             """,
             """
-            using Bootsharp;
-
             namespace Foo;
 
             public class JSFoo : global::Bindings.IFoo

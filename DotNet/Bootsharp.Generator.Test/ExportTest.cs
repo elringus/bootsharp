@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 
-namespace Generator.Test;
+namespace Bootsharp.Generator.Test;
 
 public static class ExportTest
 {
     public static IEnumerable<object[]> Data { get; } = new[] {
         new object[] {
             """
-            using Bootsharp;
             using System.Threading.Tasks;
 
             [assembly:JSExport(new[] { typeof(Bindings.IFoo) })]
@@ -26,8 +25,6 @@ public static class ExportTest
             }
             """,
             """
-            using Microsoft.JSInterop;
-
             namespace Foo;
 
             public class JSFoo
@@ -49,8 +46,6 @@ public static class ExportTest
         },
         new object[] {
             """
-            using Bootsharp;
-
             [assembly:JSExport(new[] { typeof(Bindings.IFoo) }, NamePattern="Foo", NameReplacement="Bar", InvokePattern="(.+)", InvokeReplacement="Try($1)")]
 
             namespace Bindings;
@@ -61,8 +56,6 @@ public static class ExportTest
             }
             """,
             """
-            using Microsoft.JSInterop;
-
             namespace Foo;
 
             public class JSFoo
@@ -80,7 +73,6 @@ public static class ExportTest
         },
         new object[] {
             """
-            using Bootsharp;
             using Microsoft.JSInterop;
 
             [assembly:JSNamespace(@"Foo", "Bar")]
@@ -94,8 +86,6 @@ public static class ExportTest
             }
             """,
             """
-            using Microsoft.JSInterop;
-
             namespace Foo;
 
             public class JSFoo

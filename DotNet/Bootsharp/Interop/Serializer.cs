@@ -8,34 +8,43 @@ namespace Bootsharp;
 /// <summary>
 /// Handles JSON serialization of method and function arguments and return values.
 /// </summary>
-public sealed class Serializer
+public static class Serializer
 {
     /// <summary>
     /// Options for <see cref="JsonSerializer"/> used under the hood.
     /// </summary>
     public static JsonSerializerOptions Options { get; set; } = JsonSerializerOptions.Default;
 
-    private readonly Dictionary<MethodInfo, ParameterInfo[]> methodToParams = new();
-
     /// <summary>
     /// Attempt to serialize specified object to JSON string.
     /// </summary>
-    public string Serialize (object @object) => JsonSerializer.Serialize(@object, Options);
+    public static string Serialize (object @object) => JsonSerializer.Serialize(@object, Options);
 
     /// <summary>
     /// Attempt to deserialize specified JSON string to the object of specified type.
     /// </summary>
-    public object Deserialize (string json, Type type) => JsonSerializer.Deserialize(json, type, Options)!;
+    public static object Deserialize (string json, Type type) => JsonSerializer.Deserialize(json, type, Options)!;
+
+    /// <summary>
+    /// Attempts to serialize specified arguments.
+    /// </summary>
+    public static string[] SerializeArgs (params object[] args)
+    {
+        var serialized = new string[args.Length];
+        for (int i = 0; i < args.Length; i++)
+            serialized[i] = Serialize(args[i]);
+        return serialized;
+    }
 
     /// <summary>
     /// Attempts to deserialize arguments described by the specified parameters info.
     /// </summary>
-    public object[] DeserializeArgs (IReadOnlyList<string> args, IReadOnlyList<ParameterInfo> @params)
+    public static object[] DeserializeArgs (IReadOnlyList<ParameterInfo> @params, params string[] args)
     {
-        if (args.Count > @params.Count)
+        if (args.Length > @params.Count)
             throw new Error($"Failed to deserialize '{string.Join(',', args)}' arguments: the method doesn't accept as many arguments.");
         var result = new object[@params.Count];
-        for (int i = 0; i < args.Count; i++)
+        for (int i = 0; i < args.Length; i++)
             result[i] = Deserialize(args[i], @params[i].ParameterType);
         return result;
     }

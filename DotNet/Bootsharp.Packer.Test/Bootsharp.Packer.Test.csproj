@@ -26,8 +26,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../Packer/Packer.csproj"/>
-        <ProjectReference Include="..\Bootsharp\Bootsharp.csproj" />
+        <ProjectReference Include="..\Bootsharp.Packer\Bootsharp.Packer.csproj"/>
+        <ProjectReference Include="..\Bootsharp\Bootsharp.csproj"/>
     </ItemGroup>
 
 </Project>
