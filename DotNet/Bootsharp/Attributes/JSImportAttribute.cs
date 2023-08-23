@@ -14,6 +14,15 @@ namespace Bootsharp;
 /// JavaScript name of the event will start with 'on' instead of 'Notify'. This behaviour can be configured
 /// with <see cref="EventPattern"/> and <see cref="EventReplacement"/> parameters.
 /// </remarks>
+/// <example>
+/// Generate JavaScript APIs based on 'IFrontendAPI' and 'IOtherFrontendAPI' interfaces:
+/// <code>
+/// [assembly: JSImport(
+///     typeof(IFrontendAPI),
+///     typeof(IOtherFrontendAPI)
+/// )]
+/// </code>
+/// </example>
 [AttributeUsage(AttributeTargets.Assembly)]
 public sealed class JSImportAttribute : JSTypeAttribute
 {
@@ -27,6 +36,6 @@ public sealed class JSImportAttribute : JSTypeAttribute
     public string? EventReplacement { get; init; } = "on$2";
 
     /// <inheritdoc/>
-    public JSImportAttribute (Type[] types)
+    public JSImportAttribute (params Type[] types)
         : base(types) { }
 }

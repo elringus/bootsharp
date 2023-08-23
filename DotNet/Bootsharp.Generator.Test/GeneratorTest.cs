@@ -103,7 +103,6 @@ public class GeneratorTest
          #nullable enable
          #pragma warning disable
          using Bootsharp;
-         using static Bootsharp.Serializer;
          {expected}
          #pragma warning restore
          #nullable restore

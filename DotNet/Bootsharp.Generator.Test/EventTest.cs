@@ -35,7 +35,7 @@ public static class EventTest
 
             public static partial class Foo
             {
-                public static partial void OnBar (string a, int b) => Event.Broadcast("Space/onBar", SerializeArgs(a, b));
+                public static partial void OnBar (string a, int b) => Event.Broadcast("Space/onBar", a, b);
             }
             """
         }

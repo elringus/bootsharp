@@ -31,9 +31,7 @@ public class JSNamespaceTest
         Assert.Equal("replacement", attribute.ConstructorArguments[1].Value);
     }
 
-    private static CustomAttributeData GetAttributeData ()
-    {
-        return typeof(JSNamespaceTest).Assembly.CustomAttributes
+    private static CustomAttributeData GetAttributeData () =>
+        typeof(JSNamespaceTest).Assembly.CustomAttributes
             .First(a => a.AttributeType == typeof(JSNamespaceAttribute));
-    }
 }

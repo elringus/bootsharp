@@ -11,10 +11,21 @@ namespace Bootsharp;
 /// For example, given 'IHandler' interface is exported, 'JSHandler' class will be generated,
 /// which has to be instantiated with an 'IHandler' implementation instance.
 /// </remarks>
+/// <example>
+/// Expose 'IHandlerA' and 'IHandlerB' C# APIs to JavaScript and wrap invocations in 'Utils.Try()':
+/// <code>
+/// [assembly: JSExport(
+///     typeof(IHandlerA),
+///     typeof(IHandlerB),
+///     invokePattern = "(.+)",
+///     invokeReplacement = "Utils.Try(() => $1)"
+/// )]
+/// </code>
+/// </example>
 [AttributeUsage(AttributeTargets.Assembly)]
 public sealed class JSExportAttribute : JSTypeAttribute
 {
     /// <inheritdoc/>
-    public JSExportAttribute (Type[] types)
+    public JSExportAttribute (params Type[] types)
         : base(types) { }
 }

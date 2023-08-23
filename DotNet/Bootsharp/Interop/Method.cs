@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using static Bootsharp.MethodCache;
+using static Bootsharp.Serializer;
 
 namespace Bootsharp;
 
@@ -20,10 +22,10 @@ public static partial class Method
     [System.Runtime.InteropServices.JavaScript.JSExport]
     public static string Invoke (string endpoint, string[]? args = null)
     {
-        var (method, @params, _) = MethodCache.Get(endpoint);
-        if (method.Invoke(null, args != null ? Serializer.DeserializeArgs(@params, args) : null) is not { } result)
+        var (method, @params, _) = Get(endpoint);
+        if (method.Invoke(null, args != null ? DeserializeArgs(@params, args) : null) is not { } result)
             throw new Error($"Failed to invoke '{endpoint}': method didn't return any value.");
-        return Serializer.Serialize(result);
+        return Serialize(result);
     }
 
     /// <summary>
@@ -34,8 +36,8 @@ public static partial class Method
     [System.Runtime.InteropServices.JavaScript.JSExport]
     public static void InvokeVoid (string endpoint, string[]? args = null)
     {
-        var (method, @params, _) = MethodCache.Get(endpoint);
-        method.Invoke(null, args != null ? Serializer.DeserializeArgs(@params, args) : null);
+        var (method, @params, _) = Get(endpoint);
+        method.Invoke(null, args != null ? DeserializeArgs(@params, args) : null);
     }
 
     /// <summary>
@@ -47,13 +49,13 @@ public static partial class Method
     [System.Runtime.InteropServices.JavaScript.JSExport]
     public static async Task<string> InvokeAsync (string endpoint, string[]? args = null)
     {
-        var (method, @params, taskResult) = MethodCache.Get(endpoint);
-        if (method.Invoke(null, args != null ? Serializer.DeserializeArgs(@params, args) : null) is not Task task)
+        var (method, @params, taskResult) = Get(endpoint);
+        if (method.Invoke(null, args != null ? DeserializeArgs(@params, args) : null) is not Task task)
             throw new Error($"Failed to invoke '{endpoint}': method didn't return task.");
         await task.ConfigureAwait(false);
         if (taskResult?.GetValue(task) is not { } result)
             throw new Error($"Failed to invoke '{endpoint}': missing task result.");
-        return Serializer.Serialize(result);
+        return Serialize(result);
     }
 
     /// <summary>
@@ -65,8 +67,8 @@ public static partial class Method
     [System.Runtime.InteropServices.JavaScript.JSExport]
     public static async Task InvokeVoidAsync (string endpoint, string[]? args = null)
     {
-        var (method, @params, _) = MethodCache.Get(endpoint);
-        if (method.Invoke(null, args != null ? Serializer.DeserializeArgs(@params, args) : null) is not Task task)
+        var (method, @params, _) = Get(endpoint);
+        if (method.Invoke(null, args != null ? DeserializeArgs(@params, args) : null) is not Task task)
             throw new Error($"Failed to invoke '{endpoint}': method didn't return task.");
         await task.ConfigureAwait(false);
     }

@@ -26,10 +26,11 @@ public static class Serializer
     public static object Deserialize (string json, Type type) => JsonSerializer.Deserialize(json, type, Options)!;
 
     /// <summary>
-    /// Attempts to serialize specified arguments.
+    /// Attempts to serialize specified arguments; returns null when args array is empty.
     /// </summary>
-    public static string[] SerializeArgs (params object[] args)
+    public static string[]? SerializeArgs (params object[] args)
     {
+        if (args.Length == 0) return null;
         var serialized = new string[args.Length];
         for (int i = 0; i < args.Length; i++)
             serialized[i] = Serialize(args[i]);

@@ -31,10 +31,16 @@ public class SerializerTest
     public void CanSerializeArgs ()
     {
         var args = new object[] { new MockRecord(new MockItem[] { new("foo") }), new MockItem[] { new("bar"), new("nya") }, "baz" };
-        var serialized = SerializeArgs(args);
+        var serialized = SerializeArgs(args)!;
         Assert.Equal("{\"Items\":[{\"Id\":\"foo\"}]}", serialized[0]);
         Assert.Equal("[{\"Id\":\"bar\"},{\"Id\":\"nya\"}]", serialized[1]);
         Assert.Equal("\"baz\"", serialized[2]);
+    }
+
+    [Fact]
+    public void WhenArgsEmptySerializeReturnsNull ()
+    {
+        Assert.Null(SerializeArgs());
     }
 
     [Fact]

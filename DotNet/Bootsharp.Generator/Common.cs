@@ -34,7 +34,6 @@ internal static class Common
             #nullable enable
             #pragma warning disable
             using Bootsharp;
-            using static Bootsharp.Serializer;
             {source}
             #pragma warning restore
             #nullable restore

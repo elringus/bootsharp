@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using static Bootsharp.Serializer;
 
 namespace Bootsharp;
 
@@ -14,34 +15,43 @@ public static partial class Function
     /// Invokes JavaScript function with specified endpoint and arguments.
     /// </summary>
     /// <param name="endpoint">Address of the function to invoke.</param>
-    /// <param name="args">JSON-serialized arguments for the function or null when invoking w/o arguments.</param>
-    /// <returns>JSON-serialized result of the function invocation.</returns>
-    [System.Runtime.InteropServices.JavaScript.JSImport("invoke", "Bootsharp")]
-    public static partial string Invoke (string endpoint, string[]? args = null);
+    /// <param name="args">Arguments for the function.</param>
+    /// <returns>Result of the function invocation.</returns>
+    public static TResult Invoke<TResult> (string endpoint, params object[] args) =>
+        (TResult)Deserialize(InvokeSerialized(endpoint, SerializeArgs(args)), typeof(TResult));
 
     /// <summary>
     /// Invokes void JavaScript function with specified endpoint and arguments.
     /// </summary>
     /// <param name="endpoint">Address of the function to invoke.</param>
-    /// <param name="args">JSON-serialized arguments for the function or null when invoking w/o arguments.</param>
-    [System.Runtime.InteropServices.JavaScript.JSImport("invokeVoid", "Bootsharp")]
-    public static partial void InvokeVoid (string endpoint, string[]? args = null);
+    /// <param name="args">Arguments for the function.</param>
+    public static void InvokeVoid (string endpoint, params object[] args) =>
+        InvokeVoidSerialized(endpoint, SerializeArgs(args));
 
     /// <summary>
     /// Invokes asynchronous JavaScript function with specified endpoint and arguments.
     /// </summary>
     /// <param name="endpoint">Address of the function to invoke.</param>
-    /// <param name="args">JSON-serialized arguments for the function or null when invoking w/o arguments.</param>
-    /// <returns>Task with JSON-serialized result of the function invocation.</returns>
-    [System.Runtime.InteropServices.JavaScript.JSImport("invokeAsync", "Bootsharp")]
-    public static partial Task<string> InvokeAsync (string endpoint, string[]? args = null);
+    /// <param name="args">Arguments for the function.</param>
+    /// <returns>Task with result of the function invocation.</returns>
+    public static async Task<TResult> InvokeAsync<TResult> (string endpoint, params object[] args) =>
+        (TResult)Deserialize(await InvokeSerializedAsync(endpoint, SerializeArgs(args)), typeof(TResult));
 
     /// <summary>
     /// Invokes void asynchronous JavaScript function with specified endpoint and arguments.
     /// </summary>
     /// <param name="endpoint">Address of the function to invoke.</param>
-    /// <param name="args">JSON-serialized arguments for the function or null when invoking w/o arguments.</param>
+    /// <param name="args">Arguments for the function.</param>
     /// <returns>Task that completes when JavaScript promise is resolved.</returns>
+    public static Task InvokeVoidAsync (string endpoint, params object[] args) =>
+        InvokeVoidSerializedAsync(endpoint, SerializeArgs(args));
+
+    [System.Runtime.InteropServices.JavaScript.JSImport("invoke", "Bootsharp")]
+    private static partial string InvokeSerialized (string endpoint, string[]? args = null);
+    [System.Runtime.InteropServices.JavaScript.JSImport("invokeVoid", "Bootsharp")]
+    private static partial void InvokeVoidSerialized (string endpoint, string[]? args = null);
+    [System.Runtime.InteropServices.JavaScript.JSImport("invokeAsync", "Bootsharp")]
+    private static partial Task<string> InvokeSerializedAsync (string endpoint, string[]? args = null);
     [System.Runtime.InteropServices.JavaScript.JSImport("invokeVoidAsync", "Bootsharp")]
-    public static partial Task InvokeVoidAsync (string endpoint, string[]? args = null);
+    private static partial Task InvokeVoidSerializedAsync (string endpoint, string[]? args = null);
 }
