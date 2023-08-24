@@ -1,29 +1,41 @@
 <Project>
 
     <PropertyGroup>
-        <Version>1.0.0</Version>
         <OutputType>Exe</OutputType>
         <Configuration>Release</Configuration>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
         <InvariantTimezone>true</InvariantTimezone>
         <InvariantGlobalization>true</InvariantGlobalization>
         <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
-        <BootsharpPacker>$(MSBuildThisFileDirectory)../tasks/Bootsharp.Packer.dll</BootsharpPacker>
-        <BootsharpJS>$(MSBuildThisFileDirectory)../js</BootsharpJS>
+        <BootsharpBuilderAssembly>$(MSBuildThisFileDirectory)../tasks/Bootsharp.Builder.dll</BootsharpBuilderAssembly>
+        <BootsharpJSDir>$(MSBuildThisFileDirectory)../js</BootsharpJSDir>
+        <BootsharpPublishDir>$(BaseOutputPath)/bootsharp</BootsharpPublishDir>
+        <BootsharpBuildDir>$(WasmAppDir)/_framework</BootsharpBuildDir>
+        <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
+        <BootsharpEmbedBinaries>true</BootsharpEmbedBinaries>
     </PropertyGroup>
 
-    <UsingTask TaskName="Bootsharp.Packer.PublishBootsharp" AssemblyFile="$(BootsharpPacker)"/>
+    <UsingTask TaskName="Bootsharp.Builder.BuildBootsharp" AssemblyFile="$(BootsharpBuilderAssembly)"/>
 
-    <Target Name="BuildBootsharp" AfterTargets="_AfterWasmBuildApp">
-        <Exec Command="npm install" WorkingDirectory="$(WasmAppDir)"/>
-        <Exec Command="npm version $(Version)" WorkingDirectory="$(WasmAppDir)"/>
-        <Exec Command="npm run build" WorkingDirectory="$(WasmAppDir)"/>
-        <PublishBootsharp PublishDir="$(BaseOutputPath)"
-                          FrameworkDir="$(WasmAppDir)/_framework"
-                          JSDir="$(BootsharpJS)"
-                          EntryAssemblyName="$(AssemblyName).dll"
-                          EmbedBinaries="$(EmbedBinaries)"
-                          Clean="$(Clean)"/>
+    <Target Name="PublishBootsharp" AfterTargets="_AfterWasmBuildApp">
+        <ItemGroup>
+            <BootsharpSourceFiles Include="$(BootsharpJSDir)/*.*"/>
+            <BootsharpWasmFiles Include="$(BootsharpBuildDir)/*.wasm"/>
+        </ItemGroup>
+        <Copy SourceFiles="$(BootsharpSourceFiles)" DestinationFolder="$(BootsharpBuildDir)"/>
+        <BuildBootsharp BuildDir="$(BootsharpBuildDir)"
+                        EntryAssemblyName="$(BootsharpEntryAssemblyName)"
+                        EmbedBinaries="$(BootsharpEmbedBinaries)"/>
+        <Exec Command="npm install" WorkingDirectory="$(BootsharpBuildDir)"/>
+        <Exec Command="npm run build" WorkingDirectory="$(BootsharpBuildDir)"/>
+        <RemoveDir Directories="$(BootsharpPublishDir)"/>
+        <Copy SourceFiles="$(BootsharpBuildDir)/bootsharp.js;
+                           $(BootsharpBuildDir)/bootsharp.d.ts;
+                           $(BootsharpBuildDir)/bootsharp.js.map"
+              DestinationFolder="$(BootsharpPublishDir)"/>
+        <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'"
+              SourceFiles="$(BootsharpWasmFiles)"
+              DestinationFolder="$(BootsharpPublishDir)/bin"/>
     </Target>
 
 </Project>

@@ -36,7 +36,7 @@
     </ItemGroup>
 
     <Target Name="GetTasksOutputDlls" BeforeTargets="CoreCompile">
-        <MSBuild Projects="../Bootsharp.Packer/Bootsharp.Packer.csproj" Targets="Publish;PublishItemsOutputGroup" Properties="Configuration=Release">
+        <MSBuild Projects="../Bootsharp.Builder/Bootsharp.Builder.csproj" Targets="Publish;PublishItemsOutputGroup" Properties="Configuration=Release">
             <Output TaskParameter="TargetOutputs" ItemName="_TasksProjectOutputs"/>
         </MSBuild>
         <ItemGroup>
