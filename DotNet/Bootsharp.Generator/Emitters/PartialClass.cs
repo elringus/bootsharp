@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -40,7 +41,12 @@ internal sealed class PartialClass(ClassDeclarationSyntax syntax, IReadOnlyList<
     private string WrapNamespace (string source)
     {
         if (syntax.Parent is NamespaceDeclarationSyntax space)
-            return $"namespace {space.Name}\n{{\n{source}\n}}";
+            return $$"""
+                     namespace {{space.Name}}
+                     {
+                         {{string.Join("\n    ", source.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None))}}
+                     }
+                     """;
         if (syntax.Parent is FileScopedNamespaceDeclarationSyntax fileSpace)
             return $"namespace {fileSpace.Name};\n\n{source}";
         return source;

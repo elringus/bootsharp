@@ -27,8 +27,6 @@ public sealed class SourceGenerator : ISourceGenerator
 
     private static void AddPartial (GeneratorExecutionContext context, SyntaxReceiver receiver)
     {
-        foreach (var @class in receiver.InvokableClasses)
-            context.AddSource($"{@class.Name}Invokable.g", @class.EmitSource(context.Compilation));
         foreach (var @class in receiver.FunctionClasses)
             context.AddSource($"{@class.Name}Functions.g", @class.EmitSource(context.Compilation));
         foreach (var @class in receiver.EventClasses)

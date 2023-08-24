@@ -7,6 +7,7 @@
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
         <InvariantTimezone>true</InvariantTimezone>
         <InvariantGlobalization>true</InvariantGlobalization>
+        <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
         <BootsharpPacker>$(MSBuildThisFileDirectory)../tasks/Bootsharp.Packer.dll</BootsharpPacker>
         <BootsharpJS>$(MSBuildThisFileDirectory)../js</BootsharpJS>
     </PropertyGroup>

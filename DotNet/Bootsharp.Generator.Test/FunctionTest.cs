@@ -5,6 +5,7 @@ namespace Bootsharp.Generator.Test;
 public static class FunctionTest
 {
     public static IEnumerable<object[]> Data { get; } = new[] {
+        // Can generate void binding under root namespace.
         new object[] {
             """
             partial class Foo
@@ -16,10 +17,11 @@ public static class FunctionTest
             """
             partial class Foo
             {
-                partial void Bar () => JS.Invoke("dotnet.Bindings.bar");
+                partial void Bar () => Function.InvokeVoid("Bindings/bar");
             }
             """
         },
+        // Can generate void task binding under file-scoped namespace.
         new object[] {
             """
             using System.Threading.Tasks;
@@ -39,10 +41,11 @@ public static class FunctionTest
 
             public static partial class Foo
             {
-                private static partial Task BarAsync (string a, int b) => JS.InvokeAsync("dotnet.File.Scoped.barAsync", new object[] { a, b }).AsTask();
+                private static partial Task BarAsync (string a, int b) => Function.InvokeVoidAsync("File.Scoped/barAsync", a, b);
             }
             """
         },
+        // Can generate value task binding.
         new object[] {
             """
             using System.Threading.Tasks;
@@ -62,10 +65,11 @@ public static class FunctionTest
 
             public static partial class Foo
             {
-                private static partial Task<string?> BarAsync () => JS.InvokeAsync<string?>("dotnet.File.Scoped.barAsync").AsTask();
+                private static partial Task<string?> BarAsync () => Function.InvokeAsync<string?>("File.Scoped/barAsync");
             }
             """
         },
+        // Can generate under classic namespace.
         new object[] {
             """
             using System;
@@ -78,7 +82,7 @@ public static class FunctionTest
                     [JSFunction]
                     partial DateTime GetTime (DateTime time);
                     [JSFunction]
-                    partial ValueTask<DateTime> GetTimeAsync (DateTime time);
+                    partial Task<DateTime> GetTimeAsync (DateTime time);
                 }
             }
             """,
@@ -88,14 +92,15 @@ public static class FunctionTest
 
             namespace Classic
             {
-            partial class Foo
-            {
-                partial DateTime GetTime (DateTime time) => JS.Invoke<DateTime>("dotnet.Classic.getTime", new object[] { time });
-                partial ValueTask<DateTime> GetTimeAsync (DateTime time) => JS.InvokeAsync<DateTime>("dotnet.Classic.getTimeAsync", new object[] { time });
-            }
+                partial class Foo
+                {
+                    partial DateTime GetTime (DateTime time) => Function.Invoke<DateTime>("Classic/getTime", time);
+                    partial Task<DateTime> GetTimeAsync (DateTime time) => Function.InvokeAsync<DateTime>("Classic/getTimeAsync", time);
+                }
             }
             """
         },
+        // Can override namespace.
         new object[] {
             """
             [assembly:JSNamespace(@"A\.B\.(\S+)", "$1")]
@@ -113,7 +118,7 @@ public static class FunctionTest
 
             public partial class Foo
             {
-                public static partial void OnFun (Foo foo) => JS.Invoke("dotnet.C.onFun", new object[] { foo });
+                public static partial void OnFun (Foo foo) => Function.InvokeVoid("C/onFun", foo);
             }
             """
         }

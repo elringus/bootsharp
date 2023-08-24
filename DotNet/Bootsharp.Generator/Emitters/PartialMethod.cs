@@ -2,14 +2,11 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Bootsharp.Generator.Common;
-using static Bootsharp.Generator.MethodType;
 
 namespace Bootsharp.Generator;
 
-internal sealed class PartialMethod(MethodDeclarationSyntax syntax, MethodType type)
+internal sealed class PartialMethod(MethodDeclarationSyntax syntax, bool @event)
 {
-    public MethodType Type { get; } = type;
-
     public string EmitSource (Compilation compilation)
     {
         var @namespace = GetNamespace(compilation);
@@ -34,27 +31,27 @@ internal sealed class PartialMethod(MethodDeclarationSyntax syntax, MethodType t
     {
         var invokeMethod = GetInvokeMethod();
         var invokeParameters = GetInvokeParameters(@namespace);
-        var convertTask = syntax.ReturnType.ToString().StartsWith("Task") ? ".AsTask()" : "";
-        return $"JS.{invokeMethod}({invokeParameters}){convertTask}";
+        var handle = @event ? "Event" : "Function";
+        return $"{handle}.{invokeMethod}({invokeParameters})";
     }
 
     private string GetInvokeMethod ()
     {
+        if (@event) return "Broadcast";
         var returnType = syntax.ReturnType.ToString();
         return
-            returnType is "void" ? "Invoke" :
-            returnType is "ValueTask" || returnType is "Task" ? "InvokeAsync" :
+            returnType is "void" ? "InvokeVoid" :
+            returnType is "Task" ? "InvokeVoidAsync" :
             returnType.StartsWith("Task<") ? $"InvokeAsync<{returnType.Substring(5, returnType.Length - 6)}>" :
-            returnType.StartsWith("ValueTask<") ? $"InvokeAsync<{returnType.Substring(10, returnType.Length - 11)}>" :
             $"Invoke<{returnType}>";
     }
 
     private string GetInvokeParameters (string assembly)
     {
-        var args = $"\"dotnet.{assembly}.{ToFirstLower(syntax.Identifier.ToString())}{(Type == Event ? ".broadcast" : "")}\"";
+        var args = $"\"{assembly}/{ToFirstLower(syntax.Identifier.ToString())}\"";
         if (syntax.ParameterList.Parameters.Count == 0) return args;
         var ids = syntax.ParameterList.Parameters.Select(p => p.Identifier);
-        args += $", new object[] {{ {string.Join(", ", ids)} }}";
+        args += $", {string.Join(", ", ids)}";
         return args;
     }
 }

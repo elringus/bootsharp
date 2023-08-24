@@ -5,11 +5,12 @@ namespace Bootsharp.Generator.Test;
 public static class ExportTest
 {
     public static IEnumerable<object[]> Data { get; } = new[] {
+        // Can export various APIs.
         new object[] {
             """
             using System.Threading.Tasks;
 
-            [assembly:JSExport(new[] { typeof(Bindings.IFoo) })]
+            [assembly:JSExport(typeof(Bindings.IFoo))]
 
             namespace Bindings;
 
@@ -44,9 +45,10 @@ public static class ExportTest
             }
             """
         },
+        // Can override name and invoke.
         new object[] {
             """
-            [assembly:JSExport(new[] { typeof(Bindings.IFoo) }, NamePattern="Foo", NameReplacement="Bar", InvokePattern="(.+)", InvokeReplacement="Try($1)")]
+            [assembly:JSExport(typeof(Bindings.IFoo), NamePattern="Foo", NameReplacement="Bar", InvokePattern="(.+)", InvokeReplacement="Try($1)")]
 
             namespace Bindings;
 
@@ -71,12 +73,11 @@ public static class ExportTest
             }
             """
         },
+        // Can override namespace.
         new object[] {
             """
-            using Microsoft.JSInterop;
-
-            [assembly:JSNamespace(@"Foo", "Bar")]
-            [assembly:JSExport(new[] { typeof(A.B.C.IFoo) })]
+            [assembly:JSNamespace("Foo", "Bar")]
+            [assembly:JSExport(typeof(A.B.C.IFoo))]
 
             namespace A.B.C;
 

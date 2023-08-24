@@ -33,7 +33,7 @@ public sealed class JSImportAttribute : JSTypeAttribute
     /// <summary>
     /// Replacement for the event pattern matches.
     /// </summary>
-    public string? EventReplacement { get; init; } = "on$2";
+    public string? EventReplacement { get; init; } = "On$2";
 
     /// <inheritdoc/>
     public JSImportAttribute (params Type[] types)

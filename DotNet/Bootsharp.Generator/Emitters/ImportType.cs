@@ -41,7 +41,7 @@ internal sealed class ImportType(ITypeSymbol type, AttributeData attribute)
             var methodName = ConvertMethodName(method.Name, attribute);
             return $"{EmitAttribute()} public static {EmitSignature()} => {EmitBody()};";
 
-            string EmitAttribute () => IsEvent(method) ? $"[{EventAttribute}]" : $"[{FunctionAttribute}]";
+            string EmitAttribute () => IsEvent(method.Name, attribute) ? $"[{EventAttribute}]" : $"[{FunctionAttribute}]";
 
             string EmitSignature ()
             {
@@ -72,6 +72,36 @@ internal sealed class ImportType(ITypeSymbol type, AttributeData attribute)
                 var args = method.Parameters.Select(p => p.Name);
                 return $"{methodName}({string.Join(", ", args)})";
             }
+        }
+    }
+
+    private string BuildInvoke (IMethodSymbol method, string methodName, Compilation compilation)
+    {
+        var @event = IsEvent(method.Name, attribute);
+        var async = method.ReturnType.Name == "Task";
+        var assembly = ConvertNamespace(BuildBindingNamespace(method.ContainingType), compilation.Assembly);
+        var invokeMethod = GetInvokeMethod();
+        var invokeParameters = GetInvokeParameters();
+        var handle = @event ? "Event" : "Function";
+        return $"{handle}.{invokeMethod}({invokeParameters})";
+
+        string GetInvokeMethod ()
+        {
+            if (@event) return "Broadcast";
+            if (method.ReturnsVoid) return "InvokeVoid";
+            if (async && IsGeneric(method.ReturnType, out var args))
+                return $"InvokeAsync<{string.Join(", ", args.Select(BuildFullName))}>";
+            if (async) return "InvokeVoidAsync";
+            return $"Invoke<{BuildFullName(method.ReturnType)}>";
+        }
+
+        string GetInvokeParameters ()
+        {
+            var parameters = method.Parameters.Select(p => p.Name).ToArray();
+            var args = $"\"{assembly}/{ToFirstLower(methodName)}\"";
+            if (parameters.Length == 0) return args;
+            args += $", {string.Join(", ", parameters)}";
+            return args;
         }
     }
 }

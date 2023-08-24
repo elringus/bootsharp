@@ -8,7 +8,6 @@ namespace Bootsharp.Generator;
 
 internal sealed class SyntaxReceiver : ISyntaxContextReceiver
 {
-    public List<PartialClass> InvokableClasses { get; } = new();
     public List<PartialClass> FunctionClasses { get; } = new();
     public List<PartialClass> EventClasses { get; } = new();
 
@@ -20,8 +19,6 @@ internal sealed class SyntaxReceiver : ISyntaxContextReceiver
 
     private void VisitClass (ClassDeclarationSyntax syntax)
     {
-        var invokable = GetMethodsWithAttribute(syntax, InvokableAttribute);
-        if (invokable.Count > 0) InvokableClasses.Add(new PartialClass(syntax, invokable));
         var functions = GetMethodsWithAttribute(syntax, FunctionAttribute);
         if (functions.Count > 0) FunctionClasses.Add(new PartialClass(syntax, functions));
         var events = GetMethodsWithAttribute(syntax, EventAttribute);
@@ -33,7 +30,7 @@ internal sealed class SyntaxReceiver : ISyntaxContextReceiver
         return syntax.Members
             .OfType<MethodDeclarationSyntax>()
             .Where(s => HasAttribute(s, attribute))
-            .Select(m => new PartialMethod(m, GetMethodType(attribute))).ToList();
+            .Select(m => new PartialMethod(m, attribute == EventAttribute)).ToList();
     }
 
     private bool HasAttribute (MethodDeclarationSyntax syntax, string attributeName)

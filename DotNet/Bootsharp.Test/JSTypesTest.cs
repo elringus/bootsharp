@@ -50,7 +50,7 @@ public class JSTypesTest
     {
         var attribute = new JSImportAttribute(typeof(IMockA));
         Assert.Equal(@"(^Notify)(\S+)", attribute.EventPattern);
-        Assert.Equal("on$2", attribute.EventReplacement);
+        Assert.Equal("On$2", attribute.EventReplacement);
     }
 
     [Fact]

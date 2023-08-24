@@ -20,14 +20,7 @@ internal static class Common
     public const string InvokePatternArg = "InvokePattern";
     public const string InvokeReplacementArg = "InvokeReplacement";
     public const string EventPatternArg = "EventPattern";
-    public const string EventPatternReplacementArg = "EventPatternReplacement";
-
-    public static MethodType GetMethodType (string attribute) => attribute switch {
-        InvokableAttribute => MethodType.Invokable,
-        FunctionAttribute => MethodType.Function,
-        EventAttribute => MethodType.Event,
-        _ => throw new ArgumentException($"Unknown method: '{attribute}'.", nameof(attribute))
-    };
+    public const string EventPatternReplacementArg = "EventReplacement";
 
     public static string EmitCommon (string source)
         => $"""
@@ -64,40 +57,6 @@ internal static class Common
         }
     }
 
-    public static string BuildInvoke (IMethodSymbol method, string methodName, Compilation compilation)
-    {
-        var @event = IsEvent(method);
-        var async = method.ReturnType.Name == "ValueTask" || method.ReturnType.Name == "Task";
-        var assembly = ConvertNamespace(BuildBindingNamespace(method.ContainingType), compilation.Assembly);
-        var invokeMethod = GetInvokeMethod();
-        var invokeParameters = GetInvokeParameters();
-        var convertTask = method.ReturnType.Name == "Task" ? ".AsTask()" : "";
-        return $"JS.{invokeMethod}({invokeParameters}){convertTask}";
-
-        string GetInvokeMethod ()
-        {
-            if (method.ReturnsVoid) return "Invoke";
-            if (async && IsGeneric(method.ReturnType, out var args))
-                return $"InvokeAsync<{string.Join(", ", args.Select(BuildFullName))}>";
-            if (async) return "InvokeAsync";
-            return $"Invoke<{BuildFullName(method.ReturnType)}>";
-        }
-
-        string GetInvokeParameters ()
-        {
-            var parameters = method.Parameters.Select(p => p.Name).ToArray();
-            var args = $"\"dotnet.{assembly}.{ToFirstLower(methodName)}{(@event ? ".broadcast" : "")}\"";
-            if (parameters.Length == 0) return args;
-            args += $", new object[] {{ {string.Join(", ", parameters)} }}";
-            return args;
-        }
-    }
-
-    public static bool IsEvent (IMethodSymbol method)
-    {
-        return method.Name.StartsWith("Notify");
-    }
-
     public static bool IsGeneric (ITypeSymbol type, out ImmutableArray<ITypeSymbol> args)
     {
         args = type is INamedTypeSymbol { IsGenericType: true } named ? named.TypeArguments : default;
@@ -126,10 +85,17 @@ internal static class Common
 
     public static string ConvertMethodName (string name, AttributeData attribute)
     {
+        if (IsEvent(name, attribute)) return ConvertEventName(name, attribute);
         var pattern = attribute.NamedArguments.FirstOrDefault(a => a.Key == NamePatternArg).Value.Value as string;
         var replacement = attribute.NamedArguments.FirstOrDefault(a => a.Key == NameReplacementArg).Value.Value as string;
         if (string.IsNullOrEmpty(pattern) || string.IsNullOrEmpty(replacement)) return name;
         return Regex.Replace(name, pattern, replacement);
+    }
+
+    public static bool IsEvent (string name, AttributeData attribute)
+    {
+        var pattern = attribute.NamedArguments.FirstOrDefault(a => a.Key == EventPatternArg).Value.Value as string;
+        return !string.IsNullOrEmpty(pattern) && Regex.IsMatch(name, pattern);
     }
 
     public static string ConvertEventName (string name, AttributeData attribute)
