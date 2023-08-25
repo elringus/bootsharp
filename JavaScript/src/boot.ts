@@ -1,5 +1,3 @@
-import { initializeWasm, destroyWasm } from "./wasm";
-import { initializeInterop } from "./interop";
 import { Base64 } from "js-base64";
 
 export interface BootData {
@@ -23,14 +21,14 @@ export function getBootStatus(): BootStatus {
 export async function boot(bootData: BootData): Promise<void> {
     validateBootData(bootData);
     transitionBootStatus(BootStatus.Standby, BootStatus.Booting);
-    const wasm = await initializeWasm(getWasmBinary(bootData.wasm), bootData.entryAssemblyName);
-    await initializeInterop(wasm);
+    console.log(getWasmBinary(bootData.wasm));
+    // await initializeWasm(getWasmBinary(bootData.wasm), bootData.entryAssemblyName);
     transitionBootStatus(BootStatus.Booting, BootStatus.Booted);
 }
 
 export function terminate(): Promise<void> {
     transitionBootStatus(BootStatus.Booted, BootStatus.Terminating);
-    destroyWasm();
+    // destroyWasm();
     transitionBootStatus(BootStatus.Terminating, BootStatus.Standby);
     return Promise.resolve();
 }

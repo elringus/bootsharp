@@ -17,26 +17,39 @@
 
     <UsingTask TaskName="Bootsharp.Builder.BuildBootsharp" AssemblyFile="$(BootsharpBuilderAssembly)"/>
 
-    <Target Name="PublishBootsharp" AfterTargets="_AfterWasmBuildApp">
-
-        <ItemGroup>
-            <BootsharpSourceFiles Include="$(BootsharpJSDir)/*.*"/>
-            <BootsharpWasmFiles Include="$(BootsharpBuildDirectory)/*.wasm"/>
-        </ItemGroup>
+    <Target Name="BootsharpBuild" AfterTargets="_AfterWasmBuildApp">
 
         <!-- generate bindings, types and (optionally) embed binaries -->
         <BuildBootsharp BuildDirectory="$(BootsharpBuildDirectory)"
                         EntryAssemblyName="$(BootsharpEntryAssemblyName)"
                         EmbedBinaries="$(BootsharpEmbedBinaries)"/>
 
-        <!-- bundle JS sources -->
+        <!-- copy bootsharp source JavaScript files to the build directory -->
+        <ItemGroup>
+            <BootsharpSourceFiles Include="$(BootsharpJSDir)/*.*"/>
+            <BootsharpWasmFiles Include="$(BootsharpBuildDirectory)/*.wasm"/>
+        </ItemGroup>
         <Copy SourceFiles="$(BootsharpSourceFiles)" DestinationFolder="$(BootsharpBuildDirectory)"/>
-        <Exec Command="npm install" WorkingDirectory="$(BootsharpBuildDirectory)"/>
-        <Exec Command="npm run build -- --environment BOOTSHARP_EMBED_BINARIES:$(BootsharpEmbedBinaries)"
+
+        <!-- append generated binding types to source declarations -->
+        <ItemGroup>
+            <BootsharpSourceTypes Include="$(BootsharpBuildDirectory)/bootsharp-main.d.ts"/>
+            <BootsharpGeneratedTypes Include="$(BootsharpBuildDirectory)/bootsharp-bindings.d.ts"/>
+        </ItemGroup>
+        <ReadLinesFromFile File="@(BootsharpGeneratedTypes)">
+            <Output TaskParameter="Lines" ItemName="BootsharpGeneratedTypeLines"/>
+        </ReadLinesFromFile>
+        <WriteLinesToFile Lines="@(BootsharpGeneratedTypeLines)" File="@(BootsharpSourceTypes)"/>
+
+        <!-- compile generated JavaScript solution -->
+        <Exec Command="npm install --global rollup" WorkingDirectory="$(BootsharpBuildDirectory)"/>
+        <Exec Command="rollup bootsharp-main.js -o bootsharp.js -f es -g process,module"
               WorkingDirectory="$(BootsharpBuildDirectory)"/>
 
-        <!-- publish generated assets -->
+        <!-- publish compiled solution -->
         <RemoveDir Directories="$(BootsharpPublishDir)"/>
+        <Move SourceFiles="$(BootsharpBuildDirectory)/bootsharp-main.d.ts"
+              DestinationFiles="$(BootsharpBuildDirectory)/bootsharp.d.ts"/>
         <Copy SourceFiles="$(BootsharpBuildDirectory)/bootsharp.js;
                            $(BootsharpBuildDirectory)/bootsharp.d.ts;
                            $(BootsharpBuildDirectory)/bootsharp.js.map"

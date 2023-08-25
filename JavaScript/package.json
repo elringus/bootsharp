@@ -1,21 +1,23 @@
 {
-    "name": "bootsharp",
-    "private": true,
+    "type": "module",
     "scripts": {
-        "build": "webpack --mode production",
+        "update": "ncu --interactive",
         "test": "mocha --exclude **/bench.js",
-        "cover": "nyc -x **/bin -x **/dotnet-js-interop.ts npm run test",
-        "bench": "mocha test/bench.js --timeout 0"
+        "bench": "mocha test/bench.js --timeout 0",
+        "cover": "nyc npm run test"
+    },
+    "dependencies": {
+        "js-base64": "^3.7.5"
     },
     "devDependencies": {
-        "typescript": "^5.1.6",
-        "@types/emscripten": "^1.39.7",
-        "js-base64": "^3.7.5",
-        "webpack": "^5.88.2",
-        "webpack-cli": "^5.1.4",
-        "ts-loader": "^9.4.4",
+        "typescript": "^5.2.2",
+        "tslib": "^2.6.2",
+        "rollup": "^3.28.1",
+        "@rollup/plugin-typescript": "^11.1.2",
+        "@rollup/plugin-node-resolve": "^15.2.1",
+        "rollup-plugin-dts": "^6.0.0",
         "mocha": "^10.2.0",
         "nyc": "^15.1.0",
-        "ws": "^8.13.0"
+        "npm-check-updates": "^16.13.1"
     }
 }
