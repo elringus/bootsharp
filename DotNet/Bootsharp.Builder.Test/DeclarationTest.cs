@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Linq;
 using Xunit;
 
@@ -7,86 +6,7 @@ namespace Bootsharp.Builder.Test;
 
 public class DeclarationTest : ContentTest
 {
-    protected override string TestedContent => Data.GeneratedDeclaration;
-
-    [Fact]
-    public void ContainsRequiredLibraryDeclarations ()
-    {
-        File.WriteAllText(Path.Combine(Data.JSDir, "event.d.ts"), "event");
-        File.WriteAllText(Path.Combine(Data.JSDir, "interop.d.ts"), "interop");
-        File.WriteAllText(Path.Combine(Data.JSDir, "boot.d.ts"), "boot");
-        Task.Execute();
-        Contains("event");
-        Contains("interop");
-        Contains("boot");
-    }
-
-    [Fact]
-    public void DoesntContainOtherLibraryDeclarations ()
-    {
-        File.WriteAllText(Path.Combine(Data.JSDir, "other.d.ts"), "other");
-        Task.Execute();
-        Assert.DoesNotContain("other", Data.GeneratedDeclaration);
-    }
-
-    [Fact]
-    public void RemovesUnwantedDeclarations ()
-    {
-        File.WriteAllText(Path.Combine(Data.JSDir, "boot.d.ts"),
-            "export declare function initializeInterop(): void;\n" +
-            "export declare function initializeMono(assemblies: Assembly[]): void;\n" +
-            "export declare function callEntryPoint(assemblyName: string): Promise<any>;"
-        );
-        Task.Execute();
-        Assert.DoesNotContain("initializeInterop", Data.GeneratedDeclaration);
-        Assert.DoesNotContain("initializeMono", Data.GeneratedDeclaration);
-        Assert.DoesNotContain("callEntryPoint", Data.GeneratedDeclaration);
-    }
-
-    [Fact]
-    public void ResolvesImportForRequiredLibraryDeclarations ()
-    {
-        File.WriteAllText(Path.Combine(Data.JSDir, "dep.d.ts"), "dep");
-        File.WriteAllText(Path.Combine(Data.JSDir, "boot.d.ts"), "import from \"./dep\";\nboot");
-        Task.Execute();
-        Assert.DoesNotContain("import", TestedContent);
-        Contains("dep");
-        Contains("boot");
-    }
-
-    [Fact]
-    public void WhenImportResolveFailsExceptionIsThrown ()
-    {
-        File.WriteAllText(Path.Combine(Data.JSDir, "boot.d.ts"), "import from \"./dep\";\nboot");
-        Assert.Throws<Bootsharp.Error>(() => Task.Execute());
-    }
-
-    [Fact]
-    public void WhenEmbeddedOverridesBootSignature ()
-    {
-        File.WriteAllText(Path.Combine(Data.JSDir, "boot.d.ts"), "boot(bootData: BootData): Promise<void>");
-        Task.EmbedBinaries = true;
-        Task.Execute();
-        Contains("boot(): Promise<void>");
-    }
-
-    [Fact]
-    public void WhenSideLoadDoesntOverrideBootSignature ()
-    {
-        File.WriteAllText(Path.Combine(Data.JSDir, "boot.d.ts"), "boot(bootData: BootData): Promise<void>");
-        Task.EmbedBinaries = false;
-        Task.Execute();
-        Contains("boot(bootData: BootData): Promise<void>");
-    }
-
-    [Fact]
-    public void WhenSideLoadHasBootUrisDeclarations ()
-    {
-        Task.EmbedBinaries = false;
-        Task.Execute();
-        Contains("export interface BootUris");
-        Contains("export declare function getBootUris");
-    }
+    protected override string TestedContent => GeneratedDeclarations;
 
     [Fact]
     public void DeclaresNamespace ()

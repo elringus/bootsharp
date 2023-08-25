@@ -3,7 +3,7 @@ using static Bootsharp.Builder.TextUtilities;
 
 namespace Bootsharp.Builder;
 
-internal sealed class BindingsGenerator(AssemblyInspector inspector, NamespaceBuilder spaceBuilder)
+internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder, AssemblyInspector inspector)
 {
     private readonly SpaceObjectBuilder objectBuilder = new();
     private readonly EnumGenerator enumGenerator = new(spaceBuilder);

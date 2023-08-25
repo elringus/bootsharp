@@ -1,13 +1,11 @@
 ﻿namespace Bootsharp.Builder;
 
-internal sealed class LibraryTemplate
+internal sealed class BindingTemplate
 {
-    public required string RuntimeJS { get; init; }
     public required string InitJS { get; init; }
 
     public string Build () =>
         $$"""
-          {{RuntimeJS}}
           (function (root, factory) {
               if (typeof exports === 'object' && typeof exports.nodeName !== 'string')
                   factory(module.exports, global);

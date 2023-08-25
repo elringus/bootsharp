@@ -2,30 +2,9 @@ using Xunit;
 
 namespace Bootsharp.Builder.Test;
 
-public class LibraryTest : ContentTest
+public class BindingTest : ContentTest
 {
-    protected override string TestedContent => Data.GeneratedLibrary;
-
-    [Fact]
-    public void LibraryContainsJSRuntime ()
-    {
-        Task.Execute();
-        Contains(MockData.LibMainContent);
-    }
-
-    [Fact]
-    public void WhenEmbedBinariesDisabledLibraryExportsBootUris ()
-    {
-        AddAssembly("Foo.dll");
-        Task.EmbedBinaries = false;
-        Task.Execute();
-        Contains("exports.getBootUris = () => ({");
-        Contains("wasm: \"dotnet.wasm\"");
-        Contains("entryAssembly: \"Foo.dll\"");
-        Contains("assemblies: [");
-        Contains("Foo.dll");
-        Contains("Bootsharp.dll");
-    }
+    protected override string TestedContent => GeneratedBindings;
 
     [Fact]
     public void LibraryExportsNamespaceObject ()
