@@ -11,7 +11,7 @@ public abstract class BuildTest : IDisposable
     protected BuildEngine Engine => (BuildEngine)Task.BuildEngine;
     protected string GeneratedBindings => ReadGenerated("bootsharp-bindings.js");
     protected string GeneratedDeclarations => ReadGenerated("bootsharp-bindings.d.ts");
-    protected string GeneratedBinaries => ReadGenerated("bootsharp-binaries.js");
+    protected string GeneratedResources => ReadGenerated("bootsharp-resources.js");
 
     public void Dispose ()
     {

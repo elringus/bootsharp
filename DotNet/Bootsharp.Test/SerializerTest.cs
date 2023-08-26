@@ -10,7 +10,7 @@ public class SerializerTest
     [Fact]
     public void CanSerialize ()
     {
-        Assert.Equal("{\"Items\":[{\"Id\":\"foo\"},{\"Id\":\"bar\"}]}",
+        Assert.Equal("""{"Items":[{"Id":"foo"},{"Id":"bar"}]}""",
             Serialize(new MockRecord(new MockItem[] { new("foo"), new("bar") })));
     }
 
@@ -18,7 +18,7 @@ public class SerializerTest
     public void CanDeserialize ()
     {
         Assert.Equal(new MockItem[] { new("foo"), new("bar") },
-            ((MockRecord)Deserialize("{\"Items\":[{\"Id\":\"foo\"},{\"Id\":\"bar\"}]}", typeof(MockRecord))).Items);
+            ((MockRecord)Deserialize("""{"Items":[{"Id":"foo"},{"Id":"bar"}]}""", typeof(MockRecord))).Items);
     }
 
     [Fact]
@@ -41,8 +41,8 @@ public class SerializerTest
     {
         var args = new object[] { new MockRecord(new MockItem[] { new("foo") }), new MockItem[] { new("bar"), new("nya") }, "baz" };
         var serialized = SerializeArgs(args)!;
-        Assert.Equal("{\"Items\":[{\"Id\":\"foo\"}]}", serialized[0]);
-        Assert.Equal("[{\"Id\":\"bar\"},{\"Id\":\"nya\"}]", serialized[1]);
+        Assert.Equal("""{"Items":[{"Id":"foo"}]}""", serialized[0]);
+        Assert.Equal("""[{"Id":"bar"},{"Id":"nya"}]""", serialized[1]);
         Assert.Equal("\"baz\"", serialized[2]);
     }
 
@@ -50,7 +50,7 @@ public class SerializerTest
     public void CanDeserializeArgs ()
     {
         var @params = typeof(MockClass).GetMethod(nameof(MockClass.Copy))!.GetParameters();
-        var args = new[] { "{\"Items\":[{\"Id\":\"foo\"}]}", "[{\"Id\":\"bar\"},{\"Id\":\"nya\"}]", "\"baz\"" };
+        var args = new[] { """{"Items":[{"Id":"foo"}]}""", """[{"Id":"bar"},{"Id":"nya"}]""", "\"baz\"" };
         var deserialized = DeserializeArgs(@params, args)!;
         Assert.Equal(new MockItem[] { new("foo") }, ((MockRecord)deserialized[0]).Items);
         Assert.Equal(new MockItem[] { new("bar"), new("nya") }, deserialized[1]);

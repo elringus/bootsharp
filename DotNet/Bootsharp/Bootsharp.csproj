@@ -9,15 +9,15 @@
         <Authors>Elringus</Authors>
         <Description>Compile C# solution into single-file ES module with auto-generated JavaScript bindings and type definitions.</Description>
         <PackageTags>javascript typescript ts js wasm bindings interop codegen</PackageTags>
+        <PackageProjectUrl>https://bootsharp.com</PackageProjectUrl>
         <RepositoryUrl>https://github.com/Elringus/Bootsharp.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageProjectUrl>https://bootsharp.com</PackageProjectUrl>
-        <PackageIconUrl>https://raw.githubusercontent.com/Elringus/Bootsharp/main/Assets/PackageIcon.svg</PackageIconUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageIcon>PackageIcon.png</PackageIcon>
+        <PackageIconUrl>https://raw.githubusercontent.com/Elringus/Bootsharp/main/Assets/PackageIcon.svg</PackageIconUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
         <NoWarn>NU5100,CS1591</NoWarn>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -28,11 +28,11 @@
             <_Parameter1>browser</_Parameter1>
         </AssemblyAttribute>
         <InternalsVisibleTo Include="Bootsharp.Test"/>
-        <None Update="Build/**" Pack="true" PackagePath="%(Identity)"/>
-        <None Include="../Bootsharp.Generator/bin/Release/netstandard2.0/Bootsharp.Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
-        <None Include="$(MSBuildThisFileDirectory)../../Assets/PackageIcon.png" Pack="true" PackagePath="/" Visible="false"/>
-        <None Include="../../README.md" Pack="true" PackagePath="/"/>
+        <Content Include="Build/**" Pack="true" PackagePath="build/"/>
         <Content Include="../../JavaScript/dist/**" Pack="true" PackagePath="js/" Visible="false"/>
+        <None Include="../Bootsharp.Generator/bin/Release/netstandard2.0/Bootsharp.Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="../../README.md" Pack="true" PackagePath="/"/>
+        <None Include="$(MSBuildThisFileDirectory)../../Assets/PackageIcon.png" Pack="true" PackagePath="/" Visible="false"/>
     </ItemGroup>
 
     <Target Name="GetTasksOutputDlls" BeforeTargets="CoreCompile">

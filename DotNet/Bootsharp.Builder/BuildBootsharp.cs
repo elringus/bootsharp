@@ -16,7 +16,7 @@ public sealed class BuildBootsharp : Task
         using var inspector = InspectAssemblies(builder);
         GenerateBindings(inspector, builder);
         GenerateDeclarations(inspector, builder);
-        GenerateBinaries();
+        GenerateResources();
         return true;
     }
 
@@ -49,10 +49,10 @@ public sealed class BuildBootsharp : Task
         File.WriteAllText(Path.Combine(BuildDirectory, "bootsharp-bindings.d.ts"), content);
     }
 
-    private void GenerateBinaries ()
+    private void GenerateResources ()
     {
-        var generator = new BinariesGenerator();
+        var generator = new ResourcesGenerator();
         var content = generator.Generate(EmbedBinaries);
-        File.WriteAllText(Path.Combine(BuildDirectory, "bootsharp-binaries.js"), content);
+        File.WriteAllText(Path.Combine(BuildDirectory, "bootsharp-resources.js"), content);
     }
 }

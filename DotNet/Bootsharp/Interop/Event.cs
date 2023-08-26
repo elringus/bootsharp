@@ -21,5 +21,5 @@ public static partial class Event
         BroadcastSerialized(endpoint, SerializeArgs(args));
 
     [System.Runtime.InteropServices.JavaScript.JSImport("broadcast", "Bootsharp")]
-    private static partial void BroadcastSerialized (string endpoint, string[]? args = null);
+    private static partial void BroadcastSerialized (string endpoint, string[]? args);
 }

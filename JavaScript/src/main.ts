@@ -1,12 +1,5 @@
-﻿import { boot, getBootStatus, terminate, BootStatus, BootData } from "./boot";
+﻿import { boot, exit } from "./boot";
+import { resources } from "./resources";
+import { dotnet as dotnet } from "./dotnet-api";
 
-export {
-    BootStatus,
-    BootData
-};
-
-export {
-    boot,
-    getBootStatus,
-    terminate
-};
+export { boot, exit, resources, dotnet };

@@ -49,11 +49,11 @@ public static partial class Function
         InvokeVoidSerializedAsync(endpoint, SerializeArgs(args));
 
     [System.Runtime.InteropServices.JavaScript.JSImport("invoke", "Bootsharp")]
-    private static partial string InvokeSerialized (string endpoint, string[]? args = null);
+    private static partial string InvokeSerialized (string endpoint, string[]? args);
     [System.Runtime.InteropServices.JavaScript.JSImport("invokeVoid", "Bootsharp")]
-    private static partial void InvokeVoidSerialized (string endpoint, string[]? args = null);
+    private static partial void InvokeVoidSerialized (string endpoint, string[]? args);
     [System.Runtime.InteropServices.JavaScript.JSImport("invokeAsync", "Bootsharp")]
-    private static partial Task<string> InvokeSerializedAsync (string endpoint, string[]? args = null);
+    private static partial Task<string> InvokeSerializedAsync (string endpoint, string[]? args);
     [System.Runtime.InteropServices.JavaScript.JSImport("invokeVoidAsync", "Bootsharp")]
-    private static partial Task InvokeVoidSerializedAsync (string endpoint, string[]? args = null);
+    private static partial Task InvokeVoidSerializedAsync (string endpoint, string[]? args);
 }

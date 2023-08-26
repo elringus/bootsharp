@@ -1,51 +1,64 @@
 import { Base64 } from "js-base64";
+import { RuntimeConfig, dotnet, exit as _exit } from "./dotnet-api";
+import { BootResources, resources as _resources, validateResources } from "./resources";
+import { Binding, bindings } from "./bindings";
+import { RuntimeAPI } from "./dotnet-types";
 
-export interface BootData {
-    wasm: Uint8Array | string;
-    entryAssemblyName: string;
+/** Allows customizing .NET runtime initialization process. */
+export type BootCustom = {
+    /** Create .NET runtime configuration. */
+    config?: (resources: BootResources) => RuntimeConfig;
+    /** Create .NET runtime using specified configuration. */
+    create?: (config: RuntimeConfig) => Promise<RuntimeAPI>;
+    /** Assign imported C# bindings. */
+    bind?: (runtime: RuntimeAPI, bindings: Binding[]) => void;
 }
 
-export enum BootStatus {
-    Standby = "Standby",
-    Booting = "Booting",
-    Terminating = "Terminating",
-    Booted = "Booted"
+/**
+ * Initializes .NET runtime.
+ * @param resources
+ * When specified, will use the resources to boot the runtime.
+ * Required when <code>BootsharpEmbedBinaries</code> C# build option is disabled.
+ * @param custom
+ * Assign to customize .NET runtime initialization process.
+ * @return
+ * Promise that resolves into .NET runtime instance.
+ */
+export async function boot(resources?: BootResources, custom?: BootCustom): Promise<RuntimeAPI> {
+    const res = validateResources(resources ?? _resources);
+    const config = createConfig(res, custom);
+    const runtime = await createRuntime(config, custom);
+    bind(runtime, custom);
+    await dotnet.run();
+    return runtime;
 }
 
-let bootStatus: BootStatus = BootStatus.Standby;
-
-export function getBootStatus(): BootStatus {
-    return bootStatus;
+/**
+ * Terminates .NET runtime and removes the module from memory.
+ * @param code
+ * Exit code; will use 0 (normal exit) by default.
+ * @param reason
+ * Exit reason description (optional).
+ */
+export function exit(code?: number, reason?: any) {
+    _exit(code ?? 0, reason);
 }
 
-export async function boot(bootData: BootData): Promise<void> {
-    validateBootData(bootData);
-    transitionBootStatus(BootStatus.Standby, BootStatus.Booting);
-    console.log(getWasmBinary(bootData.wasm));
-    // await initializeWasm(getWasmBinary(bootData.wasm), bootData.entryAssemblyName);
-    transitionBootStatus(BootStatus.Booting, BootStatus.Booted);
+function createConfig(res: BootResources, custom?: BootCustom): RuntimeConfig {
+    if (custom?.config != null) return custom.config(res);
+    return null!;
 }
 
-export function terminate(): Promise<void> {
-    transitionBootStatus(BootStatus.Booted, BootStatus.Terminating);
-    // destroyWasm();
-    transitionBootStatus(BootStatus.Terminating, BootStatus.Standby);
-    return Promise.resolve();
+function createRuntime(config: RuntimeConfig, custom?: BootCustom): Promise<RuntimeAPI> {
+    if (custom?.create != null) return custom.create(config);
+    return dotnet.withConfig(config).create();
 }
 
-function transitionBootStatus(from: BootStatus, to: BootStatus): void {
-    if (from !== bootStatus)
-        throw Error(`Invalid boot status. Expected: ${from}. Actual: ${bootStatus}.`);
-    bootStatus = to;
+function bind(runtime: RuntimeAPI, custom?: BootCustom) {
+    if (custom?.bind != null) custom.bind(runtime, bindings);
+    // ...
 }
 
-function getWasmBinary(wasm: Uint8Array | string) {
-    return typeof wasm === "string" ? Base64.toUint8Array(wasm) : wasm;
-}
-
-function validateBootData(data: BootData): void {
-    if (data == null)
-        throw Error("Boot data is missing.");
-    if (data.wasm == null || data.wasm.length == 0)
-        throw Error("Wasm binary is missing.");
+function toBinary(data: Uint8Array | string) {
+    return typeof data === "string" ? Base64.toUint8Array(data) : data;
 }

@@ -2,12 +2,12 @@ using Xunit;
 
 namespace Bootsharp.Builder.Test;
 
-public class BinariesTest : ContentTest
+public class ResourcesTest : ContentTest
 {
-    protected override string TestedContent => GeneratedBinaries;
+    protected override string TestedContent => GeneratedResources;
 
     [Fact]
-    public void BinariesUrisAreWritten ()
+    public void ResourceNamesAreWritten ()
     {
         AddAssembly("Foo.dll");
         Task.Execute();

@@ -22,14 +22,14 @@ public class InvokableTest
     [Fact]
     public void CanInvoke ()
     {
-        const string json = "{\"Items\":[{\"Id\":\"foo\"}]}";
+        const string json = """{"Items":[{"Id":"foo"}]}""";
         Assert.Equal(json, Invoke("Bootsharp.Test/Bootsharp.Test/MockClass/Echo", new[] { json }));
     }
 
     [Fact]
     public void CanInvokeWhenAssemblyNotEqualEndpoint ()
     {
-        const string json = "{\"Items\":[{\"Id\":\"foo\"}]}";
+        const string json = """{"Items":[{"Id":"foo"}]}""";
         Assert.Equal(json, Invoke("Bootsharp.Test/Bootsharp.Test.Other/MockClassWithNamespaceNotEqualAssemblyName/Echo", new[] { json }));
     }
 
@@ -42,7 +42,7 @@ public class InvokableTest
     [Fact]
     public async Task CanInvokeAsync ()
     {
-        const string json = "{\"Items\":[{\"Id\":\"foo\"}]}";
+        const string json = """{"Items":[{"Id":"foo"}]}""";
         Assert.Equal(json, await InvokeAsync("Bootsharp.Test/Bootsharp.Test/MockClass/EchoAsync", new[] { json }));
     }
 
@@ -57,25 +57,25 @@ public class InvokableTest
     [Fact]
     public void CanInvokeWithMultipleArgs ()
     {
-        Assert.Equal("{\"Items\":[{\"Id\":\"nya\"},{\"Id\":\"nya\"}]}",
+        Assert.Equal("""{"Items":[{"Id":"nya"},{"Id":"nya"}]}""",
             Invoke("Bootsharp.Test/Bootsharp.Test/MockClass/Copy", new[] {
-                "{\"Items\":[{\"Id\":\"foo\"}]}", "[{\"Id\":\"bar\"},{\"Id\":\"baz\"}]", "\"nya\""
+                """{"Items":[{"Id":"foo"}]}""", """[{"Id":"bar"},{"Id":"baz"}]""", "\"nya\""
             }));
     }
 
     [Fact]
     public void CanOmitOptionalArg ()
     {
-        Assert.Equal("{\"Items\":[{\"Id\":\"bar\"},{\"Id\":\"baz\"}]}",
+        Assert.Equal("""{"Items":[{"Id":"bar"},{"Id":"baz"}]}""",
             Invoke("Bootsharp.Test/Bootsharp.Test/MockClass/Copy", new[] {
-                "{\"Items\":[{\"Id\":\"foo\"}]}", "[{\"Id\":\"bar\"},{\"Id\":\"baz\"}]"
+                """{"Items":[{"Id":"foo"}]}""", """[{"Id":"bar"},{"Id":"baz"}]"""
             }));
     }
 
     [Fact]
     public void CanOmitOptionArgument ()
     {
-        const string json = "{\"Items\":[{\"Id\":\"foo\"}]}";
+        const string json = """{"Items":[{"Id":"foo"}]}""";
         Assert.Equal(json, Invoke("Bootsharp.Test/Bootsharp.Test/MockClass/Echo", new[] { json }));
     }
 

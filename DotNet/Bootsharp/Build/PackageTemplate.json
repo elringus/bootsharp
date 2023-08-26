@@ -1,0 +1,5 @@
+﻿{
+    "name": "%NAME%",
+    "module": "%PATH%/%NAME%.js",
+    "types": "%PATH%/%NAME%.d.ts"
+}

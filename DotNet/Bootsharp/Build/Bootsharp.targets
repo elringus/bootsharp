@@ -1,37 +1,50 @@
 <Project>
 
     <PropertyGroup>
+
+        <!-- Project defaults common to the build target. -->
         <OutputType>Exe</OutputType>
         <Configuration>Release</Configuration>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
         <InvariantTimezone>true</InvariantTimezone>
         <InvariantGlobalization>true</InvariantGlobalization>
         <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
-        <BootsharpBuilderAssembly>$(MSBuildThisFileDirectory)../tasks/Bootsharp.Builder.dll</BootsharpBuilderAssembly>
-        <BootsharpJSDir>$(MSBuildThisFileDirectory)../js</BootsharpJSDir>
-        <BootsharpPublishDir>$(BaseOutputPath)/bootsharp</BootsharpPublishDir>
-        <BootsharpBuildDirectory>$(WasmAppDir)/_framework</BootsharpBuildDirectory>
-        <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
+
+        <!-- Bootsharp public defaults. -->
+        <!-- Name of the generated JavaScript module; 'bootsharp' by default. -->
+        <BootsharpName>bootsharp</BootsharpName>
+        <!-- Directory to publish generated JavaScript module files; 'bin/module-name' by default. -->
+        <BootsharpPublishDirectory>$(BaseOutputPath)/$(BootsharpName)</BootsharpPublishDirectory>
+        <!-- Directory to publish 'package.json' file; same as publish directory by default. -->
+        <BootsharpPackageDirectory>$(BootsharpPublishDir)</BootsharpPackageDirectory>
+        <!-- Whether to embed binary wasm files to the JavaScript module file (true or false); true by default. -->
         <BootsharpEmbedBinaries>true</BootsharpEmbedBinaries>
+        <!-- Name of the entry (main) assembly for the WASM target; equals final output assembly by default. -->
+        <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
+
+        <!-- Bootsharp internal defaults. -->
+        <BootsharpRoot>$(MSBuildThisFileDirectory)../</BootsharpRoot>
+        <BootsharpSourceDirectory>$(BootsharpRoot)/js</BootsharpSourceDirectory>
+        <BootsharpBuildDirectory>$(WasmAppDir)/_framework</BootsharpBuildDirectory>
+        <BootsharpBuilderAssembly>$(BootsharpRoot)/tasks/Bootsharp.Builder.dll</BootsharpBuilderAssembly>
+
     </PropertyGroup>
 
     <UsingTask TaskName="Bootsharp.Builder.BuildBootsharp" AssemblyFile="$(BootsharpBuilderAssembly)"/>
 
     <Target Name="BootsharpBuild" AfterTargets="_AfterWasmBuildApp">
 
-        <!-- generate bindings, types and (optionally) embed binaries -->
+        <!-- Generate bindings, types and (optionally) embed binaries. -->
         <BuildBootsharp BuildDirectory="$(BootsharpBuildDirectory)"
                         EntryAssemblyName="$(BootsharpEntryAssemblyName)"
                         EmbedBinaries="$(BootsharpEmbedBinaries)"/>
 
-        <!-- copy bootsharp source JavaScript files to the build directory -->
-        <ItemGroup>
-            <BootsharpSourceFiles Include="$(BootsharpJSDir)/*.*"/>
-            <BootsharpWasmFiles Include="$(BootsharpBuildDirectory)/*.wasm"/>
-        </ItemGroup>
-        <Copy SourceFiles="$(BootsharpSourceFiles)" DestinationFolder="$(BootsharpBuildDirectory)"/>
+        <!-- Copy bootsharp source module files to the build directory. -->
+        <Copy SourceFiles="$(BootsharpSourceDirectory)/bootsharp-main.js;
+                           $(BootsharpSourceDirectory)/bootsharp-main.d.ts"
+              DestinationFolder="$(BootsharpBuildDirectory)"/>
 
-        <!-- append generated binding types to source declarations -->
+        <!-- Append generated binding types to source declarations. -->
         <ItemGroup>
             <BootsharpSourceTypes Include="$(BootsharpBuildDirectory)/bootsharp-main.d.ts"/>
             <BootsharpGeneratedTypes Include="$(BootsharpBuildDirectory)/bootsharp-bindings.d.ts"/>
@@ -41,23 +54,38 @@
         </ReadLinesFromFile>
         <WriteLinesToFile Lines="@(BootsharpGeneratedTypeLines)" File="@(BootsharpSourceTypes)"/>
 
-        <!-- compile generated JavaScript solution -->
+        <!-- Compile generated JavaScript solution. -->
         <Exec Command="npm install --global rollup" WorkingDirectory="$(BootsharpBuildDirectory)"/>
-        <Exec Command="rollup bootsharp-main.js -o bootsharp.js -f es -g process,module"
+        <Exec Command="rollup bootsharp-main.js -o $(BootsharpName).js -f es -g process,module"
               WorkingDirectory="$(BootsharpBuildDirectory)"/>
 
-        <!-- publish compiled solution -->
-        <RemoveDir Directories="$(BootsharpPublishDir)"/>
+        <!-- Publish compiled solution. -->
         <Move SourceFiles="$(BootsharpBuildDirectory)/bootsharp-main.d.ts"
-              DestinationFiles="$(BootsharpBuildDirectory)/bootsharp.d.ts"/>
-        <Copy SourceFiles="$(BootsharpBuildDirectory)/bootsharp.js;
-                           $(BootsharpBuildDirectory)/bootsharp.d.ts;
-                           $(BootsharpBuildDirectory)/bootsharp.js.map"
-              DestinationFolder="$(BootsharpPublishDir)"/>
+              DestinationFiles="$(BootsharpBuildDirectory)/$(BootsharpName).d.ts"/>
+        <Copy SourceFiles="$(BootsharpBuildDirectory)/$(BootsharpName).js;
+                           $(BootsharpBuildDirectory)/$(BootsharpName).d.ts;
+                           $(BootsharpBuildDirectory)/$(BootsharpName).js.map"
+              DestinationFolder="$(BootsharpPublishDirectory)"/>
+        <ItemGroup>
+            <BootsharpWasmFiles Include="$(BootsharpBuildDirectory)/*.wasm"/>
+        </ItemGroup>
+        <RemoveDir Directories="$(BootsharpPublishDirectory)/bin"/>
         <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'"
-              SourceFiles="$(BootsharpWasmFiles)"
-              DestinationFolder="$(BootsharpPublishDir)/bin"/>
-        <Message Text="Bootsharp ES module published at $(BootsharpPublishDir)" Importance="high"/>
+              SourceFiles="@(BootsharpWasmFiles)"
+              DestinationFolder="$(BootsharpPublishDirectory)/bin"/>
+
+        <!-- Publish package file. -->
+        <ItemGroup>
+            <PackageTemplate>$(BootsharpRoot)/build/PackageTemplate.json</PackageTemplate>
+            <PackageFile>$(BootsharpPackageDirectory)/package.json</PackageFile>
+        </ItemGroup>
+        <WriteLinesToFile Condition="!Exists('$(PackageFile)')"
+                          File="$(PackageFile)"
+                          Lines="$([System.IO.File]::ReadAllText($(PackageTemplate))
+                                 .Replace('%NAME%','$(BootsharpName)')
+                                 .Replace('%PATH%','$([System.IO.Path]::GetRelativePath('$(BootsharpPackageDirectory)','$(BootsharpPublishDirectory)'))'))"/>
+
+        <Message Text="Bootsharp ES module published at $(BootsharpPublishDirectory)" Importance="high"/>
 
     </Target>
 
