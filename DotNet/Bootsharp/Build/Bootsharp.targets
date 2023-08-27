@@ -13,14 +13,16 @@
         <!-- Bootsharp public defaults. -->
         <!-- Name of the generated JavaScript module; 'bootsharp' by default. -->
         <BootsharpName>bootsharp</BootsharpName>
+        <!-- Name of the entry (main) assembly for the WASM target; equals final output assembly by default. -->
+        <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
         <!-- Directory to publish generated JavaScript module files; 'bin/module-name' by default. -->
         <BootsharpPublishDirectory>$(BaseOutputPath)/$(BootsharpName)</BootsharpPublishDirectory>
         <!-- Directory to publish 'package.json' file; same as publish directory by default. -->
         <BootsharpPackageDirectory>$(BootsharpPublishDir)</BootsharpPackageDirectory>
         <!-- Whether to embed binary wasm files to the JavaScript module file (true or false); true by default. -->
         <BootsharpEmbedBinaries>true</BootsharpEmbedBinaries>
-        <!-- Name of the entry (main) assembly for the WASM target; equals final output assembly by default. -->
-        <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
+        <!-- Whether to disable some .NET features to reduce binary size (true or false); false by default. -->
+        <BootsharpAggressiveTrimming>false</BootsharpAggressiveTrimming>
 
         <!-- Bootsharp internal defaults. -->
         <BootsharpRoot>$(MSBuildThisFileDirectory)../</BootsharpRoot>
@@ -29,6 +31,34 @@
         <BootsharpBuilderAssembly>$(BootsharpRoot)/tasks/Bootsharp.Builder.dll</BootsharpBuilderAssembly>
 
     </PropertyGroup>
+
+    <Choose>
+        <When Condition="$(BootsharpAggressiveTrimming)">
+            <PropertyGroup>
+                <!-- https://learn.microsoft.com/en-us/aspnet/core/blazor/performance?#minimize-app-download-size -->
+                <!-- https://raw.githubusercontent.com/dotnet/runtime/main/docs/workflow/trimming/feature-switches.md -->
+                <PublishTrimmed>true</PublishTrimmed>
+                <TrimMode>full</TrimMode>
+                <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
+                <_AggressiveAttributeTrimming>true</_AggressiveAttributeTrimming>
+                <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
+                <DebuggerSupport>false</DebuggerSupport>
+                <EnableCppCLIHostActivation>false</EnableCppCLIHostActivation>
+                <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+                <EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>false</EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>
+                <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
+                <_EnableConsumingManagedCodeFromNativeHosting>false</_EnableConsumingManagedCodeFromNativeHosting>
+                <EventSourceSupport>false</EventSourceSupport>
+                <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+                <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+                <UseNativeHttpHandler>true</UseNativeHttpHandler>
+                <UseSystemResourceKeys>true</UseSystemResourceKeys>
+                <StartupHookSupport>false</StartupHookSupport>
+                <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
+                <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+            </PropertyGroup>
+        </When>
+    </Choose>
 
     <UsingTask TaskName="Bootsharp.Builder.BuildBootsharp" AssemblyFile="$(BootsharpBuilderAssembly)"/>
 

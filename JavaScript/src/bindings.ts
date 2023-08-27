@@ -1,4 +1,4 @@
-﻿// @ts-ignore (resolved at C# solution build time)
+﻿// @ts-ignore (resolved when building C# solution)
 import generated from "./bootsharp-bindings.js";
 
 export const bindings: Binding[] = generated;

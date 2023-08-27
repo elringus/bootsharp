@@ -1,5 +1,8 @@
-﻿// @ts-ignore (resolved at C# solution build time)
+﻿// @ts-ignore (resolved when building C# solution)
 import generated from "./bootsharp-resources.js";
+import { RuntimeConfig, runtime, native } from "./dotnet-api";
+import { AssetEntry } from "./dotnet-types";
+import { Base64 } from "js-base64";
 
 /** Resources required to boot .NET runtime. */
 export const resources: BootResources = generated;
@@ -22,11 +25,48 @@ export type AssemblyResource = {
     content?: Uint8Array | string;
 }
 
-export function validateResources(res: BootResources) {
+// https://github.com/dotnet/runtime/tree/main/src/mono/sample/wasm/browser-minimal-config
+export function buildConfig(res: BootResources): RuntimeConfig {
+    validate(res);
+    return {
+        mainAssemblyName: res.entryAssemblyName,
+        assets: [
+            {
+                name: "dotnet.runtime.js",
+                moduleExports: runtime,
+                behavior: "js-module-runtime"
+            },
+            {
+                name: "dotnet.native.js",
+                moduleExports: native,
+                behavior: "js-module-native"
+            },
+            {
+                name: "dotnet.native.wasm",
+                buffer: toBinary(res.wasm!),
+                behavior: "dotnetwasm"
+            },
+            ...res.assemblies.map(buildAssembly)
+        ]
+    };
+}
+
+function validate(res: BootResources): void {
     if (res.wasm == null || res.wasm.length === 0)
         throw Error("Missing WASM boot resource.");
     for (const asm of res.assemblies)
         if (asm.content == null || asm.content.length === 0)
             throw Error(`Missing '${asm.name}' assembly boot resource.`);
-    return res;
+}
+
+function buildAssembly(res: AssemblyResource): AssetEntry {
+    return {
+        name: res.name,
+        buffer: toBinary(res.content!),
+        behavior: "assembly"
+    };
+}
+
+function toBinary(data: Uint8Array | string): Uint8Array {
+    return typeof data === "string" ? Base64.toUint8Array(data) : data;
 }
