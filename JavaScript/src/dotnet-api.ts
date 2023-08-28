@@ -1,11 +1,14 @@
-﻿// @ts-nocheck (resolved when building C# solution)
-import * as _runtime from "./dotnet.runtime.js";
-import * as _native from "./dotnet.native.js";
-import { dotnet, exit as _exit } from "./dotnet.js";
-import type { DotnetHostBuilder, exit as t_exit, MonoConfig, AssetEntry } from "./dotnet-types";
+﻿// @ts-ignore (resolved when building C# solution)
+import * as runtimeModule from "./dotnet.runtime.js";
+// @ts-ignore (resolved when building C# solution)
+import * as nativeModule from "./dotnet.native.js";
+// @ts-ignore (resolved when building C# solution)
+import * as dotnetModule from "./dotnet.js";
+import type { DotnetHostBuilder, MonoConfig, AssetEntry, ModuleAPI } from "./dotnet-types";
 
+export type * from "./dotnet-types";
 export type RuntimeConfig = MonoConfig & { assets: AssetEntry[] };
-export const builder: DotnetHostBuilder = dotnet;
-export const exit: typeof t_exit = _exit;
-export const runtime = _runtime;
-export const native = _native;
+export const runtime = runtimeModule;
+export const native = nativeModule;
+export const dotnet: ModuleAPI = dotnetModule;
+export const builder: DotnetHostBuilder = dotnet.dotnet;

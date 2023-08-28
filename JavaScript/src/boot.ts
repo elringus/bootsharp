@@ -1,33 +1,35 @@
-import { RuntimeAPI } from "./dotnet-types";
-import { RuntimeConfig, builder, exit as _exit } from "./dotnet-api";
-import { BootResources, resources as _resources, buildConfig } from "./resources";
-import { Binding, bindings } from "./bindings";
+import { RuntimeConfig, RuntimeAPI, dotnet, builder } from "./dotnet-api";
+import { BootResources, buildConfig } from "./resources";
+import { bindImports, bindExports } from "./bindings";
 
-/** Allows customizing .NET runtime initialization process. */
+/** Allows customizing boot process. */
 export type BootCustom = {
-    /** Create .NET runtime configuration. */
-    config?: (resources: BootResources) => RuntimeConfig;
-    /** Create .NET runtime using specified configuration. */
+    /** Customize .NET runtime configuration. */
+    config?: RuntimeConfig;
+    /** Customize .NET runtime factoring. */
     create?: (config: RuntimeConfig) => Promise<RuntimeAPI>;
-    /** Assign imported C# bindings. */
-    bind?: (runtime: RuntimeAPI, bindings: Binding[]) => void;
+    /** Customize binding imported C# APIs. */
+    import?: (runtime: RuntimeAPI) => Promise<void>;
+    /** Customize binding exported C# APIs. */
+    export?: (runtime: RuntimeAPI) => Promise<void>;
 }
 
 /**
- * Initializes .NET runtime.
+ * Initializes .NET runtime and binds C# APIs.
  * @param resources
- * When specified, will use the resources to boot the runtime.
+ * Use specified WASM module and assembly binaries to initialize the runtime.
  * Required when <code>BootsharpEmbedBinaries</code> C# build option is disabled.
  * @param custom
- * Use to customize .NET runtime initialization process.
+ * Specify to customize the boot process.
  * @return
  * Promise that resolves into .NET runtime instance.
  */
 export async function boot(resources?: BootResources, custom?: BootCustom): Promise<RuntimeAPI> {
-    const config = createConfig(resources ?? _resources, custom);
-    const runtime = await createRuntime(config, custom);
-    bind(runtime, custom);
+    const config = custom?.config ?? buildConfig(resources);
+    const runtime = await custom?.create?.(config) || await builder.withConfig(config).create();
+    await custom?.import?.(runtime) || bindImports(runtime);
     await builder.run();
+    await custom?.export?.(runtime) || await bindExports(runtime);
     return runtime;
 }
 
@@ -39,20 +41,5 @@ export async function boot(resources?: BootResources, custom?: BootCustom): Prom
  * Exit reason description (optional).
  */
 export function exit(code?: number, reason?: string): void {
-    _exit(code ?? 0, reason);
-}
-
-function createConfig(res: BootResources, custom?: BootCustom): RuntimeConfig {
-    if (custom?.config != null) return custom.config(res);
-    return buildConfig(res);
-}
-
-function createRuntime(config: RuntimeConfig, custom?: BootCustom): Promise<RuntimeAPI> {
-    if (custom?.create != null) return custom.create(config);
-    return builder.withConfig(config).create();
-}
-
-function bind(runtime: RuntimeAPI, custom?: BootCustom): void {
-    if (custom?.bind != null) custom.bind(runtime, bindings);
-    // ...
+    dotnet.exit(code ?? 0, reason);
 }

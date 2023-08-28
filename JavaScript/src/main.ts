@@ -2,5 +2,6 @@
 import { resources } from "./resources";
 import { builder, runtime, native } from "./dotnet-api";
 
-export { boot, exit, resources };
-export const dotnet = { builder, runtime, native };
+export default { boot, exit, resources, dotnet: { builder, runtime, native } };
+// @ts-ignore (resolved when building C# solution)
+export * from "./bootsharp-bindings.js";
