@@ -1,13 +1,4 @@
-﻿import { RuntimeAPI } from "./dotnet-api";
-
-type Exports = {
-    Invokable: {
-        Invoke: (endpoint: string, args?: string[]) => string;
-        InvokeVoid: (endpoint: string, args?: string[]) => void;
-        InvokeAsync: (endpoint: string, args?: string[]) => Promise<string>;
-        InvokeVoidAsync: (endpoint: string, args?: string[]) => Promise<void>;
-    };
-};
+﻿import { RuntimeAPI } from "./dotnet-types";
 
 export function bindImports(runtime: RuntimeAPI) {
     runtime.setModuleImports("Bootsharp", {
@@ -27,9 +18,4 @@ export function bindImports(runtime: RuntimeAPI) {
 
         }
     });
-}
-
-export async function bindExports(runtime: RuntimeAPI) {
-    const exports: Exports = await runtime.getAssemblyExports("Bootsharp");
-
 }

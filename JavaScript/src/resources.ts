@@ -2,7 +2,6 @@
 import generated from "./bootsharp-resources.js";
 import { RuntimeConfig, runtime, native } from "./dotnet-api";
 import { AssetEntry } from "./dotnet-types";
-import { Base64 } from "js-base64";
 
 /** Resources required to boot .NET runtime. */
 export const resources: BootResources = generated;
@@ -69,5 +68,8 @@ function buildAssembly(res: AssemblyResource): AssetEntry {
 }
 
 function toBinary(data: Uint8Array | string): Uint8Array {
-    return typeof data === "string" ? Base64.toUint8Array(data) : data;
+    if (typeof data !== "string") return data;
+    return typeof Buffer === "function"
+        ? new Uint8Array(Buffer.from(data, "base64"))
+        : Uint8Array.from(atob(data), c => c.charCodeAt(0));
 }
