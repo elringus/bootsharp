@@ -26,8 +26,7 @@ export type AssemblyResource = {
 
 // https://github.com/dotnet/runtime/tree/main/src/mono/sample/wasm/browser-minimal-config
 export function buildConfig(res?: BootResources): RuntimeConfig {
-    res ??= resources;
-    validate(res);
+    validate(res ??= resources);
     return {
         mainAssemblyName: res.entryAssemblyName,
         assets: [
