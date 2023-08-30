@@ -1,9 +1,8 @@
 .vs
 .idea
 .nuget
-.nyc_output
 node_modules
-packages
+coverage
 dist
 bin
 obj

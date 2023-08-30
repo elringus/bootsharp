@@ -1,6 +1,3 @@
-cd ..
+﻿cd ..
 rm -rf dist
-rollup src/bootsharp-main.ts -d dist -f es -p node-resolve,typescript --output.preserveModules \
--e "./dotnet.runtime.js","./dotnet.native.js","./dotnet.js","./bootsharp-resources.js","./bootsharp-bindings.js"
-rollup src/bootsharp-main.ts -o dist/bootsharp-main.d.ts -f es -p dts -e "./bootsharp-bindings.js"
-sed -i "1,4d" dist/bootsharp-main.d.ts
+tsc --outDir dist --declaration
