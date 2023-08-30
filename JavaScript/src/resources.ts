@@ -67,7 +67,7 @@ function buildAssembly(res: AssemblyResource): AssetEntry {
 
 function toBinary(data: Uint8Array | string): Uint8Array {
     if (typeof data !== "string") return data;
-    return typeof Buffer === "function"
-        ? new Uint8Array(Buffer.from(data, "base64"))
-        : Uint8Array.from(atob(data), c => c.charCodeAt(0));
+    if (typeof window === "object") return Uint8Array.from(window.atob(data), c => c.charCodeAt(0));
+    if (typeof Buffer === "function") return Buffer.from(data, "base64");
+    throw Error("Failed to convert base64 to binary: unknown environment.");
 }
