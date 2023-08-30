@@ -1,4 +1,4 @@
-﻿import { RuntimeAPI } from "./dotnet";
+﻿import type { RuntimeAPI } from "./dotnet.d.ts";
 
 export function bindImports(runtime: RuntimeAPI) {
     runtime.setModuleImports("Bootsharp", {
