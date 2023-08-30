@@ -1,13 +1,10 @@
 {
-    "type": "module",
     "scripts": {
-        "test": "vitest",
-        "cover": "vitest run --coverage"
+        "test": "jest",
+        "cover": "jest --coverage"
     },
     "devDependencies": {
         "typescript": "^5.2.2",
-        "@types/node": "^20.5.7",
-        "vitest": "^0.34.3",
-        "@vitest/coverage-v8": "^0.34.3"
+        "jest": "^29.6.4"
     }
 }

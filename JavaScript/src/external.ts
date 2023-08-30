@@ -1,12 +1,12 @@
 ﻿// @ts-ignore (resolved when building C# solution)
-import * as runtimeModule from "./dotnet.runtime.js";
+import * as runtimeModule from "./dotnet.runtime";
 // @ts-ignore (resolved when building C# solution)
-import * as nativeModule from "./dotnet.native.js";
+import * as nativeModule from "./dotnet.native";
 // @ts-ignore (resolved when building C# solution)
-import * as dotnetModule from "./dotnet.js";
-import type { DotnetHostBuilder, MonoConfig, AssetEntry, ModuleAPI } from "./dotnet-types";
+import * as dotnetModule from "./dotnet";
+import type { DotnetHostBuilder, MonoConfig, AssetEntry, ModuleAPI } from "./dotnet.d.ts";
 
-export type * from "./dotnet-types";
+export type * from "./dotnet.d.ts";
 export type RuntimeConfig = MonoConfig & { assets: AssetEntry[] };
 export const runtime = runtimeModule;
 export const native = nativeModule;

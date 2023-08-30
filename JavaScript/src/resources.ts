@@ -1,7 +1,6 @@
 ﻿// @ts-ignore (resolved when building C# solution)
-import generated from "./bootsharp-resources.js";
-import { RuntimeConfig, runtime, native } from "./dotnet-api";
-import { AssetEntry } from "./dotnet-types";
+import generated from "./bootsharp-resources";
+import { RuntimeConfig, AssetEntry, runtime, native } from "./external";
 
 /** Resources required to boot .NET runtime. */
 export const resources: BootResources = generated;

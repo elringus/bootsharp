@@ -1,4 +1,4 @@
-import { RuntimeConfig, RuntimeAPI, dotnet, builder } from "./dotnet-api";
+import { RuntimeConfig, RuntimeAPI, dotnet, builder } from "./external";
 import { BootResources, buildConfig } from "./resources";
 import { bindImports } from "./imports";
 import { bindExports } from "./exports";
