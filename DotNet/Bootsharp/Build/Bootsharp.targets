@@ -85,8 +85,7 @@
         <WriteLinesToFile Lines="@(BootsharpGeneratedTypeLines)" File="@(BootsharpSourceTypes)"/>
 
         <!-- Compile generated JavaScript solution. -->
-        <Exec Command="npm install --global rollup" WorkingDirectory="$(BootsharpBuildDirectory)"/>
-        <Exec Command="rollup bootsharp-main.js -o $(BootsharpName).js -f es -g process,module"
+        <Exec Command="npx rollup bootsharp-main.js -o $(BootsharpName).js -f es -g process,module"
               WorkingDirectory="$(BootsharpBuildDirectory)"/>
 
         <!-- Publish compiled solution. -->
