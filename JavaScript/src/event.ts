@@ -51,7 +51,7 @@ export class Event<T extends unknown[]> implements EventBroadcaster<T>, EventSub
         else this.warn?.(`Failed to unsubscribe event handler with ID '${id}': handler is not subscribed.`);
     }
 
-    /** In case event was invoked at least once, returns specified arguments; undefined otherwise. */
+    /** In case event was invoked at least once, returns last payload; undefined otherwise. */
     public getLast(): T | undefined {
         return this.lastArgs;
     }
@@ -85,6 +85,6 @@ export interface EventSubscriber<T extends unknown[]> {
     /** Detaches specified handler from events emitted by this event instance.
      *  @param handler The handler to detach. */
     unsubscribe: (handler: (...args: [...T]) => void) => void;
-    /** In case event was invoked at least once, returns specified arguments; undefined otherwise. */
+    /** In case event was invoked at least once, returns last payload; undefined otherwise. */
     getLast: () => T | undefined;
 }
