@@ -16,23 +16,30 @@ export function bindImports(runtime: RuntimeAPI) {
 }
 
 function invoke(endpoint: string, args?: string[]): string {
-    return serialize(get<Invokable>(endpoint)(...deserialize(args)));
+    const invokable = get<Invokable>(endpoint);
+    const result = invokable(...deserialize(args));
+    return serialize(result);
 }
 
 function invokeVoid(endpoint: string, args?: string[]): void {
-    get<VoidInvokable>(endpoint)(...deserialize(args));
+    const invokable = get<VoidInvokable>(endpoint);
+    invokable(...deserialize(args));
 }
 
 async function invokeAsync(endpoint: string, args?: string[]): Promise<string> {
-    return serialize(await get<AsyncInvokable>(endpoint)(...deserialize(args)));
+    const invokable = get<AsyncInvokable>(endpoint);
+    const result = await invokable(...deserialize(args));
+    return serialize(result);
 }
 
 async function invokeVoidAsync(endpoint: string, args?: string[]): Promise<void> {
-    return get<AsyncVoidInvokable>(endpoint)(...deserialize(args));
+    const invokable = get<AsyncVoidInvokable>(endpoint);
+    return invokable(...deserialize(args));
 }
 
 function broadcast(endpoint: string, args?: string[]): void {
-    get<Event<[unknown?]>>(endpoint).broadcast(...deserialize(args));
+    const event = get<Event<[unknown?]>>(endpoint);
+    event.broadcast(...deserialize(args));
 }
 
 function get<T extends Binding>(endpoint: string): T {
