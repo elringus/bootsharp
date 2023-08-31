@@ -11,26 +11,28 @@ type Invokable = {
     InvokeVoidAsync: (endpoint: string, args?: string[]) => Promise<void>;
 };
 
-let cs: Invokable;
+let invokable: Invokable;
 
 export async function bindExports(runtime: RuntimeAPI) {
-    cs = (await runtime.getAssemblyExports("Bootsharp") as Exports).Invokable;
+    invokable = (await runtime.getAssemblyExports("Bootsharp") as Exports).Invokable;
 }
 
 export function invoke(endpoint: string, ...args: unknown[]): unknown {
-    return deserialize(cs.Invoke(endpoint, serialize(args)));
+    const result = invokable.Invoke(endpoint, serialize(args));
+    return deserialize(result);
 }
 
 export function invokeVoid(endpoint: string, ...args: unknown[]): void {
-    cs.InvokeVoid(endpoint, serialize(args));
+    invokable.InvokeVoid(endpoint, serialize(args));
 }
 
 export async function invokeAsync(endpoint: string, ...args: unknown[]): Promise<unknown> {
-    return deserialize(await cs.InvokeAsync(endpoint, serialize(args)));
+    const result = await invokable.InvokeAsync(endpoint, serialize(args));
+    return deserialize(result);
 }
 
 export function invokeVoidAsync(endpoint: string, ...args: unknown[]): Promise<void> {
-    return cs.InvokeVoidAsync(endpoint, serialize(args));
+    return invokable.InvokeVoidAsync(endpoint, serialize(args));
 }
 
 function serialize(args: unknown[]): string[] | undefined {
