@@ -2,7 +2,7 @@ using Xunit;
 
 namespace Bootsharp.Builder.Test;
 
-public class ResourcesTest : ContentTest
+public class ResourceTest : ContentTest
 {
     protected override string TestedContent => GeneratedResources;
 

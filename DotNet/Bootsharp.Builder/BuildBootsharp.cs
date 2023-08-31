@@ -51,7 +51,7 @@ public sealed class BuildBootsharp : Task
 
     private void GenerateResources ()
     {
-        var generator = new ResourcesGenerator();
+        var generator = new ResourceGenerator();
         var content = generator.Generate(EmbedBinaries);
         File.WriteAllText(Path.Combine(BuildDirectory, "resources.g.js"), content);
     }

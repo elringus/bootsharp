@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Bootsharp.Builder.Test;
 
-public class OtherTest : BuildTest
+public class InspectionTest : BuildTest
 {
     [Fact]
     public void AllAssembliesAreInspected ()

@@ -1,6 +1,6 @@
 ﻿namespace Bootsharp.Builder;
 
-internal sealed class ResourcesGenerator
+internal sealed class ResourceGenerator
 {
     public string Generate (bool embed)
     {
