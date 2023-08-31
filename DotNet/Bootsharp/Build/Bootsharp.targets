@@ -69,39 +69,29 @@
                         EntryAssemblyName="$(BootsharpEntryAssemblyName)"
                         EmbedBinaries="$(BootsharpEmbedBinaries)"/>
 
-        <!-- Copy bootsharp source module files to the build directory. -->
-        <Copy SourceFiles="$(BootsharpSourceDirectory)/bootsharp-main.js;
-                           $(BootsharpSourceDirectory)/bootsharp-main.d.ts"
-              DestinationFolder="$(BootsharpBuildDirectory)"/>
-
-        <!-- Append generated binding types to source declarations. -->
+        <!-- Copy bootsharp source files to the build directory. -->
         <ItemGroup>
-            <BootsharpSourceTypes Include="$(BootsharpBuildDirectory)/bootsharp-main.d.ts"/>
-            <BootsharpGeneratedTypes Include="$(BootsharpBuildDirectory)/bootsharp-bindings.d.ts"/>
+            <BootsharpSourceFiles Include="$(BootsharpSourceDirectory)/*.*"/>
         </ItemGroup>
-        <ReadLinesFromFile File="@(BootsharpGeneratedTypes)">
-            <Output TaskParameter="Lines" ItemName="BootsharpGeneratedTypeLines"/>
-        </ReadLinesFromFile>
-        <WriteLinesToFile Lines="@(BootsharpGeneratedTypeLines)" File="@(BootsharpSourceTypes)"/>
+        <Copy SourceFiles="@(BootsharpSourceFiles)" DestinationFolder="$(BootsharpBuildDirectory)"/>
+        <Move SourceFiles="$(BootsharpBuildDirectory)/bootsharp.d.ts"
+              DestinationFiles="$(BootsharpBuildDirectory)/$(BootsharpName).d.ts"/>
 
         <!-- Compile generated JavaScript solution. -->
-        <Exec Command="npx rollup bootsharp-main.js -o $(BootsharpName).js -f es -g process,module"
+        <Exec Command="npx rollup bootsharp.js -o $(BootsharpPublishDirectory)/$(BootsharpName).js -f es -g process,module"
               WorkingDirectory="$(BootsharpBuildDirectory)"/>
 
-        <!-- Publish compiled solution. -->
-        <Move SourceFiles="$(BootsharpBuildDirectory)/bootsharp-main.d.ts"
-              DestinationFiles="$(BootsharpBuildDirectory)/$(BootsharpName).d.ts"/>
-        <Copy SourceFiles="$(BootsharpBuildDirectory)/$(BootsharpName).js;
-                           $(BootsharpBuildDirectory)/$(BootsharpName).d.ts;
-                           $(BootsharpBuildDirectory)/$(BootsharpName).js.map"
-              DestinationFolder="$(BootsharpPublishDirectory)"/>
+        <!-- Publish binaries and type declarations. -->
         <ItemGroup>
             <BootsharpWasmFiles Include="$(BootsharpBuildDirectory)/*.wasm"/>
+            <BootsharpTypeFiles Include="$(BootsharpBuildDirectory)/*.d.ts"/>
         </ItemGroup>
         <RemoveDir Directories="$(BootsharpPublishDirectory)/bin"/>
         <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'"
               SourceFiles="@(BootsharpWasmFiles)"
               DestinationFolder="$(BootsharpPublishDirectory)/bin"/>
+        <Copy SourceFiles="@(BootsharpTypeFiles)"
+              DestinationFolder="$(BootsharpPublishDirectory)/types"/>
 
         <!-- Publish package file. -->
         <ItemGroup>

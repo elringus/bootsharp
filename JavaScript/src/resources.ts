@@ -1,5 +1,5 @@
 ﻿// @ts-ignore (resolved when building C# solution)
-import generated from "./bootsharp-resources";
+import generated from "./resources.g";
 import { RuntimeConfig, AssetEntry, runtime, native } from "./external";
 
 /** Resources required to boot .NET runtime. */

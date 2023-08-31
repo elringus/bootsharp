@@ -9,9 +9,9 @@ public abstract class BuildTest : IDisposable
     protected MockProject Project { get; } = new();
     protected BuildBootsharp Task => Project.BuildTask;
     protected BuildEngine Engine => (BuildEngine)Task.BuildEngine;
-    protected string GeneratedBindings => ReadGenerated("bootsharp-bindings.js");
-    protected string GeneratedDeclarations => ReadGenerated("bootsharp-bindings.d.ts");
-    protected string GeneratedResources => ReadGenerated("bootsharp-resources.js");
+    protected string GeneratedBindings => ReadGenerated("bindings.g.js");
+    protected string GeneratedDeclarations => ReadGenerated("bindings.g.d.ts");
+    protected string GeneratedResources => ReadGenerated("resources.g.js");
 
     public void Dispose ()
     {

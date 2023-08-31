@@ -4,4 +4,4 @@ import { builder, runtime, native } from "./external";
 
 export default { boot, exit, resources, dotnet: { builder, runtime, native } };
 // @ts-ignore (resolved when building C# solution)
-export * from "./bootsharp-bindings";
+export * from "./bindings.g";

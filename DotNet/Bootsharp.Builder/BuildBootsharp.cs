@@ -39,20 +39,20 @@ public sealed class BuildBootsharp : Task
     {
         var generator = new BindingGenerator(spaceBuilder, inspector);
         var content = generator.Generate();
-        File.WriteAllText(Path.Combine(BuildDirectory, "bootsharp-bindings.js"), content);
+        File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.js"), content);
     }
 
     private void GenerateDeclarations (AssemblyInspector inspector, NamespaceBuilder spaceBuilder)
     {
         var generator = new DeclarationGenerator(spaceBuilder);
         var content = generator.Generate(inspector);
-        File.WriteAllText(Path.Combine(BuildDirectory, "bootsharp-bindings.d.ts"), content);
+        File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.d.ts"), content);
     }
 
     private void GenerateResources ()
     {
         var generator = new ResourcesGenerator();
         var content = generator.Generate(EmbedBinaries);
-        File.WriteAllText(Path.Combine(BuildDirectory, "bootsharp-resources.js"), content);
+        File.WriteAllText(Path.Combine(BuildDirectory, "resources.g.js"), content);
     }
 }
