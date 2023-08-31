@@ -1,3 +1,4 @@
+using System;
 using Xunit;
 
 namespace Bootsharp.Builder.Test;
@@ -7,31 +8,36 @@ public class ResourceTest : ContentTest
     protected override string TestedContent => GeneratedResources;
 
     [Fact]
-    public void ResourceNamesAreWritten ()
+    public void EntryAssemblyNameIsWritten ()
     {
         AddAssembly("Foo.dll");
         Task.Execute();
-        Contains("exports.getBootUris = () => ({");
-        Contains("wasm: \"dotnet.wasm\"");
-        Contains("entryAssembly: \"Foo.dll\"");
-        Contains("assemblies: [");
-        Contains("Foo.dll");
-        Contains("Bootsharp.dll");
+        Contains("entryAssemblyName: \"Foo.dll\"");
     }
 
     [Fact]
     public void BinariesEmbeddedWhenEnabled ()
     {
+        AddAssembly("Foo.dll");
         Task.EmbedBinaries = true;
         Task.Execute();
-        Assert.NotEmpty(Matches("TODO: embed bins regex"));
+        Contains($"""wasm: "{Convert.ToBase64String(Project.MockWasmBinary)}",""");
+        Contains("{ name: \"Foo.wasm\", content: \"");
+        Contains("{ name: \"Bootsharp.wasm\", content: \"");
+        Contains("{ name: \"System.Runtime.wasm\", content: \"");
+        Contains("{ name: \"System.Private.CoreLib.wasm\", content: \"");
     }
 
     [Fact]
     public void BinariesNotEmbeddedWhenDisabled ()
     {
+        AddAssembly("Foo.dll");
         Task.EmbedBinaries = false;
         Task.Execute();
-        Assert.Empty(Matches("TODO: embed bins regex"));
+        Contains("wasm: undefined");
+        Contains("""{ name: "Foo.wasm", content: undefined""");
+        Contains("""{ name: "Bootsharp.wasm", content: undefined""");
+        Contains("""{ name: "System.Runtime.wasm", content: undefined""");
+        Contains("""{ name: "System.Private.CoreLib.wasm", content: undefined""");
     }
 }

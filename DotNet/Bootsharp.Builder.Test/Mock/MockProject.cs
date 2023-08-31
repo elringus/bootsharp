@@ -8,6 +8,7 @@ namespace Bootsharp.Builder.Test;
 public sealed class MockProject : IDisposable
 {
     public BuildBootsharp BuildTask { get; }
+    public byte[] MockWasmBinary { get; } = "MockWasmBinary"u8.ToArray();
 
     private readonly MockCompiler compiler = new();
 
@@ -38,6 +39,7 @@ public sealed class MockProject : IDisposable
         Directory.CreateDirectory(BuildTask.BuildDirectory);
         foreach (var path in GetReferencePaths())
             File.Copy(path, Path.Combine(BuildTask.BuildDirectory, Path.GetFileName(path)), true);
+        File.WriteAllBytes(Path.Combine(BuildTask.BuildDirectory, "dotnet.native.wasm"), MockWasmBinary);
     }
 
     private static string[] GetReferencePaths ()
