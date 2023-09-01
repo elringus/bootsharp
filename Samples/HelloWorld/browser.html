@@ -3,7 +3,7 @@
 
 <!DOCTYPE html>
 
-Open console (Ctrl+Shift+I) to see the output.
+<h1 id="msg">Loading...</h1>
 
 <script type="module">
 
@@ -16,7 +16,8 @@ Open console (Ctrl+Shift+I) to see the output.
     	// Initializing dotnet runtime and invoking entry point.
         await bootsharp.boot();
         // Invoking 'GetName()' C# method defined in 'HelloWorld' assembly.
-        console.log(`Welcome, ${HelloWorld.getName()}!`);
+        const name = HelloWorld.getName();
+        document.getElementById("msg").innerHTML = `Hello ${name}!`;
     };
 
 </script>

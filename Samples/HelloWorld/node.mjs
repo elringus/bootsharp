@@ -10,5 +10,6 @@ HelloWorld.getHostName = () => "Node.js";
     // Initializing dotnet runtime and invoking entry point.
     await bootsharp.boot();
     // Invoking 'GetName()' C# method defined in 'HelloWorld' assembly.
-    console.log(`Welcome, ${HelloWorld.getName()}!`);
+    const name = HelloWorld.getName();
+    console.log(`Hello ${name}!`);
 })();
