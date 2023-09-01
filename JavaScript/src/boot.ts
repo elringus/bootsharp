@@ -1,5 +1,5 @@
 import { RuntimeConfig, RuntimeAPI, dotnet, builder } from "./external";
-import { BootResources, buildConfig } from "./resources";
+import { buildConfig } from "./resources";
 import { bindImports } from "./imports";
 import { bindExports } from "./exports";
 
@@ -16,15 +16,12 @@ export type BootCustom = {
 }
 
 /** Initializes .NET runtime and binds C# APIs.
- *  @param resources
- *  Use specified WASM module and assembly binaries to initialize the runtime.
- *  Required when <code>BootsharpEmbedBinaries</code> C# build option is disabled.
  *  @param custom
  *  Specify to customize the boot process.
  *  @return
  *  Promise that resolves into .NET runtime instance. */
-export async function boot(resources?: BootResources, custom?: BootCustom): Promise<RuntimeAPI> {
-    const config = custom?.config ?? buildConfig(resources);
+export async function boot(custom?: BootCustom): Promise<RuntimeAPI> {
+    const config = custom?.config ?? buildConfig();
     const runtime = await custom?.create?.(config) || await builder.withConfig(config).create();
     await custom?.import?.(runtime) || bindImports(runtime);
     await builder.run();
