@@ -14,7 +14,7 @@ internal sealed class SpaceObjectBuilder
         BuildObjectNamesForNamespace(space);
         foreach (var obj in names)
             if (declaredObjects.Add(obj))
-                js = JoinLines($"exports.{obj} = {{}};", js);
+                js = JoinLines(0, $"exports.{obj} = {{}};", js);
         return js;
     }
 

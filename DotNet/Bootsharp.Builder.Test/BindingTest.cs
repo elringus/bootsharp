@@ -7,6 +7,14 @@ public class BindingTest : ContentTest
     protected override string TestedContent => GeneratedBindings;
 
     [Fact]
+    public void InteropFunctionsImported ()
+    {
+        Task.Execute();
+        Contains("""import { invoke, invokeVoid, invokeAsync, invokeVoidAsync } from "./exports";""");
+        Contains("""import { Event } from "./event";""");
+    }
+
+    [Fact]
     public void LibraryExportsNamespaceObject ()
     {
         AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
@@ -58,7 +66,7 @@ public class BindingTest : ContentTest
     {
         AddAssembly("foo.asm.dll", With("Foo.Bar", "[JSInvokable] public static void Nya () { }"));
         Task.Execute();
-        Contains("exports.Foo.Bar.nya = () => exports.invoke('foo.asm', 'Nya');");
+        Contains("exports.Foo.Bar.nya = () => invokeVoid('foo.asm.Foo.Bar.MockClass.Nya');");
     }
 
     [Fact]
@@ -74,16 +82,16 @@ public class BindingTest : ContentTest
     {
         AddAssembly(With("Asm", "[JSEvent] public static void OnFoo (string bar) { }"));
         Task.Execute();
-        Contains("exports.Asm.onFoo = new exports.Event();");
+        Contains("exports.Asm.onFoo = new Event();");
     }
 
     [Fact]
     public void BindingsFromMultipleSpacesAssignedToRespectiveObjects ()
     {
-        AddAssembly("foo.asm.dll", With("Foo", "[JSInvokable] public static void Foo () { }"));
+        AddAssembly("foo.asm.dll", With("Foo", "[JSInvokable] public static int Foo () => 0;"));
         AddAssembly("bar.nya.asm.dll", With("Bar.Nya", "[JSFunction] public static void Fun () { }"));
         Task.Execute();
-        Contains("exports.Foo.foo = () => exports.invoke('foo.asm', 'Foo');");
+        Contains("exports.Foo.foo = () => invoke('foo.asm.Foo.MockClass.Foo');");
         Contains("exports.Bar.Nya.fun = undefined;");
     }
 
@@ -91,10 +99,10 @@ public class BindingTest : ContentTest
     public void WhenNoSpaceBindingsAreAssignedToBindingsObject ()
     {
         AddAssembly("asm.dll",
-            With("[JSInvokable] public static void Nya () { }"),
+            With("[JSInvokable] public static Task<int> Nya () => Task.FromResult(0);"),
             With("[JSFunction] public static void Fun () { }"));
         Task.Execute();
-        Contains("exports.Bindings.nya = () => exports.invoke('asm', 'Nya');");
+        Contains("exports.Bindings.nya = () => invokeAsync('asm.MockClass.Nya');");
         Contains("exports.Bindings.fun = undefined;");
     }
 
@@ -102,11 +110,11 @@ public class BindingTest : ContentTest
     public void NamespaceAttributeOverrideObjectNames ()
     {
         AddAssembly("asm.dll",
-            With(@"[assembly:JSNamespace(@""Foo\.Bar\.(\S+)"", ""$1"")]", false),
-            With("Foo.Bar.Nya", "[JSInvokable] public static void GetNya () { }"),
+            With("""[assembly:JSNamespace(@"Foo\.Bar\.(\S+)", "$1")]""", false),
+            With("Foo.Bar.Nya", "[JSInvokable] public static Task GetNya () => Task.CompletedTask;"),
             With("Foo.Bar.Fun", "[JSFunction] public static void OnFun () { }"));
         Task.Execute();
-        Contains("exports.Nya.getNya = () => exports.invoke('asm', 'GetNya');");
+        Contains("exports.Nya.getNya = () => invokeVoidAsync('asm.Foo.Bar.Nya.MockClass.GetNya');");
         Contains("exports.Fun.onFun = undefined;");
     }
 
@@ -115,7 +123,7 @@ public class BindingTest : ContentTest
     {
         AddAssembly(With("[JSInvokable] public static void Fun (string function) { }"));
         Task.Execute();
-        Contains("fun = (fn) => exports.invoke");
+        Contains("fun = (fn) => invoke");
     }
 
     [Fact]
@@ -123,10 +131,10 @@ public class BindingTest : ContentTest
     {
         AddAssembly(
             With("[JSInvokable] public static Task Asy () => default;"),
-            With("[JSInvokable] public static ValueTask AsyValue () => default;"));
+            With("[JSInvokable] public static Task<string> AsyValue () => default;"));
         Task.Execute();
-        Contains("asy = () => exports.invokeAsync");
-        Contains("asyValue = () => exports.invokeAsync");
+        Contains("asy = () => invokeVoidAsync");
+        Contains("asyValue = () => invokeAsync");
     }
 
     [Fact]

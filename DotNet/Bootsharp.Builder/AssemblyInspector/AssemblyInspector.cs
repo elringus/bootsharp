@@ -96,6 +96,7 @@ internal sealed class AssemblyInspector(NamespaceBuilder spaceBuilder) : IDispos
         Name = info.Name,
         Assembly = info.DeclaringType!.Assembly.GetName().Name!,
         Namespace = spaceBuilder.Build(info.DeclaringType),
+        DeclaringName = info.DeclaringType.FullName!,
         Arguments = info.GetParameters().Select(CreateArgument).ToArray(),
         ReturnType = typeConverter.ToTypeScript(info.ReturnType, GetNullability(info.ReturnParameter)),
         ReturnNullable = IsNullable(info),

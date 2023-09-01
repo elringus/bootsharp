@@ -8,7 +8,7 @@ namespace Bootsharp.Builder.Test;
 public sealed class MockProject : IDisposable
 {
     public BuildBootsharp BuildTask { get; }
-    public byte[] MockWasmBinary { get; } = "MockWasmBinary"u8.ToArray();
+    public byte[] MockWasmBinary { get; } = "MockWasmContent"u8.ToArray();
 
     private readonly MockCompiler compiler = new();
 
@@ -31,7 +31,7 @@ public sealed class MockProject : IDisposable
         BuildDirectory = CreateRandomTestDirectory(),
         EntryAssemblyName = "System.Runtime.dll",
         BuildEngine = BuildEngine.Create(),
-        EmbedBinaries = true
+        EmbedBinaries = false
     };
 
     private void CreateBuildResources ()

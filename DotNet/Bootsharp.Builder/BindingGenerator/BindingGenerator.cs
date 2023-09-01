@@ -11,7 +11,9 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder, AssemblyIn
     public string Generate ()
     {
         objectBuilder.Reset();
-        return JoinLines(
+        return JoinLines(0,
+            """import { invoke, invokeVoid, invokeAsync, invokeVoidAsync } from "./exports";""",
+            """import { Event } from "./event";""",
             JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Invokable).Select(EmitInvokable)),
             JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Function).Select(EmitFunction)),
             JoinLines(inspector.Methods.Where(m => m.Type == MethodType.Event).Select(EmitEvent)),
@@ -21,10 +23,13 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder, AssemblyIn
 
     private string EmitInvokable (Method method)
     {
+        var funcName = method.Async
+            ? (method.ReturnType == "Promise<void>" ? "invokeVoidAsync" : "invokeAsync")
+            : (method.ReturnType == "void" ? "invokeVoid" : "invoke");
         var funcArgs = string.Join(", ", method.Arguments.Select(a => a.Name));
-        var methodArgs = $"'{method.Assembly}', '{method.Name}'" + (funcArgs == "" ? "" : $", {funcArgs}");
-        var invoke = method.Async ? "invokeAsync" : "invoke";
-        var body = $"exports.{invoke}({methodArgs})";
+        var endpoint = $"{method.Assembly}.{method.DeclaringName}.{method.Name}";
+        var methodArgs = $"'{endpoint}'" + (funcArgs == "" ? "" : $", {funcArgs}");
+        var body = $"{funcName}({methodArgs})";
         var js = $"exports.{method.Namespace}.{ToFirstLower(method.Name)} = ({funcArgs}) => {body};";
         return objectBuilder.EnsureNamespaceObjectsDeclared(method.Namespace, js);
     }
@@ -37,7 +42,7 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder, AssemblyIn
 
     private string EmitEvent (Method method)
     {
-        var js = $"exports.{method.Namespace}.{ToFirstLower(method.Name)} = new exports.Event();";
+        var js = $"exports.{method.Namespace}.{ToFirstLower(method.Name)} = new Event();";
         return objectBuilder.EnsureNamespaceObjectsDeclared(method.Namespace, js);
     }
 }

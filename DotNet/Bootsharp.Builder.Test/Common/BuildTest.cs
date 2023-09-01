@@ -16,7 +16,6 @@ public abstract class BuildTest : IDisposable
     public void Dispose ()
     {
         Project.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     protected void AddAssembly (string assemblyName, params MockSource[] sources)
