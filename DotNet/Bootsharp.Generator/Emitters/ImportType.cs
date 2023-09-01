@@ -75,17 +75,17 @@ internal sealed class ImportType(ITypeSymbol type, AttributeData attribute)
         }
     }
 
-    private string BuildInvoke (IMethodSymbol method, string methodName, Compilation compilation)
+    private string BuildInvoke (IMethodSymbol method, string function, Compilation compilation)
     {
         var @event = IsEvent(method.Name, attribute);
         var async = method.ReturnType.Name == "Task";
-        var assembly = ConvertNamespace(BuildBindingNamespace(method.ContainingType), compilation.Assembly);
-        var invokeMethod = GetInvokeMethod();
-        var invokeParameters = GetInvokeParameters();
+        var module = ConvertNamespace(BuildBindingNamespace(method.ContainingType), compilation.Assembly);
+        var invokeFunction = GetInvokeFunction();
+        var invokeArgs = GetInvokeParameters();
         var handle = @event ? "Event" : "Function";
-        return $"{handle}.{invokeMethod}({invokeParameters})";
+        return $"{handle}.{invokeFunction}({invokeArgs})";
 
-        string GetInvokeMethod ()
+        string GetInvokeFunction ()
         {
             if (@event) return "Broadcast";
             if (method.ReturnsVoid) return "InvokeVoid";
@@ -98,7 +98,7 @@ internal sealed class ImportType(ITypeSymbol type, AttributeData attribute)
         string GetInvokeParameters ()
         {
             var parameters = method.Parameters.Select(p => p.Name).ToArray();
-            var args = $"\"{assembly}/{ToFirstLower(methodName)}\"";
+            var args = $"\"{module}.{ToFirstLower(function)}\"";
             if (parameters.Length == 0) return args;
             args += $", {string.Join(", ", parameters)}";
             return args;

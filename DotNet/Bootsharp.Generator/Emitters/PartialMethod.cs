@@ -30,9 +30,9 @@ internal sealed class PartialMethod(MethodDeclarationSyntax syntax, bool @event)
     private string EmitBody (string @namespace)
     {
         var invokeMethod = GetInvokeMethod();
-        var invokeParameters = GetInvokeParameters(@namespace);
+        var invokeArgs = GetInvokeArgs(@namespace);
         var handle = @event ? "Event" : "Function";
-        return $"{handle}.{invokeMethod}({invokeParameters})";
+        return $"{handle}.{invokeMethod}({invokeArgs})";
     }
 
     private string GetInvokeMethod ()
@@ -46,9 +46,9 @@ internal sealed class PartialMethod(MethodDeclarationSyntax syntax, bool @event)
             $"Invoke<{returnType}>";
     }
 
-    private string GetInvokeParameters (string assembly)
+    private string GetInvokeArgs (string module)
     {
-        var args = $"\"{assembly}/{ToFirstLower(syntax.Identifier.ToString())}\"";
+        var args = $"\"{module}.{ToFirstLower(syntax.Identifier.ToString())}\"";
         if (syntax.ParameterList.Parameters.Count == 0) return args;
         var ids = syntax.ParameterList.Parameters.Select(p => p.Identifier);
         args += $", {string.Join(", ", ids)}";

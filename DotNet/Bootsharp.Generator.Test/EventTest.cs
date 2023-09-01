@@ -21,7 +21,7 @@ public static class EventTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "OtherAssembly.TestReflection", "OtherAssembly")]
                 internal static void RegisterDynamicDependencies () { }
 
-                partial void OnBar () => Event.Broadcast("Bindings/onBar");
+                partial void OnBar () => Event.Broadcast("Bindings.onBar");
             }
             """
         },
@@ -40,7 +40,7 @@ public static class EventTest
 
             public static partial class Foo
             {
-                public static partial void OnBar (string a, int b) => Event.Broadcast("Space/onBar", a, b);
+                public static partial void OnBar (string a, int b) => Event.Broadcast("Space.onBar", a, b);
             }
             """
         }
