@@ -2,15 +2,16 @@
 
 namespace Bootsharp.Generator.Test;
 
-public static class EventTest
+public static class InvokableTest
 {
     public static IEnumerable<object[]> Data { get; } = new[] {
+        // Generates dynamic dependencies registration.
         new object[] {
             """
             partial class Foo
             {
-                [JSEvent]
-                partial void OnBar ();
+                [JSInvokable]
+                public static void Bar ();
             }
             """,
             """
@@ -19,31 +20,28 @@ public static class EventTest
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
-
-                partial void OnBar () => Event.Broadcast("Bindings.onBar");
             }
             """
         },
+        // Generates dynamic dependencies registration under namespace.
         new object[] {
             """
             namespace Space;
 
-            public static partial class Foo
+            partial class Foo
             {
-                [JSEvent]
-                public static partial void OnBar (string a, int b);
+                [JSInvokable]
+                public static void Bar ();
             }
             """,
             """
             namespace Space;
 
-            public static partial class Foo
+            partial class Foo
             {
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Space.Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
-
-                public static partial void OnBar (string a, int b) => Event.Broadcast("Space.onBar", a, b);
             }
             """
         }

@@ -27,6 +27,10 @@ public static class ImportTest
 
             public class JSFoo : global::Bindings.IFoo
             {
+                [ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
+                internal static void RegisterDynamicDependencies () { }
+
                 [JSFunction] public static void NotifyFoo (global::System.String foo) => Function.InvokeVoid("Foo.notifyFoo", foo);
                 [JSFunction] public static global::System.Boolean Bar () => Function.Invoke<global::System.Boolean>("Foo.bar");
                 [JSFunction] public static global::System.Threading.Tasks.Task Nya () => Function.InvokeVoidAsync("Foo.nya");
@@ -56,6 +60,10 @@ public static class ImportTest
 
             public class JSFoo : global::Bindings.IFoo
             {
+                [ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
+                internal static void RegisterDynamicDependencies () { }
+
                 [JSEvent] public static void NotifyFoo (global::System.String foo) => Event.Broadcast("Foo.notifyFoo", foo);
 
                 void global::Bindings.IFoo.NotifyFoo (global::System.String foo) => NotifyFoo(foo);
@@ -79,6 +87,10 @@ public static class ImportTest
 
             public class JSFoo : global::Bindings.IFoo
             {
+                [ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
+                internal static void RegisterDynamicDependencies () { }
+
                 [JSEvent] public static void OnFoo (global::System.String foo) => Event.Broadcast("Foo.onFoo", foo);
 
                 void global::Bindings.IFoo.NotifyFoo (global::System.String foo) => OnFoo(foo);
@@ -103,6 +115,10 @@ public static class ImportTest
 
             public class JSFoo : global::Bindings.IFoo
             {
+                [ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
+                internal static void RegisterDynamicDependencies () { }
+
                 [JSFunction] public static void NahFoo (global::System.String foo) => Try(Function.InvokeVoid("Foo.nahFoo", foo));
                 [JSFunction] public static global::System.Boolean Bar () => Try(Function.Invoke<global::System.Boolean>("Foo.bar"));
 
@@ -126,6 +142,10 @@ public static class ImportTest
 
             public class JSFoo : global::Bindings.IFoo
             {
+                [ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
+                internal static void RegisterDynamicDependencies () { }
+
                 [JSFunction] public static void Foo () => Function.InvokeVoid("Foo.foo");
 
                 void global::Bindings.IFoo.Foo () => Foo();
@@ -150,6 +170,10 @@ public static class ImportTest
 
             public class JSFoo : global::A.B.C.IFoo
             {
+                [ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
+                internal static void RegisterDynamicDependencies () { }
+
                 [JSFunction] public static void F () => Function.InvokeVoid("Bar.f");
 
                 void global::A.B.C.IFoo.F () => F();

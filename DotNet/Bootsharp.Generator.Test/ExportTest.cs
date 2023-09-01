@@ -37,6 +37,10 @@ public static class ExportTest
                     JSFoo.handler = handler;
                 }
 
+                [ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
+                internal static void RegisterDynamicDependencies () { }
+
                 [JSInvokable] public static void Foo (global::System.String? foo) => handler.Foo(foo);
                 [JSInvokable] public static global::System.Threading.Tasks.ValueTask Bar () => handler.Bar();
                 [JSInvokable] public static global::Bindings.Item? Baz () => handler.Baz();
@@ -69,6 +73,10 @@ public static class ExportTest
                     JSFoo.handler = handler;
                 }
 
+                [ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
+                internal static void RegisterDynamicDependencies () { }
+
                 [JSInvokable] public static void Bar (global::System.String foo) => Try(handler.Foo(foo));
             }
             """
@@ -97,6 +105,10 @@ public static class ExportTest
                 {
                     JSFoo.handler = handler;
                 }
+
+                [ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
+                internal static void RegisterDynamicDependencies () { }
 
                 [JSInvokable] public static void Foo () => handler.Foo();
             }

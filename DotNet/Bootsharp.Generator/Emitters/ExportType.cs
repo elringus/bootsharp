@@ -18,13 +18,14 @@ internal sealed class ExportType(ITypeSymbol type, AttributeData attribute)
                 .Select(t => new ExportType(t, attribute))
             : Array.Empty<ExportType>();
 
-    public string EmitSource ()
+    public string EmitSource (Compilation compilation)
     {
         var specType = BuildFullName(type);
         var implType = BuildBindingType(type);
+        var space = BuildBindingNamespace(type);
         return EmitCommon
         ($$"""
-           namespace {{BuildBindingNamespace(type)}};
+           namespace {{space}};
 
            public class {{implType}}
            {
@@ -34,6 +35,10 @@ internal sealed class ExportType(ITypeSymbol type, AttributeData attribute)
                {
                    {{implType}}.handler = handler;
                }
+
+               [ModuleInitializer]
+               [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "{{space}}.{{implType}}", "{{compilation.Assembly.Name}}")]
+               internal static void RegisterDynamicDependencies () { }
 
                {{string.Join("\n    ", type.GetMembers().OfType<IMethodSymbol>().Select(EmitMethod))}}
            }

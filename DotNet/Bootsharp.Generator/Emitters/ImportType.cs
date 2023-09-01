@@ -23,13 +23,18 @@ internal sealed class ImportType(ITypeSymbol type, AttributeData attribute)
         var specType = BuildFullName(type);
         var implType = BuildBindingType(type);
         var methods = type.GetMembers().OfType<IMethodSymbol>().ToArray();
+        var space = BuildBindingNamespace(type);
 
         return EmitCommon
         ($$"""
-           namespace {{BuildBindingNamespace(type)}};
+           namespace {{space}};
 
            public class {{implType}} : {{specType}}
            {
+               [ModuleInitializer]
+               [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "{{space}}.{{implType}}", "{{compilation.Assembly.Name}}")]
+               internal static void RegisterDynamicDependencies () { }
+
                {{string.Join("\n    ", methods.Select(EmitBinding))}}
 
                {{string.Join("\n    ", methods.Select(EmitSpec))}}

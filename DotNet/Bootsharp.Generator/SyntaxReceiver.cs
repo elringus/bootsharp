@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -8,6 +9,7 @@ namespace Bootsharp.Generator;
 
 internal sealed class SyntaxReceiver : ISyntaxContextReceiver
 {
+    public List<PartialClass> InvokableClasses { get; } = new();
     public List<PartialClass> FunctionClasses { get; } = new();
     public List<PartialClass> EventClasses { get; } = new();
 
@@ -19,6 +21,8 @@ internal sealed class SyntaxReceiver : ISyntaxContextReceiver
 
     private void VisitClass (ClassDeclarationSyntax syntax)
     {
+        var invokable = GetMethodsWithAttribute(syntax, InvokableAttribute);
+        if (invokable.Count > 0) InvokableClasses.Add(new PartialClass(syntax, Array.Empty<PartialMethod>()));
         var functions = GetMethodsWithAttribute(syntax, FunctionAttribute);
         if (functions.Count > 0) FunctionClasses.Add(new PartialClass(syntax, functions));
         var events = GetMethodsWithAttribute(syntax, EventAttribute);

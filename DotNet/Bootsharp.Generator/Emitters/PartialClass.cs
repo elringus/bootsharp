@@ -15,6 +15,7 @@ internal sealed class PartialClass(ClassDeclarationSyntax syntax, IReadOnlyList<
         EmitUsings() +
         WrapNamespace(
             EmitHeader() +
+            EmitDynamicDependenciesRegistration(compilation) +
             EmitMethods(compilation) +
             EmitFooter()
         )
@@ -28,12 +29,26 @@ internal sealed class PartialClass(ClassDeclarationSyntax syntax, IReadOnlyList<
         return string.IsNullOrEmpty(result) ? "" : result + "\n\n";
     }
 
-    private string EmitHeader () => $"{syntax.Modifiers} class {syntax.Identifier}\n{{\n";
+    private string EmitHeader () => $"{syntax.Modifiers} class {syntax.Identifier}\n{{";
+
+    private string EmitDynamicDependenciesRegistration (Compilation compilation)
+    {
+        var space = syntax.Parent is BaseNamespaceDeclarationSyntax decl ? $"{decl.Name}." : "";
+        var fullClassName = space + syntax.Identifier;
+        var assemblyName = compilation.Assembly.Name;
+        return $$"""
+
+                     [ModuleInitializer]
+                     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "{{fullClassName}}", "{{assemblyName}}")]
+                     internal static void RegisterDynamicDependencies () { }
+                 """;
+    }
 
     private string EmitMethods (Compilation compilation)
     {
+        if (methods.Count == 0) return "";
         var sources = methods.Select(m => "    " + m.EmitSource(compilation));
-        return string.Join("\n", sources);
+        return "\n\n" + string.Join("\n", sources);
     }
 
     private string EmitFooter () => "\n}";
@@ -44,7 +59,8 @@ internal sealed class PartialClass(ClassDeclarationSyntax syntax, IReadOnlyList<
             return $$"""
                      namespace {{space.Name}}
                      {
-                         {{string.Join("\n    ", source.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None))}}
+                         {{string.Join("\n", source.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None)
+                             .Select((s, i) => i > 0 && s.Length > 0 ? "    " + s : s))}}
                      }
                      """;
         if (syntax.Parent is FileScopedNamespaceDeclarationSyntax fileSpace)

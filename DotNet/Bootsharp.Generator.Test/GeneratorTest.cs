@@ -17,6 +17,7 @@ public class GeneratorTest
     private class Verifier<T> : CSharpSourceGeneratorTest<T, XUnitVerifier>
         where T : ISourceGenerator, new()
     {
+        protected override string DefaultTestProjectName => "GeneratorTest";
         protected override bool IsCompilerDiagnosticIncluded (Diagnostic _, CompilerDiagnostics __) => false;
     }
 
@@ -47,6 +48,10 @@ public class GeneratorTest
             """;
         await verifier.RunAsync();
     }
+
+    [Theory, MemberData(nameof(FunctionTest.Data), MemberType = typeof(InvokableTest))]
+    public Task PartialInvokableAreImplemented (string source, string expected)
+        => Verify(source, expected, "FooInvokable.g.cs");
 
     [Theory, MemberData(nameof(FunctionTest.Data), MemberType = typeof(FunctionTest))]
     public Task PartialFunctionsAreImplemented (string source, string expected)
