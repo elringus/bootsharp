@@ -1,6 +1,5 @@
 ﻿using Xunit;
-using static Bootsharp.EndpointBuilder;
-using static Bootsharp.EndpointResolver;
+using static Bootsharp.Endpoint;
 
 namespace Bootsharp.Test;
 
@@ -9,8 +8,8 @@ public class EndpointTest
     [Fact]
     public void BuildsCorrectMethodEndpoint ()
     {
-        Assert.Equal("Asm/Space/Class/Method", BuildInvokable("Asm", "Space", "Class", "Method"));
-        Assert.Equal("Foo.Bar.Baz/Nya.Far/Class.Nested/Method", BuildInvokable("Foo.Bar.Baz", "Nya.Far", "Class.Nested", "Method"));
+        Assert.Equal("Asm/Space.Class/Method", BuildInvokable("Asm", "Space.Class", "Method"));
+        Assert.Equal("Foo.Bar.Baz/Nya.Far.Class.Nested/Method", BuildInvokable("Foo.Bar.Baz", "Nya.Far.Class.Nested", "Method"));
     }
 
     [Fact]
@@ -23,8 +22,8 @@ public class EndpointTest
     [Fact]
     public void CanResolveValidMethodEndpoint ()
     {
-        Assert.Equal(("Asm", "Space", "Class", "Method"), ResolveInvokable("Asm/Space/Class/Method"));
-        Assert.Equal(("Foo.Bar.Baz", "Nya.Far", "Class.Nested", "Method"), ResolveInvokable("Foo.Bar.Baz/Nya.Far/Class.Nested/Method"));
+        Assert.Equal(("Asm", "Space.Class", "Method"), ResolveInvokable("Asm/Space.Class/Method"));
+        Assert.Equal(("Foo.Bar.Baz", "Nya.Far.Class.Nested", "Method"), ResolveInvokable("Foo.Bar.Baz/Nya.Far.Class.Nested/Method"));
     }
 
     [Fact]
@@ -34,8 +33,8 @@ public class EndpointTest
         Assert.Throws<Error>(() => ResolveInvokable("/"));
         Assert.Throws<Error>(() => ResolveInvokable("Foo"));
         Assert.Throws<Error>(() => ResolveInvokable("Foo/Bar"));
-        Assert.Throws<Error>(() => ResolveInvokable("Foo/Bar/Baz"));
-        Assert.Throws<Error>(() => ResolveInvokable("Foo/Bar/Baz/"));
+        Assert.Throws<Error>(() => ResolveInvokable("Foo/Bar.Baz"));
+        Assert.Throws<Error>(() => ResolveInvokable("Foo/Bar.Baz/"));
         Assert.Throws<Error>(() => ResolveInvokable("Foo//Nya"));
         Assert.Throws<Error>(() => ResolveInvokable("Foo/ /Nya"));
         Assert.Throws<Error>(() => ResolveInvokable("/Foo/Bar/Nya"));

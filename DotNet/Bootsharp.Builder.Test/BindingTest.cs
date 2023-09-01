@@ -66,7 +66,7 @@ public class BindingTest : ContentTest
     {
         AddAssembly("foo.asm.dll", With("Foo.Bar", "[JSInvokable] public static void Nya () { }"));
         Task.Execute();
-        Contains("exports.Foo.Bar.nya = () => invokeVoid('foo.asm.Foo.Bar.MockClass.Nya');");
+        Contains("exports.Foo.Bar.nya = () => invokeVoid('foo.asm/Foo.Bar.MockClass/Nya');");
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public class BindingTest : ContentTest
         AddAssembly("foo.asm.dll", With("Foo", "[JSInvokable] public static int Foo () => 0;"));
         AddAssembly("bar.nya.asm.dll", With("Bar.Nya", "[JSFunction] public static void Fun () { }"));
         Task.Execute();
-        Contains("exports.Foo.foo = () => invoke('foo.asm.Foo.MockClass.Foo');");
+        Contains("exports.Foo.foo = () => invoke('foo.asm/Foo.MockClass/Foo');");
         Contains("exports.Bar.Nya.fun = undefined;");
     }
 
@@ -102,7 +102,7 @@ public class BindingTest : ContentTest
             With("[JSInvokable] public static Task<int> Nya () => Task.FromResult(0);"),
             With("[JSFunction] public static void Fun () { }"));
         Task.Execute();
-        Contains("exports.Bindings.nya = () => invokeAsync('asm.MockClass.Nya');");
+        Contains("exports.Bindings.nya = () => invokeAsync('asm/MockClass/Nya');");
         Contains("exports.Bindings.fun = undefined;");
     }
 
@@ -114,7 +114,7 @@ public class BindingTest : ContentTest
             With("Foo.Bar.Nya", "[JSInvokable] public static Task GetNya () => Task.CompletedTask;"),
             With("Foo.Bar.Fun", "[JSFunction] public static void OnFun () { }"));
         Task.Execute();
-        Contains("exports.Nya.getNya = () => invokeVoidAsync('asm.Foo.Bar.Nya.MockClass.GetNya');");
+        Contains("exports.Nya.getNya = () => invokeVoidAsync('asm/Foo.Bar.Nya.MockClass/GetNya');");
         Contains("exports.Fun.onFun = undefined;");
     }
 

@@ -103,6 +103,8 @@ public class GeneratorTest
          #nullable enable
          #pragma warning disable
          using Bootsharp;
+         using System.Diagnostics.CodeAnalysis;
+         using System.Runtime.CompilerServices;
          {expected}
          #pragma warning restore
          #nullable restore

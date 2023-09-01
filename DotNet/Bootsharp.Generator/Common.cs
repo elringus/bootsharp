@@ -27,6 +27,8 @@ internal static class Common
             #nullable enable
             #pragma warning disable
             using Bootsharp;
+            using System.Diagnostics.CodeAnalysis;
+            using System.Runtime.CompilerServices;
             {source}
             #pragma warning restore
             #nullable restore

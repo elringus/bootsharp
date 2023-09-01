@@ -47,7 +47,7 @@ function get<T extends Binding>(endpoint: string): T {
 }
 
 function cache(endpoint: string): Binding {
-    const binding = endpoint.split(".").reduce((x, y) => x[y], bindings);
+    const binding = endpoint.replace("/", ".").split(".").reduce((x, y) => x[y], bindings);
     cached.set(endpoint, binding);
     return binding;
 }

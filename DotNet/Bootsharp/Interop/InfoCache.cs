@@ -17,10 +17,10 @@ internal static class InfoCache
 
     private static InvokableInfo Reflect (string endpoint)
     {
-        var (assemblyName, @namespace, className, methodName) = EndpointResolver.ResolveInvokable(endpoint);
+        var (assemblyName, className, methodName) = Endpoint.ResolveInvokable(endpoint);
         var assembly = TryLoadAssembly(assemblyName);
-        var @class = assembly.GetType($"{@namespace}.{className}")
-                     ?? throw new Error($"Failed to reflect '{endpoint}': '{@namespace}.{className}' class not found.");
+        var @class = assembly.GetType(className)
+                     ?? throw new Error($"Failed to reflect '{endpoint}': '{className}' class not found.");
         var method = @class.GetMethod(methodName)
                      ?? throw new Error($"Failed to reflect '{endpoint}': '{methodName}' method not found.");
         var taskResult = typeof(Task).IsAssignableFrom(method.ReturnType)

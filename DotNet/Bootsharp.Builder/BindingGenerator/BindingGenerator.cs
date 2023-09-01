@@ -27,7 +27,7 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder, AssemblyIn
             ? (method.ReturnType == "Promise<void>" ? "invokeVoidAsync" : "invokeAsync")
             : (method.ReturnType == "void" ? "invokeVoid" : "invoke");
         var funcArgs = string.Join(", ", method.Arguments.Select(a => a.Name));
-        var endpoint = $"{method.Assembly}.{method.DeclaringName}.{method.Name}";
+        var endpoint = $"{method.Assembly}/{method.DeclaringName}/{method.Name}";
         var methodArgs = $"'{endpoint}'" + (funcArgs == "" ? "" : $", {funcArgs}");
         var body = $"{funcName}({methodArgs})";
         var js = $"exports.{method.Namespace}.{ToFirstLower(method.Name)} = ({funcArgs}) => {body};";

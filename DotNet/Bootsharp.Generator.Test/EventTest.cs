@@ -16,6 +16,11 @@ public static class EventTest
             """
             partial class Foo
             {
+                [ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Program", "JSInteropTest")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "OtherAssembly.TestReflection", "OtherAssembly")]
+                internal static void RegisterDynamicDependencies () { }
+
                 partial void OnBar () => Event.Broadcast("Bindings/onBar");
             }
             """
