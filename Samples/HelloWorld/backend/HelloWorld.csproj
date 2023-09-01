@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bootsharp" Version="0.0.99" />
+    </ItemGroup>
+
+</Project>

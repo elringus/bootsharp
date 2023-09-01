@@ -99,12 +99,12 @@
 
         <!-- Publish package file. -->
         <ItemGroup>
-            <PackageTemplate>$(BootsharpRoot)/build/PackageTemplate.json</PackageTemplate>
-            <PackageFile>$(BootsharpPackageDirectory)/package.json</PackageFile>
+            <BootsharpPackageTemplate Include="$(BootsharpRoot)/build/PackageTemplate.json"/>
+            <BootsharpPackageFile Include="$(BootsharpPackageDirectory)/package.json"/>
         </ItemGroup>
-        <WriteLinesToFile Condition="!Exists('$(PackageFile)')"
-                          File="$(PackageFile)"
-                          Lines="$([System.IO.File]::ReadAllText($(PackageTemplate))
+        <WriteLinesToFile Condition="!Exists('$(BootsharpPackageFile)')"
+                          File="$(BootsharpPackageFile)"
+                          Lines="$([System.IO.File]::ReadAllText($(BootsharpPackageTemplate))
                                  .Replace('%MODULE_NAME%','$(BootsharpName)')
                                  .Replace('%MODULE_DIR%','$([System.IO.Path]::GetRelativePath('$(BootsharpPackageDirectory)','$(BootsharpPublishDirectory)'))')
                                  .Replace('%TYPES_DIR%','$([System.IO.Path]::GetRelativePath('$(BootsharpPackageDirectory)','$(BootsharpTypesDirectory)'))'))"/>

@@ -1,24 +1,22 @@
-<!-- Example on consuming the library as global script. -->
-<!-- Open the .html file in a web browser to test. -->
+<!-- Example on using bootsharp in browser. -->
+<!-- Publish the dotnet backend and HTML-serve the folder to test. -->
 
 <!DOCTYPE html>
 
 Open console (Ctrl+Shift+I) to see the output.
 
-<!-- Import as a global 'dotnet' object via script tag. -->
-<script src="Project/bin/dotnet.js"></script>
+<script type="module">
 
-<script>
+	import  bootsharp, { HelloWorld } from './backend/bin/bootsharp'
 
-    // Providing implementation for 'GetHostName' function declared in 'HelloWorld' C# assembly.
-    dotnet.HelloWorld.getHostName = () => "Browser";
+    // Binding 'GetHostName' method declared in 'HelloWorld' C# assembly.
+    HelloWorld.getHostName = () => "Browser";
 
     window.onload = async function () {
-        // Booting the DotNet runtime and invoking entry point.
-        await dotnet.boot();
+    	// Initializing dotnet runtime and invoking entry point.
+        await bootsharp.boot();
         // Invoking 'GetName()' C# method defined in 'HelloWorld' assembly.
-        const guestName = dotnet.HelloWorld.getName();
-        console.log(`Welcome, ${guestName}! Enjoy your global space.`);
+        console.log(`Welcome, ${HelloWorld.getName()}!`);
     };
 
 </script>

@@ -1,6 +1,5 @@
 ﻿using System;
-using DotNetJS;
-using Microsoft.JSInterop;
+using Bootsharp;
 
 namespace HelloWorld;
 
@@ -9,7 +8,7 @@ public partial class Program
     // Entry point is invoked by the JavaScript runtime on boot.
     public static void Main ()
     {
-        // Invoking 'dotnet.HelloWorld.GetHostName()' JavaScript function.
+        // Invoking 'bootsharp.HelloWorld.getHostName()' JavaScript function.
         var hostName = GetHostName();
         // Writing to JavaScript host console.
         Console.WriteLine($"Hello {hostName}, DotNet here!");

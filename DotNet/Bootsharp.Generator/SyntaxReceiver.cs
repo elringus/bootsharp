@@ -21,12 +21,13 @@ internal sealed class SyntaxReceiver : ISyntaxContextReceiver
 
     private void VisitClass (ClassDeclarationSyntax syntax)
     {
-        var invokable = GetMethodsWithAttribute(syntax, InvokableAttribute);
-        if (invokable.Count > 0) InvokableClasses.Add(new PartialClass(syntax, Array.Empty<PartialMethod>()));
         var functions = GetMethodsWithAttribute(syntax, FunctionAttribute);
         if (functions.Count > 0) FunctionClasses.Add(new PartialClass(syntax, functions));
         var events = GetMethodsWithAttribute(syntax, EventAttribute);
         if (events.Count > 0) EventClasses.Add(new PartialClass(syntax, events));
+        if ((functions.Count + events.Count) > 0) return;
+        var invokable = GetMethodsWithAttribute(syntax, InvokableAttribute);
+        if (invokable.Count > 0) InvokableClasses.Add(new PartialClass(syntax, Array.Empty<PartialMethod>()));
     }
 
     private List<PartialMethod> GetMethodsWithAttribute (ClassDeclarationSyntax syntax, string attribute)
