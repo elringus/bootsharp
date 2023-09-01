@@ -13,16 +13,20 @@
         <!-- Bootsharp public defaults. -->
         <!-- Name of the generated JavaScript module; 'bootsharp' by default. -->
         <BootsharpName>bootsharp</BootsharpName>
-        <!-- Name of the entry (main) assembly for the WASM target; equals final output assembly by default. -->
-        <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
-        <!-- Directory to publish generated JavaScript module files; 'bin/module-name' by default. -->
+        <!-- Whether to embed binaries to the JavaScript module file (true or false); true by default. -->
+        <BootsharpEmbedBinaries>true</BootsharpEmbedBinaries>
+        <!-- Directory to publish generated JavaScript module; 'base-output/module-name' by default. -->
         <BootsharpPublishDirectory>$(BaseOutputPath)/$(BootsharpName)</BootsharpPublishDirectory>
+        <!-- Directory to publish type declarations; 'publish-dir/types' by default. -->
+        <BootsharpTypesDirectory>$(BootsharpPublishDirectory)/types</BootsharpTypesDirectory>
+        <!-- Directory to publish binaries when 'EmbedBinaries' disabled; 'publish-dir/bin' by default. -->
+        <BootsharpBinariesDirectory>$(BootsharpPublishDirectory)/bin</BootsharpBinariesDirectory>
         <!-- Directory to publish 'package.json' file; same as publish directory by default. -->
         <BootsharpPackageDirectory>$(BootsharpPublishDir)</BootsharpPackageDirectory>
-        <!-- Whether to embed binary wasm files to the JavaScript module file (true or false); true by default. -->
-        <BootsharpEmbedBinaries>true</BootsharpEmbedBinaries>
         <!-- Whether to disable some .NET features to reduce binary size (true or false); false by default. -->
         <BootsharpAggressiveTrimming>false</BootsharpAggressiveTrimming>
+        <!-- Name of the entry (main) assembly for the WASM target; equals final output assembly by default. -->
+        <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
 
         <!-- Bootsharp internal defaults. -->
         <BootsharpRoot>$(MSBuildThisFileDirectory)../</BootsharpRoot>
@@ -86,12 +90,12 @@
             <BootsharpWasmFiles Include="$(BootsharpBuildDirectory)/*.wasm"/>
             <BootsharpTypeFiles Include="$(BootsharpBuildDirectory)/*.d.ts"/>
         </ItemGroup>
-        <RemoveDir Directories="$(BootsharpPublishDirectory)/bin"/>
+        <RemoveDir Directories="$(BootsharpBinariesDirectory);$(BootsharpTypesDirectory)"/>
         <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'"
               SourceFiles="@(BootsharpWasmFiles)"
-              DestinationFolder="$(BootsharpPublishDirectory)/bin"/>
+              DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy SourceFiles="@(BootsharpTypeFiles)"
-              DestinationFolder="$(BootsharpPublishDirectory)/types"/>
+              DestinationFolder="$(BootsharpTypesDirectory)"/>
 
         <!-- Publish package file. -->
         <ItemGroup>
@@ -101,8 +105,9 @@
         <WriteLinesToFile Condition="!Exists('$(PackageFile)')"
                           File="$(PackageFile)"
                           Lines="$([System.IO.File]::ReadAllText($(PackageTemplate))
-                                 .Replace('%NAME%','$(BootsharpName)')
-                                 .Replace('%PATH%','$([System.IO.Path]::GetRelativePath('$(BootsharpPackageDirectory)','$(BootsharpPublishDirectory)'))'))"/>
+                                 .Replace('%MODULE_NAME%','$(BootsharpName)')
+                                 .Replace('%MODULE_DIR%','$([System.IO.Path]::GetRelativePath('$(BootsharpPackageDirectory)','$(BootsharpPublishDirectory)'))')
+                                 .Replace('%TYPES_DIR%','$([System.IO.Path]::GetRelativePath('$(BootsharpPackageDirectory)','$(BootsharpTypesDirectory)'))'))"/>
 
         <Message Text="Bootsharp ES module published at $(BootsharpPublishDirectory)" Importance="high"/>
 

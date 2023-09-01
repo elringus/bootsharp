@@ -1,5 +1,5 @@
 {
-    "name": "%NAME%",
-    "module": "%PATH%/%NAME%.js",
-    "types": "%PATH%/types/%NAME%.d.ts"
+    "name": "%MODULE_NAME%",
+    "module": "%MODULE_DIR%/%MODULE_NAME%.js",
+    "types": "%TYPES_DIR%/%MODULE_NAME%.d.ts"
 }
