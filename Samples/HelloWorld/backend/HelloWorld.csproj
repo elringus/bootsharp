@@ -3,6 +3,9 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
