@@ -27,12 +27,17 @@ public sealed class MockProject : IDisposable
         BuildTask.EntryAssemblyName = assembly.Name;
     }
 
-    private BuildBootsharp CreateBuildTask () => new() {
-        BuildDirectory = CreateRandomTestDirectory(),
-        EntryAssemblyName = "System.Runtime.dll",
-        BuildEngine = BuildEngine.Create(),
-        EmbedBinaries = false
-    };
+    private BuildBootsharp CreateBuildTask ()
+    {
+        var testDir = CreateRandomTestDirectory();
+        return new BuildBootsharp {
+            BuildDirectory = testDir,
+            InspectedDirectory = testDir,
+            EntryAssemblyName = "System.Runtime.dll",
+            BuildEngine = BuildEngine.Create(),
+            EmbedBinaries = false
+        };
+    }
 
     private void CreateBuildResources ()
     {

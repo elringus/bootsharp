@@ -1,7 +1,7 @@
 // Example on using bootsharp in node.
 // Publish the dotnet backend and run 'node node.mjs' to test.
 
-import bootsharp, { HelloWorld } from "./backend/bin/bootsharp";
+import bootsharp, { HelloWorld } from "./backend/bin/bootsharp/bootsharp.js";
 
 // Binding 'GetHostName' method declared in 'HelloWorld' C# assembly.
 HelloWorld.getHostName = () => "Node.js";

@@ -1,11 +1,29 @@
 <Project>
 
+    <PropertyGroup>
+        <BootsharpRoot>$(MSBuildThisFileDirectory)../</BootsharpRoot>
+        <BootsharpSourceDirectory>$(BootsharpRoot)/js</BootsharpSourceDirectory>
+        <BootsharpBuilderAssembly>$(BootsharpRoot)/tasks/Bootsharp.Builder.dll</BootsharpBuilderAssembly>
+    </PropertyGroup>
+
     <UsingTask TaskName="Bootsharp.Builder.BuildBootsharp" AssemblyFile="$(BootsharpBuilderAssembly)"/>
 
     <Target Name="BootsharpBuild" AfterTargets="_AfterWasmBuildApp">
 
+        <PropertyGroup>
+            <BootsharpBuildDirectory>$(WasmAppDir)/$(WasmRuntimeAssetsLocation)</BootsharpBuildDirectory>
+            <BootsharpInspectedDirectory>$(PublishDir)</BootsharpInspectedDirectory>
+            <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
+            <BootSharpBaseOutputPath>$(BaseOutputPath.Replace('\', '/'))</BootSharpBaseOutputPath>
+            <BootsharpPublishDirectory>$(BootSharpBaseOutputPath)$(BootsharpPublishDirectory)</BootsharpPublishDirectory>
+            <BootsharpTypesDirectory>$(BootSharpBaseOutputPath)$(BootsharpTypesDirectory)</BootsharpTypesDirectory>
+            <BootsharpBinariesDirectory>$(BootSharpBaseOutputPath)$(BootsharpBinariesDirectory)</BootsharpBinariesDirectory>
+            <BootsharpPackageDirectory>$(BootSharpBaseOutputPath)$(BootsharpPackageDirectory)</BootsharpPackageDirectory>
+        </PropertyGroup>
+
         <!-- Generate bindings, types and (optionally) embed binaries. -->
         <BuildBootsharp BuildDirectory="$(BootsharpBuildDirectory)"
+                        InspectedDirectory="$(BootsharpInspectedDirectory)"
                         EntryAssemblyName="$(BootsharpEntryAssemblyName)"
                         EmbedBinaries="$(BootsharpEmbedBinaries)"/>
 
@@ -18,11 +36,13 @@
               DestinationFiles="$(BootsharpBuildDirectory)/$(BootsharpName).d.ts"/>
 
         <!-- Compile generated JavaScript solution. -->
-        <Exec Command="npx rollup bootsharp.js -o $(BootsharpPublishDirectory)/$(BootsharpName).js -f es -g process,module"
-              WorkingDirectory="$(BootsharpBuildDirectory)"/>
+        <Exec Command="npx rollup bootsharp.js -o $(BootsharpName).js -f es -g process,module"
+              WorkingDirectory="$(BootsharpBuildDirectory)"
+              StdOutEncoding="utf-8" StdErrEncoding="utf-8"/>
 
-        <!-- Publish binaries and type declarations. -->
+        <!-- Publish module, binaries and type declarations. -->
         <ItemGroup>
+            <BootsharpModuleFile Include="$(BootsharpBuildDirectory)/$(BootsharpName).js"/>
             <BootsharpWasmFiles Include="$(BootsharpBuildDirectory)/*.wasm"/>
             <BootsharpTypeFiles Include="$(BootsharpBuildDirectory)/*.d.ts"/>
         </ItemGroup>
@@ -32,15 +52,16 @@
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy SourceFiles="@(BootsharpTypeFiles)"
               DestinationFolder="$(BootsharpTypesDirectory)"/>
+        <Copy SourceFiles="@(BootsharpModuleFile)"
+              DestinationFolder="$(BootsharpPublishDirectory)"/>
 
         <!-- Publish package file. -->
         <ItemGroup>
-            <BootsharpPackageTemplate Include="$(BootsharpRoot)/build/PackageTemplate.json"/>
             <BootsharpPackageFile Include="$(BootsharpPackageDirectory)/package.json"/>
         </ItemGroup>
-        <WriteLinesToFile Condition="!Exists('$(BootsharpPackageFile)')"
-                          File="$(BootsharpPackageFile)"
-                          Lines="$([System.IO.File]::ReadAllText($(BootsharpPackageTemplate))
+        <WriteLinesToFile Condition="!Exists('$(BootsharpPackageDirectory)/package.json')"
+                          File="@(BootsharpPackageFile)"
+                          Lines="$([System.IO.File]::ReadAllText('$(BootsharpRoot)/build/PackageTemplate.json')
                                  .Replace('%MODULE_NAME%','$(BootsharpName)')
                                  .Replace('%MODULE_DIR%','$([System.IO.Path]::GetRelativePath('$(BootsharpPackageDirectory)','$(BootsharpPublishDirectory)'))')
                                  .Replace('%TYPES_DIR%','$([System.IO.Path]::GetRelativePath('$(BootsharpPackageDirectory)','$(BootsharpTypesDirectory)'))'))"/>

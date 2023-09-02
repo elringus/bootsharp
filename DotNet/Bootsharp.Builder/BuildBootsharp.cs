@@ -7,6 +7,7 @@ namespace Bootsharp.Builder;
 public sealed class BuildBootsharp : Task
 {
     [Required] public required string BuildDirectory { get; set; }
+    [Required] public required string InspectedDirectory { get; set; }
     [Required] public required string EntryAssemblyName { get; set; }
     [Required] public required bool EmbedBinaries { get; set; }
 
@@ -23,14 +24,14 @@ public sealed class BuildBootsharp : Task
     private NamespaceBuilder CreateNamespaceBuilder ()
     {
         var builder = new NamespaceBuilder();
-        builder.CollectConverters(BuildDirectory, EntryAssemblyName);
+        builder.CollectConverters(InspectedDirectory, EntryAssemblyName);
         return builder;
     }
 
     private AssemblyInspector InspectAssemblies (NamespaceBuilder spaceBuilder)
     {
         var inspector = new AssemblyInspector(spaceBuilder);
-        inspector.InspectInDirectory(BuildDirectory);
+        inspector.InspectInDirectory(InspectedDirectory);
         inspector.Report(Log);
         return inspector;
     }

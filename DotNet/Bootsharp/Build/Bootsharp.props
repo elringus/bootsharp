@@ -19,24 +19,16 @@
         <BootsharpName>bootsharp</BootsharpName>
         <!-- Whether to embed binaries to the JavaScript module file (true or false); true by default. -->
         <BootsharpEmbedBinaries>true</BootsharpEmbedBinaries>
-        <!-- Directory to publish generated JavaScript module; 'base-output/module-name' by default. -->
-        <BootsharpPublishDirectory>$(BaseOutputPath)/$(BootsharpName)</BootsharpPublishDirectory>
-        <!-- Directory to publish type declarations; 'publish-dir/types' by default. -->
+        <!-- Directory (relative to base output) to publish generated JavaScript module; 'base-output/module-name' by default. -->
+        <BootsharpPublishDirectory>$(BootsharpName)</BootsharpPublishDirectory>
+        <!-- Directory (relative to base output) to publish type declarations; 'publish-dir/types' by default. -->
         <BootsharpTypesDirectory>$(BootsharpPublishDirectory)/types</BootsharpTypesDirectory>
-        <!-- Directory to publish binaries when 'EmbedBinaries' disabled; 'publish-dir/bin' by default. -->
+        <!-- Directory (relative to base output) to publish binaries when 'EmbedBinaries' disabled; 'publish-dir/bin' by default. -->
         <BootsharpBinariesDirectory>$(BootsharpPublishDirectory)/bin</BootsharpBinariesDirectory>
-        <!-- Directory to publish 'package.json' file; same as publish directory by default. -->
-        <BootsharpPackageDirectory>$(BootsharpPublishDir)</BootsharpPackageDirectory>
+        <!-- Directory (relative to base output) to publish 'package.json' file; same as publish directory by default. -->
+        <BootsharpPackageDirectory>$(BootsharpPublishDirectory)</BootsharpPackageDirectory>
         <!-- Whether to disable some .NET features to reduce binary size (true or false); true by default. -->
         <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
-        <!-- Name of the entry (main) assembly for the WASM target; equals final output assembly by default. -->
-        <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
-
-        <!-- Bootsharp internal defaults. -->
-        <BootsharpRoot>$(MSBuildThisFileDirectory)../</BootsharpRoot>
-        <BootsharpSourceDirectory>$(BootsharpRoot)/js</BootsharpSourceDirectory>
-        <BootsharpBuildDirectory>$(WasmAppDir)/_framework</BootsharpBuildDirectory>
-        <BootsharpBuilderAssembly>$(BootsharpRoot)/tasks/Bootsharp.Builder.dll</BootsharpBuilderAssembly>
 
     </PropertyGroup>
 
@@ -69,5 +61,11 @@
             </PropertyGroup>
         </When>
     </Choose>
+
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatform">
+            <_Parameter1>browser</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
 
 </Project>
