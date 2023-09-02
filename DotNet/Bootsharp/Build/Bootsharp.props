@@ -14,6 +14,7 @@
         <WasmGenerateAppBundle>true</WasmGenerateAppBundle>
         <WasmEnableLegacyJsInterop>false</WasmEnableLegacyJsInterop>
         <!-- Required until https://github.com/dotnet/roslyn/issues/57239 is solved; adds about 500KB to the build size. -->
+        <!-- TODO: Try using generic versions of JSON serializer API. -->
         <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
 
         <!-- Bootsharp public defaults. -->
@@ -33,36 +34,6 @@
         <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
 
     </PropertyGroup>
-
-    <Choose>
-        <When Condition="$(BootsharpAggressiveTrimming)">
-            <PropertyGroup>
-                <!-- https://learn.microsoft.com/en-us/aspnet/core/blazor/performance?#minimize-app-download-size -->
-                <!-- https://raw.githubusercontent.com/dotnet/runtime/main/docs/workflow/trimming/feature-switches.md -->
-                <PublishTrimmed>true</PublishTrimmed>
-                <TrimMode>full</TrimMode>
-                <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
-                <_AggressiveAttributeTrimming>true</_AggressiveAttributeTrimming>
-                <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
-                <DebuggerSupport>false</DebuggerSupport>
-                <EnableCppCLIHostActivation>false</EnableCppCLIHostActivation>
-                <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
-                <EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>false</EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>
-                <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
-                <_EnableConsumingManagedCodeFromNativeHosting>false</_EnableConsumingManagedCodeFromNativeHosting>
-                <EventSourceSupport>false</EventSourceSupport>
-                <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
-                <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
-                <UseNativeHttpHandler>true</UseNativeHttpHandler>
-                <UseSystemResourceKeys>true</UseSystemResourceKeys>
-                <StartupHookSupport>false</StartupHookSupport>
-                <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
-                <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
-                <WasmEmitSourceMap>false</WasmEmitSourceMap>
-                <WasmNativeDebugSymbols>false</WasmNativeDebugSymbols>
-            </PropertyGroup>
-        </When>
-    </Choose>
 
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatform">

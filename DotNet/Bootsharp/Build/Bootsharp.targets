@@ -6,6 +6,36 @@
         <BootsharpBuilderAssembly>$(BootsharpRoot)/tasks/Bootsharp.Builder.dll</BootsharpBuilderAssembly>
     </PropertyGroup>
 
+    <Choose>
+        <When Condition="$(BootsharpAggressiveTrimming)">
+            <PropertyGroup>
+                <!-- https://learn.microsoft.com/en-us/aspnet/core/blazor/performance?#minimize-app-download-size -->
+                <!-- https://raw.githubusercontent.com/dotnet/runtime/main/docs/workflow/trimming/feature-switches.md -->
+                <PublishTrimmed>true</PublishTrimmed>
+                <TrimMode>full</TrimMode>
+                <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
+                <_AggressiveAttributeTrimming>true</_AggressiveAttributeTrimming>
+                <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
+                <DebuggerSupport>false</DebuggerSupport>
+                <EnableCppCLIHostActivation>false</EnableCppCLIHostActivation>
+                <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+                <EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>false</EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>
+                <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
+                <_EnableConsumingManagedCodeFromNativeHosting>false</_EnableConsumingManagedCodeFromNativeHosting>
+                <EventSourceSupport>false</EventSourceSupport>
+                <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+                <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+                <UseNativeHttpHandler>true</UseNativeHttpHandler>
+                <UseSystemResourceKeys>true</UseSystemResourceKeys>
+                <StartupHookSupport>false</StartupHookSupport>
+                <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
+                <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+                <WasmEmitSourceMap>false</WasmEmitSourceMap>
+                <WasmNativeDebugSymbols>false</WasmNativeDebugSymbols>
+            </PropertyGroup>
+        </When>
+    </Choose>
+
     <UsingTask TaskName="Bootsharp.Builder.BuildBootsharp" AssemblyFile="$(BootsharpBuilderAssembly)"/>
 
     <Target Name="BootsharpBuild" AfterTargets="_AfterWasmBuildApp">
