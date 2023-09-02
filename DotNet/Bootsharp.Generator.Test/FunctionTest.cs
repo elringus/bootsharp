@@ -92,9 +92,9 @@ public static class FunctionTest
                 partial class Foo
                 {
                     [JSFunction]
-                    partial DateTime GetTime (DateTime time);
+                    public partial DateTime GetTime (DateTime time);
                     [JSFunction]
-                    partial Task<DateTime> GetTimeAsync (DateTime time);
+                    public partial Task<DateTime> GetTimeAsync (DateTime time);
                 }
             }
             """,
@@ -110,8 +110,8 @@ public static class FunctionTest
                     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Classic.Foo", "GeneratorTest")]
                     internal static void RegisterDynamicDependencies () { }
 
-                    partial DateTime GetTime (DateTime time) => Function.Invoke<DateTime>("Classic.getTime", time);
-                    partial Task<DateTime> GetTimeAsync (DateTime time) => Function.InvokeAsync<DateTime>("Classic.getTimeAsync", time);
+                    public partial DateTime GetTime (DateTime time) => Function.Invoke<DateTime>("Classic.getTime", time);
+                    public partial Task<DateTime> GetTimeAsync (DateTime time) => Function.InvokeAsync<DateTime>("Classic.getTimeAsync", time);
                 }
             }
             """

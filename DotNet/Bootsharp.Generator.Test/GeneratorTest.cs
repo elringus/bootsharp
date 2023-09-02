@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
@@ -18,7 +19,11 @@ public class GeneratorTest
         where T : ISourceGenerator, new()
     {
         protected override string DefaultTestProjectName => "GeneratorTest";
-        protected override bool IsCompilerDiagnosticIncluded (Diagnostic _, CompilerDiagnostics __) => false;
+        protected override ParseOptions CreateParseOptions () => new CSharpParseOptions(LanguageVersion.Preview, DocumentationMode.Diagnose);
+        protected override bool IsCompilerDiagnosticIncluded (Diagnostic diagnostic, CompilerDiagnostics _) =>
+            diagnostic.Severity == DiagnosticSeverity.Error &&
+            // CS8795 is for missing generated method from System.Runtime.InteropServices.JavaScript (not generated in test run).
+            diagnostic.Id != "CS8795";
     }
 
     private static readonly List<(string filename, string content)> bootsharpSourcesCache = new();
@@ -49,35 +54,63 @@ public class GeneratorTest
         await verifier.RunAsync();
     }
 
+    [Fact]
+    public async Task DoesntEmitDuplicateRegistrations ()
+    {
+        verifier.TestBehaviors = TestBehaviors.SkipGeneratedSourcesCheck;
+        await Verify(
+            """
+            partial class FunctionAfterInvokable
+            {
+                [JSInvokable] static void Bar () { }
+                [JSFunction] partial void Baz ();
+            }
+            partial class EventAfterInvokable
+            {
+                [JSInvokable] static void Bar () { }
+                [JSEvent] partial void Baz ();
+            }
+            partial class EventAfterFunction
+            {
+                [JSFunction] partial void Bar ();
+                [JSEvent] partial void Baz ();
+            }
+            """);
+    }
+
     [Theory, MemberData(nameof(FunctionTest.Data), MemberType = typeof(InvokableTest))]
     public Task PartialInvokableAreImplemented (string source, string expected)
-        => Verify(source, expected, "FooInvokable.g.cs");
+        => Verify(source, ("FooInvokable.g.cs", expected));
 
     [Theory, MemberData(nameof(FunctionTest.Data), MemberType = typeof(FunctionTest))]
     public Task PartialFunctionsAreImplemented (string source, string expected)
-        => Verify(source, expected, "FooFunctions.g.cs");
+        => Verify(source, ("FooFunctions.g.cs", expected));
 
     [Theory, MemberData(nameof(EventTest.Data), MemberType = typeof(EventTest))]
     public Task PartialEventsAreImplemented (string source, string expected)
-        => Verify(source, expected, "FooEvents.g.cs");
+        => Verify(source, ("FooEvents.g.cs", expected));
 
     [Theory, MemberData(nameof(ExportTest.Data), MemberType = typeof(ExportTest))]
     public Task ExportTypesAreGenerated (string source, string expected)
-        => Verify(source, expected, "IFooExport.g.cs");
+        => Verify(source, ("IFooExport.g.cs", expected));
 
     [Theory, MemberData(nameof(ImportTest.Data), MemberType = typeof(ImportTest))]
     public Task ImportTypesAreGenerated (string source, string expected)
-        => Verify(source, expected, "IFooImport.g.cs");
+        => Verify(source, ("IFooImport.g.cs", expected));
 
-    private Task Verify (string source, string expected, string file)
+    private async Task Verify (string source, params (string file, string content)[] expected)
     {
-        IncludeCommonSource(ref source);
-        IncludeCommonExpected(ref expected);
         IncludeBootsharpSources(verifier.TestState.Sources);
-        var expectedText = SourceText.From(expected, Encoding.UTF8);
-        verifier.TestState.GeneratedSources.Add((typeof(SourceGenerator), file, expectedText));
+        IncludeCommonSource(ref source);
         verifier.TestCode = source;
-        return verifier.RunAsync();
+        verifier.ReferenceAssemblies = ReferenceAssemblies.Net.Net80;
+        for (int i = 0; i < expected.Length; i++)
+        {
+            IncludeCommonExpected(ref expected[i].content);
+            verifier.TestState.GeneratedSources.Add((typeof(SourceGenerator), expected[i].file,
+                SourceText.From(expected[i].content, Encoding.UTF8)));
+        }
+        await verifier.RunAsync();
     }
 
     private static void IncludeBootsharpSources (SourceFileList sources)

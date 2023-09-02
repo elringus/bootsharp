@@ -6,11 +6,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis" Version="4.7.0"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing.XUnit" Version="1.1.1"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0-preview-23371-04"/>
-        <PackageReference Include="xunit" Version="2.5.1-pre.20"/>
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.5.1-pre.10">
+        <PackageReference Include="Microsoft.CodeAnalysis" Version="4.8.0-3.23451.4"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing.XUnit" Version="1.1.2-beta1.23431.1"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0-preview-23424-02"/>
+        <PackageReference Include="xunit" Version="2.4.2"/>
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>

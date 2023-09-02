@@ -5,6 +5,7 @@ namespace Bootsharp.Generator.Test;
 public static class EventTest
 {
     public static IEnumerable<object[]> Data { get; } = new[] {
+        // Can generate event binding without namespace and arguments.
         new object[] {
             """
             partial class Foo
@@ -24,6 +25,7 @@ public static class EventTest
             }
             """
         },
+        // Can generate event binding with namespace and arguments.
         new object[] {
             """
             namespace Space;

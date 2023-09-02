@@ -7,7 +7,11 @@ using static Bootsharp.Generator.Common;
 
 namespace Bootsharp.Generator;
 
-internal sealed class PartialClass(ClassDeclarationSyntax syntax, IReadOnlyList<PartialMethod> methods)
+internal sealed class PartialClass(
+    ClassDeclarationSyntax syntax,
+    IReadOnlyList<PartialMethod> methods,
+    bool emitDependenciesRegistration
+)
 {
     public string Name { get; } = syntax.Identifier.ToString();
 
@@ -33,6 +37,7 @@ internal sealed class PartialClass(ClassDeclarationSyntax syntax, IReadOnlyList<
 
     private string EmitDynamicDependenciesRegistration (Compilation compilation)
     {
+        if (!emitDependenciesRegistration) return "";
         var space = syntax.Parent is BaseNamespaceDeclarationSyntax decl ? $"{decl.Name}." : "";
         var fullClassName = space + syntax.Identifier;
         var assemblyName = compilation.Assembly.Name;

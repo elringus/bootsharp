@@ -52,7 +52,7 @@ public static class ExportTest
         // Can override name and invoke.
         new object[] {
             """
-            [assembly:JSExport(typeof(Bindings.IFoo), NamePattern="Foo", NameReplacement="Bar", InvokePattern="(.+)", InvokeReplacement="Try($1)")]
+            [assembly:JSExport(typeof(Bindings.IFoo), NamePattern="Foo", NameReplacement="Bar", InvokePattern="(.+)", InvokeReplacement="$1/**/")]
 
             namespace Bindings;
 
@@ -77,7 +77,7 @@ public static class ExportTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                [JSInvokable] public static void Bar (global::System.String foo) => Try(handler.Foo(foo));
+                [JSInvokable] public static void Bar (global::System.String foo) => handler.Foo(foo)/**/;
             }
             """
         },

@@ -50,12 +50,18 @@ internal static class Common
         if (type is IArrayTypeSymbol arrayType) return $"{BuildFullName(arrayType.ElementType)}[]";
         var nullable = type.NullableAnnotation == NullableAnnotation.Annotated ? "?" : "";
         if (IsGeneric(type, out var args)) return BuildGeneric(type, args) + nullable;
-        return $"global::{ResolveNamespace(type)}.{type.Name}{nullable}";
+        return $"global::{ResolveTypeName(type)}{nullable}";
 
         static string BuildGeneric (ITypeSymbol type, ImmutableArray<ITypeSymbol> args)
         {
             if (type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T) return BuildFullName(args[0]);
-            return $"global::{ResolveNamespace(type)}.{type.Name}<{string.Join(", ", args.Select(BuildFullName))}>";
+            return $"global::{ResolveTypeName(type)}<{string.Join(", ", args.Select(BuildFullName))}>";
+        }
+
+        static string ResolveTypeName (ITypeSymbol type)
+        {
+            if (type.ContainingNamespace.IsGlobalNamespace) return type.Name;
+            return string.Join(".", type.ContainingNamespace.ConstituentNamespaces) + "." + type.Name;
         }
     }
 
@@ -63,12 +69,6 @@ internal static class Common
     {
         args = type is INamedTypeSymbol { IsGenericType: true } named ? named.TypeArguments : default;
         return args != default;
-    }
-
-    public static string ResolveNamespace (ISymbol symbol)
-    {
-        if (symbol.ContainingNamespace.IsGlobalNamespace) return "Bindings";
-        return string.Join(".", symbol.ContainingNamespace.ConstituentNamespaces);
     }
 
     public static string ConvertNamespace (string space, IAssemblySymbol assembly)

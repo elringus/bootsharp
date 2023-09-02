@@ -100,7 +100,7 @@ public static class ImportTest
         // Can override name and invoke.
         new object[] {
             """
-            [assembly:JSImport(typeof(Bindings.IFoo), NamePattern="Nya(.+)", NameReplacement="Nah$1", InvokePattern="(.+)", InvokeReplacement="Try($1)")]
+            [assembly:JSImport(typeof(Bindings.IFoo), NamePattern="Nya(.+)", NameReplacement="Nah$1", InvokePattern="(.+)", InvokeReplacement="$1/**/")]
 
             namespace Bindings;
 
@@ -119,8 +119,8 @@ public static class ImportTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                [JSFunction] public static void NahFoo (global::System.String foo) => Try(Function.InvokeVoid("Foo.nahFoo", foo));
-                [JSFunction] public static global::System.Boolean Bar () => Try(Function.Invoke<global::System.Boolean>("Foo.bar"));
+                [JSFunction] public static void NahFoo (global::System.String foo) => Function.InvokeVoid("Foo.nahFoo", foo)/**/;
+                [JSFunction] public static global::System.Boolean Bar () => Function.Invoke<global::System.Boolean>("Foo.bar")/**/;
 
                 void global::Bindings.IFoo.NyaFoo (global::System.String foo) => NahFoo(foo);
                 global::System.Boolean global::Bindings.IFoo.Bar () => Bar();
@@ -130,7 +130,7 @@ public static class ImportTest
         // When name and invoke don't have associated replacement parameter assigned, nothing is changed.
         new object[] {
             """
-            [assembly:JSImport(typeof(IFoo), NamePattern="Foo", InvokePattern="Foo")]
+            [assembly:JSImport(typeof(IFoo), NamePattern="Foo", InvokePattern="(.+)")]
 
             public interface IFoo
             {
@@ -140,7 +140,7 @@ public static class ImportTest
             """
             namespace Foo;
 
-            public class JSFoo : global::Bindings.IFoo
+            public class JSFoo : global::IFoo
             {
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
@@ -148,7 +148,7 @@ public static class ImportTest
 
                 [JSFunction] public static void Foo () => Function.InvokeVoid("Foo.foo");
 
-                void global::Bindings.IFoo.Foo () => Foo();
+                void global::IFoo.Foo () => Foo();
             }
             """
         },

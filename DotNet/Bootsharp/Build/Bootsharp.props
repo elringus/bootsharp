@@ -1,0 +1,73 @@
+<Project>
+
+    <PropertyGroup>
+
+        <!-- Project defaults common to the build target. -->
+        <OutputType>Exe</OutputType>
+        <Configuration>Release</Configuration>
+        <TargetArchitecture>wasm</TargetArchitecture>
+        <TargetOS>browser</TargetOS>
+        <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+        <InvariantTimezone>true</InvariantTimezone>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
+        <WasmGenerateAppBundle>true</WasmGenerateAppBundle>
+        <WasmEnableLegacyJsInterop>false</WasmEnableLegacyJsInterop>
+
+        <!-- Bootsharp public defaults. -->
+        <!-- Name of the generated JavaScript module; 'bootsharp' by default. -->
+        <BootsharpName>bootsharp</BootsharpName>
+        <!-- Whether to embed binaries to the JavaScript module file (true or false); true by default. -->
+        <BootsharpEmbedBinaries>true</BootsharpEmbedBinaries>
+        <!-- Directory to publish generated JavaScript module; 'base-output/module-name' by default. -->
+        <BootsharpPublishDirectory>$(BaseOutputPath)/$(BootsharpName)</BootsharpPublishDirectory>
+        <!-- Directory to publish type declarations; 'publish-dir/types' by default. -->
+        <BootsharpTypesDirectory>$(BootsharpPublishDirectory)/types</BootsharpTypesDirectory>
+        <!-- Directory to publish binaries when 'EmbedBinaries' disabled; 'publish-dir/bin' by default. -->
+        <BootsharpBinariesDirectory>$(BootsharpPublishDirectory)/bin</BootsharpBinariesDirectory>
+        <!-- Directory to publish 'package.json' file; same as publish directory by default. -->
+        <BootsharpPackageDirectory>$(BootsharpPublishDir)</BootsharpPackageDirectory>
+        <!-- Whether to disable some .NET features to reduce binary size (true or false); true by default. -->
+        <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
+        <!-- Name of the entry (main) assembly for the WASM target; equals final output assembly by default. -->
+        <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
+
+        <!-- Bootsharp internal defaults. -->
+        <BootsharpRoot>$(MSBuildThisFileDirectory)../</BootsharpRoot>
+        <BootsharpSourceDirectory>$(BootsharpRoot)/js</BootsharpSourceDirectory>
+        <BootsharpBuildDirectory>$(WasmAppDir)/_framework</BootsharpBuildDirectory>
+        <BootsharpBuilderAssembly>$(BootsharpRoot)/tasks/Bootsharp.Builder.dll</BootsharpBuilderAssembly>
+
+    </PropertyGroup>
+
+    <Choose>
+        <When Condition="$(BootsharpAggressiveTrimming)">
+            <PropertyGroup>
+                <!-- https://learn.microsoft.com/en-us/aspnet/core/blazor/performance?#minimize-app-download-size -->
+                <!-- https://raw.githubusercontent.com/dotnet/runtime/main/docs/workflow/trimming/feature-switches.md -->
+                <PublishTrimmed>true</PublishTrimmed>
+                <TrimMode>full</TrimMode>
+                <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
+                <_AggressiveAttributeTrimming>true</_AggressiveAttributeTrimming>
+                <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
+                <DebuggerSupport>false</DebuggerSupport>
+                <EnableCppCLIHostActivation>false</EnableCppCLIHostActivation>
+                <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+                <EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>false</EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>
+                <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
+                <_EnableConsumingManagedCodeFromNativeHosting>false</_EnableConsumingManagedCodeFromNativeHosting>
+                <EventSourceSupport>false</EventSourceSupport>
+                <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+                <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+                <UseNativeHttpHandler>true</UseNativeHttpHandler>
+                <UseSystemResourceKeys>true</UseSystemResourceKeys>
+                <StartupHookSupport>false</StartupHookSupport>
+                <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
+                <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+                <WasmEmitSourceMap>false</WasmEmitSourceMap>
+                <WasmNativeDebugSymbols>false</WasmNativeDebugSymbols>
+            </PropertyGroup>
+        </When>
+    </Choose>
+
+</Project>
