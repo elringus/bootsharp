@@ -1,7 +1,9 @@
 ﻿import type { RuntimeAPI } from "./dotnet.d.ts";
 
 type Exports = {
-    Invokable: Invokable;
+    Bootsharp: {
+        Invokable: Invokable;
+    }
 };
 
 type Invokable = {
@@ -14,7 +16,7 @@ type Invokable = {
 let invokable: Invokable;
 
 export async function bindExports(runtime: RuntimeAPI) {
-    invokable = (await runtime.getAssemblyExports("Bootsharp") as Exports).Invokable;
+    invokable = (await runtime.getAssemblyExports("Bootsharp") as Exports).Bootsharp.Invokable;
 }
 
 export function invoke(endpoint: string, ...args: unknown[]): unknown {
