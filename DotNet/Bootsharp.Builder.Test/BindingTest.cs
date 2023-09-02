@@ -7,11 +7,19 @@ public class BindingTest : ContentTest
     protected override string TestedContent => GeneratedBindings;
 
     [Fact]
-    public void InteropFunctionsImported ()
+    public void WhenNoBindingsNothingIsGenerated ()
     {
         Task.Execute();
-        Contains("""import { invoke, invokeVoid, invokeAsync, invokeVoidAsync } from "./exports";""");
-        Contains("""import { Event } from "./event";""");
+        Assert.Empty(TestedContent);
+    }
+
+    [Fact]
+    public void InteropFunctionsImported ()
+    {
+        AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
+        Task.Execute();
+        Contains("import { invoke, invokeVoid, invokeAsync, invokeVoidAsync } from './exports';");
+        Contains("import { Event } from './event';");
     }
 
     [Fact]
@@ -19,15 +27,17 @@ public class BindingTest : ContentTest
     {
         AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
         Task.Execute();
-        Contains("exports.Foo = {};");
+        Contains("export const Foo = {");
     }
 
     [Fact]
-    public void WhenSpaceContainDotsObjectCreatedForEachPartInOrder ()
+    public void WhenSpaceContainDotsObjectCreatedForEachPart ()
     {
         AddAssembly(With("Foo.Bar.Nya", "[JSInvokable] public static void Bar () { }"));
         Task.Execute();
-        Matches(@"exports.Foo = {};\s*exports.Foo.Bar = {};\s*exports.Foo.Bar.Nya = {};");
+        Contains("export const Foo = {");
+        Contains("Bar: {");
+        Contains("Nya: {");
     }
 
     [Fact]
@@ -37,9 +47,9 @@ public class BindingTest : ContentTest
             With("Foo", "[JSInvokable] public static void Foo () { }"),
             With("Bar.Nya", "[JSFunction] public static void Fun () { }"));
         Task.Execute();
-        Contains("exports.Foo = {};");
-        Contains("exports.Bar = {};");
-        Contains("exports.Bar.Nya = {};");
+        Contains("export const Foo = {");
+        Contains("export const Bar = {");
+        Contains("Nya: {");
     }
 
     [Fact]

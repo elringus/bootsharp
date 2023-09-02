@@ -38,8 +38,8 @@ public sealed class BuildBootsharp : Task
 
     private void GenerateBindings (AssemblyInspector inspector, NamespaceBuilder spaceBuilder)
     {
-        var generator = new BindingGenerator(spaceBuilder, inspector);
-        var content = generator.Generate();
+        var generator = new BindingGenerator(spaceBuilder);
+        var content = generator.Generate(inspector);
         File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.js"), content);
     }
 
@@ -52,8 +52,8 @@ public sealed class BuildBootsharp : Task
 
     private void GenerateResources (AssemblyInspector inspector)
     {
-        var generator = new ResourceGenerator(inspector, EntryAssemblyName, BuildDirectory, EmbedBinaries);
-        var content = generator.Generate();
+        var generator = new ResourceGenerator(EntryAssemblyName, BuildDirectory, EmbedBinaries);
+        var content = generator.Generate(inspector);
         File.WriteAllText(Path.Combine(BuildDirectory, "resources.g.js"), content);
     }
 }
