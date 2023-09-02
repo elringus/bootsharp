@@ -17,26 +17,23 @@ public class GeneratorTest
     [Fact]
     public async Task WhenSourceIsEmptyNothingIsGenerated ()
     {
-        verifier.TestCode = "";
-        await verifier.RunAsync();
+        await Verify("");
     }
 
     [Fact]
-    public async Task WhenNoFunctionClassesNothingIsGenerated ()
+    public async Task NothingIsGeneratedWhenNoAttributes ()
     {
-        verifier.TestCode = "partial class Foo { }";
-        await verifier.RunAsync();
+        await Verify("partial class Foo { }");
     }
 
     [Fact]
     public async Task WhenAttributeIsFromOtherNamespaceItsIgnored ()
     {
-        verifier.TestCode =
+        await Verify(
             """
             [assembly:JSNamespace(@"Foo", "Bar")]
             public class JSNamespaceAttribute : System.Attribute { public JSNamespaceAttribute (string _, string __) { } }
-            """;
-        await verifier.RunAsync();
+            """);
     }
 
     [Fact]

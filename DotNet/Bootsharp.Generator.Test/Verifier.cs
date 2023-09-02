@@ -11,7 +11,7 @@ namespace Bootsharp.Generator.Test;
 public sealed class Verifier<T> : CSharpSourceGeneratorTest<T, XUnitVerifier>
     where T : ISourceGenerator, new()
 {
-    protected override string DefaultTestProjectName => "GeneratorTest";
+    protected override string DefaultTestProjectName { get; } = "GeneratorTest";
 
     public Verifier () => ReferenceAssemblies = ReferenceAssemblies.Net.Net80;
 
