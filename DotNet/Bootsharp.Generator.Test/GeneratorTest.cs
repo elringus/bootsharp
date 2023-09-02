@@ -3,11 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Microsoft.CodeAnalysis.Text;
 using Xunit;
 
@@ -15,18 +11,7 @@ namespace Bootsharp.Generator.Test;
 
 public class GeneratorTest
 {
-    private class Verifier<T> : CSharpSourceGeneratorTest<T, XUnitVerifier>
-        where T : ISourceGenerator, new()
-    {
-        protected override string DefaultTestProjectName => "GeneratorTest";
-        protected override ParseOptions CreateParseOptions () => new CSharpParseOptions(LanguageVersion.Preview, DocumentationMode.Diagnose);
-        protected override bool IsCompilerDiagnosticIncluded (Diagnostic diagnostic, CompilerDiagnostics _) =>
-            diagnostic.Severity == DiagnosticSeverity.Error &&
-            // CS8795 is for missing generated method from System.Runtime.InteropServices.JavaScript (not generated in test run).
-            diagnostic.Id != "CS8795";
-    }
-
-    private static readonly List<(string filename, string content)> bootsharpSourcesCache = new();
+    private static readonly List<(string file, string content)> sourceCache = new();
     private readonly Verifier<SourceGenerator> verifier = new();
 
     [Fact]
@@ -103,7 +88,6 @@ public class GeneratorTest
         IncludeBootsharpSources(verifier.TestState.Sources);
         IncludeCommonSource(ref source);
         verifier.TestCode = source;
-        verifier.ReferenceAssemblies = ReferenceAssemblies.Net.Net80;
         for (int i = 0; i < expected.Length; i++)
         {
             IncludeCommonExpected(ref expected[i].content);
@@ -115,18 +99,18 @@ public class GeneratorTest
 
     private static void IncludeBootsharpSources (SourceFileList sources)
     {
-        if (bootsharpSourcesCache.Count > 0)
+        if (sourceCache.Count > 0)
         {
-            foreach (var source in bootsharpSourcesCache)
+            foreach (var source in sourceCache)
                 sources.Add(source);
             return;
         }
         var root = $"{Environment.CurrentDirectory}/../../../../Bootsharp";
         foreach (var path in Directory.EnumerateFiles($"{root}/Attributes", "*.cs"))
-            bootsharpSourcesCache.Add((Path.GetFileName(path), File.ReadAllText(path)));
+            sourceCache.Add((Path.GetFileName(path), File.ReadAllText(path)));
         foreach (var path in Directory.EnumerateFiles($"{root}/Interop", "*.cs"))
-            bootsharpSourcesCache.Add((Path.GetFileName(path), File.ReadAllText(path)));
-        bootsharpSourcesCache.Add(("Error.cs", File.ReadAllText($"{root}/Error.cs")));
+            sourceCache.Add((Path.GetFileName(path), File.ReadAllText(path)));
+        sourceCache.Add(("Error.cs", File.ReadAllText($"{root}/Error.cs")));
         IncludeBootsharpSources(sources);
     }
 
