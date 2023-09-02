@@ -17,29 +17,32 @@ export function bindImports(runtime: RuntimeAPI) {
 
 function invoke(endpoint: string, args?: string[]): string {
     const invokable = get<Invokable>(endpoint);
-    const result = invokable(...deserialize(args));
+    const result = args == null ? invokable() : invokable(...deserialize(args));
     return serialize(result);
 }
 
 function invokeVoid(endpoint: string, args?: string[]): void {
     const invokable = get<VoidInvokable>(endpoint);
-    invokable(...deserialize(args));
+    if (args == null) invokable();
+    else invokable(...deserialize(args));
 }
 
 async function invokeAsync(endpoint: string, args?: string[]): Promise<string> {
     const invokable = get<AsyncInvokable>(endpoint);
-    const result = await invokable(...deserialize(args));
+    const result = await (args == null ? invokable() : invokable(...deserialize(args)));
     return serialize(result);
 }
 
 async function invokeVoidAsync(endpoint: string, args?: string[]): Promise<void> {
     const invokable = get<AsyncVoidInvokable>(endpoint);
-    return invokable(...deserialize(args));
+    if (args == null) await invokable();
+    else await invokable(...deserialize(args));
 }
 
 function broadcast(endpoint: string, args?: string[]): void {
     const event = get<Event<[unknown?]>>(endpoint);
-    event.broadcast(...deserialize(args));
+    if (args == null) event.broadcast();
+    else event.broadcast(...deserialize(args));
 }
 
 function get<T extends Binding>(endpoint: string): T {
@@ -52,8 +55,7 @@ function cache(endpoint: string): Binding {
     return binding;
 }
 
-function deserialize(args?: string[]): unknown[] | never {
-    if (args == null || args.length === 0) return null as never;
+function deserialize(args: string[]): unknown[] {
     const deserialized = new Array<unknown>(args.length);
     for (let i = 0; i < args.length; i++)
         deserialized[i] = JSON.parse(args[i]);

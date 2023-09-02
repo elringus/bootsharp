@@ -1,7 +1,5 @@
-Example on consuming the library in various JavaScript environments.
+Minimal example on using Bootsharp in browser and node.
 
-- Run `dotnet publish` in "Project" folder to compile the library
-- Open `browser.html` in a web browser to test global script import
-- Run `npx serve` under the samples directory and navigate to `HelloWorld/browser-es.html` to test module script import
-- Run `node node.js` to test CommonJS module import
-- Run `node node-es.mjs` to test ES module import (requires node v17 or later)
+- Run `dotnet publish` under "backend" folder to compile the C# project
+- Run an html server (eg, `npx serve`) and navigate to `/browser.html` to test browser scenario
+- Run `node ./node.mjs` to test node scenario (requires node v17 or later)

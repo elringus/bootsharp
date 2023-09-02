@@ -20,20 +20,24 @@ export async function bindExports(runtime: RuntimeAPI) {
 }
 
 export function invoke(endpoint: string, ...args: unknown[]): unknown {
+    ensureInitialized();
     const result = invokable.Invoke(endpoint, serialize(args));
     return deserialize(result);
 }
 
 export function invokeVoid(endpoint: string, ...args: unknown[]): void {
+    ensureInitialized();
     invokable.InvokeVoid(endpoint, serialize(args));
 }
 
 export async function invokeAsync(endpoint: string, ...args: unknown[]): Promise<unknown> {
+    ensureInitialized();
     const result = await invokable.InvokeAsync(endpoint, serialize(args));
     return deserialize(result);
 }
 
 export function invokeVoidAsync(endpoint: string, ...args: unknown[]): Promise<void> {
+    ensureInitialized();
     return invokable.InvokeVoidAsync(endpoint, serialize(args));
 }
 
@@ -47,4 +51,9 @@ function serialize(args: unknown[]): string[] | undefined {
 
 function deserialize(json: string): unknown {
     return JSON.parse(json);
+}
+
+function ensureInitialized() {
+    if (invokable == null)
+        throw Error("Wait until bootsharp.boot() is finished before invoking C# APIs.");
 }
