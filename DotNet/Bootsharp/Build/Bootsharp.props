@@ -13,6 +13,7 @@
         <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
         <WasmGenerateAppBundle>true</WasmGenerateAppBundle>
         <WasmEnableLegacyJsInterop>false</WasmEnableLegacyJsInterop>
+        <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
         <!-- Can't generate serialized types due to https://github.com/dotnet/roslyn/issues/57239; adds about 500KB to the build size. -->
         <!-- https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/source-generation -->
         <!-- TODO: Disable when aggressive trimming and rely on user to manually specify serialized types. -->
