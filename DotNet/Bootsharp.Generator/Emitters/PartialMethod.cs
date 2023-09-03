@@ -17,7 +17,7 @@ internal sealed class PartialMethod(MethodDeclarationSyntax syntax, bool @event)
     {
         var model = compilation.GetSemanticModel(syntax.SyntaxTree);
         var symbol = model.GetEnclosingSymbol(syntax.SpanStart)!;
-        var space = symbol.ContainingNamespace.IsGlobalNamespace ? "Bindings"
+        var space = symbol.ContainingNamespace.IsGlobalNamespace ? "Global"
             : string.Join(".", symbol.ContainingNamespace.ConstituentNamespaces);
         return ConvertNamespace(space, symbol.ContainingAssembly);
     }

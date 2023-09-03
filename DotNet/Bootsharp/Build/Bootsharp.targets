@@ -32,6 +32,7 @@
                 <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
                 <WasmEmitSourceMap>false</WasmEmitSourceMap>
                 <WasmNativeDebugSymbols>false</WasmNativeDebugSymbols>
+                <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
             </PropertyGroup>
         </When>
     </Choose>

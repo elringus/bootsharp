@@ -21,7 +21,7 @@ public static class FunctionTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                partial void Bar () => Function.InvokeVoid("Bindings.bar");
+                partial void Bar () => Function.InvokeVoid("Global.bar");
             }
             """
         },

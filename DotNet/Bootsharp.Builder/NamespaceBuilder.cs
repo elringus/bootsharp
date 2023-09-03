@@ -24,7 +24,7 @@ internal sealed class NamespaceBuilder
 
     public string Build (Type type)
     {
-        var space = type.Namespace ?? "Bindings";
+        var space = type.Namespace ?? "Global";
         foreach (var converter in converters)
             space = converter(space);
         return space;

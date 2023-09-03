@@ -100,14 +100,14 @@ public class DeclarationTest : ContentTest
     }
 
     [Fact]
-    public void WhenNoSpaceTypesAreDeclaredUnderBindingsSpace ()
+    public void WhenNoSpaceTypesAreDeclaredUnderGlobalSpace ()
     {
         AddAssembly(
             With("public class Foo { }", false),
             With("[JSFunction] public static void OnFoo (Foo foo) { }"));
         Task.Execute();
-        Contains("export namespace Bindings {\n    export interface Foo {\n    }\n}");
-        Contains("export namespace Bindings {\n    export let onFoo: (foo: Bindings.Foo) => void;\n}");
+        Contains("export namespace Global {\n    export interface Foo {\n    }\n}");
+        Contains("export namespace Global {\n    export let onFoo: (foo: Global.Foo) => void;\n}");
     }
 
     [Fact]
@@ -428,9 +428,9 @@ public class DeclarationTest : ContentTest
         );
         Task.Execute();
         Contains("export let fun: (bar?: Array<number | null>," +
-                 " nya?: Array<Array<Bindings.Foo> | null>," +
-                 " far?: Array<Array<Bindings.Foo | null> | null>) =>" +
-                 " Array<Bindings.Foo | null> | null;");
+                 " nya?: Array<Array<Global.Foo> | null>," +
+                 " far?: Array<Array<Global.Foo | null> | null>) =>" +
+                 " Array<Global.Foo | null> | null;");
     }
 
     [Fact]
@@ -442,8 +442,8 @@ public class DeclarationTest : ContentTest
             With("[JSFunction] public static IFoo<bool> Fun (Foo foo) => default;")
         );
         Task.Execute();
-        Contains(@"bar?: Array<Array<Bindings.IFoo<string> | null> | null>;");
-        Contains(@"nya?: Array<Array<Bindings.IFoo<number> | null> | null>;");
+        Contains(@"bar?: Array<Array<Global.IFoo<string> | null> | null>;");
+        Contains(@"nya?: Array<Array<Global.IFoo<number> | null> | null>;");
     }
 
     [Fact]

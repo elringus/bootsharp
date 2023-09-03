@@ -21,7 +21,7 @@ public static class EventTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                partial void OnBar () => Event.Broadcast("Bindings.onBar");
+                partial void OnBar () => Event.Broadcast("Global.onBar");
             }
             """
         },

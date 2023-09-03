@@ -32,8 +32,8 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
 
     private void EmitImports ()
     {
-        builder.Append("import { invoke, invokeVoid, invokeAsync, invokeVoidAsync } from './exports';\n");
-        builder.Append("import { Event } from './event';\n\n");
+        builder.Append("import { invoke, invokeVoid, invokeAsync, invokeVoidAsync } from \"./exports\";\n");
+        builder.Append("import { Event } from \"./event\";\n");
     }
 
     private void EmitBinding ()
@@ -53,12 +53,12 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
     private void OpenNamespace ()
     {
         level = binding.Namespace.Count(c => c == '.');
-        var slack = prevBinding is null ? 0 :
-            binding.Namespace.IndexOf(prevBinding.Namespace, StringComparison.Ordinal) + 1;
-        var parts = binding.Namespace[slack..].Split('.');
+        var prevParts = prevBinding?.Namespace.Split('.') ?? Array.Empty<string>();
+        var parts = binding.Namespace.Split('.');
         for (var i = 0; i < parts.Length; i++)
-            if (slack == 0 && i == 0) builder.Append($"export const {parts[i]} = {{\n");
-            else builder.Append($"{Pad(i)}{parts[i]}: {{\n");
+            if (prevParts.ElementAtOrDefault(i) == parts[i]) continue;
+            else if (i == 0) builder.Append($"\nexport const {parts[i]} = {{");
+            else builder.Append($"{Comma()}\n{Pad(i)}{parts[i]}: {{");
     }
 
     private bool ShouldCloseNamespace ()
@@ -71,8 +71,8 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
     {
         var target = nextBinding is null ? 0 : nextBinding.Namespace.Count(c => c == '.');
         for (; level >= target; level--)
-            if (level == 0) builder.Append("};\n");
-            else builder.Append($"{Pad(level)}}},\n");
+            if (level == 0) builder.Append("\n};");
+            else builder.Append($"\n{Pad(level)}}}");
     }
 
     private void EmitMethod (Method method)
@@ -89,27 +89,28 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
             : (method.ReturnType == "void" ? "invokeVoid" : "invoke");
         var funcArgs = string.Join(", ", method.Arguments.Select(a => a.Name));
         var endpoint = $"{method.Assembly}/{method.DeclaringName}/{method.Name}";
-        var methodArgs = $"'{endpoint}'" + (funcArgs == "" ? "" : $", {funcArgs}");
+        var methodArgs = $"\"{endpoint}\"" + (funcArgs == "" ? "" : $", {funcArgs}");
         var body = $"{funcName}({methodArgs})";
-        builder.Append($"{Pad(level + 1)}{ToFirstLower(method.Name)}: ({funcArgs}) => {body},\n");
+        builder.Append($"{Comma()}\n{Pad(level + 1)}{ToFirstLower(method.Name)}: ({funcArgs}) => {body}");
     }
 
     private void EmitFunction (Method method)
     {
-        builder.Append($"{Pad(level + 1)}{ToFirstLower(method.Name)}: undefined,\n");
+        builder.Append($"{Comma()}\n{Pad(level + 1)}{ToFirstLower(method.Name)}: undefined");
     }
 
     private void EmitEvent (Method method)
     {
-        builder.Append($"{Pad(level + 1)}{ToFirstLower(method.Name)}: new Event(),\n");
+        builder.Append($"{Comma()}\n{Pad(level + 1)}{ToFirstLower(method.Name)}: new Event()");
     }
 
     private void EmitEnum (Type @enum)
     {
         var values = Enum.GetNames(@enum);
         var fields = string.Join(", ", values.Select(v => $"{v}: \"{v}\""));
-        builder.Append($"{Pad(level + 1)}{@enum.Name}: {{ {fields} }},\n");
+        builder.Append($"{Comma()}\n{Pad(level + 1)}{@enum.Name}: {{ {fields} }}");
     }
 
     private string Pad (int level) => new(' ', level * 4);
+    private string Comma () => builder[^1] == '{' ? "" : ",";
 }

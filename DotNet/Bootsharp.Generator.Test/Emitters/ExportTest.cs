@@ -10,9 +10,9 @@ public static class ExportTest
             """
             using System.Threading.Tasks;
 
-            [assembly:JSExport(typeof(Bindings.IFoo))]
+            [assembly:JSExport(typeof(Global.IFoo))]
 
-            namespace Bindings;
+            namespace Global;
 
             public readonly record struct Item();
 
@@ -30,9 +30,9 @@ public static class ExportTest
 
             public class JSFoo
             {
-                private static global::Bindings.IFoo handler = null!;
+                private static global::Global.IFoo handler = null!;
 
-                public JSFoo (global::Bindings.IFoo handler)
+                public JSFoo (global::Global.IFoo handler)
                 {
                     JSFoo.handler = handler;
                 }
@@ -43,7 +43,7 @@ public static class ExportTest
 
                 [JSInvokable] public static void Foo (global::System.String? foo) => handler.Foo(foo);
                 [JSInvokable] public static global::System.Threading.Tasks.ValueTask Bar () => handler.Bar();
-                [JSInvokable] public static global::Bindings.Item? Baz () => handler.Baz();
+                [JSInvokable] public static global::Global.Item? Baz () => handler.Baz();
                 [JSInvokable] public static global::System.Threading.Tasks.Task<global::System.String> Nya () => handler.Nya();
                 [JSInvokable] public static global::System.String[] Far (global::System.Int32[] far) => handler.Far(far);
             }
@@ -52,9 +52,9 @@ public static class ExportTest
         // Can override name and invoke.
         new object[] {
             """
-            [assembly:JSExport(typeof(Bindings.IFoo), NamePattern="Foo", NameReplacement="Bar", InvokePattern="(.+)", InvokeReplacement="$1/**/")]
+            [assembly:JSExport(typeof(Global.IFoo), NamePattern="Foo", NameReplacement="Bar", InvokePattern="(.+)", InvokeReplacement="$1/**/")]
 
-            namespace Bindings;
+            namespace Global;
 
             public interface IFoo
             {
@@ -66,9 +66,9 @@ public static class ExportTest
 
             public class JSFoo
             {
-                private static global::Bindings.IFoo handler = null!;
+                private static global::Global.IFoo handler = null!;
 
-                public JSFoo (global::Bindings.IFoo handler)
+                public JSFoo (global::Global.IFoo handler)
                 {
                     JSFoo.handler = handler;
                 }

@@ -13,8 +13,9 @@
         <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
         <WasmGenerateAppBundle>true</WasmGenerateAppBundle>
         <WasmEnableLegacyJsInterop>false</WasmEnableLegacyJsInterop>
-        <!-- Required until https://github.com/dotnet/roslyn/issues/57239 is solved; adds about 500KB to the build size. -->
-        <!-- TODO: Try using generic versions of JSON serializer API. -->
+        <!-- Can't generate serialized types due to https://github.com/dotnet/roslyn/issues/57239; adds about 500KB to the build size. -->
+        <!-- https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/source-generation -->
+        <!-- TODO: Disable when aggressive trimming and rely on user to manually specify serialized types. -->
         <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
 
         <!-- Bootsharp public defaults. -->
@@ -30,8 +31,8 @@
         <BootsharpBinariesDirectory>$(BootsharpPublishDirectory)/bin</BootsharpBinariesDirectory>
         <!-- Directory (relative to base output) to publish 'package.json' file; same as publish directory by default. -->
         <BootsharpPackageDirectory>$(BootsharpPublishDirectory)</BootsharpPackageDirectory>
-        <!-- Whether to disable some .NET features to reduce binary size (true or false); true by default. -->
-        <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
+        <!-- Whether to disable some .NET features to reduce binary size (true or false); false by default. -->
+        <BootsharpAggressiveTrimming>false</BootsharpAggressiveTrimming>
 
     </PropertyGroup>
 
