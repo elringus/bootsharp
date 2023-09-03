@@ -10,9 +10,7 @@ public static class ExportTest
             """
             using System.Threading.Tasks;
 
-            [assembly:JSExport(typeof(Global.IFoo))]
-
-            namespace Global;
+            [assembly:JSExport(typeof(IFoo))]
 
             public readonly record struct Item();
 
@@ -30,9 +28,9 @@ public static class ExportTest
 
             public class JSFoo
             {
-                private static global::Global.IFoo handler = null!;
+                private static global::IFoo handler = null!;
 
-                public JSFoo (global::Global.IFoo handler)
+                public JSFoo (global::IFoo handler)
                 {
                     JSFoo.handler = handler;
                 }
@@ -43,7 +41,7 @@ public static class ExportTest
 
                 [JSInvokable] public static void Foo (global::System.String? foo) => handler.Foo(foo);
                 [JSInvokable] public static global::System.Threading.Tasks.ValueTask Bar () => handler.Bar();
-                [JSInvokable] public static global::Global.Item? Baz () => handler.Baz();
+                [JSInvokable] public static global::Item? Baz () => handler.Baz();
                 [JSInvokable] public static global::System.Threading.Tasks.Task<global::System.String> Nya () => handler.Nya();
                 [JSInvokable] public static global::System.String[] Far (global::System.Int32[] far) => handler.Far(far);
             }
@@ -52,9 +50,7 @@ public static class ExportTest
         // Can override name and invoke.
         new object[] {
             """
-            [assembly:JSExport(typeof(Global.IFoo), NamePattern="Foo", NameReplacement="Bar", InvokePattern="(.+)", InvokeReplacement="$1/**/")]
-
-            namespace Global;
+            [assembly:JSExport(typeof(IFoo), NamePattern="Foo", NameReplacement="Bar", InvokePattern="(.+)", InvokeReplacement="$1/**/")]
 
             public interface IFoo
             {
@@ -66,9 +62,9 @@ public static class ExportTest
 
             public class JSFoo
             {
-                private static global::Global.IFoo handler = null!;
+                private static global::IFoo handler = null!;
 
-                public JSFoo (global::Global.IFoo handler)
+                public JSFoo (global::IFoo handler)
                 {
                     JSFoo.handler = handler;
                 }

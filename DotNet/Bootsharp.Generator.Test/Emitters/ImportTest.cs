@@ -10,9 +10,7 @@ public static class ImportTest
             """
             using System.Threading.Tasks;
 
-            [assembly:JSImport(typeof(Global.IFoo), EventPattern=null, EventReplacement=null)]
-
-            namespace Global;
+            [assembly:JSImport(typeof(IFoo), EventPattern=null, EventReplacement=null)]
 
             public interface IFoo
             {
@@ -25,7 +23,7 @@ public static class ImportTest
             """
             namespace Foo;
 
-            public class JSFoo : global::Global.IFoo
+            public class JSFoo : global::IFoo
             {
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
@@ -36,19 +34,17 @@ public static class ImportTest
                 [JSFunction] public static global::System.Threading.Tasks.Task Nya () => Function.InvokeVoidAsync("Foo.nya");
                 [JSFunction] public static global::System.Threading.Tasks.Task<global::System.String> Far () => Function.InvokeAsync<global::System.String>("Foo.far");
 
-                void global::Global.IFoo.NotifyFoo (global::System.String foo) => NotifyFoo(foo);
-                global::System.Boolean global::Global.IFoo.Bar () => Bar();
-                global::System.Threading.Tasks.Task global::Global.IFoo.Nya () => Nya();
-                global::System.Threading.Tasks.Task<global::System.String> global::Global.IFoo.Far () => Far();
+                void global::IFoo.NotifyFoo (global::System.String foo) => NotifyFoo(foo);
+                global::System.Boolean global::IFoo.Bar () => Bar();
+                global::System.Threading.Tasks.Task global::IFoo.Nya () => Nya();
+                global::System.Threading.Tasks.Task<global::System.String> global::IFoo.Far () => Far();
             }
             """
         },
         // Can detect event methods.
         new object[] {
             """
-            [assembly:JSImport(typeof(Global.IFoo), EventPattern=@"(^Notify)(\S+)", EventReplacement=null)]
-
-            namespace Global;
+            [assembly:JSImport(typeof(IFoo), EventPattern=@"(^Notify)(\S+)", EventReplacement=null)]
 
             public interface IFoo
             {
@@ -58,7 +54,7 @@ public static class ImportTest
             """
             namespace Foo;
 
-            public class JSFoo : global::Global.IFoo
+            public class JSFoo : global::IFoo
             {
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
@@ -66,16 +62,14 @@ public static class ImportTest
 
                 [JSEvent] public static void NotifyFoo (global::System.String foo) => Event.Broadcast("Foo.notifyFoo", foo);
 
-                void global::Global.IFoo.NotifyFoo (global::System.String foo) => NotifyFoo(foo);
+                void global::IFoo.NotifyFoo (global::System.String foo) => NotifyFoo(foo);
             }
             """
         },
         // Can detect and override event methods.
         new object[] {
             """
-            [assembly:JSImport(typeof(Global.IFoo), EventPattern=@"(^Notify)(\S+)", EventReplacement="On$2")]
-
-            namespace Global;
+            [assembly:JSImport(typeof(IFoo), EventPattern=@"(^Notify)(\S+)", EventReplacement="On$2")]
 
             public interface IFoo
             {
@@ -85,7 +79,7 @@ public static class ImportTest
             """
             namespace Foo;
 
-            public class JSFoo : global::Global.IFoo
+            public class JSFoo : global::IFoo
             {
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
@@ -93,16 +87,14 @@ public static class ImportTest
 
                 [JSEvent] public static void OnFoo (global::System.String foo) => Event.Broadcast("Foo.onFoo", foo);
 
-                void global::Global.IFoo.NotifyFoo (global::System.String foo) => OnFoo(foo);
+                void global::IFoo.NotifyFoo (global::System.String foo) => OnFoo(foo);
             }
             """
         },
         // Can override name and invoke.
         new object[] {
             """
-            [assembly:JSImport(typeof(Global.IFoo), NamePattern="Nya(.+)", NameReplacement="Nah$1", InvokePattern="(.+)", InvokeReplacement="$1/**/")]
-
-            namespace Global;
+            [assembly:JSImport(typeof(IFoo), NamePattern="Nya(.+)", NameReplacement="Nah$1", InvokePattern="(.+)", InvokeReplacement="$1/**/")]
 
             public interface IFoo
             {
@@ -113,7 +105,7 @@ public static class ImportTest
             """
             namespace Foo;
 
-            public class JSFoo : global::Global.IFoo
+            public class JSFoo : global::IFoo
             {
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
@@ -122,8 +114,8 @@ public static class ImportTest
                 [JSFunction] public static void NahFoo (global::System.String foo) => Function.InvokeVoid("Foo.nahFoo", foo)/**/;
                 [JSFunction] public static global::System.Boolean Bar () => Function.Invoke<global::System.Boolean>("Foo.bar")/**/;
 
-                void global::Global.IFoo.NyaFoo (global::System.String foo) => NahFoo(foo);
-                global::System.Boolean global::Global.IFoo.Bar () => Bar();
+                void global::IFoo.NyaFoo (global::System.String foo) => NahFoo(foo);
+                global::System.Boolean global::IFoo.Bar () => Bar();
             }
             """
         },
