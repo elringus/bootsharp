@@ -1,4 +1,4 @@
-// 'Backend' and 'Frontend' APIs are auto-generated on C# build.
+// Named exports are auto-generated on C# build.
 import bootsharp, { Backend, Frontend } from "./cs/bin/bootsharp/bootsharp.js";
 
 // Binding 'IFrontend.GetName' endpoint invoked in C#.

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Bootsharp.Generator.Common;
 
 namespace Bootsharp.Generator;
@@ -23,11 +24,12 @@ internal sealed class ExportType(ITypeSymbol type, AttributeData attribute)
         var specType = BuildFullName(type);
         var implType = BuildBindingType(type);
         var space = BuildBindingNamespace(type);
+        var modifiers = (type.DeclaringSyntaxReferences[0].GetSyntax() as InterfaceDeclarationSyntax)!.Modifiers;
         return EmitCommon
         ($$"""
            namespace {{space}};
 
-           public class {{implType}}
+           {{modifiers}} class {{implType}}
            {
                private static {{specType}} handler = null!;
 

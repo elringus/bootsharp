@@ -9,8 +9,8 @@ _ = new Backend.JSBackend(new SharpBackend());
 System.Console.WriteLine($"Hello {Frontend.JSFrontend.GetName()}, Sharp here!");
 
 // Improvised API of JavaScript frontend.
-interface IFrontend { string GetName (); }
+public interface IFrontend { string GetName (); }
 // Improvised API of C# backend.
-interface IBackend { string GetName (); }
+public interface IBackend { string GetName (); }
 // Implementation of the backend.
 class SharpBackend : IBackend { public string GetName () => "Sharp"; }
