@@ -34,7 +34,7 @@ internal class SharpBackend : IBackend
 
 // Until .NET support source generators compositing (https://github.com/dotnet/roslyn/issues/57239)
 // JSON generator won't pick type hints emitted by other generators; hence, with aggressive trimming enabled,
-// (which strips reflection-based JSON serialization), we have to manually hint the serialized types.
+// (which strips reflection-based JSON serialization), we have to manually hint serialized types.
 // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/source-generation
 [JsonSerializable(typeof(Info))]
 internal partial class SerializerContext : JsonSerializerContext;
