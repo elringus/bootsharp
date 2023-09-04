@@ -7,7 +7,7 @@ using Bootsharp;
 [assembly: JSExport(typeof(IBackend))]
 
 Serializer.Options = new(JsonSerializerDefaults.Web) {
-    TypeInfoResolver = SourceGenerationContext.Default
+    TypeInfoResolver = SerializerContext.Default
 };
 
 _ = new Backend.JSBackend(new SharpBackend());
@@ -37,4 +37,4 @@ internal class SharpBackend : IBackend
 // (which strips reflection-based JSON serialization), we have to manually hint the serialized types.
 // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/source-generation
 [JsonSerializable(typeof(Info))]
-internal partial class SourceGenerationContext : JsonSerializerContext;
+internal partial class SerializerContext : JsonSerializerContext;
