@@ -6,9 +6,10 @@ import fs from "node:fs/promises";
 console.log(`Binary size: ${await measure("./cs/bin/bootsharp/bin")}KB`);
 console.log(`Brotli size: ${await measure("./cs/bin/bootsharp/bro")}KB`);
 
-bootsharp.resources.wasm.content = await fetchBro(bootsharp.resources.wasm);
-for (const assembly of bootsharp.resources.assemblies)
-    assembly.content = await fetchBro(assembly);
+await Promise.all([
+    fetchBro(bootsharp.resources.wasm),
+    ...bootsharp.resources.assemblies.map(fetchBro)
+]);
 
 Frontend.log = console.log;
 Frontend.getInfo = () => ({ environment: `Node ${process.version}` });
@@ -26,5 +27,5 @@ async function measure(dir) {
 
 async function fetchBro(resource) {
     const bro = await fs.readFile(`./cs/bin/bootsharp/bro/${resource.name}.br`);
-    return util.promisify(zlib.brotliDecompress)(bro);
+    resource.content = await util.promisify(zlib.brotliDecompress)(bro);
 }
