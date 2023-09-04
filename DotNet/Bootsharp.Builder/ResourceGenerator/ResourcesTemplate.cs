@@ -12,14 +12,14 @@ internal sealed class ResourcesTemplate(
     public string Build () =>
         $$"""
           export default {
-              wasm: {{wasm}},
+              wasm: {{BuildBin("dotnet.native.wasm", wasm)}},
               assemblies: [
-                  {{JoinLines(assemblies.Select(BuildAssembly), 2, separator: ",\n")}}
+                  {{JoinLines(assemblies.Select(a => BuildBin(a.Name, a.Content)), 2, separator: ",\n")}}
               ],
               entryAssemblyName: "{{entryAssemblyName}}"
           };
           """;
 
-    private string BuildAssembly (AssemblyResource assembly) =>
-        $$"""{ name: "{{assembly.Name}}", content: {{assembly.Content}} }""";
+    private string BuildBin (string name, string content) =>
+        $$"""{ name: "{{name}}", content: {{content}} }""";
 }

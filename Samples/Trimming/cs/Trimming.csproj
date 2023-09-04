@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+        <!-- Not embedding binaries to source module reduces build size by ~30%. -->
+        <BootsharpEmbedBinaries>false</BootsharpEmbedBinaries>
+        <!-- Disabling non-essential .NET features reduces minimal build size by ~35%. -->
+        <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bootsharp" Version="*-*"/>
+    </ItemGroup>
+
+    <Target Name="CompressBuild" AfterTargets="BootsharpBuild">
+        <Exec Command="npx gzipper compress ./ --brotli"
+              WorkingDirectory="$(BootsharpBinariesDirectory)"/>
+        <ItemGroup>
+            <CompressedBinaries Include="$(BootsharpBinariesDirectory)/*.br"/>
+        </ItemGroup>
+        <Move SourceFiles="@(CompressedBinaries)"
+              DestinationFolder="$(BootsharpPublishDirectory)/bro"/>
+    </Target>
+
+</Project>

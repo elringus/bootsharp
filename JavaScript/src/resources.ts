@@ -8,18 +8,18 @@ export const resources: BootResources = generated;
 /** Resources required to boot .NET runtime. */
 export type BootResources = {
     /** Either binary or base64-encoded string of the runtime WASM content. */
-    wasm?: Uint8Array | string;
+    wasm: BinaryResource;
     /** C# assemblies required to boot the runtime. */
-    readonly assemblies: AssemblyResource[];
+    readonly assemblies: BinaryResource[];
     /** Name of the entry (main) assembly, without file extension. */
     readonly entryAssemblyName: string;
 }
 
-/** C# assembly required to boot .NET runtime. */
-export type AssemblyResource = {
-    /** Name of the assembly, without file extension. */
+/** Binary resource required to boot .NET runtime.*/
+export type BinaryResource = {
+    /** Name of the binary file, including extension. */
     readonly name: string;
-    /** Either binary or base64-encoded string of the assembly content. */
+    /** Either binary or base64-encoded string of the file content. */
     content?: Uint8Array | string;
 }
 
@@ -41,7 +41,7 @@ export function buildConfig(): RuntimeConfig {
             },
             {
                 name: "dotnet.native.wasm",
-                buffer: toBinary(resources.wasm!),
+                buffer: toBinary(resources.wasm.content!),
                 behavior: "dotnetwasm"
             },
             ...resources.assemblies.map(buildAssembly)
@@ -50,14 +50,14 @@ export function buildConfig(): RuntimeConfig {
 }
 
 function validate(res: BootResources): void {
-    if (res.wasm == null || res.wasm.length === 0)
+    if (res.wasm.content == null || res.wasm.content.length === 0)
         throw Error("Missing WASM boot resource.");
     for (const asm of res.assemblies)
         if (asm.content == null || asm.content.length === 0)
             throw Error(`Missing '${asm.name}' assembly boot resource.`);
 }
 
-function buildAssembly(res: AssemblyResource): AssetEntry {
+function buildAssembly(res: BinaryResource): AssetEntry {
     return {
         name: res.name,
         buffer: toBinary(res.content!),

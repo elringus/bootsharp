@@ -13,7 +13,7 @@ public static class Serializer
     /// <summary>
     /// Options for <see cref="JsonSerializer"/> used under the hood.
     /// </summary>
-    public static JsonSerializerOptions Options { get; set; } = JsonSerializerOptions.Default;
+    public static JsonSerializerOptions Options { get; set; } = new(JsonSerializerDefaults.Web);
 
     /// <summary>
     /// Attempt to serialize specified object to JSON string.

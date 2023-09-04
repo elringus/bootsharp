@@ -104,7 +104,8 @@ internal static class TypeUtilities
         var assemblyName = Path.GetFileName(assemblyPath);
         return assemblyName.StartsWith("System.") ||
                assemblyName.StartsWith("Microsoft.") ||
-               assemblyName.StartsWith("netstandard");
+               assemblyName.StartsWith("netstandard") ||
+               assemblyName.StartsWith("mscorlib");
     }
 
     public static string GetGenericNameWithoutArgs (Type type)

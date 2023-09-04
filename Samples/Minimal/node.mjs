@@ -7,3 +7,5 @@ Frontend.getName = () => "Node.js";
 await bootsharp.boot();
 // Invoking 'IBackend.GetName' C# method.
 console.log(`Hello ${Backend.getName()}!`);
+
+process.env.BOOTSHARP_E2E_MINIMAL = "PASS";

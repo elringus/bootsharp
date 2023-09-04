@@ -21,7 +21,7 @@ public class ResourceTest : ContentTest
         AddAssembly("Foo.dll");
         Task.EmbedBinaries = true;
         Task.Execute();
-        Contains($"""wasm: "{Convert.ToBase64String(Project.MockWasmBinary)}",""");
+        Contains($$"""wasm: { name: "dotnet.native.wasm", content: "{{Convert.ToBase64String(Project.MockWasmBinary)}}" },""");
         Contains("{ name: \"Foo.wasm\", content: \"");
         Contains("{ name: \"Bootsharp.wasm\", content: \"");
         Contains("{ name: \"System.Runtime.wasm\", content: \"");
@@ -34,7 +34,7 @@ public class ResourceTest : ContentTest
         AddAssembly("Foo.dll");
         Task.EmbedBinaries = false;
         Task.Execute();
-        Contains("wasm: undefined");
+        Contains("""wasm: { name: "dotnet.native.wasm", content: undefined },""");
         Contains("""{ name: "Foo.wasm", content: undefined""");
         Contains("""{ name: "Bootsharp.wasm", content: undefined""");
         Contains("""{ name: "System.Runtime.wasm", content: undefined""");
