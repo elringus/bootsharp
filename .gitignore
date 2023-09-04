@@ -1,6 +1,5 @@
 .vs
 .idea
-.nuget
 node_modules
 coverage
 dist
@@ -9,4 +8,3 @@ obj
 
 *.suo
 *.user
-nuget.config
