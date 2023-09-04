@@ -7,13 +7,11 @@
 // Named exports are auto-generated on C# build.
 import bootsharp, { Backend, Frontend } from './cs/bin/bootsharp/bootsharp.js';
 
-window.onload = async function () {
-    // Binding 'IFrontend.GetName' endpoint invoked in C#.
-    Frontend.getName = () => "Browser";
-    // Initializing dotnet runtime and invoking entry point.
-    await bootsharp.boot();
-    // Invoking 'IBackend.GetName' C# method.
-    document.getElementById("msg").innerHTML = `Hello ${Backend.getName()}!`;
-};
+// Binding 'IFrontend.GetName' endpoint invoked in C#.
+Frontend.getName = () => "Browser";
+// Initializing dotnet runtime and invoking entry point.
+await bootsharp.boot();
+// Invoking 'IBackend.GetName' C# method.
+document.getElementById("msg").innerHTML = `Hello ${Backend.getName()}!`;
 
 </script>
