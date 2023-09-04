@@ -1,23 +1,18 @@
-<!-- Example on using bootsharp in browser. -->
-<!-- Publish the dotnet backend and HTML-serve the folder to test. -->
-
 <!DOCTYPE html>
 
 <h1 id="msg">Loading...</h1>
 
 <script type="module">
 
-import bootsharp, { HelloWorld } from './backend/bin/bootsharp/bootsharp.js';
-
-// Binding 'GetHostName' method declared in 'HelloWorld' C# assembly.
-HelloWorld.getHostName = () => "Browser";
+import bootsharp, { Backend, Frontend } from './cs/bin/bootsharp/bootsharp.js';
 
 window.onload = async function () {
+    // Binding 'IFrontend.GetName' endpoint invoked in C#.
+    Frontend.getName = () => "Browser";
     // Initializing dotnet runtime and invoking entry point.
     await bootsharp.boot();
-    // Invoking 'GetName()' C# method defined in 'HelloWorld' assembly.
-    const name = HelloWorld.getName();
-    document.getElementById("msg").innerHTML = `Hello ${name}!`;
+    // Invoking 'IBackend.GetName' C# method.
+    document.getElementById("msg").innerHTML = `Hello ${Backend.getName()}!`;
 };
 
 </script>

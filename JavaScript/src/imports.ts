@@ -46,11 +46,12 @@ function broadcast(endpoint: string, args?: string[]): void {
 }
 
 function get<T extends Binding>(endpoint: string): T {
-    return (cached.get(endpoint) ?? cache(endpoint)) as T;
+    return (cached.get(endpoint) ?? resolve(endpoint)) as T;
 }
 
-function cache(endpoint: string): Binding {
+function resolve(endpoint: string): Binding {
     const binding = endpoint.split(".").reduce((x, y) => x[y], bindings);
+    if (binding == null) throw Error(`'${endpoint}' JavaScript endpoint is not bind.`);
     cached.set(endpoint, binding);
     return binding;
 }
