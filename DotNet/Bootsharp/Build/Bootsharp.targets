@@ -46,10 +46,10 @@
             <BootsharpInspectedDirectory>$(PublishDir)</BootsharpInspectedDirectory>
             <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
             <BootSharpBaseOutputPath>$(BaseOutputPath.Replace('\', '/'))</BootSharpBaseOutputPath>
-            <BootsharpPublishDirectory>$(BootSharpBaseOutputPath)$(BootsharpPublishDirectory)</BootsharpPublishDirectory>
-            <BootsharpTypesDirectory>$(BootSharpBaseOutputPath)$(BootsharpTypesDirectory)</BootsharpTypesDirectory>
-            <BootsharpBinariesDirectory>$(BootSharpBaseOutputPath)$(BootsharpBinariesDirectory)</BootsharpBinariesDirectory>
-            <BootsharpPackageDirectory>$(BootSharpBaseOutputPath)$(BootsharpPackageDirectory)</BootsharpPackageDirectory>
+            <BootsharpPublishDirectory Condition="'$(BootsharpPublishDirectory)' == 'default'">$(BootSharpBaseOutputPath)$(BootsharpName)</BootsharpPublishDirectory>
+            <BootsharpTypesDirectory Condition="'$(BootsharpTypesDirectory)' == 'default'">$(BootsharpPublishDirectory)/types</BootsharpTypesDirectory>
+            <BootsharpBinariesDirectory Condition="'$(BootsharpBinariesDirectory)' == 'default'">$(BootsharpPublishDirectory)/bin</BootsharpBinariesDirectory>
+            <BootsharpPackageDirectory Condition="'$(BootsharpPackageDirectory)' == 'default'">$(BootsharpPublishDirectory)</BootsharpPackageDirectory>
         </PropertyGroup>
 
         <!-- Generate bindings, types and (optionally) embed binaries. -->

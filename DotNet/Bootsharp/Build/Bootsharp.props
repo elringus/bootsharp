@@ -24,14 +24,14 @@
         <BootsharpName>bootsharp</BootsharpName>
         <!-- Whether to embed binaries to the JavaScript module file (true or false); true by default. -->
         <BootsharpEmbedBinaries>true</BootsharpEmbedBinaries>
-        <!-- Directory (relative to base output) to publish generated JavaScript module; 'base-output/module-name' by default. -->
-        <BootsharpPublishDirectory>$(BootsharpName)</BootsharpPublishDirectory>
-        <!-- Directory (relative to base output) to publish type declarations; 'publish-dir/types' by default. -->
-        <BootsharpTypesDirectory>$(BootsharpPublishDirectory)/types</BootsharpTypesDirectory>
-        <!-- Directory (relative to base output) to publish binaries when 'EmbedBinaries' disabled; 'publish-dir/bin' by default. -->
-        <BootsharpBinariesDirectory>$(BootsharpPublishDirectory)/bin</BootsharpBinariesDirectory>
-        <!-- Directory (relative to base output) to publish 'package.json' file; same as publish directory by default. -->
-        <BootsharpPackageDirectory>$(BootsharpPublishDirectory)</BootsharpPackageDirectory>
+        <!-- Directory to publish generated JavaScript module; 'base-output/module-name' by default. -->
+        <BootsharpPublishDirectory>default</BootsharpPublishDirectory>
+        <!-- Directory to publish type declarations; 'publish-dir/types' by default. -->
+        <BootsharpTypesDirectory>default</BootsharpTypesDirectory>
+        <!-- Directory to publish binaries when 'EmbedBinaries' disabled; 'publish-dir/bin' by default. -->
+        <BootsharpBinariesDirectory>default</BootsharpBinariesDirectory>
+        <!-- Directory to publish 'package.json' file; same as publish directory by default. -->
+        <BootsharpPackageDirectory>default</BootsharpPackageDirectory>
         <!-- Whether to disable some .NET features to reduce binary size (true or false); false by default. -->
         <BootsharpAggressiveTrimming>false</BootsharpAggressiveTrimming>
 
