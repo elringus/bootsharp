@@ -14,13 +14,9 @@
     </ItemGroup>
 
     <Target Name="CompressBuild" AfterTargets="BootsharpBuild">
-        <Exec Command="npx gzipper compress ./ --brotli"
-              WorkingDirectory="$(BootsharpBinariesDirectory)"/>
-        <ItemGroup>
-            <CompressedBinaries Include="$(BootsharpBinariesDirectory)/*.br"/>
-        </ItemGroup>
-        <Move SourceFiles="@(CompressedBinaries)"
-              DestinationFolder="$(BootsharpPublishDirectory)/bro"/>
+        <RemoveDir Directories="$(BootsharpPublishDirectory)/bro"/>
+        <Exec Command="npx gzipper compress bin bro --brotli"
+              WorkingDirectory="$(BootsharpPublishDirectory)"/>
     </Target>
 
 </Project>
