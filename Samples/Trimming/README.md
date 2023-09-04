@@ -2,4 +2,4 @@ Example on producing minimal possible build size via disabling binaries embeddin
 
 To test and measure final build size:
 - Run `dotnet publish cs/Trimming.csproj`;
-- Run `node node.mjs`.
+- Run `node main.mjs`.
