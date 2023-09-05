@@ -71,7 +71,7 @@ function toBinary(data: Uint8Array | string): Uint8Array {
     if (typeof Buffer === "function") return Buffer.from(data, "base64");
 
     const abc = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"];
-    let result = [];
+    const result = [];
     for (let i = 0; i < data.length / 4; i++) {
         const chunk = [...data.slice(4 * i, 4 * i + 4)];
         const bin = chunk.map(x => abc.indexOf(x).toString(2).padStart(6, "0")).join("");
