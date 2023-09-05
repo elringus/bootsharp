@@ -11,6 +11,8 @@ export type BootCustom = {
     create?: (config: RuntimeConfig) => Promise<RuntimeAPI>;
     /** Customize binding imported C# APIs. */
     import?: (runtime: RuntimeAPI) => Promise<void>;
+    /** Customize .NET runtime startup. */
+    run?: (runtime: RuntimeAPI) => Promise<void>;
     /** Customize binding exported C# APIs. */
     export?: (runtime: RuntimeAPI) => Promise<void>;
 }
@@ -24,7 +26,7 @@ export async function boot(custom?: BootCustom): Promise<RuntimeAPI> {
     const config = custom?.config ?? buildConfig();
     const runtime = await custom?.create?.(config) || await builder.withConfig(config).create();
     await custom?.import?.(runtime) || bindImports(runtime);
-    await builder.run();
+    await custom?.run?.(runtime) || await runtime.runMain(config.mainAssemblyName!, []);
     await custom?.export?.(runtime) || await bindExports(runtime);
     return runtime;
 }
