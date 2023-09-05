@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using static Bootsharp.Builder.TextUtilities;
-
 namespace Bootsharp.Builder;
 
 internal sealed class ResourcesTemplate(

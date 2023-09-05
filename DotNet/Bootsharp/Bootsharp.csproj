@@ -20,6 +20,7 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>NU5100,CS1591</NoWarn>
         <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 

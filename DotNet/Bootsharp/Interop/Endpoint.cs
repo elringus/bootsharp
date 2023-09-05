@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace Bootsharp;
+﻿namespace Bootsharp;
 
 /// <summary>
 /// Allows building and resolving endpoints for accessing C# methods from JavaScript.

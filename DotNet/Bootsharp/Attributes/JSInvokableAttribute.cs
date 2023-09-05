@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Bootsharp;
+﻿namespace Bootsharp;
 
 /// <summary>
 /// Applied to a static method to make it invokable in JavaScript.

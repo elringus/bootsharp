@@ -1,6 +1,3 @@
-using System;
-using Xunit;
-
 namespace Bootsharp.Builder.Test;
 
 public class ResourceTest : ContentTest

@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using static Bootsharp.Serializer;
+﻿using static Bootsharp.Serializer;
 
 namespace Bootsharp;
 

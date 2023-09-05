@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿global using static Bootsharp.Builder.TextUtilities;
 using System.Text.RegularExpressions;
 
 namespace Bootsharp.Builder;

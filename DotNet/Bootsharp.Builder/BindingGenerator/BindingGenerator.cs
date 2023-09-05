@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using static Bootsharp.Builder.TextUtilities;
+﻿using System.Text;
 
 namespace Bootsharp.Builder;
 

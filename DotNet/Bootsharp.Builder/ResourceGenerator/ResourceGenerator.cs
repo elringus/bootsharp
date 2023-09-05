@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-
-namespace Bootsharp.Builder;
+﻿namespace Bootsharp.Builder;
 
 internal sealed class ResourceGenerator(string entryName, string buildDir, bool embed)
 {

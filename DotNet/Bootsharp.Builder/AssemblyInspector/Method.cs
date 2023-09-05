@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace Bootsharp.Builder;
+﻿namespace Bootsharp.Builder;
 
 internal record Method
 {

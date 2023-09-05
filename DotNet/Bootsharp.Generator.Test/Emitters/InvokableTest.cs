@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Bootsharp.Generator.Test;
+﻿namespace Bootsharp.Generator.Test;
 
 public static class InvokableTest
 {

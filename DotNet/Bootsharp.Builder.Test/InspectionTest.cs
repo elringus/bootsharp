@@ -1,7 +1,4 @@
-﻿using System.IO;
-using Xunit;
-
-namespace Bootsharp.Builder.Test;
+﻿namespace Bootsharp.Builder.Test;
 
 public class InspectionTest : BuildTest
 {

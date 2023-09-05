@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using Xunit;
 using static Bootsharp.Serializer;
 
 namespace Bootsharp.Test;

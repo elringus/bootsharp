@@ -1,6 +1,4 @@
-﻿using System;
-using Xunit;
-using static Bootsharp.Event;
+﻿using static Bootsharp.Event;
 
 namespace Bootsharp.Test;
 

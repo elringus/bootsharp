@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Text;
-using Xunit;
 
 namespace Bootsharp.Generator.Test;
 
@@ -83,7 +78,6 @@ public class GeneratorTest
     private async Task Verify (string source, params (string file, string content)[] expected)
     {
         IncludeBootsharpSources(verifier.TestState.Sources);
-        IncludeCommonSource(ref source);
         verifier.TestCode = source;
         for (int i = 0; i < expected.Length; i++)
         {
@@ -108,14 +102,17 @@ public class GeneratorTest
         foreach (var path in Directory.EnumerateFiles($"{root}/Interop", "*.cs"))
             sourceCache.Add((Path.GetFileName(path), File.ReadAllText(path)));
         sourceCache.Add(("Error.cs", File.ReadAllText($"{root}/Error.cs")));
+        sourceCache.Add(("GlobalUsings.cs",
+            """
+            global using System;
+            global using System.Collections.Generic;
+            global using System.IO;
+            global using System.Linq;
+            global using System.Threading.Tasks;
+            global using Bootsharp;
+            """));
         IncludeBootsharpSources(sources);
     }
-
-    private void IncludeCommonSource (ref string source) => source =
-        $"""
-         using Bootsharp;
-         {source}
-         """;
 
     private void IncludeCommonExpected (ref string expected) => expected =
         $"""

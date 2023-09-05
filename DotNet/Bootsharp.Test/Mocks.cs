@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Bootsharp.Test
+﻿namespace Bootsharp.Test
 {
     public enum MockEnum { Foo, Bar }
     public record MockItem(string Id);

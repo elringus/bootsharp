@@ -1,5 +1,4 @@
-﻿using Xunit;
-using static Bootsharp.Endpoint;
+﻿using static Bootsharp.Endpoint;
 
 namespace Bootsharp.Test;
 

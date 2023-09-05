@@ -1,7 +1,5 @@
-﻿using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using Bootsharp;
-using Xunit;
 
 [assembly: JSNamespace("pattern", "replacement")]
 

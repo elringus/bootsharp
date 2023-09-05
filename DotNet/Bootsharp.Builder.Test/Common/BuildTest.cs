@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using Microsoft.Build.Utilities.ProjectCreation;
+﻿using Microsoft.Build.Utilities.ProjectCreation;
 
 namespace Bootsharp.Builder.Test;
 

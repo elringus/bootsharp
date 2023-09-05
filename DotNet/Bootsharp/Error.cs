@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Bootsharp;
+﻿namespace Bootsharp;
 
 /// <summary>
 /// Exception thrown from Bootsharp internal behaviour.

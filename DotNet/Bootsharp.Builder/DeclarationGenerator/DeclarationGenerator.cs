@@ -1,6 +1,4 @@
-﻿using static Bootsharp.Builder.TextUtilities;
-
-namespace Bootsharp.Builder;
+﻿namespace Bootsharp.Builder;
 
 internal sealed class DeclarationGenerator(NamespaceBuilder spaceBuilder)
 {

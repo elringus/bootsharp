@@ -1,5 +1,3 @@
-using Xunit;
-
 namespace Bootsharp.Builder.Test;
 
 public class BindingTest : ContentTest

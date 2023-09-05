@@ -1,10 +1,8 @@
-﻿using System.IO;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
+﻿using Microsoft.Build.Framework;
 
 namespace Bootsharp.Builder;
 
-public sealed class BuildBootsharp : Task
+public sealed class BuildBootsharp : Microsoft.Build.Utilities.Task
 {
     [Required] public required string BuildDirectory { get; set; }
     [Required] public required string InspectedDirectory { get; set; }

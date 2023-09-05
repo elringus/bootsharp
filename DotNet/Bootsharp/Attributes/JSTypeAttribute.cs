@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Bootsharp;
+﻿namespace Bootsharp;
 
 /// <summary>
 /// The attribute for automatic JS bindings generation of specified types.

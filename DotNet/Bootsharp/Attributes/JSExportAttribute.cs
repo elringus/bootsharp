@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Bootsharp;
+﻿namespace Bootsharp;
 
 /// <summary>
 /// When applied to WASM entry point assembly, specified interfaces will
