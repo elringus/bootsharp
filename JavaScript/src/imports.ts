@@ -1,4 +1,4 @@
-﻿// @ts-ignore (resolved when building C# solution)
+﻿// @ts-expect-error (resolved when building C# solution)
 import * as bindings from "./bindings.g";
 import type { RuntimeAPI } from "./dotnet.d.ts";
 import type { Event } from "./event";

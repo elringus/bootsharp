@@ -1,8 +1,7 @@
-﻿// @ts-ignore (resolved when building C# solution)
+﻿// @ts-expect-error (resolved when building C# solution)
 import * as runtimeModule from "./dotnet.runtime";
-// @ts-ignore (resolved when building C# solution)
+// @ts-expect-error (resolved when building C# solution)
 import * as nativeModule from "./dotnet.native";
-// @ts-ignore (resolved when building C# solution)
 import * as dotnetModule from "./dotnet";
 import type { DotnetHostBuilder, MonoConfig, AssetEntry, ModuleAPI } from "./dotnet.d.ts";
 
