@@ -9,4 +9,3 @@ await bootsharp.boot();
 console.log(`Hello ${Backend.getName()}!`);
 
 process.env.BOOTSHARP_E2E_MINIMAL = "PASS";
-process.exit();

@@ -17,7 +17,6 @@ await bootsharp.boot();
 console.log(`Backend: ${Backend.getInfo().environment}`);
 
 process.env.BOOTSHARP_E2E_TRIMMING = "PASS";
-process.exit();
 
 async function measure(dir) {
     let size = 0;

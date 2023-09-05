@@ -1,5 +1,4 @@
-﻿// @ts-expect-error (resolved when building C# solution)
-import * as bindings from "./bindings.g";
+﻿import * as bindings from "./bindings.g";
 import type { RuntimeAPI } from "./dotnet.d.ts";
 import type { Event } from "./event";
 
@@ -50,7 +49,7 @@ function get<T extends Binding>(endpoint: string): T {
 }
 
 function resolve(endpoint: string): Binding {
-    const binding = endpoint.split(".").reduce((x, y) => x[y], bindings);
+    const binding = <Binding><unknown>endpoint.split(".").reduce((x, y) => (<never>x)[y] , bindings);
     if (binding == null) throw Error(`'${endpoint}' JavaScript endpoint is not bind.`);
     cached.set(endpoint, binding);
     return binding;
