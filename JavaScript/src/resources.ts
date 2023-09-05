@@ -73,9 +73,9 @@ function toBinary(data: Uint8Array | string): Uint8Array {
     const abc = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"];
     let result = [];
     for (let i = 0; i < data.length / 4; i++) {
-        let chunk = [...data.slice(4 * i, 4 * i + 4)];
-        let bin = chunk.map(x => abc.indexOf(x).toString(2).padStart(6, "0")).join("");
-        let bytes = bin.match(/.{1,8}/g)?.map(x => +("0b" + x)) ?? [];
+        const chunk = [...data.slice(4 * i, 4 * i + 4)];
+        const bin = chunk.map(x => abc.indexOf(x).toString(2).padStart(6, "0")).join("");
+        const bytes = bin.match(/.{1,8}/g)?.map(x => +("0b" + x)) ?? [];
         result.push(...bytes.slice(0, 3 - Number(data[4 * i + 2] == "=") - Number(data[4 * i + 3] == "=")));
     }
     return Uint8Array.from(result);

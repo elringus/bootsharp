@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bootsharp" Version="*-*"/>
+        <PackageReference Include="Bootsharp" Version="0.0.2-alpha.30" />
     </ItemGroup>
 
 </Project>
