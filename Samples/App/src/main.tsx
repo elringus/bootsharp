@@ -9,5 +9,5 @@ await bootBackend();
 
 createRoot(document.getElementById("app")!).render([
     createElement(require("donut"), 33333),
-    createElement(require("prime"), 60)
+    createElement(require("computer"), 60)
 ]);

@@ -16,13 +16,13 @@ html {
     height: 100px;
 }
 
-#prime {
+#computer {
     position: absolute;
     top: 10px;
     width: 300px;
 }
 
-#prime button {
+#computer button {
     margin-top: 10px;
     width: 100%;
 }

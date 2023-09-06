@@ -1,9 +1,9 @@
 ﻿namespace Backend.Prime;
 
-// One possible implementation of the prime computer service.
+// Implementation of the computer service that compute prime numbers.
 // Injected in the application entry point assembly (Backend.WASM).
 
-public class PrimeComputer(IPrimeFrontend frontend) : IPrimeBackend
+public class PrimeComputer(IComputerUI ui) : IComputer
 {
     private CancellationTokenSource? cts;
 
@@ -23,8 +23,8 @@ public class PrimeComputer(IPrimeFrontend frontend) : IPrimeBackend
         while (!token.IsCancellationRequested)
         {
             var time = DateTime.Now;
-            ComputePrime(frontend.GetComplexity());
-            frontend.NotifyComplete((DateTime.Now - time).Milliseconds);
+            ComputePrime(ui.GetComplexity());
+            ui.NotifyComplete((DateTime.Now - time).Milliseconds);
             await Task.Delay(1);
         }
     }

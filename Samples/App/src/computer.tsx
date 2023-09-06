@@ -33,7 +33,7 @@ export default ({ complexity }: Props) => {
     }, [logResult]);
 
     return (
-        <div id="prime">
+        <div id="computer">
             <div>
                 This sample shows the benefit of AOT-compiling the C# backend.
                 The Donut is animating on the main (UI) thread while backend is computing.
