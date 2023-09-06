@@ -5,7 +5,7 @@ type Props = {
     complexity: number;
 };
 
-export const Prime = ({ complexity }: Props) => {
+export default ({ complexity }: Props) => {
     const [computing, setComputing] = useState(false);
     const [results, setResults] = useState("");
 
@@ -35,9 +35,9 @@ export const Prime = ({ complexity }: Props) => {
     return (
         <div id="prime">
             <div>
-                This sample shows the benefit of running C# backend on worker thread.
-                The Donut is animating on the main (UI) thread and backend is computing.
-                When built without 'CreateWorker' enabled, the animation will perform poorly.
+                This sample shows the benefit of AOT-compiling the C# backend.
+                The Donut is animating on the main (UI) thread while backend is computing.
+                With AOT enabled, compute complexity can be higher w/o affecting the animation.
             </div>
             <button onClick={toggle}>
                 {computing ? "STOP COMPUTE" : "START COMPUTE"}

@@ -4,6 +4,7 @@
         "module": "es2022",
         "moduleResolution": "bundler",
         "jsx": "react-jsx",
+        "baseUrl": "src",
         "strict": true
     },
     "include": ["src"]

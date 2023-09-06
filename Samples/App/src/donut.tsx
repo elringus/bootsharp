@@ -4,7 +4,7 @@ type Props = {
     fps: number;
 };
 
-export const Donut = ({ fps }: Props) => {
+export default ({ fps }: Props) => {
     const [time, setTime] = useState<number>();
 
     useEffect(() => {
