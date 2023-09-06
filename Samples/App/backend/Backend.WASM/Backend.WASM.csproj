@@ -1,17 +1,25 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <EmbedBinaries>false</EmbedBinaries>
+        <TargetFramework>net8.0</TargetFramework>
+        <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+        <!-- Specify custom name for the generated JavaScript module. -->
+        <BootsharpName>backend</BootsharpName>
+        <!-- Publish module's package.json file under solution folder for accessiblity. -->
+        <BootsharpPackageDirectory>$(SolutionDir)</BootsharpPackageDirectory>
+        <!-- Don't embed the C# solution binaries to the JavaScript module. -->
+        <BootsharpEmbedBinaries>false</BootsharpEmbedBinaries>
+        <!-- Publish the binaries to the React public directory for deployment. -->
+        <BootsharpBinariesDirectory>$(SolutionDir)../public/bin</BootsharpBinariesDirectory>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DotNetJS" Version="0.22.0"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0-rc.2.23431.9"/>
+        <PackageReference Include="Bootsharp" Version="*-*"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../Backend/Backend.csproj"/>
+        <ProjectReference Include="../Backend.Prime/Backend.Prime.csproj"/>
     </ItemGroup>
 
 </Project>

@@ -1,44 +1,30 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿namespace Backend.Prime;
 
-namespace Backend;
+// One possible implementation of the prime computer service.
+// Injected in the application entry point assembly (Backend.WASM).
 
-public class Backend : IBackend
+public class PrimeComputer(IPrimeFrontend frontend) : IPrimeBackend
 {
-    private readonly IFrontend frontend;
-
     private CancellationTokenSource? cts;
 
-    public Backend (IFrontend frontend)
-    {
-        this.frontend = frontend;
-    }
-
-    public void StartStress ()
+    public void StartComputing ()
     {
         cts?.Cancel();
         cts = new CancellationTokenSource();
-        _ = Stress(cts.Token);
+        _ = RunAsync(cts.Token);
     }
 
-    public void StopStress ()
-    {
-        cts?.Cancel();
-    }
+    public void StopComputing () => cts?.Cancel();
 
-    public bool IsStressing ()
-    {
-        return !cts?.IsCancellationRequested ?? false;
-    }
+    public bool IsComputing () => !cts?.IsCancellationRequested ?? false;
 
-    private async Task Stress (CancellationToken token)
+    private async Task RunAsync (CancellationToken token)
     {
         while (!token.IsCancellationRequested)
         {
             var time = DateTime.Now;
-            ComputePrime(frontend.GetStressPower());
-            frontend.NotifyStressComplete((DateTime.Now - time).Milliseconds);
+            ComputePrime(frontend.GetComplexity());
+            frontend.NotifyComplete((DateTime.Now - time).Milliseconds);
             await Task.Delay(1);
         }
     }
