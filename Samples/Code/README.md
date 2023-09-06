@@ -6,6 +6,6 @@ Install [Hello, Bootsharp!](https://marketplace.visualstudio.com/items?itemName=
 
 To test the extension locally:
 
-- Run `npm run build`;
-- Run `npm run package`;
-- Drag-drop the produces .vsix file to the VS Code extension tab.
+- Run `npm run build` to build the sources;
+- Run `npm run package` to bundle extension package;
+- Drag-drop the produced `.vsix` file to the VS Code extension tab.

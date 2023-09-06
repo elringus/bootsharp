@@ -14,6 +14,7 @@
         <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatform">
             <_Parameter1>browser</_Parameter1>
         </AssemblyAttribute>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0-rc.2.23431.9"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0-preview-23431-02"/>
         <PackageReference Include="xunit" Version="2.5.1-pre.26"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="2.5.1-pre.11">
@@ -32,6 +33,11 @@
 
     <ItemGroup>
         <ProjectReference Include="../Bootsharp/Bootsharp.csproj"/>
+        <ProjectReference Include="../Bootsharp.Generator/Bootsharp.Generator.csproj"
+                          PrivateAssets="all"
+                          ReferenceOutputAssembly="false"
+                          OutputItemType="Analyzer"
+                          SetTargetFramework="TargetFramework=netstandard2.0"/>
     </ItemGroup>
 
 </Project>

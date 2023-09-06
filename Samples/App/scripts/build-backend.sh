@@ -1,4 +1,3 @@
-printf "Building backend...\n\n"
 cd ../backend
 dotnet publish -c release
 

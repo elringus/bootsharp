@@ -5,7 +5,7 @@
         <AssemblyTitle>Bootsharp</AssemblyTitle>
         <Title>Bootsharp</Title>
         <PackageId>Bootsharp</PackageId>
-        <Version>0.0.2-alpha.31</Version>
+        <Version>0.0.2-alpha.32</Version>
         <Authors>Elringus</Authors>
         <Description>Compile C# solution into single-file ES module with auto-generated JavaScript bindings and type definitions.</Description>
         <PackageTags>javascript typescript ts js wasm bindings interop codegen</PackageTags>
@@ -23,6 +23,10 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0-rc.2.23431.9"/>
+    </ItemGroup>
 
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatform">
