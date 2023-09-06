@@ -110,7 +110,8 @@
                           Lines="$([System.IO.File]::ReadAllText('$(BootsharpRoot)/build/PackageTemplate.json')
                                  .Replace('%MODULE_NAME%','$(BootsharpName)')
                                  .Replace('%MODULE_DIR%','$([System.IO.Path]::GetRelativePath('$(BootsharpPackageDirectory)','$(BootsharpPublishDirectory)'))')
-                                 .Replace('%TYPES_DIR%','$([System.IO.Path]::GetRelativePath('$(BootsharpPackageDirectory)','$(BootsharpTypesDirectory)'))'))"/>
+                                 .Replace('%TYPES_DIR%','$([System.IO.Path]::GetRelativePath('$(BootsharpPackageDirectory)','$(BootsharpTypesDirectory)'))')
+                                 .Replace('\', '/'))"/>
 
         <Message Text="Bootsharp ES module published at $(BootsharpPublishDirectory)" Importance="high"/>
 
