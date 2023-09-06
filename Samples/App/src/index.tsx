@@ -4,14 +4,14 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { bootBackend } from "./boot";
 import { Donut } from "./donut";
-import { Stress } from "./stress";
+import { Prime } from "./prime";
 import "index.css";
 
 await bootBackend();
 
-createRoot(document.getElementById("react-app")!).render(
+createRoot(document.getElementById("app")!).render(
     <StrictMode>
-        <Stress power={33333}/>
+        <Prime complexity={33333}/>
         <Donut fps={60}/>
     </StrictMode>
 );

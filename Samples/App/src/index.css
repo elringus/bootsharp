@@ -16,18 +16,18 @@ html {
     height: 100px;
 }
 
-#stress {
+#prime {
     position: absolute;
     top: 10px;
     width: 300px;
 }
 
-#stress button {
+#prime button {
     margin-top: 10px;
     width: 100%;
 }
 
-#iterations {
+#results {
     margin-top: 10px;
     white-space: pre-wrap;
     opacity: 0.65;

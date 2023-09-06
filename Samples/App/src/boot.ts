@@ -2,13 +2,13 @@
 
 export async function bootBackend() {
     await Promise.all([
-        fetchBin(backend.resources.wasm),
-        ...backend.resources.assemblies.map(fetchBin)
+        fetchContent(backend.resources.wasm),
+        ...backend.resources.assemblies.map(fetchContent)
     ]);
     await backend.boot();
 }
 
-async function fetchBin(resource: BinaryResource) {
+async function fetchContent(resource: BinaryResource) {
     const uri = `${import.meta.env.BASE_SERVER}/bin/${resource.name}`;
     resource.content = new Uint8Array(await (await fetch(uri)).arrayBuffer());
 }
