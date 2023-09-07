@@ -33,7 +33,7 @@ internal sealed class ExportType(ITypeSymbol type, AttributeData attribute)
                }
 
                [ModuleInitializer]
-               [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "{{space}}.{{implType}}", "{{compilation.Assembly.Name}}")]
+               [DynamicDependency(DynamicallyAccessedMemberTypes.All, "{{space}}.{{implType}}", "{{compilation.Assembly.Name}}")]
                internal static void RegisterDynamicDependencies () { }
 
                {{string.Join("\n    ", type.GetMembers().OfType<IMethodSymbol>().Select(EmitMethod))}}

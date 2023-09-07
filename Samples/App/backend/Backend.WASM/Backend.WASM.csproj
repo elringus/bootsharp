@@ -12,12 +12,12 @@
         <!-- Publish the binaries to the React public directory for deployment. -->
         <BootsharpBinariesDirectory>$(SolutionDir)../public/bin</BootsharpBinariesDirectory>
         <!-- AOT-compile for better compute performance at the cost of additional build size. -->
-        <!--        <RunAOTCompilation>true</RunAOTCompilation>-->
+<!--        <RunAOTCompilation>true</RunAOTCompilation>-->
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0-rc.2.23456.8"/>
         <PackageReference Include="Bootsharp" Version="*-*"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0-rc.2.23456.8"/>
     </ItemGroup>
 
     <ItemGroup>

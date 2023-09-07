@@ -16,7 +16,7 @@ public static class FunctionTest
             partial class Foo
             {
                 [ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo", "GeneratorTest")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
                 partial void Bar () => Function.InvokeVoid("Global.bar");
@@ -44,7 +44,7 @@ public static class FunctionTest
             public static partial class Foo
             {
                 [ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "File.Scoped.Foo", "GeneratorTest")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "File.Scoped.Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
                 private static partial Task BarAsync (string a, int b) => Function.InvokeVoidAsync("File.Scoped.barAsync", a, b);
@@ -72,7 +72,7 @@ public static class FunctionTest
             public static partial class Foo
             {
                 [ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "File.Scoped.Foo", "GeneratorTest")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "File.Scoped.Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
                 private static partial Task<string?> BarAsync () => Function.InvokeAsync<string?>("File.Scoped.barAsync");
@@ -105,7 +105,7 @@ public static class FunctionTest
                 partial class Foo
                 {
                     [ModuleInitializer]
-                    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Classic.Foo", "GeneratorTest")]
+                    [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Classic.Foo", "GeneratorTest")]
                     internal static void RegisterDynamicDependencies () { }
 
                     public partial DateTime GetTime (DateTime time) => Function.Invoke<DateTime>("Classic.getTime", time);
@@ -133,7 +133,7 @@ public static class FunctionTest
             public partial class Foo
             {
                 [ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "A.B.C.Foo", "GeneratorTest")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "A.B.C.Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
                 public static partial void OnFun (Foo foo) => Function.InvokeVoid("C.onFun", foo);

@@ -34,7 +34,7 @@ public static class ExportTest
                 }
 
                 [ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
                 [JSInvokable] public static void Foo (global::System.String? foo) => handler.Foo(foo);
@@ -68,7 +68,7 @@ public static class ExportTest
                 }
 
                 [ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
                 [JSInvokable] public static void Bar (global::System.String foo) => handler.Foo(foo)/**/;
@@ -101,7 +101,7 @@ public static class ExportTest
                 }
 
                 [ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
                 [JSInvokable] public static void Foo () => handler.Foo();

@@ -28,7 +28,7 @@ internal sealed class ImportType(ITypeSymbol type, AttributeData attribute)
            public class {{implType}} : {{specType}}
            {
                [ModuleInitializer]
-               [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "{{space}}.{{implType}}", "{{compilation.Assembly.Name}}")]
+               [DynamicDependency(DynamicallyAccessedMemberTypes.All, "{{space}}.{{implType}}", "{{compilation.Assembly.Name}}")]
                internal static void RegisterDynamicDependencies () { }
 
                {{string.Join("\n    ", methods.Select(EmitBinding))}}

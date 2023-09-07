@@ -40,7 +40,7 @@ internal sealed class PartialClass(
         return $$"""
 
                      [ModuleInitializer]
-                     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "{{fullClassName}}", "{{assemblyName}}")]
+                     [DynamicDependency(DynamicallyAccessedMemberTypes.All, "{{fullClassName}}", "{{assemblyName}}")]
                      internal static void RegisterDynamicDependencies () { }
                  """;
     }

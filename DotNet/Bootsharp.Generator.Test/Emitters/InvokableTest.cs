@@ -16,7 +16,7 @@ public static class InvokableTest
             partial class Foo
             {
                 [ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo", "GeneratorTest")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
             }
             """
@@ -38,7 +38,7 @@ public static class InvokableTest
             partial class Foo
             {
                 [ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Space.Foo", "GeneratorTest")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Space.Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
             }
             """

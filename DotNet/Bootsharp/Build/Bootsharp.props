@@ -10,7 +10,6 @@
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
         <InvariantTimezone>true</InvariantTimezone>
         <InvariantGlobalization>true</InvariantGlobalization>
-        <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
         <WasmGenerateAppBundle>true</WasmGenerateAppBundle>
         <WasmEnableLegacyJsInterop>false</WasmEnableLegacyJsInterop>
         <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>

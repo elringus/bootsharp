@@ -18,7 +18,8 @@ export default ({ complexity, resultLimit }: Props) => {
 
     const logResult = useCallback((time: number) => {
         setResults(i => {
-            if (i.length > resultLimit) i = i.substring(0, i.lastIndexOf("\n"));
+            if ((i.match(/\n/g)?.length ?? 0) > resultLimit)
+                i = i.substring(0, i.lastIndexOf("\n"));
             const stamp = new Date().toLocaleTimeString([], { hour12: false });
             return `[${stamp}] Computed in ${time}ms.\n${i}`;
         });

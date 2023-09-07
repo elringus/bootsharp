@@ -16,7 +16,7 @@ public static class EventTest
             partial class Foo
             {
                 [ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo", "GeneratorTest")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
                 partial void OnBar () => Event.Broadcast("Global.onBar");
@@ -40,7 +40,7 @@ public static class EventTest
             public static partial class Foo
             {
                 [ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Space.Foo", "GeneratorTest")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Space.Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
                 public static partial void OnBar (string a, int b) => Event.Broadcast("Space.onBar", a, b);
