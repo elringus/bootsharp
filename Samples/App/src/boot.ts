@@ -9,6 +9,6 @@ export async function bootBackend() {
 }
 
 async function fetchContent(resource: BinaryResource) {
-    const uri = `${import.meta.env.BASE_SERVER}/bin/${resource.name}`;
+    const uri = `/bin/${resource.name}`;
     resource.content = new Uint8Array(await (await fetch(uri)).arrayBuffer());
 }
