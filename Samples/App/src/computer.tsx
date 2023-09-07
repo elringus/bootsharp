@@ -1,35 +1,36 @@
 ﻿import { useEffect, useState, useCallback } from "react";
-import { Backend, Frontend } from "backend";
+import { Computer, PrimeComputerUI } from "backend";
 
 type Props = {
     complexity: number;
+    resultLimit: number;
 };
 
-export default ({ complexity }: Props) => {
+export default ({ complexity, resultLimit }: Props) => {
     const [computing, setComputing] = useState(false);
     const [results, setResults] = useState("");
 
     const toggle = useCallback(() => {
-        if (Backend.isComputing()) Backend.stopComputing();
-        else Backend.startComputing();
+        if (Computer.isComputing()) Computer.stopComputing();
+        else Computer.startComputing();
         setComputing(!computing);
     }, [computing]);
 
     const logResult = useCallback((time: number) => {
         setResults(i => {
-            if (i.length > 999) i = i.substring(0, i.lastIndexOf("\n"));
+            if (i.length > resultLimit) i = i.substring(0, i.lastIndexOf("\n"));
             const stamp = new Date().toLocaleTimeString([], { hour12: false });
             return `[${stamp}] Computed in ${time}ms.\n${i}`;
         });
     }, []);
 
     useEffect(() => {
-        Frontend.getComplexity = () => complexity;
+        PrimeComputerUI.getComplexity = () => complexity;
     }, [complexity]);
 
     useEffect(() => {
-        Frontend.onComplete.subscribe(logResult);
-        return () => Frontend.onComplete.unsubscribe(logResult);
+        PrimeComputerUI.onComplete.subscribe(logResult);
+        return () => PrimeComputerUI.onComplete.unsubscribe(logResult);
     }, [logResult]);
 
     return (

@@ -5,6 +5,13 @@ public class DeclarationTest : ContentTest
     protected override string TestedContent => GeneratedDeclarations;
 
     [Fact]
+    public void ImportsEventType ()
+    {
+        Task.Execute();
+        Contains("""import type { Event } from "./event";""");
+    }
+
+    [Fact]
     public void DeclaresNamespace ()
     {
         AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));

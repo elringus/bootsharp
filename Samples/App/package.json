@@ -1,7 +1,7 @@
 {
     "scripts": {
-        "test": "",
         "backend": "dotnet publish backend",
+        "test": "",
         "dev": "vite",
         "preview": "vite preview",
         "build": "tsc && vite build"

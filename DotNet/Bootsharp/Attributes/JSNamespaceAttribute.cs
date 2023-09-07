@@ -5,7 +5,7 @@
 /// generated for JavaScript bindings and type definitions.
 /// </summary>
 /// <example>
-/// Transform 'Company.Product.Space' into 'Space':
+/// Transform "Company.Product.Space" into "Space":
 /// <code>[assembly:JSNamespace(@"Company\.Product\.(\S+)", "$1")]</code>
 /// </example>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]

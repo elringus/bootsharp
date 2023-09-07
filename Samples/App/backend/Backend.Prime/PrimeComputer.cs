@@ -3,7 +3,7 @@
 // Implementation of the computer service that compute prime numbers.
 // Injected in the application entry point assembly (Backend.WASM).
 
-public class PrimeComputer(IComputerUI ui) : IComputer
+public class PrimeComputer(IPrimeComputerUI ui) : IComputer
 {
     private CancellationTokenSource? cts;
 

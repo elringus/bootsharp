@@ -20,6 +20,8 @@ internal static class Common
     public const string InvokeReplacementArg = "InvokeReplacement";
     public const string EventPatternArg = "EventPattern";
     public const string EventPatternReplacementArg = "EventReplacement";
+    public const string DefaultEventPattern = @"(^Notify)(\S+)";
+    public const string DefaultEventReplacement = "On$2";
 
     public static string EmitCommon (string source)
         => $"""
@@ -95,14 +97,22 @@ internal static class Common
 
     public static bool IsEvent (string name, AttributeData attribute)
     {
-        var pattern = attribute.NamedArguments.FirstOrDefault(a => a.Key == EventPatternArg).Value.Value as string;
+        var pattern = default(string);
+        if (!attribute.NamedArguments.Any(a => a.Key == EventPatternArg)) pattern = DefaultEventPattern;
+        else pattern = attribute.NamedArguments.First(a => a.Key == EventPatternArg).Value.Value as string;
         return !string.IsNullOrEmpty(pattern) && Regex.IsMatch(name, pattern);
     }
 
     public static string ConvertEventName (string name, AttributeData attribute)
     {
-        var pattern = attribute.NamedArguments.FirstOrDefault(a => a.Key == EventPatternArg).Value.Value as string;
-        var replacement = attribute.NamedArguments.FirstOrDefault(a => a.Key == EventPatternReplacementArg).Value.Value as string;
+        var pattern = default(string);
+        if (!attribute.NamedArguments.Any(a => a.Key == EventPatternArg)) pattern = DefaultEventPattern;
+        else pattern = attribute.NamedArguments.First(a => a.Key == EventPatternArg).Value.Value as string;
+
+        var replacement = default(string);
+        if (!attribute.NamedArguments.Any(a => a.Key == EventPatternReplacementArg)) replacement = DefaultEventReplacement;
+        else replacement = attribute.NamedArguments.First(a => a.Key == EventPatternReplacementArg).Value.Value as string;
+
         if (string.IsNullOrEmpty(pattern) || string.IsNullOrEmpty(replacement)) return name;
         return Regex.Replace(name, pattern, replacement);
     }

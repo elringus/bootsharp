@@ -6,11 +6,11 @@
 /// </summary>
 /// <remarks>
 /// Generated bindings have to be initialized with the handler implementation.
-/// For example, given 'IHandler' interface is exported, 'JSHandler' class will be generated,
-/// which has to be instantiated with an 'IHandler' implementation instance.
+/// For example, given "IHandler" interface is exported, "JSHandler" class will be generated,
+/// which has to be instantiated with an "IHandler" implementation instance.
 /// </remarks>
 /// <example>
-/// Expose 'IHandlerA' and 'IHandlerB' C# APIs to JavaScript and wrap invocations in 'Utils.Try()':
+/// Expose "IHandlerA" and "IHandlerB" C# APIs to JavaScript and wrap invocations in "Utils.Try()":
 /// <code>
 /// [assembly: JSExport(
 ///     typeof(IHandlerA),

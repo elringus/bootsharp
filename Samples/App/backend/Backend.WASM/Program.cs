@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 // Auto-generate JavaScript interop handlers for specified contracts.
 [assembly: JSExport(typeof(IComputer))]
-[assembly: JSImport(typeof(IComputerUI))]
+[assembly: JSImport(typeof(IPrimeComputerUI))]
 
 // Perform dependency injection.
 new ServiceCollection()

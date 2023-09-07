@@ -44,11 +44,11 @@ public class JSTypesTest
     }
 
     [Fact]
-    public void EventParametersAreNotNullByDefault ()
+    public void EventParametersAreNullByDefault () // (defaults are in generator)
     {
         var attribute = new JSImportAttribute(typeof(IBackend));
-        Assert.Equal(@"(^Notify)(\S+)", attribute.EventPattern);
-        Assert.Equal("On$2", attribute.EventReplacement);
+        Assert.Null(attribute.EventPattern);
+        Assert.Null(attribute.EventReplacement);
     }
 
     [Fact]

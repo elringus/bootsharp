@@ -39,7 +39,32 @@ public static class ImportTest
             }
             """
         },
-        // Can detect event methods.
+        // Will detect and override event methods with defaults.
+        new object[] {
+            """
+            [assembly:JSImport(typeof(IFoo))]
+
+            public interface IFoo
+            {
+                void NotifyFoo (string foo);
+            }
+            """,
+            """
+            namespace Foo;
+
+            public class JSFoo : global::IFoo
+            {
+                [ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
+                internal static void RegisterDynamicDependencies () { }
+
+                [JSEvent] public static void OnFoo (global::System.String foo) => Event.Broadcast("Foo.onFoo", foo);
+
+                void global::IFoo.NotifyFoo (global::System.String foo) => OnFoo(foo);
+            }
+            """
+        },
+        // Can detect but not override event methods.
         new object[] {
             """
             [assembly:JSImport(typeof(IFoo), EventPattern=@"(^Notify)(\S+)", EventReplacement=null)]
@@ -67,11 +92,11 @@ public static class ImportTest
         // Can detect and override event methods.
         new object[] {
             """
-            [assembly:JSImport(typeof(IFoo), EventPattern=@"(^Notify)(\S+)", EventReplacement="On$2")]
+            [assembly:JSImport(typeof(IFoo), EventPattern=@"(^Fire)(\S+)", EventReplacement="Handle$2")]
 
             public interface IFoo
             {
-                void NotifyFoo (string foo);
+                void FireFoo (string foo);
             }
             """,
             """
@@ -83,9 +108,9 @@ public static class ImportTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                [JSEvent] public static void OnFoo (global::System.String foo) => Event.Broadcast("Foo.onFoo", foo);
+                [JSEvent] public static void HandleFoo (global::System.String foo) => Event.Broadcast("Foo.handleFoo", foo);
 
-                void global::IFoo.NotifyFoo (global::System.String foo) => OnFoo(foo);
+                void global::IFoo.FireFoo (global::System.String foo) => HandleFoo(foo);
             }
             """
         },

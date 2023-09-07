@@ -4,7 +4,7 @@
 /// Applied to a partial method to bind it with a JavaScript function.
 /// </summary>
 /// <remarks>
-/// The implementation is expected to be assigned as 'Namespace.method = function'.
+/// The implementation is expected to be assigned as "Namespace.method = function".
 /// </remarks>
 /// <example>
 /// <code>

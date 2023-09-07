@@ -8,6 +8,6 @@ import "index.css";
 await bootBackend();
 
 createRoot(document.getElementById("app")!).render([
-    createElement(require("donut"), 33333),
-    createElement(require("computer"), 60)
+    createElement(require("donut"), { fps: 60 }),
+    createElement(require("computer"), { complexity: 33333, resultLimit: 999 })
 ]);
