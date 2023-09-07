@@ -11,8 +11,8 @@
         <BootsharpEmbedBinaries>false</BootsharpEmbedBinaries>
         <!-- Publish the binaries to the React public directory for deployment. -->
         <BootsharpBinariesDirectory>$(SolutionDir)../public/bin</BootsharpBinariesDirectory>
-        <!-- AOT-compile for better compute performance at the cost of additional build size. -->
-<!--        <RunAOTCompilation>true</RunAOTCompilation>-->
+        <!-- AOT-compile for better compute performance at the cost of additional build time and size. -->
+        <!-- <RunAOTCompilation>true</RunAOTCompilation> -->
     </PropertyGroup>
 
     <ItemGroup>

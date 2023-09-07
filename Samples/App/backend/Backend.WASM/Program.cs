@@ -18,3 +18,14 @@ new ServiceCollection()
     .AddBootsharp() // auto-injects generated interop handlers
     .BuildServiceProvider()
     .BuildBootsharp(); // auto-instantiates interop services
+
+// ----------------------------------------------------------------------
+// MSBuild trims "Computer.JSComputer"'s methods when AOT enabled,
+// unless its assembly's full name is accessed here.
+// Yes, specifically full name property of the assembly.
+// Not just type. Not assembly of the type. Bull full name of the type's assembly.
+// Furthermore, the assembly in question is this very one, the entry assembly.
+// [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Computer.JSComputer))] doesn't help.
+// When AOT is disabled, everything works fine, even with aggressive trimming.
+// TODO: This could be a bug in the .NET runtime or SDK; re-check in next releases.
+// _ = typeof(Computer.JSComputer).Assembly.FullName;

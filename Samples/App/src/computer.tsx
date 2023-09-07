@@ -37,9 +37,9 @@ export default ({ complexity, resultLimit }: Props) => {
     return (
         <div id="computer">
             <div>
-                This sample shows the benefit of AOT-compiling the C# backend.
-                The Donut is animating on the main (UI) thread while backend is computing.
-                With AOT enabled, compute complexity can be higher w/o affecting the animation.
+                The benefit of AOT-compiling: the Donut is animating,
+                while the backend is computing — both on the same thread.
+                With AOT enabled, computation takes less time and don't affect the animation as much.
             </div>
             <button onClick={toggle}>
                 {computing ? "STOP COMPUTE" : "START COMPUTE"}
