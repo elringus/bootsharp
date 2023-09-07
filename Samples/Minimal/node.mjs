@@ -3,6 +3,11 @@ import bootsharp, { Backend, Frontend } from "./cs/bin/bootsharp/bootsharp.js";
 
 // Binding 'IFrontend.GetName' endpoint invoked in C#.
 Frontend.getName = () => "Node.js";
+
+// TODO: Checking serialization, remove later.
+Frontend.getInfo = () => ({ foo: "TEST" });
+
+
 // Initializing dotnet runtime and invoking entry point.
 await bootsharp.boot();
 // Invoking 'IBackend.GetName' C# method.
