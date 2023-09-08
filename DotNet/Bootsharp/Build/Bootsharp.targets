@@ -4,6 +4,7 @@
         <BootsharpRoot>$(MSBuildThisFileDirectory)../</BootsharpRoot>
         <BootsharpSourceDirectory>$(BootsharpRoot)/js</BootsharpSourceDirectory>
         <BootsharpBuilderAssembly>$(BootsharpRoot)/tasks/Bootsharp.Builder.dll</BootsharpBuilderAssembly>
+        <BootsharpSerializerContextFilePath>$(IntermediateOutputPath)Bootsharp/SerializerContext.g.cs</BootsharpSerializerContextFilePath>
     </PropertyGroup>
 
     <Choose>
@@ -37,9 +38,30 @@
         </When>
     </Choose>
 
+    <UsingTask TaskName="Bootsharp.Builder.PrepareBootsharp" AssemblyFile="$(BootsharpBuilderAssembly)"/>
     <UsingTask TaskName="Bootsharp.Builder.BuildBootsharp" AssemblyFile="$(BootsharpBuilderAssembly)"/>
 
-    <Target Name="BootsharpBuild" AfterTargets="_AfterWasmBuildApp">
+    <Target Name="BootsharpPrepare" BeforeTargets="GenerateAdditionalSources" Condition="'$(BootsharpSkip)' != 'true'">
+
+        <!-- <MSBuild Projects="$(MSBuildProjectFile)" Targets="YourTarget" Properties="FakeProperty=one"/> -->
+        <MSBuild Projects="$(MSBuildProjectFile)" Targets="BuildCompile" Properties="BootsharpSkip=true"/>
+
+        <!-- Generate serializer context hinting types for JSON source generator. -->
+        <PrepareBootsharp SerializerContextFilePath="$(BootsharpSerializerContextFilePath)"
+                          InspectedDirectory="$(OutputPath)"/>
+
+        <ItemGroup>
+            <Compile Remove="$(BootsharpSerializerContextFilePath)"/>
+            <Compile Include="$(BootsharpSerializerContextFilePath)"/>
+        </ItemGroup>
+
+    </Target>
+
+    <Target Name="BootsharpClean" AfterTargets="Clean">
+        <Delete Files="$(BootsharpSerializerContextFilePath)"/>
+    </Target>
+
+    <Target Name="BootsharpBuild" AfterTargets="_AfterWasmBuildApp" Condition="'$(BootsharpSkip)' != 'true'">
 
         <PropertyGroup>
             <BootsharpBuildDirectory>$(WasmAppDir)/$(WasmRuntimeAssetsLocation)</BootsharpBuildDirectory>

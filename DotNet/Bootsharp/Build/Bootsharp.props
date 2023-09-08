@@ -13,9 +13,6 @@
         <WasmGenerateAppBundle>true</WasmGenerateAppBundle>
         <WasmEnableLegacyJsInterop>false</WasmEnableLegacyJsInterop>
         <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
-        <!-- Can't generate serialized types due to https://github.com/dotnet/roslyn/issues/57239; adds about 500KB to the build size. -->
-        <!-- https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/source-generation -->
-        <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
 
         <!-- Bootsharp public defaults. -->
         <!-- Name of the generated JavaScript module; 'bootsharp' by default. -->
