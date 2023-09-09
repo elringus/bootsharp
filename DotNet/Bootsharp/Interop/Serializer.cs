@@ -4,7 +4,7 @@ using System.Text.Json;
 namespace Bootsharp;
 
 /// <summary>
-/// Handles JSON serialization of method and function arguments and return values.
+/// Handles serialization of the marshalled interop data.
 /// </summary>
 public static class Serializer
 {
