@@ -5,7 +5,7 @@
         <AssemblyTitle>Bootsharp</AssemblyTitle>
         <Title>Bootsharp</Title>
         <PackageId>Bootsharp</PackageId>
-        <Version>0.0.2-alpha.72</Version>
+        <Version>0.0.2-alpha.76</Version>
         <Authors>Elringus</Authors>
         <Description>Compile C# solution into single-file ES module with auto-generated JavaScript bindings and type definitions.</Description>
         <PackageTags>javascript typescript ts js wasm bindings interop codegen</PackageTags>

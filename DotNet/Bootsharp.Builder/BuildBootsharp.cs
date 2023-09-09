@@ -11,10 +11,10 @@ public sealed class BuildBootsharp : Microsoft.Build.Utilities.Task
 
     public override bool Execute ()
     {
-        var builder = CreateNamespaceBuilder();
-        using var inspector = InspectAssemblies(builder);
-        GenerateBindings(inspector, builder);
-        GenerateDeclarations(inspector, builder);
+        var spaceBuilder = CreateNamespaceBuilder();
+        using var inspector = InspectAssemblies(spaceBuilder);
+        GenerateBindings(inspector, spaceBuilder);
+        GenerateDeclarations(inspector, spaceBuilder);
         GenerateResources(inspector);
         return true;
     }

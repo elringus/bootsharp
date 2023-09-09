@@ -4,7 +4,8 @@
         <BootsharpRoot>$(MSBuildThisFileDirectory)../</BootsharpRoot>
         <BootsharpSourceDirectory>$(BootsharpRoot)/js</BootsharpSourceDirectory>
         <BootsharpBuilderAssembly>$(BootsharpRoot)/tasks/Bootsharp.Builder.dll</BootsharpBuilderAssembly>
-        <BootsharpSerializerContextFilePath>$(IntermediateOutputPath)bootsharp/SerializerContext.g.cs</BootsharpSerializerContextFilePath>
+        <BootsharpSerializerFilePath>$(IntermediateOutputPath)bootsharp/SerializerContext.g.cs</BootsharpSerializerFilePath>
+        <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
     </PropertyGroup>
 
     <Choose>
@@ -48,18 +49,19 @@
         <MSBuild Projects="$(MSBuildProjectFile)" Targets="BuildCompile" Properties="BootsharpSkip=true"/>
 
         <!-- Generate code to be analyzed by .NET's source generators: interop methods and serialized type hints. -->
-        <PrepareBootsharp SerializerContextFilePath="$(BootsharpSerializerContextFilePath)"
-                          InspectedDirectory="$(OutputPath)"/>
+        <PrepareBootsharp InspectedDirectory="$(OutputPath)"
+                          EntryAssemblyName="$(BootsharpEntryAssemblyName)"
+                          SerializerFilePath="$(BootsharpSerializerFilePath)"/>
         <ItemGroup>
-            <Compile Remove="$(BootsharpSerializerContextFilePath)"/>
-            <Compile Include="$(BootsharpSerializerContextFilePath)"/>
+            <Compile Remove="$(BootsharpSerializerFilePath)"/>
+            <Compile Include="$(BootsharpSerializerFilePath)"/>
         </ItemGroup>
 
     </Target>
 
     <Target Name="BootsharpClean" AfterTargets="Clean">
         <!-- Delete generated sources to ensure they're re-generated on rebuild. -->
-        <Delete Files="$(BootsharpSerializerContextFilePath)"/>
+        <Delete Files="$(BootsharpSerializerFilePath)"/>
     </Target>
 
     <Target Name="BootsharpBuild" AfterTargets="_AfterWasmBuildApp">
@@ -99,7 +101,7 @@
         <!-- Generate bindings, type declarations and (optionally) embed binaries. -->
         <BuildBootsharp BuildDirectory="$(BootsharpBuildDirectory)"
                         InspectedDirectory="$(PublishDir)"
-                        EntryAssemblyName="$(AssemblyName).dll"
+                        EntryAssemblyName="$(BootsharpEntryAssemblyName)"
                         EmbedBinaries="$(BootsharpEmbedBinaries)"/>
 
         <!-- Copy bootsharp source files to the build directory. -->

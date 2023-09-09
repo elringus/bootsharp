@@ -4,7 +4,7 @@ using Bootsharp;
 [assembly: JSImport(typeof(IFrontend))]
 [assembly: JSExport(typeof(IBackend))]
 
-_ = new Backend.JSBackend(new SharpBackend());
+_ = new Backend.JSBackend(new NetBackend());
 var info = Frontend.JSFrontend.GetInfo();
 Frontend.JSFrontend.Log($"Frontend: {info.Environment}");
 
@@ -21,7 +21,7 @@ public interface IBackend
     Info GetInfo ();
 }
 
-internal class SharpBackend : IBackend
+internal class NetBackend : IBackend
 {
     public Info GetInfo () => new($".NET {Environment.Version}");
 }

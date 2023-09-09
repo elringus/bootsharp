@@ -2,39 +2,40 @@
 
 namespace Bootsharp.Builder;
 
-public class PrepareBootsharp : Microsoft.Build.Utilities.Task
+public sealed class PrepareBootsharp : Microsoft.Build.Utilities.Task
 {
-    [Required] public required string SerializerContextFilePath { get; set; }
     [Required] public required string InspectedDirectory { get; set; }
+    [Required] public required string EntryAssemblyName { get; set; }
+    [Required] public required string SerializerFilePath { get; set; }
 
     public override bool Execute ()
     {
-        GenerateSerializerContext();
+        var spaceBuilder = CreateNamespaceBuilder();
+        using var inspector = InspectAssemblies(spaceBuilder);
+        GenerateSerializer(inspector);
         return true;
     }
 
-    private void GenerateSerializerContext ()
+    private NamespaceBuilder CreateNamespaceBuilder ()
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(SerializerContextFilePath)!);
-        File.WriteAllText(SerializerContextFilePath,
-            $$"""
-              // InspectedDirectory: {{InspectedDirectory}}
-              // {{string.Join("\n// ", Directory.GetFiles(InspectedDirectory, "*.dll"))}}
+        var builder = new NamespaceBuilder();
+        builder.CollectConverters(InspectedDirectory, EntryAssemblyName);
+        return builder;
+    }
 
-              using System.Text.Json;
-              using System.Text.Json.Serialization;
+    private AssemblyInspector InspectAssemblies (NamespaceBuilder spaceBuilder)
+    {
+        var inspector = new AssemblyInspector(spaceBuilder);
+        inspector.InspectInDirectory(InspectedDirectory);
+        inspector.Report(Log);
+        return inspector;
+    }
 
-              namespace Bootsharp;
-
-              [JsonSerializable(typeof(global::Info))]
-              public partial class SerializerContext : JsonSerializerContext
-              {
-                  [System.Runtime.CompilerServices.ModuleInitializer]
-                  internal static void InjectTypeInfoResolver ()
-                  {
-                      Serializer.Options.TypeInfoResolver = SerializerContext.Default;
-                  }
-              }
-              """);
+    private void GenerateSerializer (AssemblyInspector inspector)
+    {
+        var generator = new SerializerGenerator();
+        var content = generator.Generate(inspector);
+        Directory.CreateDirectory(Path.GetDirectoryName(SerializerFilePath)!);
+        File.WriteAllText(SerializerFilePath, content);
     }
 }
