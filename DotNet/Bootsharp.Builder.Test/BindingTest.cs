@@ -1,13 +1,13 @@
 namespace Bootsharp.Builder.Test;
 
-public class BindingTest : ContentTest
+public class BindingTest : BuildBootsharpTest
 {
     protected override string TestedContent => GeneratedBindings;
 
     [Fact]
     public void WhenNoBindingsNothingIsGenerated ()
     {
-        Task.Execute();
+        Execute();
         Assert.Empty(TestedContent);
     }
 
@@ -15,7 +15,7 @@ public class BindingTest : ContentTest
     public void InteropFunctionsImported ()
     {
         AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
-        Task.Execute();
+        Execute();
         Contains(
             """
             import { invoke, invokeVoid, invokeAsync, invokeVoidAsync } from "./exports";
@@ -27,7 +27,7 @@ public class BindingTest : ContentTest
     public void LibraryExportsNamespaceObject ()
     {
         AddAssembly("Asm.dll", With("Foo", "[JSInvokable] public static void Bar () { }"));
-        Task.Execute();
+        Execute();
         Contains(
             """
             export const Foo = {
@@ -40,7 +40,7 @@ public class BindingTest : ContentTest
     public void WhenSpaceContainDotsObjectCreatedForEachPart ()
     {
         AddAssembly("Asm.dll", With("Foo.Bar.Nya", "[JSInvokable] public static void Bar () { }"));
-        Task.Execute();
+        Execute();
         Contains(
             """
             export const Foo = {
@@ -59,7 +59,7 @@ public class BindingTest : ContentTest
         AddAssembly("Asm.dll",
             With("Foo", "[JSInvokable] public static void Foo () { }"),
             With("Bar.Nya", "[JSFunction] public static void Fun () { }"));
-        Task.Execute();
+        Execute();
         Contains(
             """
             export const Bar = {
@@ -78,7 +78,7 @@ public class BindingTest : ContentTest
     {
         AddAssembly("Asm1.dll", With("Foo", "[JSInvokable] public static void Bar () { }"));
         AddAssembly("Asm2.dll", With("Foo", "[JSFunction] public static void Fun () { }"));
-        Task.Execute();
+        Execute();
         Contains(
             """
             export const Foo = {
@@ -94,7 +94,7 @@ public class BindingTest : ContentTest
         AddAssembly("Asm.dll",
             With("Nya.Foo", "[JSInvokable] public static void Foo () { }"),
             With("Nya.Bar", "[JSFunction] public static void Fun () { }"));
-        Task.Execute();
+        Execute();
         Contains(
             """
             export const Nya = {
@@ -112,7 +112,7 @@ public class BindingTest : ContentTest
     public void BindingForInvokableMethodIsGenerated ()
     {
         AddAssembly("Foo.Asm.dll", With("Foo.Bar", "[JSInvokable] public static void Nya () { }"));
-        Task.Execute();
+        Execute();
         Contains(
             """
             export const Foo = {
@@ -127,7 +127,7 @@ public class BindingTest : ContentTest
     public void BindingForFunctionMethodIsGenerated ()
     {
         AddAssembly(With("Foo.Bar", "[JSFunction] public static void Fun () { }"));
-        Task.Execute();
+        Execute();
         Contains(
             """
             export const Foo = {
@@ -142,7 +142,7 @@ public class BindingTest : ContentTest
     public void BindingForEventMethodIsGenerated ()
     {
         AddAssembly(With("[JSEvent] public static void OnFoo (string bar) { }"));
-        Task.Execute();
+        Execute();
         Contains(
             """
             export const Global = {
@@ -156,7 +156,7 @@ public class BindingTest : ContentTest
     {
         AddAssembly("Foo.Asm.dll", With("Foo", "[JSInvokable] public static int Foo () => 0;"));
         AddAssembly("Bar.Nya.Asm.dll", With("Bar.Nya", "[JSFunction] public static void Fun () { }"));
-        Task.Execute();
+        Execute();
         Contains(
             """
             export const Bar = {
@@ -176,7 +176,7 @@ public class BindingTest : ContentTest
         AddAssembly("Asm.dll",
             With("[JSInvokable] public static Task<int> Nya () => Task.FromResult(0);"),
             With("[JSFunction] public static void Fun () { }"));
-        Task.Execute();
+        Execute();
         Contains(
             """
             export const Global = {
@@ -193,7 +193,7 @@ public class BindingTest : ContentTest
             With("""[assembly:JSNamespace(@"Foo\.Bar\.(\S+)", "$1")]""", false),
             With("Foo.Bar.Nya", "[JSInvokable] public static Task GetNya () => Task.CompletedTask;"),
             With("Foo.Bar.Fun", "[JSFunction] public static void OnFun () { }"));
-        Task.Execute();
+        Execute();
         Contains(
             """
             export const Fun = {
@@ -209,7 +209,7 @@ public class BindingTest : ContentTest
     public void VariablesConflictingWithJSTypesAreRenamed ()
     {
         AddAssembly("Asm.dll", With("[JSInvokable] public static void Fun (string function) { }"));
-        Task.Execute();
+        Execute();
         Contains(
             """
             export const Global = {
@@ -224,7 +224,7 @@ public class BindingTest : ContentTest
         AddAssembly("Asm.dll",
             With("[JSInvokable] public static Task Asy () => default;"),
             With("[JSInvokable] public static Task<string> AsyValue () => default;"));
-        Task.Execute();
+        Execute();
         Contains(
             """
             export const Global = {
@@ -240,7 +240,7 @@ public class BindingTest : ContentTest
         AddAssembly("Asm.dll",
             With("n", "public enum Foo { A, B }"),
             With("n", "[JSInvokable] public static Foo GetFoo () => default;"));
-        Task.Execute();
+        Execute();
         Contains(
             """
             export const n = {

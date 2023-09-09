@@ -1,48 +1,47 @@
-﻿using Microsoft.Build.Utilities.ProjectCreation;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 
 namespace Bootsharp.Builder.Test;
 
 public sealed class MockProject : IDisposable
 {
-    public BuildBootsharp BuildTask { get; }
-    public byte[] MockWasmBinary { get; } = "MockWasmContent"u8.ToArray();
+    public string Root { get; }
+    public IReadOnlyList<MockAssembly> Assemblies => assemblies;
 
     private readonly MockCompiler compiler = new();
+    private readonly List<MockAssembly> assemblies = new();
 
     public MockProject ()
     {
-        BuildTask = CreateBuildTask();
+        Root = CreateUniqueRootDirectory();
         CreateBuildResources();
     }
 
-    public void Dispose () => Directory.Delete(BuildTask.BuildDirectory, true);
+    public void Dispose () => Directory.Delete(Root, true);
 
     public void AddAssembly (MockAssembly assembly)
     {
-        var assemblyPath = Path.Combine(BuildTask.BuildDirectory, assembly.Name);
+        var assemblyPath = Path.Combine(Root, assembly.Name);
         compiler.Compile(assembly.Sources, assemblyPath);
-        BuildTask.EntryAssemblyName = assembly.Name;
+        assemblies.Add(assembly);
     }
 
-    private BuildBootsharp CreateBuildTask ()
+    public void WriteFile (string name, byte[] content)
     {
-        var testDir = CreateRandomTestDirectory();
-        return new BuildBootsharp {
-            BuildDirectory = testDir,
-            InspectedDirectory = testDir,
-            EntryAssemblyName = "System.Runtime.dll",
-            BuildEngine = BuildEngine.Create(),
-            EmbedBinaries = false
-        };
+        var filePath = Path.Combine(Root, name);
+        File.WriteAllBytes(filePath, content);
+    }
+
+    private static string CreateUniqueRootDirectory ()
+    {
+        var testAssembly = System.Reflection.Assembly.GetExecutingAssembly().Location;
+        var assemblyDir = Path.Combine(Path.GetDirectoryName(testAssembly));
+        return Directory.CreateDirectory(Path.Combine(assemblyDir, $"temp{Guid.NewGuid():N}")).FullName;
     }
 
     private void CreateBuildResources ()
     {
-        Directory.CreateDirectory(BuildTask.BuildDirectory);
         foreach (var path in GetReferencePaths())
-            File.Copy(path, Path.Combine(BuildTask.BuildDirectory, Path.GetFileName(path)), true);
-        File.WriteAllBytes(Path.Combine(BuildTask.BuildDirectory, "dotnet.native.wasm"), MockWasmBinary);
+            File.Copy(path, Path.Combine(Root, Path.GetFileName(path)), true);
     }
 
     private static string[] GetReferencePaths ()
@@ -54,12 +53,5 @@ public sealed class MockProject : IDisposable
             MetadataReference.CreateFromFile(typeof(JSFunctionAttribute).Assembly.Location).FilePath,
             MetadataReference.CreateFromFile(typeof(JSInvokableAttribute).Assembly.Location).FilePath
         };
-    }
-
-    private static string CreateRandomTestDirectory ()
-    {
-        var testAssembly = System.Reflection.Assembly.GetExecutingAssembly().Location;
-        var assemblyDir = Path.Combine(Path.GetDirectoryName(testAssembly));
-        return Directory.CreateDirectory(Path.Combine(assemblyDir, $"temp{Guid.NewGuid():N}")).FullName;
     }
 }

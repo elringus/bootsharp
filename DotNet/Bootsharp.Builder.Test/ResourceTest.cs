@@ -1,6 +1,6 @@
 namespace Bootsharp.Builder.Test;
 
-public class ResourceTest : ContentTest
+public class ResourceTest : BuildBootsharpTest
 {
     protected override string TestedContent => GeneratedResources;
 
@@ -8,7 +8,7 @@ public class ResourceTest : ContentTest
     public void EntryAssemblyNameIsWritten ()
     {
         AddAssembly("Foo.dll");
-        Task.Execute();
+        Execute();
         Contains("entryAssemblyName: \"Foo.dll\"");
     }
 
@@ -17,8 +17,8 @@ public class ResourceTest : ContentTest
     {
         AddAssembly("Foo.dll");
         Task.EmbedBinaries = true;
-        Task.Execute();
-        Contains($$"""wasm: { name: "dotnet.native.wasm", content: "{{Convert.ToBase64String(Project.MockWasmBinary)}}" },""");
+        Execute();
+        Contains($$"""wasm: { name: "dotnet.native.wasm", content: "{{Convert.ToBase64String(MockWasmBinary)}}" },""");
         Contains("{ name: \"Foo.wasm\", content: \"");
         Contains("{ name: \"Bootsharp.wasm\", content: \"");
         Contains("{ name: \"System.Runtime.wasm\", content: \"");
@@ -30,7 +30,7 @@ public class ResourceTest : ContentTest
     {
         AddAssembly("Foo.dll");
         Task.EmbedBinaries = false;
-        Task.Execute();
+        Execute();
         Contains("""wasm: { name: "dotnet.native.wasm", content: undefined },""");
         Contains("""{ name: "Foo.wasm", content: undefined""");
         Contains("""{ name: "Bootsharp.wasm", content: undefined""");

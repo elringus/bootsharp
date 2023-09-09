@@ -1,20 +1,17 @@
-﻿using Microsoft.Build.Utilities.ProjectCreation;
+﻿using System.Text.RegularExpressions;
+using Microsoft.Build.Utilities.ProjectCreation;
 
 namespace Bootsharp.Builder.Test;
 
-public abstract class BuildTest : IDisposable
+public abstract class BuildTaskTest : IDisposable
 {
     protected MockProject Project { get; } = new();
-    protected BuildBootsharp Task => Project.BuildTask;
-    protected BuildEngine Engine => (BuildEngine)Task.BuildEngine;
-    protected string GeneratedBindings => ReadGenerated("bindings.g.js");
-    protected string GeneratedDeclarations => ReadGenerated("bindings.g.d.ts");
-    protected string GeneratedResources => ReadGenerated("resources.g.js");
+    protected BuildEngine Engine { get; } = BuildEngine.Create();
+    protected virtual string TestedContent { get; } = "";
 
-    public void Dispose ()
-    {
-        Project.Dispose();
-    }
+    public virtual void Dispose () => Project.Dispose();
+
+    public abstract void Execute ();
 
     protected void AddAssembly (string assemblyName, params MockSource[] sources)
     {
@@ -36,9 +33,20 @@ public abstract class BuildTest : IDisposable
         return With(null, code, wrapInClass);
     }
 
-    protected string ReadGenerated (string fileName)
+    protected void Contains (string content)
     {
-        var filePath = Path.Combine(Task.BuildDirectory, fileName);
+        Assert.Contains(content, TestedContent);
+    }
+
+    protected MatchCollection Matches (string pattern)
+    {
+        Assert.Matches(pattern, TestedContent);
+        return Regex.Matches(TestedContent, pattern);
+    }
+
+    protected string ReadProjectFile (string fileName)
+    {
+        var filePath = Path.Combine(Project.Root, fileName);
         return File.Exists(filePath) ? File.ReadAllText(filePath) : null;
     }
 }

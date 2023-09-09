@@ -1,12 +1,12 @@
 ﻿namespace Bootsharp.Builder.Test;
 
-public class InspectionTest : BuildTest
+public class InspectionTest : BuildBootsharpTest
 {
     [Fact]
     public void AllAssembliesAreInspected ()
     {
         AddAssembly("Foo.dll");
-        Task.Execute();
+        Execute();
         Assert.Contains(Engine.Messages, w => w.Contains("Foo.dll"));
         Assert.Contains(Engine.Messages, w => w.Contains("Bootsharp.dll"));
         Assert.Contains(Engine.Messages, w => w.Contains("System.Runtime.dll"));
@@ -16,8 +16,8 @@ public class InspectionTest : BuildTest
     [Fact]
     public void WhenAssemblyInspectionFailsWarningIsLogged ()
     {
-        File.WriteAllText(Path.Combine(Task.BuildDirectory, "foo.dll"), "corrupted");
-        Task.Execute();
+        File.WriteAllText(Path.Combine(Project.Root, "foo.dll"), "corrupted");
+        Execute();
         Assert.Contains(Engine.Warnings, w => w.Contains("Failed to inspect 'foo.dll' assembly"));
     }
 }

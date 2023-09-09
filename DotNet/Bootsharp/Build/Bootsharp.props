@@ -7,12 +7,10 @@
         <Configuration>Release</Configuration>
         <TargetArchitecture>wasm</TargetArchitecture>
         <TargetOS>browser</TargetOS>
-        <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
         <InvariantTimezone>true</InvariantTimezone>
         <InvariantGlobalization>true</InvariantGlobalization>
         <WasmGenerateAppBundle>true</WasmGenerateAppBundle>
         <WasmEnableLegacyJsInterop>false</WasmEnableLegacyJsInterop>
-        <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
 
         <!-- Bootsharp public defaults. -->
         <!-- Name of the generated JavaScript module; 'bootsharp' by default. -->
