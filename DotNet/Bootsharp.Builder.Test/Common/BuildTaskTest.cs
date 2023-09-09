@@ -7,6 +7,7 @@ public abstract class BuildTaskTest : IDisposable
 {
     protected MockProject Project { get; } = new();
     protected BuildEngine Engine { get; } = BuildEngine.Create();
+    protected string LastAddedAssemblyName { get; private set; }
     protected virtual string TestedContent { get; } = "";
 
     public virtual void Dispose () => Project.Dispose();
@@ -15,6 +16,7 @@ public abstract class BuildTaskTest : IDisposable
 
     protected void AddAssembly (string assemblyName, params MockSource[] sources)
     {
+        LastAddedAssemblyName = assemblyName;
         Project.AddAssembly(new(assemblyName, sources));
     }
 

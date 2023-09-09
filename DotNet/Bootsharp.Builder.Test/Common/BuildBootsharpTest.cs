@@ -16,8 +16,8 @@ public class BuildBootsharpTest : BuildTaskTest
 
     public override void Execute ()
     {
-        if (Project.Assemblies.Count > 0)
-            Task.EntryAssemblyName = Project.Assemblies.Last().Name;
+        if (LastAddedAssemblyName is not null)
+            Task.EntryAssemblyName = LastAddedAssemblyName;
         Task.Execute();
     }
 

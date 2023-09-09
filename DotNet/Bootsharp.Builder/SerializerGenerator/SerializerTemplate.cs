@@ -9,8 +9,7 @@ internal sealed class SerializerTemplate(IEnumerable<string> types)
 
           namespace Bootsharp;
 
-          {{BuildAttribute("string")}}
-          {{JoinLines(types.Select(BuildAttribute), 0)}}
+          {{JoinLines(types.Select(BuildAttribute).Append(BuildAttribute("string")), 0)}}
           internal partial class SerializerContext : JsonSerializerContext
           {
               [System.Runtime.CompilerServices.ModuleInitializer]

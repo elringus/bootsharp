@@ -5,10 +5,8 @@ namespace Bootsharp.Builder.Test;
 public sealed class MockProject : IDisposable
 {
     public string Root { get; }
-    public IReadOnlyList<MockAssembly> Assemblies => assemblies;
 
     private readonly MockCompiler compiler = new();
-    private readonly List<MockAssembly> assemblies = new();
 
     public MockProject ()
     {
@@ -22,7 +20,6 @@ public sealed class MockProject : IDisposable
     {
         var assemblyPath = Path.Combine(Root, assembly.Name);
         compiler.Compile(assembly.Sources, assemblyPath);
-        assemblies.Add(assembly);
     }
 
     public void WriteFile (string name, byte[] content)
