@@ -5,7 +5,7 @@ using Bootsharp;
 
 namespace Bootsharp.Test;
 
-public class JSNamespaceTest
+public class NamespaceTest
 {
     private readonly CustomAttributeData attribute = GetAttributeData();
 
@@ -30,6 +30,6 @@ public class JSNamespaceTest
     }
 
     private static CustomAttributeData GetAttributeData () =>
-        typeof(JSNamespaceTest).Assembly.CustomAttributes
+        typeof(NamespaceTest).Assembly.CustomAttributes
             .First(a => a.AttributeType == typeof(JSNamespaceAttribute));
 }

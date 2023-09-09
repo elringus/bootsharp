@@ -13,12 +13,12 @@ public static class Serializer
     public static JsonSerializerOptions Options { get; set; } = new(JsonSerializerDefaults.Web);
 
     /// <summary>
-    /// Attempt to serialize specified object to JSON string.
+    /// Serializes specified object to JSON string.
     /// </summary>
     public static string Serialize (object @object) => JsonSerializer.Serialize(@object, Options);
 
     /// <summary>
-    /// Attempt to deserialize specified JSON string to the object of specified type.
+    /// Deserializes specified JSON string to the object of specified type.
     /// </summary>
-    public static object Deserialize (string json, Type type) => JsonSerializer.Deserialize(json, type, Options)!;
+    public static T Deserialize<T> (string json) => JsonSerializer.Deserialize<T>(json, Options)!;
 }
