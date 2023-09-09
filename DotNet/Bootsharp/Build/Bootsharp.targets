@@ -4,7 +4,7 @@
         <BootsharpRoot>$(MSBuildThisFileDirectory)../</BootsharpRoot>
         <BootsharpSourceDirectory>$(BootsharpRoot)/js</BootsharpSourceDirectory>
         <BootsharpBuilderAssembly>$(BootsharpRoot)/tasks/Bootsharp.Builder.dll</BootsharpBuilderAssembly>
-        <BootsharpSerializerContextFilePath>$(IntermediateOutputPath)Bootsharp/SerializerContext.g.cs</BootsharpSerializerContextFilePath>
+        <BootsharpSerializerContextFilePath>$(IntermediateOutputPath)bootsharp/SerializerContext.g.cs</BootsharpSerializerContextFilePath>
     </PropertyGroup>
 
     <Choose>
@@ -41,15 +41,15 @@
     <UsingTask TaskName="Bootsharp.Builder.PrepareBootsharp" AssemblyFile="$(BootsharpBuilderAssembly)"/>
     <UsingTask TaskName="Bootsharp.Builder.BuildBootsharp" AssemblyFile="$(BootsharpBuilderAssembly)"/>
 
+    <!-- A hack due to source generator compositing not possible. (https://github.com/dotnet/roslyn/issues/57239) -->
     <Target Name="BootsharpPrepare" BeforeTargets="GenerateAdditionalSources" Condition="'$(BootsharpSkip)' != 'true'">
 
-        <!-- <MSBuild Projects="$(MSBuildProjectFile)" Targets="YourTarget" Properties="FakeProperty=one"/> -->
+        <!-- Pre-compile the solution, as we'll need to inspect the assemblies in the next step. -->
         <MSBuild Projects="$(MSBuildProjectFile)" Targets="BuildCompile" Properties="BootsharpSkip=true"/>
 
-        <!-- Generate serializer context hinting types for JSON source generator. -->
+        <!-- Generate code to be analyzed by .NET's source generators: interop methods and serialized type hints. -->
         <PrepareBootsharp SerializerContextFilePath="$(BootsharpSerializerContextFilePath)"
                           InspectedDirectory="$(OutputPath)"/>
-
         <ItemGroup>
             <Compile Remove="$(BootsharpSerializerContextFilePath)"/>
             <Compile Include="$(BootsharpSerializerContextFilePath)"/>
@@ -58,15 +58,14 @@
     </Target>
 
     <Target Name="BootsharpClean" AfterTargets="Clean">
+        <!-- Delete generated sources to ensure they're re-generated on rebuild. -->
         <Delete Files="$(BootsharpSerializerContextFilePath)"/>
     </Target>
 
-    <Target Name="BootsharpBuild" AfterTargets="_AfterWasmBuildApp" Condition="'$(BootsharpSkip)' != 'true'">
+    <Target Name="BootsharpBuild" AfterTargets="_AfterWasmBuildApp">
 
         <PropertyGroup>
             <BootsharpBuildDirectory>$(WasmAppDir)/$(WasmRuntimeAssetsLocation)</BootsharpBuildDirectory>
-            <BootsharpInspectedDirectory>$(PublishDir)</BootsharpInspectedDirectory>
-            <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
             <BootSharpBaseOutputPath>$(BaseOutputPath.Replace('\', '/'))</BootSharpBaseOutputPath>
             <BootsharpPublishDirectory Condition="'$(BootsharpPublishDirectory)' == 'default'">$(BootSharpBaseOutputPath)$(BootsharpName)</BootsharpPublishDirectory>
             <BootsharpTypesDirectory Condition="'$(BootsharpTypesDirectory)' == 'default'">$(BootsharpPublishDirectory)/types</BootsharpTypesDirectory>
@@ -97,10 +96,10 @@
                                 .Replace('import(','import(/*@vite-ignore*//*webpackIgnore:true*/'))"
                           Overwrite="true"/>
 
-        <!-- Generate bindings, types and (optionally) embed binaries. -->
+        <!-- Generate bindings, type declarations and (optionally) embed binaries. -->
         <BuildBootsharp BuildDirectory="$(BootsharpBuildDirectory)"
-                        InspectedDirectory="$(BootsharpInspectedDirectory)"
-                        EntryAssemblyName="$(BootsharpEntryAssemblyName)"
+                        InspectedDirectory="$(PublishDir)"
+                        EntryAssemblyName="$(AssemblyName).dll"
                         EmbedBinaries="$(BootsharpEmbedBinaries)"/>
 
         <!-- Copy bootsharp source files to the build directory. -->
