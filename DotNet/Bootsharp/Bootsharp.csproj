@@ -36,7 +36,7 @@
         <Content Include="Build/**" Pack="true" PackagePath="build/"/>
         <Content Include="../../JavaScript/dist/**" Pack="true" PackagePath="js/" Visible="false"/>
         <None Include="../Bootsharp.Generator/bin/Release/netstandard2.0/Bootsharp.Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
-        <None Include="../../README.md" Pack="true" PackagePath="/"/>
+        <None Include="../../README.md" Pack="true" PackagePath="/" Visible="false"/>
         <None Include="$(MSBuildThisFileDirectory)../../Assets/PackageIcon.png" Pack="true" PackagePath="/" Visible="false"/>
     </ItemGroup>
 
