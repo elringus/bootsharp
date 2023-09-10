@@ -136,7 +136,7 @@ public static class FunctionTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "A.B.C.Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                public static partial void OnFun (boo val) => Get<Action<bool>>("C.onFun")(val);
+                public static partial void OnFun (bool val) => Get<Action<bool>>("C.onFun")(val);
             }
             """
         },
@@ -150,20 +150,22 @@ public static class FunctionTest
             partial class Foo
             {
                 [JSFunction]
-                partial Info Bar (Info info1, Info info2);
+                public partial Info Bar (Info info1, Info info2);
                 [JSFunction]
-                partial Task<Info> BarAsync (Info info);
+                public partial Task<Info> BarAsync (Info info);
             }
             """,
             """
+            using System.Threading.Tasks;
+
             partial class Foo
             {
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                partial Info Bar (Info info1, Info info2) => Deserialize<Info>(Get<Func<string, string, string>>("Global.bar")(Serialize(info1), Serialize(info2)));
-                async partial Task<Info> BarAsync (Info info) => Deserialize<Info>(await Get<Func<Task<string>>>("Global.bar")(Serialize(info)));
+                public partial Info Bar (Info info1, Info info2) => Deserialize<Info>(Get<Func<string, string, string>>("Global.bar")(Serialize(info1), Serialize(info2)));
+                public async partial Task<Info> BarAsync (Info info) => Deserialize<Info>(await Get<Func<string, Task<string>>>("Global.barAsync")(Serialize(info)));
             }
             """
         }
