@@ -95,6 +95,7 @@
                           Overwrite="true"/>
         <WriteLinesToFile File="$(BootsharpDotNetRuntime)"
                           Lines="$([System.IO.File]::ReadAllText($(BootsharpDotNetRuntime))
+                                .Replace('pt(%27WebAssembly resource does not have the expected content type &quot;application/wasm&quot;, so falling back to slower ArrayBuffer instantiation.%27)','true')
                                 .Replace('import(','import(/*@vite-ignore*//*webpackIgnore:true*/'))"
                           Overwrite="true"/>
 
