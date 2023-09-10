@@ -28,6 +28,9 @@ internal static class Common
             #nullable enable
             #pragma warning disable
             using Bootsharp;
+            using static Bootsharp.Function;
+            using static Bootsharp.Serializer;
+            using System;
             using System.Diagnostics.CodeAnalysis;
             using System.Runtime.CompilerServices;
             {source}

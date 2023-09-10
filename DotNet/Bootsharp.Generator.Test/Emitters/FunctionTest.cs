@@ -19,7 +19,7 @@ public static class FunctionTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                partial void Bar () => Function.InvokeVoid("Global.bar");
+                partial void Bar () => Get<Action>("Global.bar")();
             }
             """
         },
@@ -47,7 +47,7 @@ public static class FunctionTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "File.Scoped.Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                private static partial Task BarAsync (string a, int b) => Function.InvokeVoidAsync("File.Scoped.barAsync", a, b);
+                private static partial Task BarAsync (string a, int b) => Get<Func<string, int, Task>>("File.Scoped.barAsync")(a, b);
             }
             """
         },
@@ -75,7 +75,7 @@ public static class FunctionTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "File.Scoped.Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                private static partial Task<string?> BarAsync () => Function.InvokeAsync<string?>("File.Scoped.barAsync");
+                private static partial Task<string?> BarAsync () => Get<Func<Task<string?>>>("File.Scoped.barAsync")();
             }
             """
         },
@@ -108,8 +108,8 @@ public static class FunctionTest
                     [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Classic.Foo", "GeneratorTest")]
                     internal static void RegisterDynamicDependencies () { }
 
-                    public partial DateTime GetTime (DateTime time) => Function.Invoke<DateTime>("Classic.getTime", time);
-                    public partial Task<DateTime> GetTimeAsync (DateTime time) => Function.InvokeAsync<DateTime>("Classic.getTimeAsync", time);
+                    public partial DateTime GetTime (DateTime time) => Get<Func<DateTime, DateTime>>("Classic.getTime")(time);
+                    public partial Task<DateTime> GetTimeAsync (DateTime time) => Get<Func<DateTime, Task<DateTime>>>("Classic.getTimeAsync")(time);
                 }
             }
             """
@@ -124,7 +124,7 @@ public static class FunctionTest
             public partial class Foo
             {
                 [JSFunction]
-                public static partial void OnFun (Foo foo);
+                public static partial void OnFun (bool val);
             }
             """,
             """
@@ -136,7 +136,34 @@ public static class FunctionTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "A.B.C.Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                public static partial void OnFun (Foo foo) => Function.InvokeVoid("C.onFun", foo);
+                public static partial void OnFun (boo val) => Get<Action<bool>>("C.onFun")(val);
+            }
+            """
+        },
+        // Can generate void binding with serialized parameters.
+        new object[] {
+            """
+            using System.Threading.Tasks;
+
+            public record Info(string Baz);
+
+            partial class Foo
+            {
+                [JSFunction]
+                partial Info Bar (Info info1, Info info2);
+                [JSFunction]
+                partial Task<Info> BarAsync (Info info);
+            }
+            """,
+            """
+            partial class Foo
+            {
+                [ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo", "GeneratorTest")]
+                internal static void RegisterDynamicDependencies () { }
+
+                partial Info Bar (Info info1, Info info2) => Deserialize<Info>(Get<Func<string, string, string>>("Global.bar")(Serialize(info1), Serialize(info2)));
+                async partial Task<Info> BarAsync (Info info) => Deserialize<Info>(await Get<Func<Task<string>>>("Global.bar")(Serialize(info)));
             }
             """
         }

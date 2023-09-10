@@ -19,7 +19,7 @@ public static class EventTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                partial void OnBar () => Event.Broadcast("Global.onBar");
+                partial void OnBar () => Get<Action>("Global.onBar.broadcast")();
             }
             """
         },
@@ -43,7 +43,29 @@ public static class EventTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Space.Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                public static partial void OnBar (string a, int b) => Event.Broadcast("Space.onBar", a, b);
+                public static partial void OnBar (string a, int b) => Get<Action<string, int>>("Space.onBar.broadcast")(a, b);
+            }
+            """
+        },
+        // Can generate event binding with serialized parameters.
+        new object[] {
+            """
+            public record Info(string Baz);
+
+            public static partial class Foo
+            {
+                [JSEvent]
+                public static partial void OnInfo (Info info);
+            }
+            """,
+            """
+            public static partial class Foo
+            {
+                [ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo", "GeneratorTest")]
+                internal static void RegisterDynamicDependencies () { }
+
+                public static partial void OnInfo (Info info) => Get<Action<string>>("Global.onInfo.broadcast")(Serialize(info));
             }
             """
         }

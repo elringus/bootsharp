@@ -3,7 +3,7 @@
 namespace Bootsharp;
 
 /// <summary>
-/// Handles serialization of the marshalled interop data.
+/// Handles serialization of the interop data that can't be passed to and from JavaScript as-is.
 /// </summary>
 public static class Serializer
 {
