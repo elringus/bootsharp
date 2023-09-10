@@ -1,5 +1,5 @@
-Minimal example on using Bootsharp in browser and node.
+Minimal example on using Bootsharp in browser, node, deno and bun.
 
 - Run `dotnet publish cs`;
-- Run `node node.mjs` to test node scenario;
-- Run an HTML server (eg, `npx serve`) and navigate to `/browser.html` to test browser scenario.
+- Run `node main.mjs` to test in node;
+- Run an HTML server (eg, `npx serve`) to test in browser.
