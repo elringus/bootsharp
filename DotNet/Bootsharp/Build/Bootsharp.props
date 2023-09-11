@@ -2,7 +2,6 @@
 
     <PropertyGroup>
 
-        <!-- Project defaults common to the build target. -->
         <OutputType>Exe</OutputType>
         <Configuration>Release</Configuration>
         <TargetArchitecture>wasm</TargetArchitecture>
@@ -12,7 +11,6 @@
         <WasmGenerateAppBundle>true</WasmGenerateAppBundle>
         <WasmEnableLegacyJsInterop>false</WasmEnableLegacyJsInterop>
 
-        <!-- Bootsharp public defaults. -->
         <!-- Name of the generated JavaScript module; 'bootsharp' by default. -->
         <BootsharpName>bootsharp</BootsharpName>
         <!-- Whether to embed binaries to the JavaScript module file (true or false); true by default. -->

@@ -6,12 +6,16 @@ public sealed class PrepareBootsharp : Microsoft.Build.Utilities.Task
 {
     [Required] public required string InspectedDirectory { get; set; }
     [Required] public required string EntryAssemblyName { get; set; }
+    [Required] public required string InteropExportsFilePath { get; set; }
+    [Required] public required string InteropImportsFilePath { get; set; }
     [Required] public required string SerializerFilePath { get; set; }
 
     public override bool Execute ()
     {
         var spaceBuilder = CreateNamespaceBuilder();
         using var inspector = InspectAssemblies(spaceBuilder);
+        GenerateExports(inspector);
+        GenerateImports(inspector);
         GenerateSerializer(inspector);
         return true;
     }
@@ -29,6 +33,22 @@ public sealed class PrepareBootsharp : Microsoft.Build.Utilities.Task
         inspector.InspectInDirectory(InspectedDirectory);
         inspector.Report(Log);
         return inspector;
+    }
+
+    private void GenerateExports (AssemblyInspector inspector)
+    {
+        var generator = new ExportGenerator();
+        var content = generator.Generate(inspector);
+        Directory.CreateDirectory(Path.GetDirectoryName(InteropExportsFilePath)!);
+        File.WriteAllText(InteropExportsFilePath, content);
+    }
+
+    private void GenerateImports (AssemblyInspector inspector)
+    {
+        var generator = new ImportGenerator();
+        var content = generator.Generate(inspector);
+        Directory.CreateDirectory(Path.GetDirectoryName(InteropImportsFilePath)!);
+        File.WriteAllText(InteropImportsFilePath, content);
     }
 
     private void GenerateSerializer (AssemblyInspector inspector)

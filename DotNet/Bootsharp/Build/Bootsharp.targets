@@ -4,7 +4,10 @@
         <BootsharpRoot>$(MSBuildThisFileDirectory)../</BootsharpRoot>
         <BootsharpSourceDirectory>$(BootsharpRoot)/js</BootsharpSourceDirectory>
         <BootsharpBuilderAssembly>$(BootsharpRoot)/tasks/Bootsharp.Builder.dll</BootsharpBuilderAssembly>
-        <BootsharpSerializerFilePath>$(IntermediateOutputPath)bootsharp/SerializerContext.g.cs</BootsharpSerializerFilePath>
+        <BootsharpIntermediateDirectory>$(IntermediateOutputPath)bootsharp</BootsharpIntermediateDirectory>
+        <BootsharpInteropExportsFilePath>$(BootsharpIntermediateDirectory)/InteropExports.g.cs</BootsharpInteropExportsFilePath>
+        <BootsharpInteropImportsFilePath>$(BootsharpIntermediateDirectory)/InteropImports.g.cs</BootsharpInteropImportsFilePath>
+        <BootsharpSerializerFilePath>$(BootsharpIntermediateDirectory)/SerializerContext.g.cs</BootsharpSerializerFilePath>
         <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
     </PropertyGroup>
 
@@ -51,9 +54,15 @@
         <!-- Generate code to be analyzed by .NET's source generators: interop methods and serialized type hints. -->
         <PrepareBootsharp InspectedDirectory="$(OutputPath)"
                           EntryAssemblyName="$(BootsharpEntryAssemblyName)"
+                          InteropExportsFilePath="$(BootsharpInteropExportsFilePath)"
+                          InteropImportsFilePath="$(BootsharpInteropImportsFilePath)"
                           SerializerFilePath="$(BootsharpSerializerFilePath)"/>
         <ItemGroup>
+            <Compile Remove="$(BootsharpInteropExportsFilePath)"/>
+            <Compile Remove="$(BootsharpInteropImportsFilePath)"/>
             <Compile Remove="$(BootsharpSerializerFilePath)"/>
+            <Compile Include="$(BootsharpInteropExportsFilePath)"/>
+            <Compile Include="$(BootsharpInteropImportsFilePath)"/>
             <Compile Include="$(BootsharpSerializerFilePath)"/>
         </ItemGroup>
 
@@ -61,7 +70,7 @@
 
     <Target Name="BootsharpClean" AfterTargets="Clean">
         <!-- Delete generated sources to ensure they're re-generated on rebuild. -->
-        <Delete Files="$(BootsharpSerializerFilePath)"/>
+        <RemoveDir Directories="$(BootsharpIntermediateDirectory)"/>
     </Target>
 
     <Target Name="BootsharpBuild" AfterTargets="_AfterWasmBuildApp">
