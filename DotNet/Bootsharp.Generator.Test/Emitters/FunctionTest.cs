@@ -177,7 +177,7 @@ public static class FunctionTest
             partial class Foo
             {
                 [JSFunction]
-                partial void Bar (bool a1, byte a2, char a3, short a4, long a5, int a6, float a7, double a8, IntPtr a9, DateTime a10, DateTimeOffset a11, string a12, byte[] a13, int[] a14, double[] a15, string[] a16);
+                partial void Bar (bool a1, byte a2, char a3, short a4, long a5, int a6, float a7, double a8, nint a9, DateTime a10, DateTimeOffset a11, string a12, byte[] a13, int[] a14, double[] a15, string[] a16);
             }
             """,
             """
