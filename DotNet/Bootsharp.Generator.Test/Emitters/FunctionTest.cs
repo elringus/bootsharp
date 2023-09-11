@@ -19,7 +19,7 @@ public static class FunctionTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                partial void Bar () => Function.InvokeVoid("Global.bar");
+                partial void Bar () => Get<global::System.Action>("Global.bar")();
             }
             """
         },
@@ -47,7 +47,7 @@ public static class FunctionTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "File.Scoped.Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                private static partial Task BarAsync (string a, int b) => Function.InvokeVoidAsync("File.Scoped.barAsync", a, b);
+                private static partial global::System.Threading.Tasks.Task BarAsync (global::System.String a, global::System.Int32 b) => Get<global::System.Func<global::System.String, global::System.Int32, global::System.Threading.Tasks.Task>>("File.Scoped.barAsync")(a, b);
             }
             """
         },
@@ -75,7 +75,7 @@ public static class FunctionTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "File.Scoped.Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                private static partial Task<string?> BarAsync () => Function.InvokeAsync<string?>("File.Scoped.barAsync");
+                private static partial global::System.Threading.Tasks.Task<global::System.String?> BarAsync () => Get<global::System.Func<global::System.Threading.Tasks.Task<global::System.String?>>>("File.Scoped.barAsync")();
             }
             """
         },
@@ -108,8 +108,8 @@ public static class FunctionTest
                     [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Classic.Foo", "GeneratorTest")]
                     internal static void RegisterDynamicDependencies () { }
 
-                    public partial DateTime GetTime (DateTime time) => Function.Invoke<DateTime>("Classic.getTime", time);
-                    public partial Task<DateTime> GetTimeAsync (DateTime time) => Function.InvokeAsync<DateTime>("Classic.getTimeAsync", time);
+                    public partial global::System.DateTime GetTime (global::System.DateTime time) => Get<global::System.Func<global::System.DateTime, global::System.DateTime>>("Classic.getTime")(time);
+                    public partial global::System.Threading.Tasks.Task<global::System.DateTime> GetTimeAsync (global::System.DateTime time) => Get<global::System.Func<global::System.DateTime, global::System.Threading.Tasks.Task<global::System.DateTime>>>("Classic.getTimeAsync")(time);
                 }
             }
             """
@@ -124,7 +124,7 @@ public static class FunctionTest
             public partial class Foo
             {
                 [JSFunction]
-                public static partial void OnFun (Foo foo);
+                public static partial void OnFun (bool val);
             }
             """,
             """
@@ -136,7 +136,36 @@ public static class FunctionTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "A.B.C.Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                public static partial void OnFun (Foo foo) => Function.InvokeVoid("C.onFun", foo);
+                public static partial void OnFun (global::System.Boolean val) => Get<global::System.Action<global::System.Boolean>>("C.onFun")(val);
+            }
+            """
+        },
+        // Can generate void binding with serialized parameters.
+        new object[] {
+            """
+            using System.Threading.Tasks;
+
+            public record Info(string Baz);
+
+            partial class Foo
+            {
+                [JSFunction]
+                public partial Info Bar (Info info1, Info info2);
+                [JSFunction]
+                public partial Task<Info> BarAsync (Info info);
+            }
+            """,
+            """
+            using System.Threading.Tasks;
+
+            partial class Foo
+            {
+                [ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo", "GeneratorTest")]
+                internal static void RegisterDynamicDependencies () { }
+
+                public partial global::Info Bar (global::Info info1, global::Info info2) => Deserialize<global::Info>(Get<global::System.Func<global::System.String, global::System.String, global::System.String>>("Global.bar")(Serialize(info1), Serialize(info2)));
+                public async partial global::System.Threading.Tasks.Task<global::Info> BarAsync (global::Info info) => Deserialize<global::Info>(await Get<global::System.Func<global::System.String, global::System.Threading.Tasks.Task<global::System.String>>>("Global.barAsync")(Serialize(info)));
             }
             """
         }

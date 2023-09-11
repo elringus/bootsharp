@@ -28,7 +28,7 @@ public interface IFrontend;
 public class Backend : IBackend;
 public class Frontend : IFrontend;
 
-public class JSTypesTest
+public class TypesTest
 {
     private readonly CustomAttributeData export = GetMockExportAttribute();
     private readonly CustomAttributeData import = GetMockImportAttribute();
@@ -106,9 +106,9 @@ public class JSTypesTest
     private static object GetNamedValue (IList<CustomAttributeNamedArgument> args, string key) =>
         args.First(a => a.MemberName == key).TypedValue.Value;
     private static CustomAttributeData GetMockExportAttribute () =>
-        typeof(JSTypesTest).Assembly.CustomAttributes
+        typeof(TypesTest).Assembly.CustomAttributes
             .First(a => a.AttributeType == typeof(JSExportAttribute));
     private static CustomAttributeData GetMockImportAttribute () =>
-        typeof(JSTypesTest).Assembly.CustomAttributes
+        typeof(TypesTest).Assembly.CustomAttributes
             .First(a => a.AttributeType == typeof(JSImportAttribute));
 }

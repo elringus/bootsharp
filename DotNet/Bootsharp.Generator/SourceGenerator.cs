@@ -2,36 +2,43 @@
 
 namespace Bootsharp.Generator;
 
-[Generator]
-public sealed class SourceGenerator : ISourceGenerator
+[Generator(LanguageNames.CSharp)]
+public sealed class SourceGenerator : IIncrementalGenerator
 {
-    public void Initialize (GeneratorInitializationContext context)
+    public void Initialize (IncrementalGeneratorInitializationContext context) => context
+        .RegisterSourceOutput(context.CompilationProvider, Compile);
+
+    private static void Compile (SourceProductionContext context, Compilation compilation)
     {
-        context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
+        CompileGlobal(context, compilation);
+        CompilePartial(context, compilation);
     }
 
-    public void Execute (GeneratorExecutionContext context)
+    private static void CompileGlobal (SourceProductionContext context, Compilation compilation)
     {
-        AddGlobal(context);
-        if (context.SyntaxContextReceiver is SyntaxReceiver receiver)
-            AddPartial(context, receiver);
+        foreach (var type in ExportType.Resolve(compilation))
+            context.AddSource($"{type.Name}Export.g", type.EmitSource());
+        foreach (var type in ImportType.Resolve(compilation))
+            context.AddSource($"{type.Name}Import.g", type.EmitSource());
     }
 
-    private static void AddGlobal (GeneratorExecutionContext context)
+    private static void CompilePartial (SourceProductionContext context, Compilation compilation)
     {
-        foreach (var type in ExportType.Resolve(context.Compilation.Assembly))
-            context.AddSource($"{type.Name}Export.g", type.EmitSource(context.Compilation));
-        foreach (var type in ImportType.Resolve(context.Compilation.Assembly))
-            context.AddSource($"{type.Name}Import.g", type.EmitSource(context.Compilation));
-    }
-
-    private static void AddPartial (GeneratorExecutionContext context, SyntaxReceiver receiver)
-    {
+        var receiver = VisitNodes(compilation);
         foreach (var @class in receiver.InvokableClasses)
-            context.AddSource($"{@class.Name}Invokable.g", @class.EmitSource(context.Compilation));
+            context.AddSource($"{@class.Name}Invokable.g", @class.EmitSource());
         foreach (var @class in receiver.FunctionClasses)
-            context.AddSource($"{@class.Name}Functions.g", @class.EmitSource(context.Compilation));
+            context.AddSource($"{@class.Name}Functions.g", @class.EmitSource());
         foreach (var @class in receiver.EventClasses)
-            context.AddSource($"{@class.Name}Events.g", @class.EmitSource(context.Compilation));
+            context.AddSource($"{@class.Name}Events.g", @class.EmitSource());
+    }
+
+    private static SyntaxReceiver VisitNodes (Compilation compilation)
+    {
+        var receiver = new SyntaxReceiver();
+        foreach (var tree in compilation.SyntaxTrees)
+        foreach (var node in tree.GetRoot().DescendantNodesAndSelf())
+            receiver.VisitNode(node, compilation);
+        return receiver;
     }
 }

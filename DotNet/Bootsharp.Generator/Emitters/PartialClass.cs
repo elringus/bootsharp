@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Bootsharp.Generator;
 
 internal sealed class PartialClass(
+    Compilation compilation,
     ClassDeclarationSyntax syntax,
     IReadOnlyList<PartialMethod> methods,
     bool emitDependenciesRegistration
@@ -11,7 +12,7 @@ internal sealed class PartialClass(
 {
     public string Name { get; } = syntax.Identifier.ToString();
 
-    public string EmitSource (Compilation compilation) => EmitCommon(
+    public string EmitSource () => EmitCommon(
         EmitUsings() +
         WrapNamespace(
             EmitHeader() +

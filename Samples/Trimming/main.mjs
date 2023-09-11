@@ -16,8 +16,6 @@ Frontend.getInfo = () => ({ environment: `Node ${process.version}` });
 await bootsharp.boot();
 console.log(`Backend: ${Backend.getInfo().environment}`);
 
-process.env.BOOTSHARP_E2E_TRIMMING = "PASS";
-
 async function measure(dir) {
     let size = 0;
     for await (const entry of await fs.opendir(dir))

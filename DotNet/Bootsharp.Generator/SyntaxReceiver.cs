@@ -3,26 +3,26 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Bootsharp.Generator;
 
-internal sealed class SyntaxReceiver : ISyntaxContextReceiver
+internal sealed class SyntaxReceiver
 {
     public List<PartialClass> InvokableClasses { get; } = new();
     public List<PartialClass> FunctionClasses { get; } = new();
     public List<PartialClass> EventClasses { get; } = new();
 
-    public void OnVisitSyntaxNode (GeneratorSyntaxContext context)
+    public void VisitNode (SyntaxNode node, Compilation compilation)
     {
-        if (context.Node is ClassDeclarationSyntax classSyntax)
-            VisitClass(classSyntax);
+        if (node is ClassDeclarationSyntax classSyntax)
+            VisitClass(classSyntax, compilation);
     }
 
-    private void VisitClass (ClassDeclarationSyntax syntax)
+    private void VisitClass (ClassDeclarationSyntax syntax, Compilation compilation)
     {
         var invokable = GetMethodsWithAttribute(syntax, InvokableAttribute);
-        if (invokable.Count > 0) InvokableClasses.Add(new(syntax, Array.Empty<PartialMethod>(), true));
+        if (invokable.Count > 0) InvokableClasses.Add(new(compilation, syntax, Array.Empty<PartialMethod>(), true));
         var functions = GetMethodsWithAttribute(syntax, FunctionAttribute);
-        if (functions.Count > 0) FunctionClasses.Add(new(syntax, functions, invokable.Count == 0));
+        if (functions.Count > 0) FunctionClasses.Add(new(compilation, syntax, functions, invokable.Count == 0));
         var events = GetMethodsWithAttribute(syntax, EventAttribute);
-        if (events.Count > 0) EventClasses.Add(new(syntax, events, invokable.Count + functions.Count == 0));
+        if (events.Count > 0) EventClasses.Add(new(compilation, syntax, events, invokable.Count + functions.Count == 0));
     }
 
     private List<PartialMethod> GetMethodsWithAttribute (ClassDeclarationSyntax syntax, string attribute)

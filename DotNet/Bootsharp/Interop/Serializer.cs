@@ -1,10 +1,9 @@
-﻿using System.Reflection;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace Bootsharp;
 
 /// <summary>
-/// Handles serialization of the marshalled interop data.
+/// Handles serialization of the interop data that can't be passed to and from JavaScript as-is.
 /// </summary>
 public static class Serializer
 {
@@ -14,40 +13,12 @@ public static class Serializer
     public static JsonSerializerOptions Options { get; set; } = new(JsonSerializerDefaults.Web);
 
     /// <summary>
-    /// Attempt to serialize specified object to JSON string.
+    /// Serializes specified object to JSON string.
     /// </summary>
     public static string Serialize (object @object) => JsonSerializer.Serialize(@object, Options);
 
     /// <summary>
-    /// Attempt to deserialize specified JSON string to the object of specified type.
+    /// Deserializes specified JSON string to the object of specified type.
     /// </summary>
-    public static object Deserialize (string json, Type type) => JsonSerializer.Deserialize(json, type, Options)!;
-
-    /// <summary>
-    /// Attempts to serialize specified arguments;
-    /// returns null when args array is null or empty.
-    /// </summary>
-    public static string[]? SerializeArgs (params object[]? args)
-    {
-        if (args == null || args.Length == 0) return null;
-        var serialized = new string[args.Length];
-        for (int i = 0; i < args.Length; i++)
-            serialized[i] = Serialize(args[i]);
-        return serialized;
-    }
-
-    /// <summary>
-    /// Attempts to deserialize arguments described by the specified parameters info;
-    /// returns null when args array is null or empty.
-    /// </summary>
-    public static object[]? DeserializeArgs (IReadOnlyList<ParameterInfo> @params, params string[]? args)
-    {
-        if (args == null || args.Length == 0) return null;
-        if (args.Length > @params.Count)
-            throw new Error($"Failed to deserialize '{string.Join(',', args)}' arguments: the method doesn't accept as many arguments.");
-        var result = new object[@params.Count];
-        for (int i = 0; i < args.Length; i++)
-            result[i] = Deserialize(args[i], @params[i].ParameterType);
-        return result;
-    }
+    public static T Deserialize<T> (string json) => JsonSerializer.Deserialize<T>(json, Options)!;
 }

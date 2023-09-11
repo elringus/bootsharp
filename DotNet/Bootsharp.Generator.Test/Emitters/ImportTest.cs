@@ -27,10 +27,10 @@ public static class ImportTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                [JSFunction] public static void NotifyFoo (global::System.String foo) => Function.InvokeVoid("Foo.notifyFoo", foo);
-                [JSFunction] public static global::System.Boolean Bar () => Function.Invoke<global::System.Boolean>("Foo.bar");
-                [JSFunction] public static global::System.Threading.Tasks.Task Nya () => Function.InvokeVoidAsync("Foo.nya");
-                [JSFunction] public static global::System.Threading.Tasks.Task<global::System.String> Far () => Function.InvokeAsync<global::System.String>("Foo.far");
+                [JSFunction] public static void NotifyFoo (global::System.String foo) => Get<global::System.Action<global::System.String>>("Foo.notifyFoo")(foo);
+                [JSFunction] public static global::System.Boolean Bar () => Get<global::System.Func<global::System.Boolean>>("Foo.bar")();
+                [JSFunction] public static global::System.Threading.Tasks.Task Nya () => Get<global::System.Func<global::System.Threading.Tasks.Task>>("Foo.nya")();
+                [JSFunction] public static global::System.Threading.Tasks.Task<global::System.String> Far () => Get<global::System.Func<global::System.Threading.Tasks.Task<global::System.String>>>("Foo.far")();
 
                 void global::IFoo.NotifyFoo (global::System.String foo) => NotifyFoo(foo);
                 global::System.Boolean global::IFoo.Bar () => Bar();
@@ -39,7 +39,7 @@ public static class ImportTest
             }
             """
         },
-        // Will detect and override event methods with defaults.
+        // Detects and overrides event methods with defaults.
         new object[] {
             """
             [assembly:JSImport(typeof(IFoo))]
@@ -58,7 +58,7 @@ public static class ImportTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                [JSEvent] public static void OnFoo (global::System.String foo) => Event.Broadcast("Foo.onFoo", foo);
+                [JSEvent] public static void OnFoo (global::System.String foo) => Get<global::System.Action<global::System.String>>("Foo.onFoo.broadcast")(foo);
 
                 void global::IFoo.NotifyFoo (global::System.String foo) => OnFoo(foo);
             }
@@ -83,7 +83,7 @@ public static class ImportTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                [JSEvent] public static void NotifyFoo (global::System.String foo) => Event.Broadcast("Foo.notifyFoo", foo);
+                [JSEvent] public static void NotifyFoo (global::System.String foo) => Get<global::System.Action<global::System.String>>("Foo.notifyFoo.broadcast")(foo);
 
                 void global::IFoo.NotifyFoo (global::System.String foo) => NotifyFoo(foo);
             }
@@ -108,7 +108,7 @@ public static class ImportTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                [JSEvent] public static void HandleFoo (global::System.String foo) => Event.Broadcast("Foo.handleFoo", foo);
+                [JSEvent] public static void HandleFoo (global::System.String foo) => Get<global::System.Action<global::System.String>>("Foo.handleFoo.broadcast")(foo);
 
                 void global::IFoo.FireFoo (global::System.String foo) => HandleFoo(foo);
             }
@@ -134,8 +134,8 @@ public static class ImportTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                [JSFunction] public static void NahFoo (global::System.String foo) => Function.InvokeVoid("Foo.nahFoo", foo)/**/;
-                [JSFunction] public static global::System.Boolean Bar () => Function.Invoke<global::System.Boolean>("Foo.bar")/**/;
+                [JSFunction] public static void NahFoo (global::System.String foo) => Get<global::System.Action<global::System.String>>("Foo.nahFoo")(foo)/**/;
+                [JSFunction] public static global::System.Boolean Bar () => Get<global::System.Func<global::System.Boolean>>("Foo.bar")()/**/;
 
                 void global::IFoo.NyaFoo (global::System.String foo) => NahFoo(foo);
                 global::System.Boolean global::IFoo.Bar () => Bar();
@@ -161,7 +161,7 @@ public static class ImportTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                [JSFunction] public static void Foo () => Function.InvokeVoid("Foo.foo");
+                [JSFunction] public static void Foo () => Get<global::System.Action>("Foo.foo")();
 
                 void global::IFoo.Foo () => Foo();
             }
@@ -189,9 +189,44 @@ public static class ImportTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                [JSFunction] public static void F () => Function.InvokeVoid("Bar.f");
+                [JSFunction] public static void F () => Get<global::System.Action>("Bar.f")();
 
                 void global::A.B.C.IFoo.F () => F();
+            }
+            """
+        },
+        // Can import with serialized parameters.
+        new object[] {
+            """
+            using System.Threading.Tasks;
+
+            [assembly:JSImport(typeof(IFoo))]
+
+            public record Info(string Baz);
+
+            public interface IFoo
+            {
+                void NotifyFoo (Info info1, Info info2);
+                Info Bar ();
+                Task<Info> Far (Info info);
+            }
+            """,
+            """
+            namespace Foo;
+
+            public class JSFoo : global::IFoo
+            {
+                [ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
+                internal static void RegisterDynamicDependencies () { }
+
+                [JSEvent] public static void OnFoo (global::Info info1, global::Info info2) => Get<global::System.Action<global::System.String, global::System.String>>("Foo.onFoo.broadcast")(Serialize(info1), Serialize(info2));
+                [JSFunction] public static global::Info Bar () => Deserialize<global::Info>(Get<global::System.Func<global::System.String>>("Foo.bar")());
+                [JSFunction] public static async global::System.Threading.Tasks.Task<global::Info> Far (global::Info info) => Deserialize<global::Info>(await Get<global::System.Func<global::System.String, global::System.Threading.Tasks.Task<global::System.String>>>("Foo.far")(Serialize(info)));
+
+                void global::IFoo.NotifyFoo (global::Info info1, global::Info info2) => OnFoo(info1, info2);
+                global::Info global::IFoo.Bar () => Bar();
+                global::System.Threading.Tasks.Task<global::Info> global::IFoo.Far (global::Info info) => Far(info);
             }
             """
         }

@@ -2,19 +2,19 @@
 
 namespace Bootsharp.Generator;
 
-internal sealed class ExportType(ITypeSymbol type, AttributeData attribute)
+internal sealed class ExportType(Compilation compilation, ITypeSymbol type, AttributeData attribute)
 {
     public string Name { get; } = type.Name;
 
-    public static IEnumerable<ExportType> Resolve (IAssemblySymbol assembly) =>
-        assembly.GetAttributes().FirstOrDefault(IsExportAttribute) is { } attribute
+    public static IEnumerable<ExportType> Resolve (Compilation compilation) =>
+        compilation.Assembly.GetAttributes().FirstOrDefault(IsExportAttribute) is { } attribute
             ? attribute.ConstructorArguments[0].Values
                 .Select(v => v.Value).OfType<ITypeSymbol>()
                 .Where(t => t.TypeKind == TypeKind.Interface)
-                .Select(t => new ExportType(t, attribute))
+                .Select(t => new ExportType(compilation, t, attribute))
             : Array.Empty<ExportType>();
 
-    public string EmitSource (Compilation compilation)
+    public string EmitSource ()
     {
         var specType = BuildFullName(type);
         var implType = BuildBindingType(type);
