@@ -15,11 +15,6 @@ public sealed class Verifier<T> : CSharpSourceGeneratorTest<T, XUnitVerifier>
 
     public Verifier () => ReferenceAssemblies = ReferenceAssemblies.Net.Net80;
 
-    protected override bool IsCompilerDiagnosticIncluded (Diagnostic diagnostic, CompilerDiagnostics _)
-    {
-        if (diagnostic.Severity != DiagnosticSeverity.Error) return false;
-        // Mute CS8795 for missing generated method from
-        // System.Runtime.InteropServices.JavaScript (not generated in test run).
-        return diagnostic.Id != "CS8795";
-    }
+    protected override bool IsCompilerDiagnosticIncluded (Diagnostic diagnostic, CompilerDiagnostics _) =>
+        diagnostic.Severity == DiagnosticSeverity.Error;
 }

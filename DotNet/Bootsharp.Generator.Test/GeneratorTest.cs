@@ -121,7 +121,6 @@ public class GeneratorTest
          using Bootsharp;
          using static Bootsharp.Function;
          using static Bootsharp.Serializer;
-         using System;
          using System.Diagnostics.CodeAnalysis;
          using System.Runtime.CompilerServices;
          {expected}

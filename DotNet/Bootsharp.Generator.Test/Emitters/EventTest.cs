@@ -19,7 +19,7 @@ public static class EventTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                partial void OnBar () => Get<Action>("Global.onBar.broadcast")();
+                partial void OnBar () => Get<global::System.Action>("Global.onBar.broadcast")();
             }
             """
         },
@@ -43,7 +43,7 @@ public static class EventTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Space.Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                public static partial void OnBar (string a, int b) => Get<Action<string, int>>("Space.onBar.broadcast")(a, b);
+                public static partial void OnBar (global::System.String a, global::System.Int32 b) => Get<global::System.Action<global::System.String, global::System.Int32>>("Space.onBar.broadcast")(a, b);
             }
             """
         },
@@ -65,7 +65,7 @@ public static class EventTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                public static partial void OnInfo (Info info) => Get<Action<string>>("Global.onInfo.broadcast")(Serialize(info));
+                public static partial void OnInfo (global::Info info) => Get<global::System.Action<global::System.String>>("Global.onInfo.broadcast")(Serialize(info));
             }
             """
         }

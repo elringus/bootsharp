@@ -9,8 +9,6 @@
 /// </remarks>
 public static class Function
 {
-    public record Info(string Baz);
-
     private static readonly Dictionary<string, Delegate> functions = new();
 
     /// <summary>

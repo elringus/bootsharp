@@ -30,7 +30,6 @@ internal static class Common
             using Bootsharp;
             using static Bootsharp.Function;
             using static Bootsharp.Serializer;
-            using System;
             using System.Diagnostics.CodeAnalysis;
             using System.Runtime.CompilerServices;
             {source}
