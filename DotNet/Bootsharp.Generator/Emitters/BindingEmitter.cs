@@ -78,7 +78,7 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
         type.SpecialType != SpecialType.System_Void && !Is<Task>(type) &&
         !Is<bool>(type) && !Is<byte>(type) && !Is<char>(type) && !Is<short>(type) &&
         !Is<long>(type) && !Is<int>(type) && !Is<float>(type) && !Is<double>(type) &&
-        !Is<IntPtr>(type) && !Is<DateTime>(type) && !Is<DateTimeOffset>(type) && !Is<string>(type) &&
+        !Is<nint>(type) && !Is<DateTime>(type) && !Is<DateTimeOffset>(type) && !Is<string>(type) &&
         !((type as IArrayTypeSymbol)?.ElementType is { } e && (Is<byte>(e) || Is<int>(e) || Is<double>(e) || Is<string>(e)));
 
     private static bool IsResultTask (ITypeSymbol type, out INamedTypeSymbol named)
