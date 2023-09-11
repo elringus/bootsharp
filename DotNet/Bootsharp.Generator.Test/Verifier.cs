@@ -9,7 +9,7 @@ namespace Bootsharp.Generator.Test;
 // .NET 7 and later sources: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
 
 public sealed class Verifier<T> : CSharpSourceGeneratorTest<T, XUnitVerifier>
-    where T : ISourceGenerator, new()
+    where T : IIncrementalGenerator, new()
 {
     protected override string DefaultTestProjectName { get; } = "GeneratorTest";
 

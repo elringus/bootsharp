@@ -2,24 +2,22 @@
 
 namespace Bootsharp.Generator;
 
-internal sealed class ImportType(ITypeSymbol type, AttributeData attribute)
+internal sealed class ImportType(Compilation compilation, ITypeSymbol type, AttributeData attribute)
 {
     public string Name { get; } = type.Name;
 
-    private Compilation compilation;
     private string specType;
 
-    public static IEnumerable<ImportType> Resolve (IAssemblySymbol assembly) =>
-        assembly.GetAttributes().FirstOrDefault(IsImportAttribute) is { } attribute
+    public static IEnumerable<ImportType> Resolve (Compilation compilation) =>
+        compilation.Assembly.GetAttributes().FirstOrDefault(IsImportAttribute) is { } attribute
             ? attribute.ConstructorArguments[0].Values
                 .Select(v => v.Value).OfType<ITypeSymbol>()
                 .Where(t => t.TypeKind == TypeKind.Interface)
-                .Select(t => new ImportType(t, attribute))
+                .Select(t => new ImportType(compilation, t, attribute))
             : Array.Empty<ImportType>();
 
-    public string EmitSource (Compilation compilation)
+    public string EmitSource ()
     {
-        this.compilation = compilation;
         specType = BuildFullName(type);
         var implType = BuildBindingType(type);
         var methods = type.GetMembers().OfType<IMethodSymbol>().ToArray();
