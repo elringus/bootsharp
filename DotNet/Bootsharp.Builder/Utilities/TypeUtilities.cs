@@ -15,18 +15,20 @@ internal static class TypeUtilities
     {
         return type.IsArray || IsGenericList(type) || type.GetInterfaces().Any(IsGenericList);
 
-        bool IsGenericList (Type type) => type.IsGenericType &&
-                                          (type.GetGenericTypeDefinition().FullName == typeof(IList<>).FullName ||
-                                           type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyList<>).FullName);
+        bool IsGenericList (Type type) =>
+            type.IsGenericType &&
+            (type.GetGenericTypeDefinition().FullName == typeof(IList<>).FullName ||
+             type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyList<>).FullName);
     }
 
     public static bool IsDictionary (Type type)
     {
         return IsDict(type) || type.GetInterfaces().Any(IsDict);
 
-        bool IsDict (Type type) => type.IsGenericType &&
-                                   (type.GetGenericTypeDefinition().FullName == typeof(IDictionary<,>).FullName ||
-                                    type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyDictionary<,>).FullName);
+        bool IsDict (Type type) =>
+            type.IsGenericType &&
+            (type.GetGenericTypeDefinition().FullName == typeof(IDictionary<,>).FullName ||
+             type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyDictionary<,>).FullName);
     }
 
     public static Type GetListElementType (Type arrayType)
