@@ -2,8 +2,8 @@ namespace Bootsharp.Builder;
 
 internal sealed class ExportGenerator
 {
-    public string Generate (AssemblyInspector inspector)
+    public static string Generate (AssemblyInspector inspector)
     {
-        return "";
+        return new ExportTemplate().Build();
     }
 }

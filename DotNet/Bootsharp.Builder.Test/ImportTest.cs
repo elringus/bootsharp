@@ -17,7 +17,7 @@ public class ImportTest : PrepareBootsharpTest
     [Fact]
     public void WhenNoCrawledImports ()
     {
-        AddAssembly(With("[JSFunction] public static void Foo () { }"));
+        AddAssembly(With("[JSInvokable] public static void Foo () { }"));
         Execute();
         Contains(
             """
