@@ -16,12 +16,12 @@ internal static class TypeUtilities
 
     public static bool IsTaskWithResult (Type type)
     {
-        return type.FullName == typeof(Task<>).FullName;
+        return IsTaskLike(type) && type.GenericTypeArguments.Length == 1;
     }
 
     public static Type GetTaskResult (Type type)
     {
-        return type.GetGenericArguments()[0];
+        return type.GenericTypeArguments[0];
     }
 
     public static bool IsVoid (Type type)
@@ -137,9 +137,8 @@ internal static class TypeUtilities
         !Is<bool>(type) && !Is<byte>(type) && !Is<char>(type) && !Is<short>(type) &&
         !Is<long>(type) && !Is<int>(type) && !Is<float>(type) && !Is<double>(type) &&
         !Is<nint>(type) && !Is<DateTime>(type) && !Is<DateTimeOffset>(type) && !Is<string>(type) &&
-        !IsVoid(type) && !Is<Task>(type) && !(IsTaskWithResult(type) && ShouldSerialize(GetTaskResult(type))) &&
-        !(IsList(type) && (Is<byte>(GetListElementType(type)) || Is<int>(GetListElementType(type)) ||
-                           Is<double>(GetListElementType(type)) || Is<string>(GetListElementType(type))));
+        !Is<byte[]>(type) && !Is<int[]>(type) && !Is<double[]>(type) && !Is<string[]>(type) &&
+        !IsVoid(type) && !Is<Task>(type) && !(IsTaskWithResult(type) && !ShouldSerialize(GetTaskResult(type)));
 
     private static string BuildFullName (Type type, NullabilityInfo nul, bool forceNul = false)
     {

@@ -141,7 +141,7 @@ public class DeclarationTest : BuildTest
     {
         AddAssembly(
             With("[JSInvokable] public static Task<bool> AsyBool () => default;"),
-            With("[JSInvokable] public static ValueTask AsyVoid () => default;"));
+            With("[JSInvokable] public static Task AsyVoid () => default;"));
         Execute();
         Contains("asyBool(): Promise<boolean>");
         Contains("asyVoid(): Promise<void>");
