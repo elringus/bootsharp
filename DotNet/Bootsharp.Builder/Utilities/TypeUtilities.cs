@@ -6,9 +6,6 @@ namespace Bootsharp.Builder;
 
 internal static class TypeUtilities
 {
-    // Can't compare types directly as they're inspected in other modules.
-    public static bool Is<T> (Type type) => type.FullName == typeof(T).FullName;
-
     public static bool IsTaskLike (Type type)
     {
         return type.GetMethod(nameof(Task.GetAwaiter)) != null;
@@ -140,9 +137,12 @@ internal static class TypeUtilities
         !Is<byte[]>(type) && !Is<int[]>(type) && !Is<double[]>(type) && !Is<string[]>(type) &&
         !IsVoid(type) && !Is<Task>(type) && !(IsTaskWithResult(type) && !ShouldSerialize(GetTaskResult(type)));
 
-    private static string BuildFullName (Type type, NullabilityInfo nul, bool forceNul = false)
+    // can't compare types directly as they're inspected in other modules
+    private static bool Is<T> (Type type) => type.FullName == typeof(T).FullName;
+
+    private static string BuildFullName (Type type, NullabilityInfo nul, bool forceNil = false)
     {
-        var nil = (forceNul || nul.ReadState == NullabilityState.Nullable) ? "?" : "";
+        var nil = (forceNil || nul.ReadState == NullabilityState.Nullable) ? "?" : "";
         if (IsVoid(type)) return "void";
         if (type.IsArray) return $"{BuildFullName(GetListElementType(type), nul.ElementType!)}[]{nil}";
         if (type.IsGenericType) return BuildGeneric(type, type.GenericTypeArguments);
