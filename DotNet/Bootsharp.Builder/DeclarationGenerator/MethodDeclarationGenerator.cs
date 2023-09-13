@@ -15,7 +15,7 @@ internal sealed class MethodDeclarationGenerator
 
     public string Generate (IEnumerable<Method> sourceMethods)
     {
-        methods = sourceMethods.OrderBy(m => m.Namespace).ToArray();
+        methods = sourceMethods.OrderBy(m => m.JSSpace).ToArray();
         for (index = 0; index < methods.Length; index++)
             DeclareMethod();
         return builder.ToString();
@@ -33,18 +33,18 @@ internal sealed class MethodDeclarationGenerator
     private bool ShouldOpenNamespace ()
     {
         if (prevMethod is null) return true;
-        return prevMethod.Namespace != method.Namespace;
+        return prevMethod.JSSpace != method.JSSpace;
     }
 
     private void OpenNamespace ()
     {
-        builder.Append($"\nexport namespace {method.Namespace} {{");
+        builder.Append($"\nexport namespace {method.JSSpace} {{");
     }
 
     private bool ShouldCloseNamespace ()
     {
         if (nextMethod is null) return true;
-        return nextMethod.Namespace != method.Namespace;
+        return nextMethod.JSSpace != method.JSSpace;
     }
 
     private void CloseNamespace ()
@@ -55,21 +55,21 @@ internal sealed class MethodDeclarationGenerator
     private void DeclareInvokable ()
     {
         builder.Append($"\n    export function {ToFirstLower(method.Name)}(");
-        builder.AppendJoin(", ", method.Arguments.Select(BuildArgumentDeclaration));
+        builder.AppendJoin(", ", method.JSArguments.Select(BuildArgumentDeclaration));
         builder.Append($"): {BuildReturnDeclaration(method)};");
     }
 
     private void DeclareFunction ()
     {
         builder.Append($"\n    export let {ToFirstLower(method.Name)}: (");
-        builder.AppendJoin(", ", method.Arguments.Select(BuildArgumentDeclaration));
+        builder.AppendJoin(", ", method.JSArguments.Select(BuildArgumentDeclaration));
         builder.Append($") => {BuildReturnDeclaration(method)};");
     }
 
     private void DeclareEvent ()
     {
         builder.Append($"\n    export const {ToFirstLower(method.Name)}: Event<[");
-        builder.AppendJoin(", ", method.Arguments.Select(BuildType));
+        builder.AppendJoin(", ", method.JSArguments.Select(BuildType));
         builder.Append("]>;");
 
         string BuildType (Argument arg) => arg.Type + (arg.Nullable ? " | undefined" : "");
@@ -82,9 +82,9 @@ internal sealed class MethodDeclarationGenerator
 
     private string BuildReturnDeclaration (Method method)
     {
-        if (!method.ReturnNullable) return method.ReturnType;
-        if (!method.Async) return $"{method.ReturnType} | null";
-        var insertIndex = method.ReturnType.Length - 1;
-        return method.ReturnType.Insert(insertIndex, " | null");
+        if (!method.ReturnsNullable) return method.JSReturnType;
+        if (!method.ReturnsTaskLike) return $"{method.JSReturnType} | null";
+        var insertIndex = method.JSReturnType.Length - 1;
+        return method.JSReturnType.Insert(insertIndex, " | null");
     }
 }

@@ -1,6 +1,6 @@
 namespace Bootsharp.Builder.Test;
 
-public class BindingTest : BuildBootsharpTest
+public class BindingTest : BuildTest
 {
     protected override string TestedContent => GeneratedBindings;
 

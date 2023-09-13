@@ -1,6 +1,6 @@
 namespace Bootsharp.Builder.Test;
 
-public class DeclarationTest : BuildBootsharpTest
+public class DeclarationTest : BuildTest
 {
     protected override string TestedContent => GeneratedDeclarations;
 

@@ -3,7 +3,7 @@ using Microsoft.Build.Utilities.ProjectCreation;
 
 namespace Bootsharp.Builder.Test;
 
-public abstract class BuildTaskTest : IDisposable
+public abstract class TaskTest : IDisposable
 {
     protected MockProject Project { get; } = new();
     protected BuildEngine Engine { get; } = BuildEngine.Create();

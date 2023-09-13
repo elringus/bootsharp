@@ -1,6 +1,6 @@
 ﻿namespace Bootsharp.Builder.Test;
 
-public class BuildBootsharpTest : BuildTaskTest
+public class BuildTest : TaskTest
 {
     protected BuildBootsharp Task { get; }
     protected byte[] MockWasmBinary { get; } = "MockWasmContent"u8.ToArray();
@@ -8,7 +8,7 @@ public class BuildBootsharpTest : BuildTaskTest
     protected string GeneratedDeclarations => ReadProjectFile("bindings.g.d.ts");
     protected string GeneratedResources => ReadProjectFile("resources.g.js");
 
-    public BuildBootsharpTest ()
+    public BuildTest ()
     {
         Task = CreateTask();
         Project.WriteFile("dotnet.native.wasm", MockWasmBinary);

@@ -1,6 +1,6 @@
 ﻿namespace Bootsharp.Builder.Test;
 
-public class ImportTest : PrepareBootsharpTest
+public class ImportTest : PrepareTest
 {
     protected override string TestedContent => GeneratedImports;
 

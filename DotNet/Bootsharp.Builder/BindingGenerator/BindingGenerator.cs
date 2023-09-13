@@ -16,7 +16,7 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
     public string Generate (AssemblyInspector inspector)
     {
         bindings = inspector.Methods
-            .Select(m => new Binding(m, null, m.Namespace))
+            .Select(m => new Binding(m, null, m.JSSpace))
             .Concat(inspector.Types.Where(t => t.IsEnum)
                 .Select(t => new Binding(null, t, spaceBuilder.Build(t))))
             .OrderBy(m => m.Namespace).ToArray();
@@ -81,10 +81,10 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
 
     private void EmitInvokable (Method method)
     {
-        var funcName = method.Async
-            ? (method.ReturnType == "Promise<void>" ? "invokeVoidAsync" : "invokeAsync")
-            : (method.ReturnType == "void" ? "invokeVoid" : "invoke");
-        var funcArgs = string.Join(", ", method.Arguments.Select(a => a.Name));
+        var funcName = method.ReturnsTaskLike
+            ? (method.JSReturnType == "Promise<void>" ? "invokeVoidAsync" : "invokeAsync")
+            : (method.JSReturnType == "void" ? "invokeVoid" : "invoke");
+        var funcArgs = string.Join(", ", method.JSArguments.Select(a => a.Name));
         var endpoint = $"{method.Assembly}/{method.DeclaringName}/{method.Name}";
         var methodArgs = $"\"{endpoint}\"" + (funcArgs == "" ? "" : $", {funcArgs}");
         var body = $"{funcName}({methodArgs})";

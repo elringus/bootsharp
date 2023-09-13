@@ -25,7 +25,7 @@ internal sealed class TypeConverter(NamespaceBuilder spaceBuilder)
         if (IsNullable(type)) return ConvertNullable(type);
         if (IsList(type)) return ConvertList(type);
         if (IsDictionary(type)) return ConvertDictionary(type);
-        if (IsAwaitable(type)) return ConvertAwaitable(type);
+        if (IsTaskLike(type)) return ConvertAwaitable(type);
         if (type.IsGenericType && CrawledTypes.Contains(type)) return ConvertGeneric(type);
         return ConvertFinal(type);
     }
@@ -68,7 +68,7 @@ internal sealed class TypeConverter(NamespaceBuilder spaceBuilder)
     {
         EnterNullability(type);
         var args = string.Join(", ", type.GenericTypeArguments.Select(Convert));
-        return $"{spaceBuilder.Build(type)}.{GetGenericNameWithoutArgs(type)}<{args}>";
+        return $"{spaceBuilder.Build(type)}.{GetGenericNameWithoutArgs(type.Name)}<{args}>";
     }
 
     private string ConvertFinal (Type type)

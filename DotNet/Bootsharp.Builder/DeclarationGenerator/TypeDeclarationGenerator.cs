@@ -131,6 +131,6 @@ internal sealed class TypeDeclarationGenerator(NamespaceBuilder spaceBuilder)
     {
         if (!type.IsGenericType) return type.Name;
         var args = string.Join(", ", type.GetGenericArguments().Select(a => a.Name));
-        return $"{GetGenericNameWithoutArgs(type)}<{args}>";
+        return $"{GetGenericNameWithoutArgs(type.Name)}<{args}>";
     }
 }

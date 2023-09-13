@@ -1,6 +1,6 @@
 ﻿namespace Bootsharp.Builder.Test;
 
-public class InspectionTest : BuildBootsharpTest
+public class InspectionTest : BuildTest
 {
     [Fact]
     public void AllAssembliesAreInspected ()

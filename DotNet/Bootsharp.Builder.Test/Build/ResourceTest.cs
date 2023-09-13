@@ -1,6 +1,6 @@
 namespace Bootsharp.Builder.Test;
 
-public class ResourceTest : BuildBootsharpTest
+public class ResourceTest : BuildTest
 {
     protected override string TestedContent => GeneratedResources;
 

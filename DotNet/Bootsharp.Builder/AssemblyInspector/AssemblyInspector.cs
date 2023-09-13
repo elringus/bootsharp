@@ -87,21 +87,33 @@ internal sealed class AssemblyInspector(NamespaceBuilder spaceBuilder) : IDispos
     }
 
     private Method CreateMethod (MethodInfo info, MethodType type) => new() {
-        Name = info.Name,
+        Type = type,
         Assembly = info.DeclaringType!.Assembly.GetName().Name!,
-        Namespace = spaceBuilder.Build(info.DeclaringType),
         DeclaringName = info.DeclaringType.FullName!,
+        Name = info.Name,
         Arguments = info.GetParameters().Select(CreateArgument).ToArray(),
-        ReturnType = typeConverter.ToTypeScript(info.ReturnType, GetNullability(info.ReturnParameter)),
-        ReturnNullable = IsNullable(info),
-        Async = IsAwaitable(info.ReturnType),
-        Type = type
+        ReturnType = BuildFullName(info.ReturnType, info.ReturnParameter),
+        ReturnsVoid = IsVoid(info.ReturnType),
+        ReturnsNullable = IsNullable(info),
+        ReturnsTaskLike = IsTaskLike(info.ReturnType),
+        ShouldSerializeReturnType = ShouldSerialize(info.ReturnType),
+        JSSpace = spaceBuilder.Build(info.DeclaringType),
+        JSArguments = info.GetParameters().Select(CreateJSArgument).ToArray(),
+        JSReturnType = typeConverter.ToTypeScript(info.ReturnType, GetNullability(info.ReturnParameter))
     };
 
     private Argument CreateArgument (ParameterInfo info) => new() {
+        Name = info.Name!,
+        Type = BuildFullName(info.ParameterType, info),
+        Nullable = IsNullable(info),
+        ShouldSerialize = ShouldSerialize(info.ParameterType)
+    };
+
+    private Argument CreateJSArgument (ParameterInfo info) => new() {
         Name = info.Name == "function" ? "fn" : info.Name!,
         Type = typeConverter.ToTypeScript(info.ParameterType, GetNullability(info)),
-        Nullable = IsNullable(info)
+        Nullable = IsNullable(info),
+        ShouldSerialize = ShouldSerialize(info.ParameterType)
     };
 
     private static IEnumerable<MethodInfo> GetStaticMethods (System.Reflection.Assembly assembly)
