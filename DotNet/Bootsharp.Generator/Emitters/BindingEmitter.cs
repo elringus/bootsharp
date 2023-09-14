@@ -73,14 +73,34 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
         return ShouldSerialize(param.Type) ? $"Serialize({param.Name})" : param.Name;
     }
 
-    // see table at https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop
-    public static bool ShouldSerialize (ITypeSymbol type)
+    // https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop
+    private static bool ShouldSerialize (ITypeSymbol type)
     {
         var array = type is IArrayTypeSymbol;
         if (array) type = ((IArrayTypeSymbol)type).ElementType;
         if (IsNullable(type, out var nullable)) type = GetNullableUnderlyingType(nullable);
         if (array) return !IsArrayTransferable(type);
         return !IsStandaloneTransferable(type);
+
+        static bool IsNullable (ITypeSymbol type, out INamedTypeSymbol nullable)
+        {
+            nullable = type as INamedTypeSymbol;
+            return $"{type.ContainingNamespace}.{type.MetadataName}" == typeof(Nullable<>).FullName;
+        }
+
+        static ITypeSymbol GetNullableUnderlyingType (INamedTypeSymbol task) =>
+            task?.TypeArguments.FirstOrDefault();
+
+        static bool IsStandaloneTransferable (ITypeSymbol type) =>
+            Is<string>(type) || Is<bool>(type) || Is<byte>(type) || Is<char>(type) || Is<short>(type) ||
+            Is<long>(type) || Is<int>(type) || Is<float>(type) || Is<double>(type) || Is<nint>(type) ||
+            Is<DateTime>(type) || Is<DateTimeOffset>(type) || Is<Task>(type) || type.SpecialType == SpecialType.System_Void;
+
+        static bool IsArrayTransferable (ITypeSymbol type) =>
+            Is<byte>(type) || Is<int>(type) || Is<double>(type) || Is<string>(type);
+
+        static bool Is<T> (ITypeSymbol type) =>
+            $"{type.ContainingNamespace}.{type.MetadataName}" == typeof(T).FullName;
     }
 
     private static bool IsTaskWithResult (ITypeSymbol type, out INamedTypeSymbol named)
@@ -88,24 +108,4 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
         named = type as INamedTypeSymbol;
         return $"{type.ContainingNamespace}.{type.MetadataName}" == typeof(Task<>).FullName;
     }
-
-    private static bool IsNullable (ITypeSymbol type, out INamedTypeSymbol nullable)
-    {
-        nullable = type as INamedTypeSymbol;
-        return $"{type.ContainingNamespace}.{type.MetadataName}" == typeof(Nullable<>).FullName;
-    }
-
-    private static ITypeSymbol GetNullableUnderlyingType (INamedTypeSymbol task)
-        => task?.TypeArguments.FirstOrDefault();
-
-    private static bool IsStandaloneTransferable (ITypeSymbol type) =>
-        Is<string>(type) || Is<bool>(type) || Is<byte>(type) || Is<char>(type) || Is<short>(type) ||
-        Is<long>(type) || Is<int>(type) || Is<float>(type) || Is<double>(type) || Is<nint>(type) ||
-        Is<DateTime>(type) || Is<DateTimeOffset>(type) || Is<Task>(type) || type.SpecialType == SpecialType.System_Void;
-
-    private static bool IsArrayTransferable (ITypeSymbol type) =>
-        Is<byte>(type) || Is<int>(type) || Is<double>(type) || Is<string>(type);
-
-    private static bool Is<T> (ITypeSymbol type) =>
-        $"{type.ContainingNamespace}.{type.MetadataName}" == typeof(T).FullName;
 }

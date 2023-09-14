@@ -127,9 +127,7 @@ internal static class TypeUtilities
         return typeName[..delimiterIndex];
     }
 
-    public static string BuildFullName (Type type, ParameterInfo info) => BuildFullName(type, GetNullability(info));
-
-    // see table at https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop
+    // https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop
     public static bool ShouldSerialize (Type type)
     {
         if (IsTaskWithResult(type)) return ShouldSerialize(GetTaskResult(type));
@@ -138,18 +136,20 @@ internal static class TypeUtilities
         if (IsNullable(type)) type = GetNullableUnderlyingType(type);
         if (array) return !IsArrayTransferable(type);
         return !IsStandaloneTransferable(type);
+
+        static bool IsStandaloneTransferable (Type type) =>
+            Is<string>(type) || Is<bool>(type) || Is<byte>(type) || Is<char>(type) || Is<short>(type) ||
+            Is<long>(type) || Is<int>(type) || Is<float>(type) || Is<double>(type) || Is<nint>(type) ||
+            Is<DateTime>(type) || Is<DateTimeOffset>(type) || Is<Task>(type) || IsVoid(type);
+
+        static bool IsArrayTransferable (Type type) =>
+            Is<byte>(type) || Is<int>(type) || Is<double>(type) || Is<string>(type);
+
+        // can't compare types directly as they're inspected in other modules
+        static bool Is<T> (Type type) => type.FullName == typeof(T).FullName;
     }
 
-    private static bool IsStandaloneTransferable (Type type) =>
-        Is<string>(type) || Is<bool>(type) || Is<byte>(type) || Is<char>(type) || Is<short>(type) ||
-        Is<long>(type) || Is<int>(type) || Is<float>(type) || Is<double>(type) || Is<nint>(type) ||
-        Is<DateTime>(type) || Is<DateTimeOffset>(type) || Is<Task>(type) || IsVoid(type);
-
-    private static bool IsArrayTransferable (Type type) =>
-        Is<byte>(type) || Is<int>(type) || Is<double>(type) || Is<string>(type);
-
-    // can't compare types directly as they're inspected in other modules
-    private static bool Is<T> (Type type) => type.FullName == typeof(T).FullName;
+    public static string BuildFullName (Type type, ParameterInfo info) => BuildFullName(type, GetNullability(info));
 
     private static string BuildFullName (Type type, NullabilityInfo nul, bool forceNil = false)
     {
