@@ -6,6 +6,19 @@ namespace Bootsharp.Builder;
 
 internal static class TypeUtilities
 {
+    private static readonly HashSet<string> native = new[] {
+        typeof(string).FullName!, typeof(bool).FullName!, typeof(byte).FullName!,
+        typeof(char).FullName!, typeof(short).FullName!, typeof(long).FullName!,
+        typeof(int).FullName!, typeof(float).FullName!, typeof(double).FullName!,
+        typeof(nint).FullName!, typeof(Task).FullName!, typeof(DateTime).FullName!,
+        typeof(DateTimeOffset).FullName!,
+    }.ToHashSet();
+
+    private static readonly HashSet<string> arrayNative = new[] {
+        typeof(byte).FullName!, typeof(int).FullName!,
+        typeof(double).FullName!, typeof(string).FullName!
+    }.ToHashSet();
+
     public static bool IsTaskLike (Type type)
     {
         return type.GetMethod(nameof(Task.GetAwaiter)) != null;
@@ -130,23 +143,13 @@ internal static class TypeUtilities
     // https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop
     public static bool ShouldSerialize (Type type)
     {
+        if (IsVoid(type)) return false;
         if (IsTaskWithResult(type)) return ShouldSerialize(GetTaskResult(type));
         var array = type.IsArray;
         if (array) type = type.GetElementType()!;
         if (IsNullable(type)) type = GetNullableUnderlyingType(type);
-        if (array) return !IsArrayTransferable(type);
-        return !IsStandaloneTransferable(type);
-
-        static bool IsStandaloneTransferable (Type type) =>
-            Is<string>(type) || Is<bool>(type) || Is<byte>(type) || Is<char>(type) || Is<short>(type) ||
-            Is<long>(type) || Is<int>(type) || Is<float>(type) || Is<double>(type) || Is<nint>(type) ||
-            Is<DateTime>(type) || Is<DateTimeOffset>(type) || Is<Task>(type) || IsVoid(type);
-
-        static bool IsArrayTransferable (Type type) =>
-            Is<byte>(type) || Is<int>(type) || Is<double>(type) || Is<string>(type);
-
-        // can't compare types directly as they're inspected in other modules
-        static bool Is<T> (Type type) => type.FullName == typeof(T).FullName;
+        if (array) return !arrayNative.Contains(type.FullName!);
+        return !native.Contains(type.FullName!);
     }
 
     public static string BuildFullName (Type type, ParameterInfo info) => BuildFullName(type, GetNullability(info));
