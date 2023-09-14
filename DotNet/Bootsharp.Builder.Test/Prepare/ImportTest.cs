@@ -36,7 +36,6 @@ public class ImportTest : PrepareTest
             using System.Runtime.InteropServices.JavaScript;
             using System.Diagnostics.CodeAnalysis;
             using System.Runtime.CompilerServices;
-            using static Bootsharp.Serializer;
 
             namespace Bootsharp;
 
@@ -89,7 +88,6 @@ public class ImportTest : PrepareTest
             using System.Runtime.InteropServices.JavaScript;
             using System.Diagnostics.CodeAnalysis;
             using System.Runtime.CompilerServices;
-            using static Bootsharp.Serializer;
 
             namespace Bootsharp;
 
@@ -131,6 +129,52 @@ public class ImportTest : PrepareTest
 
                 [JSImport("Foo.Bar.nya", "Bootsharp")] internal static partial void Nya ();
                 [JSImport("Foo.Bar.far.broadcast", "Bootsharp")] internal static partial void Far ();
+            }
+            """);
+    }
+
+    [Fact]
+    public void ImportsFunctionsAndEvents ()
+    {
+        AddAssembly("asm", With(
+            """
+            namespace Space;
+
+            public record Info(string Foo);
+
+            public class Foo
+            {
+                [JSFunction] public static partial Info? Bar (string a, int[] b);
+                [JSFunction] public static partial Task Baz ();
+                [JSFunction] public static partial Task<Info?> Nya (Info a);
+                [JSEvent] public static partial void OnBar (Info? a, bool b);
+            }
+            """, false));
+        Execute();
+        Contains(
+            """
+            using System.Runtime.InteropServices.JavaScript;
+            using System.Diagnostics.CodeAnalysis;
+            using System.Runtime.CompilerServices;
+
+            namespace Bootsharp;
+
+            public partial class InteropImports_Space_Foo
+            {
+                [ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.InteropImports_Space_Foo", "asm")]
+                internal static void RegisterDynamicDependencies ()
+                {
+                    Function.Set("Space.bar", Bar);
+                    Function.Set("Space.baz", Baz);
+                    Function.Set("Space.nya", Nya);
+                    Function.Set("Space.onBar.broadcast", OnBar);
+                }
+
+                [JSImport("Space.bar", "Bootsharp")] internal static partial void Bar ();
+                [JSImport("Space.baz", "Bootsharp")] internal static partial void Baz ();
+                [JSImport("Space.nya", "Bootsharp")] internal static partial void Nya ();
+                [JSImport("Space.onBar.broadcast", "Bootsharp")] internal static partial void OnBar ();
             }
             """);
     }

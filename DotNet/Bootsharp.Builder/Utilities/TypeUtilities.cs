@@ -135,7 +135,7 @@ internal static class TypeUtilities
         !Is<long>(type) && !Is<int>(type) && !Is<float>(type) && !Is<double>(type) &&
         !Is<nint>(type) && !Is<DateTime>(type) && !Is<DateTimeOffset>(type) && !Is<string>(type) &&
         !Is<byte[]>(type) && !Is<int[]>(type) && !Is<double[]>(type) && !Is<string[]>(type) &&
-        !IsVoid(type) && !Is<Task>(type) && !(IsTaskWithResult(type) && !ShouldSerialize(GetTaskResult(type)));
+        !IsVoid(type) && !Is<Task>(type) && (!IsTaskWithResult(type) || ShouldSerialize(GetTaskResult(type)));
 
     // can't compare types directly as they're inspected in other modules
     private static bool Is<T> (Type type) => type.FullName == typeof(T).FullName;

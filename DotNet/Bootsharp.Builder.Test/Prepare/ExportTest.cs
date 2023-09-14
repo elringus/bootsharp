@@ -103,8 +103,8 @@ public class ExportTest : PrepareTest
             public class Foo
             {
                 [JSInvokable] public static void Void () {}
-                [JSInvokable] public static global::Space.Info? WithArgs (string a, global::System.Int32[] b) => default;
-                [JSInvokable] public static global::System.Threading.Tasks.Task Async () => default;
+                [JSInvokable] public static Info? WithArgs (string a, int[] b) => default;
+                [JSInvokable] public static Task Async () => default;
                 [JSInvokable] public static Task<Info?> AsyncWithArgs (Info? i) => default;
             }
             """, false));
