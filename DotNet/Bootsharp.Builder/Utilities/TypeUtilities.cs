@@ -87,12 +87,12 @@ internal static class TypeUtilities
     {
         return type.IsGenericType &&
                type.Name.Contains("Nullable`") &&
-               type.GetGenericArguments().Length == 1;
+               type.GenericTypeArguments.Length == 1;
     }
 
     public static Type GetNullableUnderlyingType (Type type)
     {
-        return type.GetGenericArguments()[0];
+        return type.GenericTypeArguments[0];
     }
 
     public static bool IsAutoProperty (PropertyInfo property)
@@ -130,12 +130,23 @@ internal static class TypeUtilities
     public static string BuildFullName (Type type, ParameterInfo info) => BuildFullName(type, GetNullability(info));
 
     // see table at https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop
-    public static bool ShouldSerialize (Type type) =>
-        !Is<bool>(type) && !Is<byte>(type) && !Is<char>(type) && !Is<short>(type) &&
-        !Is<long>(type) && !Is<int>(type) && !Is<float>(type) && !Is<double>(type) &&
-        !Is<nint>(type) && !Is<DateTime>(type) && !Is<DateTimeOffset>(type) && !Is<string>(type) &&
-        !Is<byte[]>(type) && !Is<int[]>(type) && !Is<double[]>(type) && !Is<string[]>(type) &&
-        !IsVoid(type) && !Is<Task>(type) && (!IsTaskWithResult(type) || ShouldSerialize(GetTaskResult(type)));
+    public static bool ShouldSerialize (Type type)
+    {
+        if (IsTaskWithResult(type)) return ShouldSerialize(GetTaskResult(type));
+        var array = type.IsArray;
+        if (array) type = type.GetElementType()!;
+        if (IsNullable(type)) type = GetNullableUnderlyingType(type);
+        if (array) return !IsArrayTransferable(type);
+        return !IsStandaloneTransferable(type);
+    }
+
+    private static bool IsStandaloneTransferable (Type type) =>
+        Is<string>(type) || Is<bool>(type) || Is<byte>(type) || Is<char>(type) || Is<short>(type) ||
+        Is<long>(type) || Is<int>(type) || Is<float>(type) || Is<double>(type) || Is<nint>(type) ||
+        Is<DateTime>(type) || Is<DateTimeOffset>(type) || Is<Task>(type) || IsVoid(type);
+
+    private static bool IsArrayTransferable (Type type) =>
+        Is<byte>(type) || Is<int>(type) || Is<double>(type) || Is<string>(type);
 
     // can't compare types directly as they're inspected in other modules
     private static bool Is<T> (Type type) => type.FullName == typeof(T).FullName;

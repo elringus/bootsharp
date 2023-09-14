@@ -11,7 +11,7 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
     {
         @void = method.ReturnsVoid;
         returnType = method.ReturnType;
-        returnsTask = IsResultTask(method.ReturnType, out var task);
+        returnsTask = IsTaskWithResult(method.ReturnType, out var task);
         taskResult = task?.TypeArguments.FirstOrDefault();
         wait = returnsTask && ShouldSerialize(taskResult);
         signature = EmitSignature();
@@ -74,21 +74,38 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
     }
 
     // see table at https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop
-    private static bool ShouldSerialize (ITypeSymbol type) =>
-        type.SpecialType != SpecialType.System_Void && !Is<Task>(type) &&
-        !Is<bool>(type) && !Is<byte>(type) && !Is<char>(type) && !Is<short>(type) &&
-        !Is<long>(type) && !Is<int>(type) && !Is<float>(type) && !Is<double>(type) &&
-        !Is<nint>(type) && !Is<DateTime>(type) && !Is<DateTimeOffset>(type) && !Is<string>(type) &&
-        !((type as IArrayTypeSymbol)?.ElementType is { } e && (Is<byte>(e) || Is<int>(e) || Is<double>(e) || Is<string>(e)));
+    public static bool ShouldSerialize (ITypeSymbol type)
+    {
+        var array = type is IArrayTypeSymbol;
+        if (array) type = ((IArrayTypeSymbol)type).ElementType;
+        if (IsNullable(type, out var nullable)) type = GetNullableUnderlyingType(nullable);
+        if (array) return !IsArrayTransferable(type);
+        return !IsStandaloneTransferable(type);
+    }
 
-    private static bool IsResultTask (ITypeSymbol type, out INamedTypeSymbol named)
+    private static bool IsTaskWithResult (ITypeSymbol type, out INamedTypeSymbol named)
     {
         named = type as INamedTypeSymbol;
         return $"{type.ContainingNamespace}.{type.MetadataName}" == typeof(Task<>).FullName;
     }
 
-    private static bool Is<T> (ITypeSymbol type)
+    private static bool IsNullable (ITypeSymbol type, out INamedTypeSymbol nullable)
     {
-        return $"{type.ContainingNamespace}.{type.MetadataName}" == typeof(T).FullName;
+        nullable = type as INamedTypeSymbol;
+        return $"{type.ContainingNamespace}.{type.MetadataName}" == typeof(Nullable<>).FullName;
     }
+
+    private static ITypeSymbol GetNullableUnderlyingType (INamedTypeSymbol task)
+        => task?.TypeArguments.FirstOrDefault();
+
+    private static bool IsStandaloneTransferable (ITypeSymbol type) =>
+        Is<string>(type) || Is<bool>(type) || Is<byte>(type) || Is<char>(type) || Is<short>(type) ||
+        Is<long>(type) || Is<int>(type) || Is<float>(type) || Is<double>(type) || Is<nint>(type) ||
+        Is<DateTime>(type) || Is<DateTimeOffset>(type) || Is<Task>(type) || type.SpecialType == SpecialType.System_Void;
+
+    private static bool IsArrayTransferable (ITypeSymbol type) =>
+        Is<byte>(type) || Is<int>(type) || Is<double>(type) || Is<string>(type);
+
+    private static bool Is<T> (ITypeSymbol type) =>
+        $"{type.ContainingNamespace}.{type.MetadataName}" == typeof(T).FullName;
 }

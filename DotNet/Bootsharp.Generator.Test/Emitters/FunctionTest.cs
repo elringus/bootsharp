@@ -173,15 +173,19 @@ public static class FunctionTest
         new object[] {
             """
             using System;
+            using System.Threading.Tasks;
 
             partial class Foo
             {
                 [JSFunction]
-                partial void Bar (bool a1, byte a2, char a3, short a4, long a5, int a6, float a7, double a8, nint a9, DateTime a10, DateTimeOffset a11, string a12, byte[] a13, int[] a14, double[] a15, string[] a16);
+                public partial Task<int[]> Bar (bool a1, byte a2, char a3, short a4, long a5, int a6, float a7, double a8, nint a9, DateTime a10, DateTimeOffset a11, string a12, byte[] a13, int[] a14, double[] a15, string[] a16);
+                [JSFunction]
+                public partial Task<int?[]> Baz (bool? a1, byte? a2, char? a3, short? a4, long? a5, int? a6, float? a7, double? a8, nint? a9, DateTime? a10, DateTimeOffset? a11, string? a12, byte?[] a13, int?[] a14, double?[] a15, string?[] a16);
             }
             """,
             """
             using System;
+            using System.Threading.Tasks;
 
             partial class Foo
             {
@@ -189,7 +193,8 @@ public static class FunctionTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies () { }
 
-                partial void Bar (global::System.Boolean a1, global::System.Byte a2, global::System.Char a3, global::System.Int16 a4, global::System.Int64 a5, global::System.Int32 a6, global::System.Single a7, global::System.Double a8, global::System.IntPtr a9, global::System.DateTime a10, global::System.DateTimeOffset a11, global::System.String a12, global::System.Byte[] a13, global::System.Int32[] a14, global::System.Double[] a15, global::System.String[] a16) => Get<global::System.Action<global::System.Boolean, global::System.Byte, global::System.Char, global::System.Int16, global::System.Int64, global::System.Int32, global::System.Single, global::System.Double, global::System.IntPtr, global::System.DateTime, global::System.DateTimeOffset, global::System.String, global::System.Byte[], global::System.Int32[], global::System.Double[], global::System.String[]>>("Global.bar")(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16);
+                public partial global::System.Threading.Tasks.Task<global::System.Int32[]> Bar (global::System.Boolean a1, global::System.Byte a2, global::System.Char a3, global::System.Int16 a4, global::System.Int64 a5, global::System.Int32 a6, global::System.Single a7, global::System.Double a8, global::System.IntPtr a9, global::System.DateTime a10, global::System.DateTimeOffset a11, global::System.String a12, global::System.Byte[] a13, global::System.Int32[] a14, global::System.Double[] a15, global::System.String[] a16) => Get<global::System.Func<global::System.Boolean, global::System.Byte, global::System.Char, global::System.Int16, global::System.Int64, global::System.Int32, global::System.Single, global::System.Double, global::System.IntPtr, global::System.DateTime, global::System.DateTimeOffset, global::System.String, global::System.Byte[], global::System.Int32[], global::System.Double[], global::System.String[], global::System.Threading.Tasks.Task<global::System.Int32[]>>>("Global.bar")(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16);
+                public partial global::System.Threading.Tasks.Task<global::System.Int32?[]> Baz (global::System.Boolean? a1, global::System.Byte? a2, global::System.Char? a3, global::System.Int16? a4, global::System.Int64? a5, global::System.Int32? a6, global::System.Single? a7, global::System.Double? a8, global::System.IntPtr? a9, global::System.DateTime? a10, global::System.DateTimeOffset? a11, global::System.String? a12, global::System.Byte?[] a13, global::System.Int32?[] a14, global::System.Double?[] a15, global::System.String?[] a16) => Get<global::System.Func<global::System.Boolean?, global::System.Byte?, global::System.Char?, global::System.Int16?, global::System.Int64?, global::System.Int32?, global::System.Single?, global::System.Double?, global::System.IntPtr?, global::System.DateTime?, global::System.DateTimeOffset?, global::System.String?, global::System.Byte?[], global::System.Int32?[], global::System.Double?[], global::System.String?[], global::System.Threading.Tasks.Task<global::System.Int32?[]>>>("Global.baz")(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16);
             }
             """
         }

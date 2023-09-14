@@ -173,4 +173,41 @@ public class ImportTest : PrepareTest
             }
             """);
     }
+
+    [Fact]
+    public void DoesntSerializeTypesThatShouldNotBeSerialized ()
+    {
+        AddAssembly("asm.dll", With(
+            """
+            namespace Space;
+
+            public class Foo
+            {
+                [JSFunction] public static Task<int[]> Bar (bool a1, byte a2, char a3, short a4, long a5, int a6, float a7, double a8, nint a9, DateTime a10, DateTimeOffset a11, string a12, byte[] a13, int[] a14, double[] a15, string[] a16) => default;
+                [JSFunction] public static Task<int?[]> Baz (bool? a1, byte? a2, char? a3, short? a4, long? a5, int? a6, float? a7, double? a8, nint? a9, DateTime? a10, DateTimeOffset? a11, string? a12, byte?[] a13, int?[] a14, double?[] a15, string?[] a16) => default;
+            }
+            """, false));
+        Execute();
+        Contains(
+            """
+            using System.Runtime.InteropServices.JavaScript;
+            using System.Diagnostics.CodeAnalysis;
+            using System.Runtime.CompilerServices;
+
+            namespace Bootsharp;
+
+            public partial class InteropImports_Space_Foo
+            {
+                [ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.InteropImports_Space_Foo", "asm")]
+                internal static void RegisterDynamicDependencies ()
+                {
+                    Function.Set("Space.bar", Bar);
+                    Function.Set("Space.baz", Baz);
+                }
+                [JSImport("Space.bar", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.Int32[]> Bar (global::System.Boolean a1, global::System.Byte a2, global::System.Char a3, global::System.Int16 a4, global::System.Int64 a5, global::System.Int32 a6, global::System.Single a7, global::System.Double a8, global::System.IntPtr a9, global::System.DateTime a10, global::System.DateTimeOffset a11, global::System.String a12, global::System.Byte[] a13, global::System.Int32[] a14, global::System.Double[] a15, global::System.String[] a16);
+                [JSImport("Space.baz", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.Int32?[]> Baz (global::System.Boolean? a1, global::System.Byte? a2, global::System.Char? a3, global::System.Int16? a4, global::System.Int64? a5, global::System.Int32? a6, global::System.Single? a7, global::System.Double? a8, global::System.IntPtr? a9, global::System.DateTime? a10, global::System.DateTimeOffset? a11, global::System.String? a12, global::System.Byte?[] a13, global::System.Int32?[] a14, global::System.Double?[] a15, global::System.String?[] a16);
+            }
+            """);
+    }
 }
