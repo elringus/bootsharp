@@ -6,7 +6,7 @@ namespace Bootsharp.Builder;
 
 internal static class TypeUtilities
 {
-    private static readonly HashSet<string> native = new[] {
+    private static readonly IReadOnlySet<string> native = new[] {
         typeof(string).FullName!, typeof(bool).FullName!, typeof(byte).FullName!,
         typeof(char).FullName!, typeof(short).FullName!, typeof(long).FullName!,
         typeof(int).FullName!, typeof(float).FullName!, typeof(double).FullName!,
@@ -14,7 +14,7 @@ internal static class TypeUtilities
         typeof(DateTimeOffset).FullName!,
     }.ToHashSet();
 
-    private static readonly HashSet<string> arrayNative = new[] {
+    private static readonly IReadOnlySet<string> arrayNative = new[] {
         typeof(byte).FullName!, typeof(int).FullName!,
         typeof(double).FullName!, typeof(string).FullName!
     }.ToHashSet();
