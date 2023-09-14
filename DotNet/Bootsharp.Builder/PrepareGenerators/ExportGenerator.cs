@@ -2,9 +2,6 @@ namespace Bootsharp.Builder;
 
 internal sealed class ExportGenerator
 {
-    private bool wait;
-    private Method inv = null!;
-
     public string Generate (AssemblyInspector inspector)
     {
         var bySpace = inspector.Methods
@@ -29,14 +26,13 @@ internal sealed class ExportGenerator
           }
           """;
 
-    private string GenerateExport (Method invokable)
+    private string GenerateExport (Method inv)
     {
-        inv = invokable;
-        wait = inv.Arguments.Any(a => a.ShouldSerialize) && inv.ReturnsTaskLike;
-        return $"[JSExport] internal static {GenerateSignature()} => {GenerateBody()};";
+        var wait = inv.Arguments.Any(a => a.ShouldSerialize) && inv.ReturnsTaskLike;
+        return $"[JSExport] internal static {GenerateSignature(inv, wait)} => {GenerateBody(inv, wait)};";
     }
 
-    private string GenerateSignature ()
+    private string GenerateSignature (Method inv, bool wait)
     {
         var args = string.Join(", ", inv.Arguments.Select(GenerateSignatureArg));
         var @return = inv.ReturnsVoid ? "void" : (inv.ShouldSerializeReturnType
@@ -49,7 +45,7 @@ internal sealed class ExportGenerator
         return signature;
     }
 
-    private string GenerateBody ()
+    private string GenerateBody (Method inv, bool wait)
     {
         var args = string.Join(", ", inv.Arguments.Select(GenerateBodyArg));
         var body = $"global::{inv.DeclaringName}.{inv.Name}({args})";

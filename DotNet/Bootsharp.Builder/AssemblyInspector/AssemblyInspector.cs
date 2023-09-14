@@ -89,6 +89,7 @@ internal sealed class AssemblyInspector(NamespaceBuilder spaceBuilder) : IDispos
     private Method CreateMethod (MethodInfo info, MethodType type) => new() {
         Type = type,
         Assembly = info.DeclaringType!.Assembly.GetName().Name!,
+        Namespace = info.DeclaringType.Namespace,
         DeclaringName = info.DeclaringType.FullName!,
         Name = info.Name,
         Arguments = info.GetParameters().Select(CreateArgument).ToArray(),

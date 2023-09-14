@@ -14,7 +14,7 @@ public class ImportTest : PrepareTest
     [Fact]
     public void WhenNoFunctionsOrEventsNothingIsGenerated ()
     {
-        AddAssembly(With("[JSInvokable] public static void Foo () { }"));
+        AddAssembly(With("[JSInvokable] public static void Foo () {}"));
         Execute();
         Assert.Empty(TestedContent);
     }
@@ -22,12 +22,12 @@ public class ImportTest : PrepareTest
     [Fact]
     public void ImportsWithoutSpace ()
     {
-        AddAssembly("asm", With(
+        AddAssembly("asm.dll", With(
             """
             public class Foo
             {
-                [JSFunction] public static partial void Bar ();
-                [JSEvent] public static partial void Baz ();
+                [JSFunction] public static void Bar () {}
+                [JSEvent] public static void Baz () {}
             }
             """, false));
         Execute();
@@ -48,7 +48,6 @@ public class ImportTest : PrepareTest
                     Function.Set("Global.bar", Bar);
                     Function.Set("Global.baz.broadcast", Baz);
                 }
-
                 [JSImport("Global.bar", "Bootsharp")] internal static partial void Bar ();
                 [JSImport("Global.baz.broadcast", "Bootsharp")] internal static partial void Baz ();
             }
@@ -58,28 +57,28 @@ public class ImportTest : PrepareTest
     [Fact]
     public void ImportsFromMultipleSpaces ()
     {
-        AddAssembly("asm", With(
+        AddAssembly("asm.dll", With(
             """
             namespace Foo.Bar
             {
                 public class Baz
                 {
-                    [JSFunction] public static partial void Nya ();
-                    [JSEvent] public static partial void Far ();
+                    [JSFunction] public static void Nya () {}
+                    [JSEvent] public static void Far () {}
                 }
             }
             namespace Foo
             {
                 public class Baz
                 {
-                    [JSFunction] public static partial void Nya ();
-                    [JSEvent] public static partial void Far ();
+                    [JSFunction] public static void Nya () {}
+                    [JSEvent] public static void Far () {}
                 }
             }
             public class Baz
             {
-                [JSFunction] public static partial void Nya ();
-                [JSEvent] public static partial void Far ();
+                [JSFunction] public static void Nya () {}
+                [JSEvent] public static void Far () {}
             }
             """, false));
         Execute();
@@ -100,7 +99,6 @@ public class ImportTest : PrepareTest
                     Function.Set("Global.nya", Nya);
                     Function.Set("Global.far.broadcast", Far);
                 }
-
                 [JSImport("Global.nya", "Bootsharp")] internal static partial void Nya ();
                 [JSImport("Global.far.broadcast", "Bootsharp")] internal static partial void Far ();
             }
@@ -113,7 +111,6 @@ public class ImportTest : PrepareTest
                     Function.Set("Foo.nya", Nya);
                     Function.Set("Foo.far.broadcast", Far);
                 }
-
                 [JSImport("Foo.nya", "Bootsharp")] internal static partial void Nya ();
                 [JSImport("Foo.far.broadcast", "Bootsharp")] internal static partial void Far ();
             }
@@ -126,7 +123,6 @@ public class ImportTest : PrepareTest
                     Function.Set("Foo.Bar.nya", Nya);
                     Function.Set("Foo.Bar.far.broadcast", Far);
                 }
-
                 [JSImport("Foo.Bar.nya", "Bootsharp")] internal static partial void Nya ();
                 [JSImport("Foo.Bar.far.broadcast", "Bootsharp")] internal static partial void Far ();
             }
@@ -136,7 +132,7 @@ public class ImportTest : PrepareTest
     [Fact]
     public void ImportsFunctionsAndEvents ()
     {
-        AddAssembly("asm", With(
+        AddAssembly("asm.dll", With(
             """
             namespace Space;
 
@@ -144,10 +140,10 @@ public class ImportTest : PrepareTest
 
             public class Foo
             {
-                [JSFunction] public static partial Info? Bar (string a, int[] b);
-                [JSFunction] public static partial Task Baz ();
-                [JSFunction] public static partial Task<Info?> Nya (Info a);
-                [JSEvent] public static partial void OnBar (Info? a, bool b);
+                [JSFunction] public static Info? Bar (string a, int[] b) => default;
+                [JSFunction] public static Task Baz () => default;
+                [JSFunction] public static Task<Info?> Nya (Info a) => default;
+                [JSEvent] public static void OnBar (Info? a, bool? b) {}
             }
             """, false));
         Execute();
@@ -170,11 +166,10 @@ public class ImportTest : PrepareTest
                     Function.Set("Space.nya", Nya);
                     Function.Set("Space.onBar.broadcast", OnBar);
                 }
-
-                [JSImport("Space.bar", "Bootsharp")] internal static partial void Bar ();
-                [JSImport("Space.baz", "Bootsharp")] internal static partial void Baz ();
-                [JSImport("Space.nya", "Bootsharp")] internal static partial void Nya ();
-                [JSImport("Space.onBar.broadcast", "Bootsharp")] internal static partial void OnBar ();
+                [JSImport("Space.bar", "Bootsharp")] internal static partial global::System.String? Bar (global::System.String a, global::System.Int32[] b);
+                [JSImport("Space.baz", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task Baz ();
+                [JSImport("Space.nya", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.String?> Nya (global::System.String a);
+                [JSImport("Space.onBar.broadcast", "Bootsharp")] internal static partial void OnBar (global::System.String? a, global::System.Boolean? b);
             }
             """);
     }
