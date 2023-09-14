@@ -1,4 +1,5 @@
 ﻿global using static Bootsharp.Builder.TypeUtilities;
+using System.Collections.Frozen;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -12,12 +13,12 @@ internal static class TypeUtilities
         typeof(int).FullName!, typeof(float).FullName!, typeof(double).FullName!,
         typeof(nint).FullName!, typeof(Task).FullName!, typeof(DateTime).FullName!,
         typeof(DateTimeOffset).FullName!,
-    }.ToHashSet();
+    }.ToFrozenSet();
 
     private static readonly IReadOnlySet<string> arrayNative = new[] {
         typeof(byte).FullName!, typeof(int).FullName!,
         typeof(double).FullName!, typeof(string).FullName!
-    }.ToHashSet();
+    }.ToFrozenSet();
 
     public static bool IsTaskLike (Type type)
     {
