@@ -9,7 +9,7 @@ export type EventOptions<T> = {
 /** Allows attaching handlers and broadcasting events. */
 export class Event<T> implements EventBroadcaster<T>, EventSubscriber<T> {
     private readonly handlers = new Map<string, (payload: T) => void>();
-    private readonly warn: ((message: string) => void) | null;
+    private readonly warn: (message: string) => void;
     private readonly convert?: (payload: unknown) => T;
     private lastPayload?: T;
 
@@ -50,7 +50,7 @@ export class Event<T> implements EventBroadcaster<T>, EventSubscriber<T> {
      *  @param handler The handler to attach. */
     public subscribeById(id: string, handler: (payload: T) => void): void {
         if (this.handlers.has(id))
-            this.warn?.(`Failed to subscribe event handler with ID '${id}': handler is already subscribed.`);
+            this.warn(`Failed to subscribe event handler with ID '${id}': handler is already subscribed.`);
         else this.handlers.set(id, handler);
     }
 
@@ -59,7 +59,7 @@ export class Event<T> implements EventBroadcaster<T>, EventSubscriber<T> {
     public unsubscribeById(id: string) {
         if (this.handlers.has(id))
             this.handlers.delete(id);
-        else this.warn?.(`Failed to unsubscribe event handler with ID '${id}': handler is not subscribed.`);
+        else this.warn(`Failed to unsubscribe event handler with ID '${id}': handler is not subscribed.`);
     }
 
     /** In case event was invoked at least once, returns last payload; undefined otherwise. */
