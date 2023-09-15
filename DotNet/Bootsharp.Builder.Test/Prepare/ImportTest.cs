@@ -37,12 +37,12 @@ public class ImportTest : PrepareTest
             using System.Diagnostics.CodeAnalysis;
             using System.Runtime.CompilerServices;
 
-            namespace Bootsharp;
+            namespace Bootsharp.Imports;
 
-            public partial class InteropImports_Foo
+            public partial class Foo
             {
                 [ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.InteropImports_Foo", "asm")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.Imports.Foo", "asm")]
                 internal static void RegisterDynamicDependencies ()
                 {
                     Function.Set("Global.bar", Bar);
@@ -88,12 +88,12 @@ public class ImportTest : PrepareTest
             using System.Diagnostics.CodeAnalysis;
             using System.Runtime.CompilerServices;
 
-            namespace Bootsharp;
+            namespace Bootsharp.Imports;
 
-            public partial class InteropImports_Baz
+            public partial class Baz
             {
                 [ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.InteropImports_Baz", "asm")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.Imports.Baz", "asm")]
                 internal static void RegisterDynamicDependencies ()
                 {
                     Function.Set("Global.nya", Nya);
@@ -102,10 +102,10 @@ public class ImportTest : PrepareTest
                 [JSImport("Global.nya", "Bootsharp")] internal static partial void Nya ();
                 [JSImport("Global.far.broadcast", "Bootsharp")] internal static partial void Far ();
             }
-            public partial class InteropImports_Foo_Baz
+            public partial class Foo_Baz
             {
                 [ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.InteropImports_Foo_Baz", "asm")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.Imports.Foo_Baz", "asm")]
                 internal static void RegisterDynamicDependencies ()
                 {
                     Function.Set("Foo.nya", Nya);
@@ -114,10 +114,10 @@ public class ImportTest : PrepareTest
                 [JSImport("Foo.nya", "Bootsharp")] internal static partial void Nya ();
                 [JSImport("Foo.far.broadcast", "Bootsharp")] internal static partial void Far ();
             }
-            public partial class InteropImports_Foo_Bar_Baz
+            public partial class Foo_Bar_Baz
             {
                 [ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.InteropImports_Foo_Bar_Baz", "asm")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.Imports.Foo_Bar_Baz", "asm")]
                 internal static void RegisterDynamicDependencies ()
                 {
                     Function.Set("Foo.Bar.nya", Nya);
@@ -153,12 +153,12 @@ public class ImportTest : PrepareTest
             using System.Diagnostics.CodeAnalysis;
             using System.Runtime.CompilerServices;
 
-            namespace Bootsharp;
+            namespace Bootsharp.Imports;
 
-            public partial class InteropImports_Space_Foo
+            public partial class Space_Foo
             {
                 [ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.InteropImports_Space_Foo", "asm")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.Imports.Space_Foo", "asm")]
                 internal static void RegisterDynamicDependencies ()
                 {
                     Function.Set("Space.bar", Bar);
@@ -194,12 +194,12 @@ public class ImportTest : PrepareTest
             using System.Diagnostics.CodeAnalysis;
             using System.Runtime.CompilerServices;
 
-            namespace Bootsharp;
+            namespace Bootsharp.Imports;
 
-            public partial class InteropImports_Space_Foo
+            public partial class Space_Foo
             {
                 [ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.InteropImports_Space_Foo", "asm")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.Imports.Space_Foo", "asm")]
                 internal static void RegisterDynamicDependencies ()
                 {
                     Function.Set("Space.bar", Bar);

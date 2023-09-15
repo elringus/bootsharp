@@ -27,7 +27,7 @@ export async function boot(custom?: BootCustom): Promise<RuntimeAPI> {
     const runtime = await custom?.create?.(config) || await builder.withConfig(config).create();
     await custom?.import?.(runtime) || bindImports(runtime);
     await custom?.run?.(runtime) || await runtime.runMain(config.mainAssemblyName!, []);
-    await custom?.export?.(runtime) || await bindExports(runtime);
+    await custom?.export?.(runtime) || await bindExports(runtime, config.mainAssemblyName!);
     return runtime;
 }
 

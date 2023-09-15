@@ -1,26 +1,37 @@
-﻿/** Allows attaching handlers and broadcasting events. */
-export class Event<T extends unknown[]> implements EventBroadcaster<T>, EventSubscriber<T> {
-    private readonly handlers = new Map<string, (...args: [...T]) => void>();
-    private readonly warn: ((message: string) => void) | null;
-    private lastArgs: T | undefined;
+﻿/** Optional configuration of an event instance. */
+export type EventOptions<T> = {
+    /** Custom warnings handler; by default <code>console.warn</code> is used. */
+    warn?: (message: string) => void,
+    /** When assigned, will transform broadcast payload with the handler. */
+    convert?: (payload: unknown) => T
+};
 
-    /** Creates new event instance.
-     *  @param warn Custom warnings handler; by default <code>console.warn</code> is used. */
-    constructor(warn?: ((message: string) => void) | null) {
-        this.warn = warn === undefined ? console.warn : warn;
+/** Allows attaching handlers and broadcasting events. */
+export class Event<T> implements EventBroadcaster<T>, EventSubscriber<T> {
+    private readonly handlers = new Map<string, (payload: T) => void>();
+    private readonly warn: ((message: string) => void) | null;
+    private readonly convert?: (payload: unknown) => T;
+    private lastPayload?: T;
+
+    /** Creates new event instance. */
+    constructor(options?: EventOptions<T>) {
+        this.convert = options?.convert;
+        this.warn = options?.warn ?? console.warn;
     }
 
-    /** Notifies attached handlers with specified payload arguments.
-     *  @param args The payload arguments of the notification. */
-    public broadcast(...args: [...T]) {
-        this.lastArgs = args;
+    /** Notifies attached handlers with specified payload.
+     *  @param payload The payload of the notification. */
+    public broadcast(payload: T) {
+        this.lastPayload = payload;
+        if (this.convert !== undefined)
+            payload = this.convert(payload);
         for (const handler of this.handlers.values())
-            handler(...args);
+            handler(payload);
     }
 
     /** Attaches specified handler for events emitted by this event instance.
      *  @param handler The handler to attach. */
-    public subscribe(handler: (...args: [...T]) => void): string {
+    public subscribe(handler: (payload: T) => void): string {
         const id = this.getOrDefineId(handler);
         this.subscribeById(id, handler);
         return id;
@@ -28,7 +39,7 @@ export class Event<T extends unknown[]> implements EventBroadcaster<T>, EventSub
 
     /** Detaches specified handler from events emitted by this event instance.
      *  @param handler The handler to detach. */
-    public unsubscribe(handler: (...args: [...T]) => void) {
+    public unsubscribe(handler: (payload: T) => void) {
         if (handler == null) return;
         const id = this.getOrDefineId(handler);
         this.unsubscribeById(id);
@@ -37,7 +48,7 @@ export class Event<T extends unknown[]> implements EventBroadcaster<T>, EventSub
     /** Attaches handler with specified identifier for events emitted by this event instance.
      *  @param id Identifier of the handler.
      *  @param handler The handler to attach. */
-    public subscribeById(id: string, handler: (...args: [...T]) => void): void {
+    public subscribeById(id: string, handler: (payload: T) => void): void {
         if (this.handlers.has(id))
             this.warn?.(`Failed to subscribe event handler with ID '${id}': handler is already subscribed.`);
         else this.handlers.set(id, handler);
@@ -53,10 +64,10 @@ export class Event<T extends unknown[]> implements EventBroadcaster<T>, EventSub
 
     /** In case event was invoked at least once, returns last payload; undefined otherwise. */
     public getLast(): T | undefined {
-        return this.lastArgs;
+        return this.lastPayload;
     }
 
-    private getOrDefineId(handler: (...args: [...T]) => void): string {
+    private getOrDefineId(handler: (payload: T) => void): string {
         const prop = "bootsharpEventHandlerId";
         if (handler.hasOwnProperty(prop))
             return (handler as unknown as { [index: string]: string })[prop];
@@ -71,20 +82,20 @@ export class Event<T extends unknown[]> implements EventBroadcaster<T>, EventSub
 }
 
 /** Allows broadcasting events. */
-export interface EventBroadcaster<T extends unknown[]> {
-    /** Notifies attached handlers with specified payload arguments.
-     *  @param args The payload arguments of the notification. */
-    broadcast: (...args: [...T]) => void;
+export interface EventBroadcaster<T> {
+    /** Notifies attached handlers with specified payload argument.
+     *  @param args The payload argument of the notification. */
+    broadcast: (payload: T) => void;
 }
 
 /** Allows attaching event handlers. */
-export interface EventSubscriber<T extends unknown[]> {
+export interface EventSubscriber<T> {
     /** Attaches specified handler for events emitted by this event instance.
      *  @param handler The handler to attach. */
-    subscribe: (handler: (...args: [...T]) => void) => string;
+    subscribe: (handler: (payload: T) => void) => string;
     /** Detaches specified handler from events emitted by this event instance.
      *  @param handler The handler to detach. */
-    unsubscribe: (handler: (...args: [...T]) => void) => void;
+    unsubscribe: (handler: (payload: T) => void) => void;
     /** In case event was invoked at least once, returns last payload; undefined otherwise. */
     getLast: () => T | undefined;
 }

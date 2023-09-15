@@ -12,7 +12,7 @@ internal sealed class ExportGenerator
              using System.Runtime.InteropServices.JavaScript;
              using static Bootsharp.Serializer;
 
-             namespace Bootsharp;
+             namespace Bootsharp.Exports;
 
              {JoinLines(bySpace.Select(g => GenerateSpace(g.Key, g)), 0)}
              """;
@@ -20,7 +20,7 @@ internal sealed class ExportGenerator
 
     private string GenerateSpace (string space, IEnumerable<Method> invokable) =>
         $$"""
-          public partial class InteropExports_{{space.Replace('.', '_')}}
+          public partial class {{space.Replace('.', '_')}}
           {
               {{JoinLines(invokable.Select(GenerateExport))}}
           }

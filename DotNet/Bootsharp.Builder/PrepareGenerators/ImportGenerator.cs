@@ -13,7 +13,7 @@ internal sealed class ImportGenerator
              using System.Diagnostics.CodeAnalysis;
              using System.Runtime.CompilerServices;
 
-             namespace Bootsharp;
+             namespace Bootsharp.Imports;
 
              {JoinLines(bySpace.Select(g => GenerateSpace(g.Key, g.ToArray())), 0)}
              """;
@@ -21,14 +21,14 @@ internal sealed class ImportGenerator
 
     private string GenerateSpace (string space, IReadOnlyList<Method> methods)
     {
-        var name = $"InteropImports_{space.Replace('.', '_')}";
+        var name = space.Replace('.', '_');
         var asm = methods[0].Assembly;
         return
             $$"""
               public partial class {{name}}
               {
                   [ModuleInitializer]
-                  [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.{{name}}", "{{asm}}")]
+                  [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.Imports.{{name}}", "{{asm}}")]
                   internal static void RegisterDynamicDependencies ()
                   {
                       {{JoinLines(methods.Select(GenerateFunctionAssign), 2)}}
