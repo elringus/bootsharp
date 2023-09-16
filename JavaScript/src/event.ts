@@ -1,4 +1,23 @@
-﻿/** Optional configuration of an event instance. */
+﻿/** Allows broadcasting events. */
+export interface EventBroadcaster<T> {
+    /** Notifies attached handlers with specified payload argument.
+     *  @param args The payload argument of the notification. */
+    broadcast: (payload: T) => void;
+}
+
+/** Allows attaching event handlers. */
+export interface EventSubscriber<T> {
+    /** Attaches specified handler for events emitted by this event instance.
+     *  @param handler The handler to attach. */
+    subscribe: (handler: (payload: T) => void) => string;
+    /** Detaches specified handler from events emitted by this event instance.
+     *  @param handler The handler to detach. */
+    unsubscribe: (handler: (payload: T) => void) => void;
+    /** In case event was broadcast at least once, returns last payload; undefined otherwise. */
+    readonly last?: T;
+}
+
+/** Optional configuration of an event instance. */
 export type EventOptions<T> = {
     /** Custom warnings handler; by default <code>console.warn</code> is used. */
     warn?: (message: string) => void,
@@ -79,23 +98,4 @@ export class Event<T> implements EventBroadcaster<T>, EventSubscriber<T> {
         });
         return id;
     }
-}
-
-/** Allows broadcasting events. */
-export interface EventBroadcaster<T> {
-    /** Notifies attached handlers with specified payload argument.
-     *  @param args The payload argument of the notification. */
-    broadcast: (payload: T) => void;
-}
-
-/** Allows attaching event handlers. */
-export interface EventSubscriber<T> {
-    /** Attaches specified handler for events emitted by this event instance.
-     *  @param handler The handler to attach. */
-    subscribe: (handler: (payload: T) => void) => string;
-    /** Detaches specified handler from events emitted by this event instance.
-     *  @param handler The handler to detach. */
-    unsubscribe: (handler: (payload: T) => void) => void;
-    /** In case event was broadcast at least once, returns last payload; undefined otherwise. */
-    readonly last?: T;
 }
