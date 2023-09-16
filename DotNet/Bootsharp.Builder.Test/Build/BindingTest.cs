@@ -158,18 +158,19 @@ public class BindingTest : BuildTest
     [Fact]
     public void BindingsFromMultipleSpacesAssignedToRespectiveObjects ()
     {
-        AddAssembly("Foo.Asm.dll", With("Foo", "[JSInvokable] public static int Foo () => 0;"));
-        AddAssembly("Bar.Nya.Asm.dll", With("Bar.Nya", "[JSFunction] public static void Fun () { }"));
+        AddAssembly(With("Foo", "[JSInvokable] public static int Foo () => 0;"));
+        AddAssembly(With("Bar.Nya", "[JSFunction] public static void Fun () { }"));
         Execute();
         Contains(
             """
             export const Bar = {
                 Nya: {
-                    fun: undefined
+                    get fun() { return this.$fun; },
+                    set fun($fun) { this.$fun = () => $fun(); }
                 }
             };
             export const Foo = {
-                foo: () => invoke("Foo.Asm/Foo.MockClass/Foo")
+                foo: () => exports.Foo_MockClass.Foo()
             };
             """);
     }
@@ -177,15 +178,16 @@ public class BindingTest : BuildTest
     [Fact]
     public void WhenNoSpaceBindingsAreAssignedToGlobalObject ()
     {
-        AddAssembly("Asm.dll",
+        AddAssembly(
             With("[JSInvokable] public static Task<int> Nya () => Task.FromResult(0);"),
             With("[JSFunction] public static void Fun () { }"));
         Execute();
         Contains(
             """
             export const Global = {
-                nya: () => invokeAsync("Asm/MockClass/Nya"),
-                fun: undefined
+                nya: () => exports.MockClass.Nya(),
+                get fun() { return this.$fun; },
+                set fun($fun) { this.$fun = () => $fun(); }
             };
             """);
     }
@@ -193,7 +195,7 @@ public class BindingTest : BuildTest
     [Fact]
     public void NamespaceAttributeOverrideObjectNames ()
     {
-        AddAssembly("Asm.dll",
+        AddAssembly(
             With("""[assembly:JSNamespace(@"Foo\.Bar\.(\S+)", "$1")]""", false),
             With("Foo.Bar.Nya", "[JSInvokable] public static Task GetNya () => Task.CompletedTask;"),
             With("Foo.Bar.Fun", "[JSFunction] public static void OnFun () { }"));
@@ -201,10 +203,11 @@ public class BindingTest : BuildTest
         Contains(
             """
             export const Fun = {
-                onFun: undefined
+                get onFun() { return this.$onFun; },
+                set onFun($onFun) { this.$onFun = () => $onFun(); }
             };
             export const Nya = {
-                getNya: () => invokeVoidAsync("Asm/Foo.Bar.Nya.MockClass/GetNya")
+                getNya: () => exports.Foo_Bar_Nya_MockClass.GetNya()
             };
             """);
     }
@@ -212,28 +215,12 @@ public class BindingTest : BuildTest
     [Fact]
     public void VariablesConflictingWithJSTypesAreRenamed ()
     {
-        AddAssembly("Asm.dll", With("[JSInvokable] public static void Fun (string function) { }"));
+        AddAssembly(With("[JSInvokable] public static void Fun (string function) { }"));
         Execute();
         Contains(
             """
             export const Global = {
-                fun: (fn) => invokeVoid("Asm/MockClass/Fun", fn)
-            };
-            """);
-    }
-
-    [Fact]
-    public void AsyncMethodsBindViaInvokeAsync ()
-    {
-        AddAssembly("Asm.dll",
-            With("[JSInvokable] public static Task Asy () => default;"),
-            With("[JSInvokable] public static Task<string> AsyValue () => default;"));
-        Execute();
-        Contains(
-            """
-            export const Global = {
-                asy: () => invokeVoidAsync("Asm/MockClass/Asy"),
-                asyValue: () => invokeAsync("Asm/MockClass/AsyValue")
+                fun: (fn) => exports.MockClass.Fun(fn)
             };
             """);
     }
@@ -241,14 +228,14 @@ public class BindingTest : BuildTest
     [Fact]
     public void ExportedEnumsAreDeclaredInJS ()
     {
-        AddAssembly("Asm.dll",
+        AddAssembly(
             With("n", "public enum Foo { A, B }"),
             With("n", "[JSInvokable] public static Foo GetFoo () => default;"));
         Execute();
         Contains(
             """
             export const n = {
-                getFoo: () => invoke("Asm/n.MockClass/GetFoo"),
+                getFoo: () => exports.n_MockClass.GetFoo(),
                 Foo: { A: "A", B: "B" }
             };
             """);
