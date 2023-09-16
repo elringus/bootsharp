@@ -1,7 +1,7 @@
 ﻿/** Allows broadcasting events. */
 export interface EventBroadcaster<T> {
     /** Notifies attached handlers with specified payload.
-     *  @param payload The payload argument of the notification. */
+     *  @param payload The payload of the notification. */
     broadcast: (payload: T) => void;
 }
 
