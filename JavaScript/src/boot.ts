@@ -18,10 +18,8 @@ export type BootCustom = {
 }
 
 /** Initializes .NET runtime and binds C# APIs.
- *  @param custom
- *  Specify to customize the boot process.
- *  @return
- *  Promise that resolves into .NET runtime instance. */
+ *  @param custom Specify to customize the boot process.
+ *  @return Promise that resolves into .NET runtime instance. */
 export async function boot(custom?: BootCustom): Promise<RuntimeAPI> {
     const config = custom?.config ?? buildConfig();
     const runtime = await custom?.create?.(config) || await builder.withConfig(config).create();
@@ -32,10 +30,8 @@ export async function boot(custom?: BootCustom): Promise<RuntimeAPI> {
 }
 
 /** Terminates .NET runtime and removes WASM module from memory.
- *  @param code
- *  Exit code; will use 0 (normal exit) by default.
- *  @param reason
- *  Exit reason description (optional). */
+ *  @param code Exit code; will use 0 (normal exit) by default.
+ *  @param reason Exit reason description (optional). */
 export function exit(code?: number, reason?: string): void {
     dotnet.exit(code ?? 0, reason);
 }
