@@ -9,7 +9,6 @@ internal sealed class ImportGenerator
             .GroupBy(i => i.DeclaringName).ToArray();
         return bySpace.Length == 0 ? "" :
             $"""
-             using System.Runtime.InteropServices.JavaScript;
              using System.Diagnostics.CodeAnalysis;
              using System.Runtime.CompilerServices;
 
@@ -51,7 +50,7 @@ internal sealed class ImportGenerator
             : method.ReturnType);
         if (method.ShouldSerializeReturnType && method.ReturnsTaskLike)
             @return = $"global::System.Threading.Tasks.Task<{@return}>";
-        var attr = $"""[JSImport("{BuildEndpoint(method)}", "Bootsharp")]""";
+        var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{BuildEndpoint(method)}", "Bootsharp")]""";
         return $"{attr} internal static partial {@return} {method.Name} ({args});";
     }
 
