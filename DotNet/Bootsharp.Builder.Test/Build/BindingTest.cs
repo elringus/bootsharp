@@ -121,8 +121,8 @@ public class BindingTest : BuildTest
     [Fact]
     public void WhenMultipleAssembliesWithEqualSpaceObjectDeclaredOnlyOnce ()
     {
-        AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
-        AddAssembly(With("Foo", "[JSFunction] public static void Fun () { }"));
+        AddAssembly("a1.dll", With("Foo", "[JSInvokable] public static void Bar () { }"));
+        AddAssembly("a2.dll", With("Foo", "[JSFunction] public static void Fun () { }"));
         Execute();
         Contains(
             """
@@ -239,7 +239,7 @@ public class BindingTest : BuildTest
             export const Global = {
                 foo: (i) => JSON.parse(exports.MockClass.Foo(JSON.stringify(i))),
                 get bar() { return this.$bar; },
-                set bar($bar) { this.$bar = (i) => JSON.stringify($bar(JSON.parse(i))); }
+                set bar($bar) { this.$bar = (i) => JSON.stringify($bar(JSON.parse(i))); },
                 baz: new Event({ convert: i => JSON.parse(i) })
             };
             """);

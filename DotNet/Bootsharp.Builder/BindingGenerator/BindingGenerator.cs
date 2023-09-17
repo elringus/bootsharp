@@ -29,7 +29,7 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
 
     private void EmitImports ()
     {
-        builder.Append("import { invoke, invokeVoid, invokeAsync, invokeVoidAsync } from \"./exports\";\n");
+        builder.Append("import { exports } from \"./exports\";\n");
         builder.Append("import { Event } from \"./event\";\n");
     }
 
@@ -81,24 +81,38 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
 
     private void EmitInvokable (Method method)
     {
-        var funcName = method.ReturnsTaskLike
-            ? (method.JSReturnType == "Promise<void>" ? "invokeVoidAsync" : "invokeAsync")
-            : (method.JSReturnType == "void" ? "invokeVoid" : "invoke");
+        var wait = method.JSArguments.Any(a => a.ShouldSerialize) && method.ReturnsTaskLike;
+        var endpoint = $"exports.{method.DeclaringName.Replace('.', '_')}.{method.Name}";
         var funcArgs = string.Join(", ", method.JSArguments.Select(a => a.Name));
-        var endpoint = $"{method.Assembly}/{method.DeclaringName}/{method.Name}";
-        var methodArgs = $"\"{endpoint}\"" + (funcArgs == "" ? "" : $", {funcArgs}");
-        var body = $"{funcName}({methodArgs})";
-        builder.Append($"{Comma()}\n{Pad(level + 1)}{ToFirstLower(method.Name)}: ({funcArgs}) => {body}");
+        var invArgs = string.Join(", ", method.JSArguments.Select(arg =>
+            arg.ShouldSerialize ? $"JSON.stringify({arg.Name})" : arg.Name
+        ));
+        var body = $"{(wait ? "await " : "")}{endpoint}({invArgs})";
+        if (method.ShouldSerializeReturnType) body = $"JSON.parse({body})";
+        var func = $"{(wait ? "async " : "")}({funcArgs}) => {body}";
+        builder.Append($"{Comma()}\n{Pad(level + 1)}{ToFirstLower(method.Name)}: {func}");
     }
 
     private void EmitFunction (Method method)
     {
-        builder.Append($"{Comma()}\n{Pad(level + 1)}{ToFirstLower(method.Name)}: undefined");
+        var wait = method.JSArguments.Any(a => a.ShouldSerialize) && method.ReturnsTaskLike;
+        var name = ToFirstLower(method.Name);
+        var funcArgs = string.Join(", ", method.JSArguments.Select(a => a.Name));
+        var invArgs = string.Join(", ", method.JSArguments.Select(arg =>
+            arg.ShouldSerialize ? $"JSON.parse({arg.Name})" : arg.Name
+        ));
+        var body = $"{(wait ? "await " : "")}${name}({invArgs})";
+        if (method.ShouldSerializeReturnType) body = $"JSON.stringify({body})";
+        var setter = $"{(wait ? "async " : "")}({funcArgs}) => {body}";
+        builder.Append($"{Comma()}\n{Pad(level + 1)}get {name}() {{ return this.${name}; }}");
+        builder.Append($"{Comma()}\n{Pad(level + 1)}set {name}(${name}) {{ this.${name} = {setter}; }}");
     }
 
     private void EmitEvent (Method method)
     {
-        builder.Append($"{Comma()}\n{Pad(level + 1)}{ToFirstLower(method.Name)}: new Event()");
+        var options = method.JSArguments.FirstOrDefault() is { ShouldSerialize: true } arg ?
+            $"{{ convert: {arg.Name} => JSON.parse({arg.Name}) }}" : "";
+        builder.Append($"{Comma()}\n{Pad(level + 1)}{ToFirstLower(method.Name)}: new Event({options})");
     }
 
     private void EmitEnum (Type @enum)
