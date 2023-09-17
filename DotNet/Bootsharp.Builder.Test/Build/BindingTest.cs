@@ -226,6 +226,44 @@ public class BindingTest : BuildTest
     }
 
     [Fact]
+    public void SerializesCustomType ()
+    {
+        AddAssembly(
+            With("public record Info;", false),
+            With("[JSInvokable] public static Info Foo (Info i) => default;"),
+            With("[JSFunction] public static Info? Bar (Info? i) => default;"),
+            With("[JSEvent] public static void Baz (Info?[] i) { }"));
+        Execute();
+        Contains(
+            """
+            export const Global = {
+                foo: (i) => JSON.parse(exports.MockClass.Foo(JSON.stringify(i))),
+                get bar() { return this.$bar; },
+                set bar($bar) { this.$bar = (i) => JSON.stringify($bar(JSON.parse(i))); }
+                baz: new Event({ convert: i => JSON.parse(i) })
+            };
+            """);
+    }
+
+    [Fact]
+    public void AwaitsWhenSerializingInAsyncFunctions ()
+    {
+        AddAssembly(
+            With("public record Info;", false),
+            With("[JSInvokable] public static Task<Info> Foo (Info i) => default;"),
+            With("[JSFunction] public static Task<Info?> Bar (Info? i) => default;"));
+        Execute();
+        Contains(
+            """
+            export const Global = {
+                foo: async (i) => JSON.parse(await exports.MockClass.Foo(JSON.stringify(i))),
+                get bar() { return this.$bar; },
+                set bar($bar) { this.$bar = async (i) => JSON.stringify(await $bar(JSON.parse(i))); }
+            };
+            """);
+    }
+
+    [Fact]
     public void ExportedEnumsAreDeclaredInJS ()
     {
         AddAssembly(
@@ -235,7 +273,7 @@ public class BindingTest : BuildTest
         Contains(
             """
             export const n = {
-                getFoo: () => exports.n_MockClass.GetFoo(),
+                getFoo: () => JSON.parse(exports.n_MockClass.GetFoo()),
                 Foo: { A: "A", B: "B" }
             };
             """);
