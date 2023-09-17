@@ -1,10 +1,9 @@
 {
     "scripts": {
-        "test": "jest",
-        "cover": "jest --coverage"
+        "test": "node --test",
+        "cover": "node --experimental-test-coverage"
     },
     "devDependencies": {
-        "typescript": "^5.2.2",
-        "jest": "^29.6.4"
+        "typescript": "^5.2.2"
     }
 }
