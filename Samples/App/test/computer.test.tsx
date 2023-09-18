@@ -1,40 +1,41 @@
-﻿// import { render, act, screen } from "@testing-library/react";
-// import userEvent from "@testing-library/user-event";
-// import { Backend, Frontend } from "backend";
-// import Computer from "computer";
-//
-// beforeEach(() => {
-//     Backend.startStress = jest.fn();
-//     Backend.stopStress = jest.fn();
-//     Backend.isStressing = jest.fn();
-// });
-//
-// test("stress is not running initially", () => {
-//     render(<Computer complexity={0}/>);
-//     expect(Backend.startStress).not.toBeCalled();
-// });
-//
-// test("get stress power returns value specified in props", async () => {
-//     render(<Computer complexity={666}/>);
-//     expect(Frontend.getStressPower()).toEqual(666);
-// });
-//
-// test("stress iteration time is written to screen", async () => {
-//     render(<Computer complexity={0}/>);
-//     await act(() => Frontend.onStressComplete.broadcast(13));
-//     expect(screen.getByText(/Stressed over 13ms/));
-// });
-//
-// test("button click stops stress when stress is running", async () => {
-//     Backend.isStressing = () => true;
-//     render(<Computer complexity={0}/>);
-//     await userEvent.click(screen.getByRole("button"));
-//     expect(Backend.stopStress).toBeCalled();
-// });
-//
-// test("button click starts stress when stress is not running", async () => {
-//     Backend.isStressing = () => false;
-//     render(<Computer complexity={0}/>);
-//     await userEvent.click(screen.getByRole("button"));
-//     expect(Backend.startStress).toBeCalled();
-// });
+import { Computer as Backend, PrimeComputerUI as UI } from "backend";
+import { beforeEach, test, expect, mock } from "bun:test";
+import { render, act, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import Computer from "../src/computer";
+
+beforeEach(() => {
+    Backend.startComputing = mock(() => {});
+    Backend.stopComputing = mock(() => {});
+    Backend.isComputing = mock(() => false);
+});
+
+test("not computing initially", () => {
+    render(<Computer complexity={0} resultLimit={0}/>);
+    expect(Backend.startComputing).not.toHaveBeenCalled();
+});
+
+test("get complexity returns value specified in props", async () => {
+    render(<Computer complexity={666} resultLimit={0}/>);
+    expect(UI.getComplexity()).toEqual(666);
+});
+
+test("compute time is written to screen", async () => {
+    render(<Computer complexity={0} resultLimit={99}/>);
+    act(() => UI.onComplete.broadcast(13));
+    expect(screen.getAllByText(/Computed in 13ms./)).not.toBeEmpty();
+});
+
+test("button click stops computing when running", async () => {
+    Backend.isComputing = () => true;
+    render(<Computer complexity={0} resultLimit={0}/>);
+    await userEvent.click(screen.getAllByRole("button")[0]);
+    expect(Backend.stopComputing).toHaveBeenCalled();
+});
+
+test("button click starts computing when not running", async () => {
+    Backend.isComputing = () => false;
+    render(<Computer complexity={0} resultLimit={0}/>);
+    await userEvent.click(screen.getAllByRole("button")[0]);
+    expect(Backend.startComputing).toHaveBeenCalled();
+});
