@@ -35,7 +35,7 @@ jobs:
         run: |
           dotnet build DotNet/Bootsharp.sln
           cd JavaScript
-          npm ci
+          npm install
           run: bash scripts/build.sh
           # dotnet publish test/csharp/Test.sln
       - name: analyze
