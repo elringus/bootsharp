@@ -121,16 +121,15 @@ public class BindingTest : BuildTest
     [Fact]
     public void WhenMultipleAssembliesWithEqualSpaceObjectDeclaredOnlyOnce ()
     {
-        AddAssembly("a1.dll", With("Foo", "[JSInvokable] public static void Bar () { }"));
-        AddAssembly("a2.dll", With("Foo", "[JSFunction] public static void Fun () { }"));
+        AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
+        AddAssembly(With("Foo", "[JSFunction] public static void Fun () { }"));
         Execute();
+        Assert.Single(Matches("export const Foo"));
+        Contains("bar: () => exports.Foo_MockClass.Bar()");
         Contains(
             """
-            export const Foo = {
-                bar: () => exports.Foo_MockClass.Bar(),
                 get fun() { return this.$fun; },
                 set fun($fun) { this.$fun = () => $fun(); }
-            };
             """);
     }
 
