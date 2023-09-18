@@ -36,7 +36,8 @@ jobs:
           dotnet build DotNet/Bootsharp.sln
           cd JavaScript
           npm install
-          bash scripts/build.sh
+          cd scripts
+          bash build.sh
           # dotnet publish test/csharp/Test.sln
       - name: analyze
         uses: github/codeql-action/analyze@v2
