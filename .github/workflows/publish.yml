@@ -10,17 +10,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 8
       - name: build
         run: |
           dotnet build DotNet/Bootsharp.sln
           cd JavaScript
-          npm ci
-          npm run build
+          npm install
+          cd scripts
+          bash build.sh
       - name: package
         run: |
           cd DotNet

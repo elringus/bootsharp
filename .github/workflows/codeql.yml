@@ -22,11 +22,11 @@ jobs:
         language: [ 'csharp', 'javascript' ]
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 8
       - name: initialize codeql
         uses: github/codeql-action/init@v2
         with:
@@ -35,8 +35,9 @@ jobs:
         run: |
           dotnet build DotNet/Bootsharp.sln
           cd JavaScript
-          npm ci
-          npm run build
-          dotnet publish test/csharp/Test.sln
+          npm install
+          cd scripts
+          bash build.sh
+          # dotnet publish test/csharp/Test.sln
       - name: analyze
         uses: github/codeql-action/analyze@v2

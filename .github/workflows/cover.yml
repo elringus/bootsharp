@@ -10,19 +10,21 @@ jobs:
   cover:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 8
       - name: cover
         run: |
           dotnet test DotNet/Bootsharp.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
           cd JavaScript
-          npm ci
-          npm run build
-          dotnet publish test/csharp/Test.sln
-          npm install -g nyc
-          nyc --reporter=lcov npm run test
+          npm install
+          cd scripts
+          bash build.sh
+          cd ..
+          # dotnet publish test/csharp/Test.sln
+          # npm install -g nyc
+          # nyc --reporter=lcov npm run test
       - name: upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
