@@ -2,6 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
         <AssemblyTitle>Bootsharp</AssemblyTitle>
         <Title>Bootsharp</Title>
         <PackageId>Bootsharp</PackageId>
@@ -19,9 +21,6 @@
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>NU5100,CS1591</NoWarn>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
