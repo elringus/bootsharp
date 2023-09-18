@@ -48,15 +48,15 @@ public class DeclarationTest : BuildTest
     {
         AddAssembly(With("Foo", "[JSEvent] public static void OnFoo () { }"));
         Execute();
-        Contains("export namespace Foo {\n    export const onFoo: Event<[]>;\n}");
+        Contains("export namespace Foo {\n    export const onFoo: Event<void>;\n}");
     }
 
     [Fact]
     public void GenericEventIsExportedForEventMethodWithArguments ()
     {
-        AddAssembly(With("Foo", "[JSEvent] public static void OnFoo (string bar, int nya) { }"));
+        AddAssembly(With("Foo", "[JSEvent] public static void OnFoo (string bar) { }"));
         Execute();
-        Contains("export namespace Foo {\n    export const onFoo: Event<[string, number]>;\n}");
+        Contains("export namespace Foo {\n    export const onFoo: Event<string>;\n}");
     }
 
     [Fact]
@@ -478,7 +478,7 @@ public class DeclarationTest : BuildTest
     {
         AddAssembly(With("[JSEvent] public static void OnFoo (string? bar) { }"));
         Execute();
-        Contains("export const onFoo: Event<[string | undefined]>;");
+        Contains("export const onFoo: Event<string | undefined>;");
     }
 
     [Fact]

@@ -11,13 +11,15 @@
         <BootsharpEmbedBinaries>false</BootsharpEmbedBinaries>
         <!-- Publish the binaries to the React public directory for deployment. -->
         <BootsharpBinariesDirectory>$(SolutionDir)../public/bin</BootsharpBinariesDirectory>
+        <!-- Disable non-essential .NET features (debug, localization, reflection, etc) to reduce build size. -->
+        <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
         <!-- AOT-compile for better compute performance at the cost of additional build time and size. -->
-        <!-- <RunAOTCompilation>true</RunAOTCompilation> -->
+        <RunAOTCompilation>true</RunAOTCompilation>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Bootsharp" Version="*-*"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0-rc.1.23419.4" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0-rc.1.23419.4"/>
     </ItemGroup>
 
     <ItemGroup>
