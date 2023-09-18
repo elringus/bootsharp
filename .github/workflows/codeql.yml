@@ -22,9 +22,9 @@ jobs:
         language: [ 'csharp', 'javascript' ]
     steps:
       - name: checkout
-        uses: actions/checkout@latest
+        uses: actions/checkout@v4
       - name: setup dotnet
-        uses: actions/setup-dotnet@latest
+        uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8
       - name: initialize codeql
