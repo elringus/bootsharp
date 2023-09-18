@@ -17,7 +17,7 @@ new ServiceCollection()
     .AddSingleton<IComputer, PrimeComputer>() // use prime computer
     .AddBootsharp() // auto-injects generated interop handlers
     .BuildServiceProvider()
-    .BuildBootsharp(); // auto-instantiates interop services
+    .RunBootsharp(); // auto-initialize interop services
 
 // ----------------------------------------------------------------------
 // MSBuild trims "Computer.JSComputer"'s methods when AOT enabled,

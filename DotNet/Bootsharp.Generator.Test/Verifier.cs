@@ -1,11 +1,10 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
 
 namespace Bootsharp.Generator.Test;
 
-public sealed class Verifier<T> : CSharpSourceGeneratorTest<T, XUnitVerifier>
+public sealed class Verifier<T> : CSharpSourceGeneratorTest<T, DefaultVerifier>
     where T : IIncrementalGenerator, new()
 {
     protected override string DefaultTestProjectName { get; } = "GeneratorTest";

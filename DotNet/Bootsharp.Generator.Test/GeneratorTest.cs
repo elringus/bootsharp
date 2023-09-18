@@ -102,6 +102,20 @@ public class GeneratorTest
         foreach (var path in Directory.EnumerateFiles($"{root}/Interop", "*.cs"))
             sourceCache.Add((Path.GetFileName(path), File.ReadAllText(path)));
         sourceCache.Add(("Error.cs", File.ReadAllText($"{root}/Error.cs")));
+        sourceCache.Add(("Injection.cs", File.ReadAllText($"{root}/Injection.cs")));
+        sourceCache.Add(("DependencyInjection.cs",
+            """
+            namespace Microsoft.Extensions.DependencyInjection;
+            public interface IServiceCollection
+            {
+                void AddSingleton(Type t, Func<IServiceProvider, object> f);
+                void AddSingleton(Type t, object i);
+            }
+            public static class Extensions
+            {
+                public static object GetRequiredService(this IServiceProvider p, Type t) => default;
+            }
+            """));
         sourceCache.Add(("GlobalUsings.cs",
             """
             global using System;

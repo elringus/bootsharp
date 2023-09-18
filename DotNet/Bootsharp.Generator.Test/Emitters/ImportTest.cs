@@ -25,7 +25,10 @@ public static class ImportTest
             {
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
-                internal static void RegisterDynamicDependencies () { }
+                internal static void RegisterDynamicDependencies ()
+                {
+                    Bootsharp.Injection.AddImport(typeof(global::IFoo), new JSFoo());
+                }
 
                 [JSFunction] public static void NotifyFoo (global::System.String foo) => Get<global::System.Action<global::System.String>>("Foo.notifyFoo")(foo);
                 [JSFunction] public static global::System.Boolean Bar () => Get<global::System.Func<global::System.Boolean>>("Foo.bar")();
@@ -56,7 +59,10 @@ public static class ImportTest
             {
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
-                internal static void RegisterDynamicDependencies () { }
+                internal static void RegisterDynamicDependencies ()
+                {
+                    Bootsharp.Injection.AddImport(typeof(global::IFoo), new JSFoo());
+                }
 
                 [JSEvent] public static void OnFoo (global::System.String foo) => Get<global::System.Action<global::System.String>>("Foo.onFoo.broadcast")(foo);
 
@@ -81,7 +87,10 @@ public static class ImportTest
             {
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
-                internal static void RegisterDynamicDependencies () { }
+                internal static void RegisterDynamicDependencies ()
+                {
+                    Bootsharp.Injection.AddImport(typeof(global::IFoo), new JSFoo());
+                }
 
                 [JSEvent] public static void NotifyFoo (global::System.String foo) => Get<global::System.Action<global::System.String>>("Foo.notifyFoo.broadcast")(foo);
 
@@ -106,7 +115,10 @@ public static class ImportTest
             {
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
-                internal static void RegisterDynamicDependencies () { }
+                internal static void RegisterDynamicDependencies ()
+                {
+                    Bootsharp.Injection.AddImport(typeof(global::IFoo), new JSFoo());
+                }
 
                 [JSEvent] public static void HandleFoo (global::System.String foo) => Get<global::System.Action<global::System.String>>("Foo.handleFoo.broadcast")(foo);
 
@@ -132,7 +144,10 @@ public static class ImportTest
             {
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
-                internal static void RegisterDynamicDependencies () { }
+                internal static void RegisterDynamicDependencies ()
+                {
+                    Bootsharp.Injection.AddImport(typeof(global::IFoo), new JSFoo());
+                }
 
                 [JSFunction] public static void NahFoo (global::System.String foo) => Get<global::System.Action<global::System.String>>("Foo.nahFoo")(foo)/**/;
                 [JSFunction] public static global::System.Boolean Bar () => Get<global::System.Func<global::System.Boolean>>("Foo.bar")()/**/;
@@ -159,7 +174,10 @@ public static class ImportTest
             {
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
-                internal static void RegisterDynamicDependencies () { }
+                internal static void RegisterDynamicDependencies ()
+                {
+                    Bootsharp.Injection.AddImport(typeof(global::IFoo), new JSFoo());
+                }
 
                 [JSFunction] public static void Foo () => Get<global::System.Action>("Foo.foo")();
 
@@ -187,7 +205,10 @@ public static class ImportTest
             {
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
-                internal static void RegisterDynamicDependencies () { }
+                internal static void RegisterDynamicDependencies ()
+                {
+                    Bootsharp.Injection.AddImport(typeof(global::A.B.C.IFoo), new JSFoo());
+                }
 
                 [JSFunction] public static void F () => Get<global::System.Action>("Bar.f")();
 
@@ -218,7 +239,10 @@ public static class ImportTest
             {
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
-                internal static void RegisterDynamicDependencies () { }
+                internal static void RegisterDynamicDependencies ()
+                {
+                    Bootsharp.Injection.AddImport(typeof(global::IFoo), new JSFoo());
+                }
 
                 [JSEvent] public static void OnFoo (global::Info info1, global::Info info2) => Get<global::System.Action<global::System.String, global::System.String>>("Foo.onFoo.broadcast")(Serialize(info1), Serialize(info2));
                 [JSFunction] public static global::Info Bar () => Deserialize<global::Info>(Get<global::System.Func<global::System.String>>("Foo.bar")());
