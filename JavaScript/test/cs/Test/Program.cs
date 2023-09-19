@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 using Bootsharp;
-using Test.Other;
+using Test.Types;
 
 namespace Test;
 
