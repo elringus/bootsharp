@@ -1,27 +1,9 @@
-﻿using System;
-using Bootsharp;
+﻿using Bootsharp;
 
-[assembly: JSImport(typeof(IFrontend))]
-[assembly: JSExport(typeof(IBackend))]
+Log("Hello from .NET!");
 
-_ = new Backend.JSBackend(new NetBackend());
-var info = Frontend.JSFrontend.GetInfo();
-Frontend.JSFrontend.Log($"Frontend: {info.Environment}");
-
-public record Info(string Environment);
-
-public interface IFrontend
+public static partial class Program
 {
-    void Log (string message);
-    Info GetInfo ();
-}
-
-public interface IBackend
-{
-    Info GetInfo ();
-}
-
-internal class NetBackend : IBackend
-{
-    public Info GetInfo () => new($".NET {Environment.Version}");
+    [JSFunction]
+    public static partial void Log (string message);
 }

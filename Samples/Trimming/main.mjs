@@ -1,4 +1,4 @@
-import bootsharp, { Backend, Frontend } from "./cs/bin/bootsharp/bootsharp.js";
+import bootsharp, { Global } from "./cs/bin/bootsharp/bootsharp.js";
 import zlib from "node:zlib";
 import util from "node:util";
 import fs from "node:fs/promises";
@@ -11,10 +11,8 @@ await Promise.all([
     ...bootsharp.resources.assemblies.map(fetchBro)
 ]);
 
-Frontend.log = console.log;
-Frontend.getInfo = () => ({ environment: `Node ${process.version}` });
+Global.log = console.log;
 await bootsharp.boot();
-console.log(`Backend: ${Backend.getInfo().environment}`);
 
 async function measure(dir) {
     let size = 0;
