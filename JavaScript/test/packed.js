@@ -1,5 +1,6 @@
-﻿const assert = require("assert");
-const { packed, getGeneratedTypes, getGeneratedMap } = require("./csharp");
+﻿const assert = require("node:assert");
+const { describe, it, after } = require("node:test");
+const { packed, getGeneratedTypes, getGeneratedMap } = require("./cs");
 
 describe("packed library", () => {
     after(packed.terminate);

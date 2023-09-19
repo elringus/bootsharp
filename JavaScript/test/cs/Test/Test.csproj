@@ -2,16 +2,17 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-        <OutputType>Exe</OutputType>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-        <WasmMainJSPath>main.js</WasmMainJSPath>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>
-        <!--<RunAOTCompilation>true</RunAOTCompilation>-->
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DotNetJS" Version="0.24.0"/>
+        <PackageReference Include="Bootsharp" Version="*-*"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="../Test.Types/Test.Types.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,6 +1,7 @@
-﻿const assert = require("assert");
+﻿const assert = require("node:assert");
+const { describe, it, before, after } = require("node:test");
 const dotnet = require("../dist/dotnet");
-const { bootTest } = require("./csharp");
+const { bootTest } = require("./cs");
 
 const invoke = (name, ...args) => dotnet.invoke("Test.Main", name, ...args);
 const invokeAsync = (name, ...args) => dotnet.invokeAsync("Test.Main", name, ...args);

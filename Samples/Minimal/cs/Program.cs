@@ -1,16 +1,19 @@
-﻿// Specifying JavaScript APIs to generate bindings for.
-[assembly: Bootsharp.JSImport(typeof(IFrontend))]
-// Specifying C# APIs to generate bindings for.
-[assembly: Bootsharp.JSExport(typeof(IBackend))]
+﻿using System;
+using Bootsharp;
 
-// Using generated C# bindings to inject implementation (usually handled by DI).
-_ = new Backend.JSBackend(new NetBackend());
-// Using generated JavaScript bindings to invoke 'Frontend.getName()' function.
-System.Console.WriteLine($"Hello {Frontend.JSFrontend.GetName()}, .NET here!");
+public static partial class Program
+{
+    public static void Main ()
+    {
+        OnMainInvoked($"Hello {GetFrontendName()}, .NET here!");
+    }
 
-// Improvised API of JavaScript frontend.
-public interface IFrontend { string GetName (); }
-// Improvised API of C# backend.
-public interface IBackend { string GetName (); }
-// Implementation of the backend.
-class NetBackend : IBackend { public string GetName () => ".NET"; }
+    [JSEvent] // used in JS as `bootsharp.Global.onMainInvoked.subscribe`
+    public static partial void OnMainInvoked (string message);
+
+    [JSFunction] // assigned in JS as `bootsharp.Global.getName = () => ...`
+    public static partial string GetFrontendName ();
+
+    [JSInvokable] // invoked from JS as `bootsharp.Global.GetBackendName()`
+    public static string GetBackendName () => $".NET {Environment.Version}";
+}

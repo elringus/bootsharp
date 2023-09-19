@@ -3,7 +3,7 @@ const fs = require("fs");
 const assert = require("assert");
 const dotnet = require("../dist/dotnet");
 
-assertPathExists("test/csharp/Test.Main/bin/dotnet.js");
+assertPathExists("test/cs/Test.Main/bin/dotnet.js");
 exports.packed = require("./csharp/Test.Main/bin/dotnet");
 exports.bootTest = bootTest;
 exports.getBootData = getBootData;

@@ -1,4 +1,5 @@
-﻿const assert = require("assert");
+﻿const assert = require("node:assert");
+const { describe, it } = require("node:test");
 const { Event } = require("../dist/dotnet");
 
 describe("event", () => {

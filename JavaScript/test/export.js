@@ -1,4 +1,5 @@
-﻿const assert = require("assert");
+﻿const assert = require("node:assert");
+const { describe, it } = require("node:test");
 const dotnet = require("../dist/dotnet");
 
 describe("export", () => {

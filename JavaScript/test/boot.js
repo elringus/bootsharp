@@ -1,7 +1,7 @@
-﻿const assert = require("assert");
+﻿const assert = require("node:assert");
+const { describe, it } = require("node:test");
 const { boot, terminate, getBootStatus, BootStatus, invoke } = require("../dist/dotnet");
-const { bootTest, getBootData } = require("./csharp");
-const { Base64 } = require("js-base64");
+const { bootTest, getBootData } = require("./cs");
 
 describe("boot", () => {
     it("is in standby by default", () => {
@@ -55,9 +55,9 @@ describe("boot", () => {
     });
     it("can boot with base64 binaries", async () => {
         const data = getBootData();
-        data.wasm = Base64.fromUint8Array(data.wasm);
+        data.wasm = data.wasm.toString("base64");
         for (let i = 0; i < data.assemblies.length; i++)
-            data.assemblies[i].data = Base64.fromUint8Array(data.assemblies[i].data);
+            data.assemblies[i].data = data.assemblies[i].data.toString("base64");
         await boot(data);
         assert.deepStrictEqual(getBootStatus(), BootStatus.Booted);
         terminate();
