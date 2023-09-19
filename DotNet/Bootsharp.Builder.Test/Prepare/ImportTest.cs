@@ -138,7 +138,7 @@ public class ImportTest : PrepareTest
 
             public class Foo
             {
-                [JSFunction] public static Info? Bar (string a, int[] b) => default;
+                [JSFunction] public static Info Bar (string a, int[] b) => default;
                 [JSFunction] public static Task Baz () => default;
                 [JSFunction] public static Task<Info?> Nya (Info a) => default;
                 [JSEvent] public static void OnBar (Info? a, bool? b) {}
@@ -163,7 +163,7 @@ public class ImportTest : PrepareTest
                     Function.Set("Space.nya", Nya);
                     Function.Set("Space.onBar.broadcast", OnBar);
                 }
-                [System.Runtime.InteropServices.JavaScript.JSImport("Space.bar", "Bootsharp")] internal static partial global::System.String? Bar (global::System.String a, global::System.Int32[] b);
+                [System.Runtime.InteropServices.JavaScript.JSImport("Space.bar", "Bootsharp")] internal static partial global::System.String Bar (global::System.String a, global::System.Int32[] b);
                 [System.Runtime.InteropServices.JavaScript.JSImport("Space.baz", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task Baz ();
                 [System.Runtime.InteropServices.JavaScript.JSImport("Space.nya", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.String?> Nya (global::System.String a);
                 [System.Runtime.InteropServices.JavaScript.JSImport("Space.onBar.broadcast", "Bootsharp")] internal static partial void OnBar (global::System.String? a, global::System.Boolean? b);

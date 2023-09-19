@@ -12,7 +12,7 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
         @void = method.ReturnsVoid;
         returnType = method.ReturnType;
         returnsTask = IsTaskWithResult(method.ReturnType, out var task);
-        taskResult = task?.TypeArguments.FirstOrDefault();
+        taskResult = task.TypeArguments.FirstOrDefault();
         wait = returnsTask && ShouldSerialize(taskResult);
         signature = EmitSignature();
         body = EmitBody();
@@ -89,7 +89,7 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
         }
 
         static ITypeSymbol GetNullableUnderlyingType (INamedTypeSymbol task) =>
-            task?.TypeArguments.FirstOrDefault();
+            task.TypeArguments.FirstOrDefault();
 
         static bool IsStandaloneTransferable (ITypeSymbol type) =>
             Is<string>(type) || Is<bool>(type) || Is<byte>(type) || Is<char>(type) || Is<short>(type) ||

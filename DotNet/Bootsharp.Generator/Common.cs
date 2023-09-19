@@ -115,7 +115,7 @@ internal static class Common
         if (!attribute.NamedArguments.Any(a => a.Key == EventPatternReplacementArg)) replacement = DefaultEventReplacement;
         else replacement = attribute.NamedArguments.First(a => a.Key == EventPatternReplacementArg).Value.Value as string;
 
-        if (string.IsNullOrEmpty(pattern) || string.IsNullOrEmpty(replacement)) return name;
+        if (string.IsNullOrEmpty(replacement)) return name;
         return Regex.Replace(name, pattern, replacement);
     }
 

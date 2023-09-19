@@ -10,7 +10,7 @@ internal sealed class ResourcesTemplate(
           export default {
               wasm: {{BuildBin("dotnet.native.wasm", wasm)}},
               assemblies: [
-                  {{JoinLines(assemblies.Select(a => BuildBin(a.Name, a.Content)), 2, separator: ",\n")}}
+                  {{JoinLines(assemblies.Select(a => BuildBin(a.Name, a.Content)), 2, ",\n")}}
               ],
               entryAssemblyName: "{{entryAssemblyName}}"
           };

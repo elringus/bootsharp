@@ -34,6 +34,22 @@ public class TypesTest
     private readonly CustomAttributeData import = GetMockImportAttribute();
 
     [Fact]
+    public void Records ()
+    {
+        // TODO: Remove once coverlet properly handles record coverage.
+        _ = new MockItem("") with { Id = "foo" };
+        _ = new MockItemWithEnum(default) with { Enum = MockEnum.Bar };
+        _ = new MockRecord(default) with { Items = new[] { new MockItem("") } };
+    }
+
+    [Fact]
+    public void TypesAreAssigned ()
+    {
+        Assert.Equal(new[] { typeof(IBackend) }, new JSExportAttribute(typeof(IBackend)).Types);
+        Assert.Equal(new[] { typeof(IFrontend) }, new JSImportAttribute(typeof(IFrontend)).Types);
+    }
+
+    [Fact]
     public void NameAndInvokeParametersAreNullByDefault ()
     {
         var attribute = new JSExportAttribute(typeof(IBackend));

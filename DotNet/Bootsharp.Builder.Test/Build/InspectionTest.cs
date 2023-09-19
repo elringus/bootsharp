@@ -3,6 +3,18 @@
 public class InspectionTest : BuildTest
 {
     [Fact]
+    public void Records ()
+    {
+        // TODO: Remove once coverlet properly handles record coverage.
+        _ = new Assembly("", default) with { Name = "foo" };
+        _ = new MockAssembly("", default) with { Name = "foo" };
+        _ = new AssemblyResource("", "") with { Name = "foo" };
+        _ = new MockSource("", "", false) with { Namespace = "foo" };
+        _ = new Argument { Name = "", Nullable = false, Type = "", ShouldSerialize = false } with { Name = "foo" };
+        _ = new Method { Name = "", Arguments = default, Assembly = "", Namespace = "", Type = default, DeclaringName = "", ReturnsNullable = true, ReturnsVoid = true, ReturnType = "", JSArguments = default, JSSpace = "", ReturnsTaskLike = true, JSReturnType = "", ShouldSerializeReturnType = true } with { Name = "foo" };
+    }
+
+    [Fact]
     public void AllAssembliesAreInspected ()
     {
         AddAssembly("Foo.dll");

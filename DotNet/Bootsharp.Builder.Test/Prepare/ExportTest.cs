@@ -101,7 +101,7 @@ public class ExportTest : PrepareTest
             public class Foo
             {
                 [JSInvokable] public static void Void () {}
-                [JSInvokable] public static Info? WithArgs (string a, int[] b) => default;
+                [JSInvokable] public static Info WithArgs (Info a, int[] b) => default;
                 [JSInvokable] public static Task Async () => default;
                 [JSInvokable] public static Task<Info?> AsyncWithArgs (Info? i) => default;
             }
@@ -116,7 +116,7 @@ public class ExportTest : PrepareTest
             public partial class Space_Foo
             {
                 [System.Runtime.InteropServices.JavaScript.JSExport] internal static void Void () => global::Space.Foo.Void();
-                [System.Runtime.InteropServices.JavaScript.JSExport] internal static global::System.String? WithArgs (global::System.String a, global::System.Int32[] b) => Serialize(global::Space.Foo.WithArgs(a, b));
+                [System.Runtime.InteropServices.JavaScript.JSExport] internal static global::System.String WithArgs (global::System.String a, global::System.Int32[] b) => Serialize(global::Space.Foo.WithArgs(Deserialize<global::Space.Info>(a), b));
                 [System.Runtime.InteropServices.JavaScript.JSExport] internal static global::System.Threading.Tasks.Task Async () => global::Space.Foo.Async();
                 [System.Runtime.InteropServices.JavaScript.JSExport] internal static async global::System.Threading.Tasks.Task<global::System.String?> AsyncWithArgs (global::System.String? i) => Serialize(await global::Space.Foo.AsyncWithArgs(Deserialize<global::Space.Info?>(i)));
             }

@@ -5,11 +5,10 @@ namespace Bootsharp.Builder;
 
 internal static class TextUtilities
 {
-    public static string JoinLines (IEnumerable<string?> values, int indent = 1, bool indentFirst = false, string separator = "\n")
+    public static string JoinLines (IEnumerable<string?> values, int indent = 1, string separator = "\n")
     {
         if (indent > 0) separator += new string(' ', indent * 4);
-        var result = RemoveEmptyLines(string.Join(separator, values.Where(v => v is not null)));
-        return indentFirst ? separator + result : result;
+        return RemoveEmptyLines(string.Join(separator, values.Where(v => v is not null)));
     }
 
     public static string JoinLines (params string?[] values) => JoinLines(values, 1);
