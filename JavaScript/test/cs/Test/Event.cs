@@ -1,6 +1,6 @@
 ﻿using Bootsharp;
 
-namespace Test.Main;
+namespace Test;
 
 public static partial class Event
 {

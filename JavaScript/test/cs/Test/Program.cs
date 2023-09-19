@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 using Bootsharp;
-using Test.Types;
+using Test.Other;
 
-namespace Test.Main;
+namespace Test;
 
 public static partial class Program
 {

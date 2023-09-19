@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Bootsharp;
 
-namespace Test.Main;
+namespace Test;
 
 public static partial class Platform
 {
