@@ -11,6 +11,8 @@ internal sealed class ImportGenerator
             $"""
              using System.Diagnostics.CodeAnalysis;
              using System.Runtime.CompilerServices;
+             using System.Runtime.InteropServices.JavaScript;
+             using JSImportAttribute = System.Runtime.InteropServices.JavaScript.JSImportAttribute;
 
              namespace Bootsharp.Imports;
 
@@ -50,8 +52,9 @@ internal sealed class ImportGenerator
             : method.ReturnType);
         if (method.ShouldSerializeReturnType && method.ReturnsTaskLike)
             @return = $"global::System.Threading.Tasks.Task<{@return}>";
-        var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{BuildEndpoint(method)}", "Bootsharp")]""";
-        return $"{attr} internal static partial {@return} {method.Name} ({args});";
+        var attr = $"""[JSImportAttribute("{BuildEndpoint(method)}", "Bootsharp")]""";
+        var date = MarshalDate(method.ReturnType, true);
+        return $"{attr} {date}internal static partial {@return} {method.Name} ({args});";
     }
 
     private string GenerateArg (Argument arg)
@@ -59,7 +62,7 @@ internal sealed class ImportGenerator
         var type = arg.ShouldSerialize
             ? $"global::System.String{(arg.Nullable ? "?" : "")}"
             : arg.Type;
-        return $"{type} {arg.Name}";
+        return $"{MarshalDate(arg.Type, false)}{type} {arg.Name}";
     }
 
     private string BuildEndpoint (Method method)

@@ -12,7 +12,7 @@ internal static class TypeUtilities
         typeof(char).FullName!, typeof(short).FullName!, typeof(long).FullName!,
         typeof(int).FullName!, typeof(float).FullName!, typeof(double).FullName!,
         typeof(nint).FullName!, typeof(Task).FullName!, typeof(DateTime).FullName!,
-        typeof(DateTimeOffset).FullName!,
+        typeof(DateTimeOffset).FullName!, typeof(Exception).FullName!
     }.ToFrozenSet();
 
     private static readonly IReadOnlySet<string> arrayNative = new[] {
@@ -33,6 +33,16 @@ internal static class TypeUtilities
     public static Type GetTaskResult (Type type)
     {
         return type.GenericTypeArguments[0];
+    }
+
+    public static string MarshalDate (string fullname, bool @return)
+    {
+        var ret = @return ? "return: " : "";
+        if (fullname.StartsWith("global::System.DateTime"))
+            return $"[{ret}JSMarshalAs<JSType.Date>] ";
+        if (fullname.StartsWith("global::System.Threading.Tasks.Task<global::System.DateTime"))
+            return $"[{ret}JSMarshalAs<JSType.Promise<JSType.Date>>] ";
+        return "";
     }
 
     public static bool IsVoid (Type type)

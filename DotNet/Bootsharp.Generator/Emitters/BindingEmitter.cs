@@ -12,7 +12,7 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
         @void = method.ReturnsVoid;
         returnType = method.ReturnType;
         returnsTask = IsTaskWithResult(method.ReturnType, out var task);
-        taskResult = task.TypeArguments.FirstOrDefault();
+        taskResult = task?.TypeArguments.FirstOrDefault();
         wait = returnsTask && ShouldSerialize(taskResult);
         signature = EmitSignature();
         body = EmitBody();
@@ -78,7 +78,7 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
     {
         var array = type is IArrayTypeSymbol;
         if (array) type = ((IArrayTypeSymbol)type).ElementType;
-        if (IsNullable(type, out var nullable)) type = GetNullableUnderlyingType(nullable);
+        if (IsNullable(type, out var nullable)) type = nullable.TypeArguments.FirstOrDefault();
         if (array) return !IsArrayTransferable(type);
         return !IsStandaloneTransferable(type);
 
@@ -88,13 +88,11 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
             return $"{type.ContainingNamespace}.{type.MetadataName}" == typeof(Nullable<>).FullName;
         }
 
-        static ITypeSymbol GetNullableUnderlyingType (INamedTypeSymbol task) =>
-            task.TypeArguments.FirstOrDefault();
-
         static bool IsStandaloneTransferable (ITypeSymbol type) =>
             Is<string>(type) || Is<bool>(type) || Is<byte>(type) || Is<char>(type) || Is<short>(type) ||
             Is<long>(type) || Is<int>(type) || Is<float>(type) || Is<double>(type) || Is<nint>(type) ||
-            Is<DateTime>(type) || Is<DateTimeOffset>(type) || Is<Task>(type) || type.SpecialType == SpecialType.System_Void;
+            Is<Exception>(type) || Is<DateTime>(type) || Is<DateTimeOffset>(type) || Is<Task>(type) ||
+            type.SpecialType == SpecialType.System_Void;
 
         static bool IsArrayTransferable (ITypeSymbol type) =>
             Is<byte>(type) || Is<int>(type) || Is<double>(type) || Is<string>(type);
@@ -105,7 +103,7 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
 
     private static bool IsTaskWithResult (ITypeSymbol type, out INamedTypeSymbol named)
     {
-        named = type as INamedTypeSymbol;
-        return $"{type.ContainingNamespace}.{type.MetadataName}" == typeof(Task<>).FullName;
+        var result = $"{type.ContainingNamespace}.{type.MetadataName}" == typeof(Task<>).FullName;
+        return (named = result ? (INamedTypeSymbol)type : null) != null;
     }
 }
