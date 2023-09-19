@@ -36,7 +36,6 @@ public class ImportTest : PrepareTest
             using System.Diagnostics.CodeAnalysis;
             using System.Runtime.CompilerServices;
             using System.Runtime.InteropServices.JavaScript;
-            using JSImportAttribute = System.Runtime.InteropServices.JavaScript.JSImportAttribute;
 
             namespace Bootsharp.Imports;
 
@@ -49,8 +48,8 @@ public class ImportTest : PrepareTest
                     Function.Set("Global.bar", Bar);
                     Function.Set("Global.baz.broadcast", Baz);
                 }
-                [JSImportAttribute("Global.bar", "Bootsharp")] internal static partial void Bar ();
-                [JSImportAttribute("Global.baz.broadcast", "Bootsharp")] internal static partial void Baz ();
+                [System.Runtime.InteropServices.JavaScript.JSImport("Global.bar", "Bootsharp")] internal static partial void Bar ();
+                [System.Runtime.InteropServices.JavaScript.JSImport("Global.baz.broadcast", "Bootsharp")] internal static partial void Baz ();
             }
             """);
     }
@@ -88,7 +87,6 @@ public class ImportTest : PrepareTest
             using System.Diagnostics.CodeAnalysis;
             using System.Runtime.CompilerServices;
             using System.Runtime.InteropServices.JavaScript;
-            using JSImportAttribute = System.Runtime.InteropServices.JavaScript.JSImportAttribute;
 
             namespace Bootsharp.Imports;
 
@@ -101,8 +99,8 @@ public class ImportTest : PrepareTest
                     Function.Set("Global.nya", Nya);
                     Function.Set("Global.far.broadcast", Far);
                 }
-                [JSImportAttribute("Global.nya", "Bootsharp")] internal static partial void Nya ();
-                [JSImportAttribute("Global.far.broadcast", "Bootsharp")] internal static partial void Far ();
+                [System.Runtime.InteropServices.JavaScript.JSImport("Global.nya", "Bootsharp")] internal static partial void Nya ();
+                [System.Runtime.InteropServices.JavaScript.JSImport("Global.far.broadcast", "Bootsharp")] internal static partial void Far ();
             }
             public partial class Foo_Baz
             {
@@ -113,8 +111,8 @@ public class ImportTest : PrepareTest
                     Function.Set("Foo.nya", Nya);
                     Function.Set("Foo.far.broadcast", Far);
                 }
-                [JSImportAttribute("Foo.nya", "Bootsharp")] internal static partial void Nya ();
-                [JSImportAttribute("Foo.far.broadcast", "Bootsharp")] internal static partial void Far ();
+                [System.Runtime.InteropServices.JavaScript.JSImport("Foo.nya", "Bootsharp")] internal static partial void Nya ();
+                [System.Runtime.InteropServices.JavaScript.JSImport("Foo.far.broadcast", "Bootsharp")] internal static partial void Far ();
             }
             public partial class Foo_Bar_Baz
             {
@@ -125,8 +123,8 @@ public class ImportTest : PrepareTest
                     Function.Set("Foo.Bar.nya", Nya);
                     Function.Set("Foo.Bar.far.broadcast", Far);
                 }
-                [JSImportAttribute("Foo.Bar.nya", "Bootsharp")] internal static partial void Nya ();
-                [JSImportAttribute("Foo.Bar.far.broadcast", "Bootsharp")] internal static partial void Far ();
+                [System.Runtime.InteropServices.JavaScript.JSImport("Foo.Bar.nya", "Bootsharp")] internal static partial void Nya ();
+                [System.Runtime.InteropServices.JavaScript.JSImport("Foo.Bar.far.broadcast", "Bootsharp")] internal static partial void Far ();
             }
             """);
     }
@@ -154,7 +152,6 @@ public class ImportTest : PrepareTest
             using System.Diagnostics.CodeAnalysis;
             using System.Runtime.CompilerServices;
             using System.Runtime.InteropServices.JavaScript;
-            using JSImportAttribute = System.Runtime.InteropServices.JavaScript.JSImportAttribute;
 
             namespace Bootsharp.Imports;
 
@@ -169,10 +166,10 @@ public class ImportTest : PrepareTest
                     Function.Set("Space.nya", Nya);
                     Function.Set("Space.onBar.broadcast", OnBar);
                 }
-                [JSImportAttribute("Space.bar", "Bootsharp")] internal static partial global::System.String Bar (global::System.String a, global::System.Int32[] b);
-                [JSImportAttribute("Space.baz", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task Baz ();
-                [JSImportAttribute("Space.nya", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.String?> Nya (global::System.String a);
-                [JSImportAttribute("Space.onBar.broadcast", "Bootsharp")] internal static partial void OnBar (global::System.String? a, global::System.Boolean? b);
+                [System.Runtime.InteropServices.JavaScript.JSImport("Space.bar", "Bootsharp")] internal static partial global::System.String Bar (global::System.String a, global::System.Int32[] b);
+                [System.Runtime.InteropServices.JavaScript.JSImport("Space.baz", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task Baz ();
+                [System.Runtime.InteropServices.JavaScript.JSImport("Space.nya", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.String?> Nya (global::System.String a);
+                [System.Runtime.InteropServices.JavaScript.JSImport("Space.onBar.broadcast", "Bootsharp")] internal static partial void OnBar (global::System.String? a, global::System.Boolean? b);
             }
             """);
     }
@@ -196,7 +193,6 @@ public class ImportTest : PrepareTest
             using System.Diagnostics.CodeAnalysis;
             using System.Runtime.CompilerServices;
             using System.Runtime.InteropServices.JavaScript;
-            using JSImportAttribute = System.Runtime.InteropServices.JavaScript.JSImportAttribute;
 
             namespace Bootsharp.Imports;
 
@@ -209,8 +205,8 @@ public class ImportTest : PrepareTest
                     Function.Set("Space.bar", Bar);
                     Function.Set("Space.baz", Baz);
                 }
-                [JSImportAttribute("Space.bar", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.Exception> Bar (global::System.Boolean a1, global::System.Byte a2, global::System.Char a3, global::System.Int16 a4, global::System.Int64 a5, global::System.Int32 a6, global::System.Single a7, global::System.Double a8, global::System.IntPtr a9, [JSMarshalAs<JSType.Date>] global::System.DateTime a10, [JSMarshalAs<JSType.Date>] global::System.DateTimeOffset a11, global::System.String a12, global::System.Byte[] a13, global::System.Int32[] a14, global::System.Double[] a15, global::System.String[] a16);
-                [JSImportAttribute("Space.baz", "Bootsharp")] [return: JSMarshalAs<JSType.Promise<JSType.Date>>] internal static partial global::System.Threading.Tasks.Task<global::System.DateTime> Baz (global::System.Boolean? a1, global::System.Byte? a2, global::System.Char? a3, global::System.Int16? a4, global::System.Int64? a5, global::System.Int32? a6, global::System.Single? a7, global::System.Double? a8, global::System.IntPtr? a9, [JSMarshalAs<JSType.Date>] global::System.DateTime? a10, [JSMarshalAs<JSType.Date>] global::System.DateTimeOffset? a11, global::System.String? a12, global::System.Byte?[] a13, global::System.Int32?[] a14, global::System.Double?[] a15, global::System.String?[] a16);
+                [System.Runtime.InteropServices.JavaScript.JSImport("Space.bar", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.Exception> Bar (global::System.Boolean a1, global::System.Byte a2, global::System.Char a3, global::System.Int16 a4, global::System.Int64 a5, global::System.Int32 a6, global::System.Single a7, global::System.Double a8, global::System.IntPtr a9, [JSMarshalAs<JSType.Date>] global::System.DateTime a10, [JSMarshalAs<JSType.Date>] global::System.DateTimeOffset a11, global::System.String a12, global::System.Byte[] a13, global::System.Int32[] a14, global::System.Double[] a15, global::System.String[] a16);
+                [System.Runtime.InteropServices.JavaScript.JSImport("Space.baz", "Bootsharp")] [return: JSMarshalAs<JSType.Promise<JSType.Date>>] internal static partial global::System.Threading.Tasks.Task<global::System.DateTime> Baz (global::System.Boolean? a1, global::System.Byte? a2, global::System.Char? a3, global::System.Int16? a4, global::System.Int64? a5, global::System.Int32? a6, global::System.Single? a7, global::System.Double? a8, global::System.IntPtr? a9, [JSMarshalAs<JSType.Date>] global::System.DateTime? a10, [JSMarshalAs<JSType.Date>] global::System.DateTimeOffset? a11, global::System.String? a12, global::System.Byte?[] a13, global::System.Int32?[] a14, global::System.Double?[] a15, global::System.String?[] a16);
             }
             """);
     }

@@ -34,13 +34,12 @@ public class ExportTest : PrepareTest
             """
             using System.Runtime.InteropServices.JavaScript;
             using static Bootsharp.Serializer;
-            using JSExportAttribute = System.Runtime.InteropServices.JavaScript.JSExportAttribute;
 
             namespace Bootsharp.Exports;
 
             public partial class Foo
             {
-                [JSExportAttribute] internal static void Bar () => global::Foo.Bar();
+                [System.Runtime.InteropServices.JavaScript.JSExport] internal static void Bar () => global::Foo.Bar();
             }
             """);
     }
@@ -74,21 +73,20 @@ public class ExportTest : PrepareTest
             """
             using System.Runtime.InteropServices.JavaScript;
             using static Bootsharp.Serializer;
-            using JSExportAttribute = System.Runtime.InteropServices.JavaScript.JSExportAttribute;
 
             namespace Bootsharp.Exports;
 
             public partial class Baz
             {
-                [JSExportAttribute] internal static void Nya () => global::Baz.Nya();
+                [System.Runtime.InteropServices.JavaScript.JSExport] internal static void Nya () => global::Baz.Nya();
             }
             public partial class Foo_Baz
             {
-                [JSExportAttribute] internal static void Nya () => global::Foo.Baz.Nya();
+                [System.Runtime.InteropServices.JavaScript.JSExport] internal static void Nya () => global::Foo.Baz.Nya();
             }
             public partial class Foo_Bar_Baz
             {
-                [JSExportAttribute] internal static void Nya () => global::Foo.Bar.Baz.Nya();
+                [System.Runtime.InteropServices.JavaScript.JSExport] internal static void Nya () => global::Foo.Bar.Baz.Nya();
             }
             """);
     }
@@ -115,16 +113,15 @@ public class ExportTest : PrepareTest
             """
             using System.Runtime.InteropServices.JavaScript;
             using static Bootsharp.Serializer;
-            using JSExportAttribute = System.Runtime.InteropServices.JavaScript.JSExportAttribute;
 
             namespace Bootsharp.Exports;
 
             public partial class Space_Foo
             {
-                [JSExportAttribute] internal static void Void () => global::Space.Foo.Void();
-                [JSExportAttribute] internal static global::System.String WithArgs (global::System.String a, global::System.Int32[] b) => Serialize(global::Space.Foo.WithArgs(Deserialize<global::Space.Info>(a), b));
-                [JSExportAttribute] internal static global::System.Threading.Tasks.Task Async () => global::Space.Foo.Async();
-                [JSExportAttribute] internal static async global::System.Threading.Tasks.Task<global::System.String?> AsyncWithArgs (global::System.String? i) => Serialize(await global::Space.Foo.AsyncWithArgs(Deserialize<global::Space.Info?>(i)));
+                [System.Runtime.InteropServices.JavaScript.JSExport] internal static void Void () => global::Space.Foo.Void();
+                [System.Runtime.InteropServices.JavaScript.JSExport] internal static global::System.String WithArgs (global::System.String a, global::System.Int32[] b) => Serialize(global::Space.Foo.WithArgs(Deserialize<global::Space.Info>(a), b));
+                [System.Runtime.InteropServices.JavaScript.JSExport] internal static global::System.Threading.Tasks.Task Async () => global::Space.Foo.Async();
+                [System.Runtime.InteropServices.JavaScript.JSExport] internal static async global::System.Threading.Tasks.Task<global::System.String?> AsyncWithArgs (global::System.String? i) => Serialize(await global::Space.Foo.AsyncWithArgs(Deserialize<global::Space.Info?>(i)));
             }
             """);
     }
@@ -145,14 +142,13 @@ public class ExportTest : PrepareTest
             """
             using System.Runtime.InteropServices.JavaScript;
             using static Bootsharp.Serializer;
-            using JSExportAttribute = System.Runtime.InteropServices.JavaScript.JSExportAttribute;
 
             namespace Bootsharp.Exports;
 
             public partial class Foo
             {
-                [JSExportAttribute] internal static global::System.Threading.Tasks.Task<global::System.Exception> Bar (global::System.Boolean a1, global::System.Byte a2, global::System.Char a3, global::System.Int16 a4, global::System.Int64 a5, global::System.Int32 a6, global::System.Single a7, global::System.Double a8, global::System.IntPtr a9, [JSMarshalAs<JSType.Date>] global::System.DateTime a10, [JSMarshalAs<JSType.Date>] global::System.DateTimeOffset a11, global::System.String a12, global::System.Byte[] a13, global::System.Int32[] a14, global::System.Double[] a15, global::System.String[] a16) => global::Foo.Bar(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16);
-                [JSExportAttribute] [return: JSMarshalAs<JSType.Promise<JSType.Date>>] internal static global::System.Threading.Tasks.Task<global::System.DateTime> Baz (global::System.Boolean? a1, global::System.Byte? a2, global::System.Char? a3, global::System.Int16? a4, global::System.Int64? a5, global::System.Int32? a6, global::System.Single? a7, global::System.Double? a8, global::System.IntPtr? a9, [JSMarshalAs<JSType.Date>] global::System.DateTime? a10, [JSMarshalAs<JSType.Date>] global::System.DateTimeOffset? a11, global::System.String? a12, global::System.Byte?[] a13, global::System.Int32?[] a14, global::System.Double?[] a15, global::System.String?[] a16) => global::Foo.Baz(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16);
+                [System.Runtime.InteropServices.JavaScript.JSExport] internal static global::System.Threading.Tasks.Task<global::System.Exception> Bar (global::System.Boolean a1, global::System.Byte a2, global::System.Char a3, global::System.Int16 a4, global::System.Int64 a5, global::System.Int32 a6, global::System.Single a7, global::System.Double a8, global::System.IntPtr a9, [JSMarshalAs<JSType.Date>] global::System.DateTime a10, [JSMarshalAs<JSType.Date>] global::System.DateTimeOffset a11, global::System.String a12, global::System.Byte[] a13, global::System.Int32[] a14, global::System.Double[] a15, global::System.String[] a16) => global::Foo.Bar(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16);
+                [System.Runtime.InteropServices.JavaScript.JSExport] [return: JSMarshalAs<JSType.Promise<JSType.Date>>] internal static global::System.Threading.Tasks.Task<global::System.DateTime> Baz (global::System.Boolean? a1, global::System.Byte? a2, global::System.Char? a3, global::System.Int16? a4, global::System.Int64? a5, global::System.Int32? a6, global::System.Single? a7, global::System.Double? a8, global::System.IntPtr? a9, [JSMarshalAs<JSType.Date>] global::System.DateTime? a10, [JSMarshalAs<JSType.Date>] global::System.DateTimeOffset? a11, global::System.String? a12, global::System.Byte?[] a13, global::System.Int32?[] a14, global::System.Double?[] a15, global::System.String?[] a16) => global::Foo.Baz(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16);
             }
             """);
     }

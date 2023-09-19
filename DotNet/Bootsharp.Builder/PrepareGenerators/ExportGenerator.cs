@@ -11,7 +11,6 @@ internal sealed class ExportGenerator
             $"""
              using System.Runtime.InteropServices.JavaScript;
              using static Bootsharp.Serializer;
-             using JSExportAttribute = System.Runtime.InteropServices.JavaScript.JSExportAttribute;
 
              namespace Bootsharp.Exports;
 
@@ -29,9 +28,10 @@ internal sealed class ExportGenerator
 
     private string GenerateExport (Method inv)
     {
+        const string attr = "[System.Runtime.InteropServices.JavaScript.JSExport]";
         var date = MarshalDate(inv.ReturnType, true);
         var wait = inv.Arguments.Any(a => a.ShouldSerialize) && inv.ReturnsTaskLike;
-        return $"[JSExportAttribute] {date}internal static {GenerateSignature(inv, wait)} => {GenerateBody(inv, wait)};";
+        return $"{attr} {date}internal static {GenerateSignature(inv, wait)} => {GenerateBody(inv, wait)};";
     }
 
     private string GenerateSignature (Method inv, bool wait)
