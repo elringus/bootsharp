@@ -5,6 +5,7 @@
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>
+        <TrimmerSingleWarn>false</TrimmerSingleWarn>
     </PropertyGroup>
 
     <ItemGroup>
