@@ -22,6 +22,7 @@ jobs:
         run: |
           cd JavaScript
           npm install
+          npm install -g typescript
           cd scripts
           bash build.sh
           cd ../../DotNet
