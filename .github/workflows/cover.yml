@@ -17,10 +17,11 @@ jobs:
           dotnet-version: 8
       - name: cover
         run: |
+          cd DotNet
           dotnet workload restore
-          dotnet test DotNet/Bootsharp.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-          dotnet pack DotNet/Bootsharp.sln -c Release -o DotNet/bin
-          cd JavaScript
+          dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+          dotnet pack -c Release -o bin
+          cd ../JavaScript
           npm install
           cd scripts
           bash build.sh
