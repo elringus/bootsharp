@@ -105,7 +105,7 @@
         <WriteLinesToFile File="$(BootsharpDotNetRuntime)"
                           Lines="$([System.IO.File]::ReadAllText($(BootsharpDotNetRuntime))
                                 .Replace('pt(%27WebAssembly resource does not have the expected content type &quot;application/wasm&quot;, so falling back to slower ArrayBuffer instantiation.%27)','true')
-                                .Replace('/at (?<replaceSection>[^:()]+:wasm-function\[(?<funcNum>\d+)\]:0x[a-fA-F\d]+)((?![^)a-fA-F\d])|$)/', '/\b\B/')
+                                .Replace('/at (?&lt;replaceSection&gt;[^:()]+:wasm-function\[(?&lt;funcNum&gt;\d+)\]:0x[a-fA-F\d]+)((?![^)a-fA-F\d])|$)/','/\b\B/')
                                 .Replace('import(','import(/*@vite-ignore*//*webpackIgnore:true*/'))"
                           Overwrite="true"/>
 
