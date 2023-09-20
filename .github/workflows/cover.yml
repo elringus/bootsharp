@@ -17,6 +17,7 @@ jobs:
           dotnet-version: 8
       - name: cover
         run: |
+          bash JavaScript/build.sh
           cd DotNet
           dotnet workload restore
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
@@ -24,7 +25,6 @@ jobs:
           cd ../JavaScript
           npm install
           cd scripts
-          bash build.sh
           bash compile-test.sh
           cd ..
           npm run test

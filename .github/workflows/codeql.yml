@@ -40,6 +40,5 @@ jobs:
           npm install
           cd scripts
           bash build.sh
-          bash compile-test.sh
       - name: analyze
         uses: github/codeql-action/analyze@v2
