@@ -15,16 +15,14 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8
-      - name: build
+      - name: package
         run: |
-          dotnet build DotNet/Bootsharp.sln
           cd JavaScript
           npm install
           cd scripts
           bash build.sh
-      - name: package
-        run: |
-          cd DotNet
+          cd ../../DotNet
+          dotnet workload restore
           dotnet pack -c Release -o packages
       - name: publish to nuget
         run: |

@@ -17,15 +17,15 @@ jobs:
           dotnet-version: 8
       - name: cover
         run: |
-          cd JavaScript/scripts
+          cd JavaScript
+          npm install
+          cd scripts
           bash build.sh
           cd ../../DotNet
           dotnet workload restore
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
           dotnet pack -c Release -o bin
-          cd ../JavaScript
-          npm install
-          cd scripts
+          cd ../JavaScript/scripts
           bash compile-test.sh
           cd ..
           npm run test
