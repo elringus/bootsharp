@@ -17,8 +17,9 @@ jobs:
           dotnet-version: 8
       - name: cover
         run: |
-          bash JavaScript/build.sh
-          cd DotNet
+          cd JavaScript/scripts
+          bash build.sh
+          cd ../../DotNet
           dotnet workload restore
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
           dotnet pack -c Release -o bin
