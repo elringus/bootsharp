@@ -4,7 +4,7 @@ import bootsharp, { getBinaries } from "../cs.mjs";
 
 describe("boot", () => {
     it("throws when missing WASM boot resource", async () => {
-        await assert.rejects(bootsharp.boot, /Missing WASM boot resource/);
+        await assert.rejects(bootsharp.boot, /Missing WASM booddddt resource/);
     });
     it("throws when missing assembly boot resource", async () => {
         bootsharp.resources.wasm.content = getBinaries().wasm;
