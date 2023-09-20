@@ -33,6 +33,7 @@ jobs:
           languages: ${{ matrix.language }}
       - name: build
         run: |
+          dotnet workload restore
           dotnet build DotNet/Bootsharp.sln
           cd JavaScript
           npm install
