@@ -6,6 +6,8 @@
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>
         <TrimmerSingleWarn>false</TrimmerSingleWarn>
+        <BootsharpEmbedBinaries>false</BootsharpEmbedBinaries>
+        <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
     </PropertyGroup>
 
     <ItemGroup>

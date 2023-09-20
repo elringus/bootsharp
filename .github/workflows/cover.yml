@@ -18,12 +18,14 @@ jobs:
       - name: cover
         run: |
           dotnet test DotNet/Bootsharp.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+          dotnet pack -c Release -o DotNet/bin
           cd JavaScript
           npm install
           cd scripts
           bash build.sh
+          bash compile-test.sh
           cd ..
-          # dotnet publish test/csharp/Test.sln
+          npm run test
           # npm install -g nyc
           # nyc --reporter=lcov npm run test
       - name: upload coverage reports to Codecov
