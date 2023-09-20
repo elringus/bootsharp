@@ -1,4 +1,4 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test/Test.csproj", "{B6CC139C-70A6-4B48-8344-5AC58253C803}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Types", "Test.Types/Test.Types.csproj", "{B66B3A46-37FA-4B13-8783-4FAA096DDD0A}"

@@ -1,4 +1,4 @@
-﻿import { boot, exit } from "./boot";
+import { boot, exit } from "./boot";
 import { resources } from "./resources";
 import { builder, runtime, native } from "./external";
 

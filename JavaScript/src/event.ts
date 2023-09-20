@@ -1,4 +1,4 @@
-﻿/** Allows broadcasting events. */
+/** Allows broadcasting events. */
 export interface EventBroadcaster<T> {
     /** Notifies attached handlers with specified payload.
      *  @param payload The payload of the notification. */
@@ -41,11 +41,9 @@ export class Event<T> implements EventBroadcaster<T>, EventSubscriber<T> {
     /** Notifies attached handlers with specified payload.
      *  @param payload The payload of the notification. */
     public broadcast(payload: T) {
-        this.lastPayload = payload;
-        if (this.convert !== undefined)
-            payload = this.convert(payload);
+        this.lastPayload = this.convert !== undefined ? this.convert(payload) : payload;
         for (const handler of this.handlers.values())
-            handler(payload);
+            handler(this.lastPayload);
     }
 
     /** Attaches specified handler for events emitted by this event instance.

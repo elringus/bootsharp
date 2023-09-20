@@ -1,9 +1,10 @@
-﻿import assert from "node:assert";
+import assert from "node:assert";
 import path from "node:path";
 import fs from "node:fs";
 import bootsharp from "./cs/Test/bin/bootsharp/bootsharp.js";
 
 export default bootsharp;
+export * from "./cs/Test/bin/bootsharp/bootsharp.js";
 
 assertPathExists("tests/cs/Test/bin/bootsharp/bootsharp.js");
 
@@ -47,7 +48,7 @@ function findAssemblies() {
 function loadAssembly(assemblyPath) {
     return {
         name: path.parse(assemblyPath).base,
-        data: fs.readFileSync(assemblyPath)
+        content: fs.readFileSync(assemblyPath)
     };
 }
 

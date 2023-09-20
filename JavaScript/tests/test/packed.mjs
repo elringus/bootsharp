@@ -1,4 +1,4 @@
-﻿// const assert = require("node:assert");
+// const assert = require("node:assert");
 // const { describe, it, after } = require("bun:test");
 // const { bootsharp, getDeclarations, getGeneratedMap } = require("./cs");
 //

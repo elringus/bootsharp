@@ -1,4 +1,4 @@
-﻿import type { RuntimeAPI } from "./dotnet.d.ts";
+import type { RuntimeAPI } from "./dotnet.d.ts";
 
 export let exports: unknown;
 

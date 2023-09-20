@@ -1,4 +1,4 @@
-﻿import generated from "./resources.g";
+import generated from "./resources.g";
 import { RuntimeConfig, AssetEntry, runtime, native } from "./external";
 
 /** Resources required to boot .NET runtime. */

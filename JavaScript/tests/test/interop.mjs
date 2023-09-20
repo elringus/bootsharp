@@ -1,4 +1,4 @@
-﻿// const assert = require("node:assert");
+// const assert = require("node:assert");
 // const { describe, it, before, after } = require("bun:test");
 // const dotnet = require("../dist/dotnet");
 // const { bootTest } = require("./cs");
