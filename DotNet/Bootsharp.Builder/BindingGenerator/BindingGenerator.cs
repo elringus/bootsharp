@@ -104,8 +104,8 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
         var body = $"{(wait ? "await " : "")}${name}({invArgs})";
         if (method.ShouldSerializeReturnType) body = $"JSON.stringify({body})";
         var setter = $"{(wait ? "async " : "")}({funcArgs}) => {body}";
-        builder.Append($"{Comma()}\n{Pad(level + 1)}get {name}() {{ return this.${name}; }}");
-        builder.Append($"{Comma()}\n{Pad(level + 1)}set {name}(${name}) {{ this.${name} = {setter}; }}");
+        builder.Append($"{Comma()}\n{Pad(level + 1)}get {name}() {{ return this._{name}; }}");
+        builder.Append($"{Comma()}\n{Pad(level + 1)}set {name}(${name}) {{ this._{name} = {setter}; this.${name} = ${name}; }}");
     }
 
     private void EmitEvent (Method method)

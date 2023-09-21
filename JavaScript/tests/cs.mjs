@@ -8,13 +8,11 @@ export * from "./cs/Test/bin/bootsharp/bootsharp.js";
 
 assertPathExists("tests/cs/Test/bin/bootsharp/bootsharp.js");
 
-export function getBinaries() {
-    return {
-        wasm: loadWasmBinary(),
-        assemblies: loadAssemblies(),
-        entryAssemblyName: "Test.dll"
-    };
-}
+export const bins = {
+    wasm: loadWasmBinary(),
+    assemblies: loadAssemblies(),
+    entryAssemblyName: "Test.dll"
+};
 
 function getDeclarations() {
     const file = path.resolve("tests/cs/Test/bin/bootsharp/types/bindings.g.d.ts");
