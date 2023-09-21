@@ -92,7 +92,7 @@
         </PropertyGroup>
         <WriteLinesToFile File="$(BootsharpDotNetMain)"
                           Lines="$([System.IO.File]::ReadAllText($(BootsharpDotNetMain)))"
-                          Overwrite="true"/>
+                          Overwrite="true" Encoding="UTF-8"/>
 <!--        <WriteLinesToFile File="$(BootsharpDotNetNative)"-->
 <!--                          Lines="$([System.IO.File]::ReadAllText($(BootsharpDotNetNative))-->
 <!--                                .Replace('var _scriptDir = import.meta.url','var _scriptDir = &quot;file:/&quot;')-->
