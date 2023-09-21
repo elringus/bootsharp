@@ -8,8 +8,7 @@ on:
 
 jobs:
   cover:
-    # TODO: rollup fails on ubuntu; check again later (windows runs ~3 times slower).
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: setup dotnet
