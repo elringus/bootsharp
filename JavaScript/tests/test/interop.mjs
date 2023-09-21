@@ -1,25 +1,15 @@
-// const assert = require("node:assert");
-// const { describe, it, before, after } = require("bun:test");
-// const dotnet = require("../dist/dotnet");
-// const { bootTest } = require("./cs");
-//
-// const invoke = (name, ...args) => dotnet.invoke("Test.Main", name, ...args);
-// const invokeAsync = (name, ...args) => dotnet.invokeAsync("Test.Main", name, ...args);
-//
-// describe("interop when not booted", () => {
-//     it("throws when attempting to use", () => {
-//         const error = "Can't interop until .NET runtime is booted.";
-//         assert.throws(() => invoke("Foo"), error);
-//         assert.throws(() => invokeAsync("Foo"), error);
-//         assert.throws(() => dotnet.createObjectReference({}), error);
-//         assert.throws(() => dotnet.disposeObjectReference({}), error);
-//         assert.throws(() => dotnet.createStreamReference({}), error);
-//     });
-// });
-//
-// describe("interop", () => {
-//     before(bootTest);
-//     after(dotnet.terminate);
+import assert from "node:assert";
+import { describe, it } from "node:test";
+import { Test } from "../cs.mjs";
+
+describe("while bootsharp is not booted", () => {
+    it("throws when attempting to invoke C# APIs", async () => {
+        assert.throws(() => Test.invokeVoid(), /Boot the runtime before invoking C# APIs/);
+    });
+});
+
+// describe("while bootsharp is booted", () => {
+//     afterEach(() => setTimeout(bootsharp.exit, 0));
 //     it("throws when assembly is not found", () => {
 //         assert.throws(() => dotnet.invoke("Foo", "JoinStrings"), /.*no loaded assembly.*'Foo'/);
 //     });
@@ -129,15 +119,5 @@
 //     });
 //     it("can catch dotnet exceptions", () => {
 //         assert.throws(() => invoke("Throw", "bar"), /Error: System.Exception: bar/);
-//     });
-//     it("can stream from js", async () => {
-//         const array = new Uint8Array(100000).map((_, index) => index % 256);
-//         const stream = dotnet.createStreamReference(array);
-//         await assert.doesNotReject(() => invokeAsync("StreamFromJSAsync", stream));
-//     });
-//     it("can't stream from dotnet", async () => {
-//         // https://github.com/Elringus/DotNetJS/issues/19
-//         const stream = invoke("StreamFromDotNet");
-//         await assert.rejects(stream.arrayBuffer(), /Streaming from .NET is not supported./);
 //     });
 // });

@@ -31,6 +31,7 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
     {
         builder.Append("import { exports } from \"./exports\";\n");
         builder.Append("import { Event } from \"./event\";\n");
+        builder.Append("function __inv () { if (exports == null) throw Error(\"Boot the runtime before invoking C# APIs.\"); return exports; }\n");
     }
 
     private void EmitBinding ()
@@ -82,7 +83,7 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
     private void EmitInvokable (Method method)
     {
         var wait = method.JSArguments.Any(a => a.ShouldSerialize) && method.ReturnsTaskLike;
-        var endpoint = $"exports.{method.DeclaringName.Replace('.', '_')}.{method.Name}";
+        var endpoint = $"__inv().{method.DeclaringName.Replace('.', '_')}.{method.Name}";
         var funcArgs = string.Join(", ", method.JSArguments.Select(a => a.Name));
         var invArgs = string.Join(", ", method.JSArguments.Select(arg =>
             arg.ShouldSerialize ? $"JSON.stringify({arg.Name})" : arg.Name

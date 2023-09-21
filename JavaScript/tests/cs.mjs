@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import path from "node:path";
 import fs from "node:fs";
-import bootsharp from "./cs/Test/bin/bootsharp/bootsharp.js";
+import bootsharp, { Test } from "./cs/Test/bin/bootsharp/bootsharp.js";
 
 export default bootsharp;
 export * from "./cs/Test/bin/bootsharp/bootsharp.js";
@@ -13,6 +13,14 @@ export const bins = {
     assemblies: loadAssemblies(),
     entryAssemblyName: "Test.dll"
 };
+
+export async function boot() {
+    Test.onMainInvoked = () => {};
+    bootsharp.resources.wasm.content = bins.wasm;
+    for (const asm of bootsharp.resources.assemblies)
+        asm.content = bins.assemblies.find(a => a.name === asm.name).content;
+    await bootsharp.boot({});
+}
 
 function getDeclarations() {
     const file = path.resolve("tests/cs/Test/bin/bootsharp/types/bindings.g.d.ts");

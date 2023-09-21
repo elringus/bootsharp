@@ -20,6 +20,7 @@ public class BindingTest : BuildTest
             """
             import { exports } from "./exports";
             import { Event } from "./event";
+            function __inv () { if (exports == null) throw Error("Boot the runtime before invoking C# APIs."); return exports; }
             """);
     }
 
@@ -32,7 +33,7 @@ public class BindingTest : BuildTest
             """
             export const Foo = {
                 Bar: {
-                    nya: () => exports.Foo_Bar_MockClass.Nya()
+                    nya: () => __inv().Foo_Bar_MockClass.Nya()
                 }
             };
             """);
@@ -75,7 +76,7 @@ public class BindingTest : BuildTest
         Contains(
             """
             export const Foo = {
-                bar: () => exports.Foo_MockClass.Bar()
+                bar: () => __inv().Foo_MockClass.Bar()
             };
             """);
     }
@@ -90,7 +91,7 @@ public class BindingTest : BuildTest
             export const Foo = {
                 Bar: {
                     Nya: {
-                        bar: () => exports.Foo_Bar_Nya_MockClass.Bar()
+                        bar: () => __inv().Foo_Bar_Nya_MockClass.Bar()
                     }
                 }
             };
@@ -113,7 +114,7 @@ public class BindingTest : BuildTest
                 }
             };
             export const Foo = {
-                foo: () => exports.Foo_MockClass.Foo()
+                foo: () => __inv().Foo_MockClass.Foo()
             };
             """);
     }
@@ -125,7 +126,7 @@ public class BindingTest : BuildTest
         AddAssembly(With("Foo", "[JSFunction] public static void Fun () { }"));
         Execute();
         Assert.Single(Matches("export const Foo"));
-        Contains("bar: () => exports.Foo_MockClass.Bar()");
+        Contains("bar: () => __inv().Foo_MockClass.Bar()");
         Contains(
             """
                 get fun() { return this._fun; },
@@ -148,7 +149,7 @@ public class BindingTest : BuildTest
                     set fun($fun) { this._fun = () => this.$fun(); this.$fun = $fun; }
                 },
                 Foo: {
-                    foo: () => exports.Nya_Foo_MockClass.Foo()
+                    foo: () => __inv().Nya_Foo_MockClass.Foo()
                 }
             };
             """);
@@ -169,7 +170,7 @@ public class BindingTest : BuildTest
                 }
             };
             export const Foo = {
-                foo: () => exports.Foo_MockClass.Foo()
+                foo: () => __inv().Foo_MockClass.Foo()
             };
             """);
     }
@@ -184,7 +185,7 @@ public class BindingTest : BuildTest
         Contains(
             """
             export const Global = {
-                nya: () => exports.MockClass.Nya(),
+                nya: () => __inv().MockClass.Nya(),
                 get fun() { return this._fun; },
                 set fun($fun) { this._fun = () => this.$fun(); this.$fun = $fun; }
             };
@@ -206,7 +207,7 @@ public class BindingTest : BuildTest
                 set onFun($onFun) { this._onFun = () => this.$onFun(); this.$onFun = $onFun; }
             };
             export const Nya = {
-                getNya: () => exports.Foo_Bar_Nya_MockClass.GetNya()
+                getNya: () => __inv().Foo_Bar_Nya_MockClass.GetNya()
             };
             """);
     }
@@ -219,7 +220,7 @@ public class BindingTest : BuildTest
         Contains(
             """
             export const Global = {
-                fun: (fn) => exports.MockClass.Fun(fn)
+                fun: (fn) => __inv().MockClass.Fun(fn)
             };
             """);
     }
@@ -236,7 +237,7 @@ public class BindingTest : BuildTest
         Contains(
             """
             export const Global = {
-                foo: (i) => JSON.parse(exports.MockClass.Foo(JSON.stringify(i))),
+                foo: (i) => JSON.parse(__inv().MockClass.Foo(JSON.stringify(i))),
                 get bar() { return this._bar; },
                 set bar($bar) { this._bar = (i) => JSON.stringify(this.$bar(JSON.parse(i))); this.$bar = $bar; },
                 baz: new Event({ convert: i => JSON.parse(i) })
@@ -255,7 +256,7 @@ public class BindingTest : BuildTest
         Contains(
             """
             export const Global = {
-                foo: async (i) => JSON.parse(await exports.MockClass.Foo(JSON.stringify(i))),
+                foo: async (i) => JSON.parse(await __inv().MockClass.Foo(JSON.stringify(i))),
                 get bar() { return this._bar; },
                 set bar($bar) { this._bar = async (i) => JSON.stringify(await this.$bar(JSON.parse(i))); this.$bar = $bar; }
             };
@@ -272,7 +273,7 @@ public class BindingTest : BuildTest
         Contains(
             """
             export const n = {
-                getFoo: () => JSON.parse(exports.n_MockClass.GetFoo()),
+                getFoo: () => JSON.parse(__inv().n_MockClass.GetFoo()),
                 Foo: { A: "A", B: "B" }
             };
             """);
