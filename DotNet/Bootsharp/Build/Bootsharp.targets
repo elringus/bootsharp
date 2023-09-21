@@ -123,7 +123,7 @@
               DestinationFiles="$(BootsharpBuildDirectory)/$(BootsharpName).d.ts"/>
 
         <!-- Compile generated JavaScript solution; rollup fails on ubuntu, so using esbuild. -->
-        <Exec Command="npx esbuild bootsharp.js --bundle --format=esm --outfile=$(BootsharpName).js --allow-overwrite --external:process --external:module"
+        <Exec Command="npx esbuild bootsharp.js --bundle --tree-shaking=false --format=esm --outfile=$(BootsharpName).js --allow-overwrite --external:process --external:module"
               WorkingDirectory="$(BootsharpBuildDirectory)"
               StdOutEncoding="utf-8" StdErrEncoding="utf-8"/>
 
