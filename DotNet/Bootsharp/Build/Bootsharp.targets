@@ -91,9 +91,7 @@
             <BootsharpDotNetRuntime>$(BootsharpBuildDirectory)/dotnet.runtime.js</BootsharpDotNetRuntime>
         </PropertyGroup>
         <WriteLinesToFile File="$(BootsharpDotNetMain)"
-                          Lines="$([System.IO.File]::ReadAllText($(BootsharpDotNetMain))
-                                .Replace('=import.meta.url','=&quot;file:/&quot;')
-                                .Replace('import(','import(/*@vite-ignore*//*webpackIgnore:true*/'))"
+                          Lines="$([System.IO.File]::ReadAllText($(BootsharpDotNetMain)))"
                           Overwrite="true"/>
 <!--        <WriteLinesToFile File="$(BootsharpDotNetNative)"-->
 <!--                          Lines="$([System.IO.File]::ReadAllText($(BootsharpDotNetNative))-->
