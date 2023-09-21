@@ -60,7 +60,8 @@ public sealed class BuildBootsharp : Microsoft.Build.Utilities.Task
     private void PatchInternals ()
     {
         // Remove unnecessary environment-specific calls in .NET's internals,
-        // that are offending bundlers. (https://github.com/dotnet/runtime/issues/91558)
+        // that are offending bundlers and breaking usage in restricted environments,
+        // such as VS Code web extensions. (https://github.com/dotnet/runtime/issues/91558)
 
         var dotnet = Path.Combine(BuildDirectory, "dotnet.js");
         File.WriteAllText(dotnet, File.ReadAllText(dotnet, Encoding.UTF8)
