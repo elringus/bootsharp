@@ -90,18 +90,18 @@
             <BootsharpDotNetNative>$(BootsharpBuildDirectory)/dotnet.native.js</BootsharpDotNetNative>
             <BootsharpDotNetRuntime>$(BootsharpBuildDirectory)/dotnet.runtime.js</BootsharpDotNetRuntime>
         </PropertyGroup>
-<!--        <WriteLinesToFile File="$(BootsharpDotNetMain)"-->
-<!--                          Lines="$([System.IO.File]::ReadAllText($(BootsharpDotNetMain))-->
-<!--                                .Replace('=import.meta.url','=&quot;file:/&quot;')-->
-<!--                                .Replace('import(','import(/*@vite-ignore*//*webpackIgnore:true*/'))"-->
-<!--                          Overwrite="true"/>-->
-<!--        <WriteLinesToFile File="$(BootsharpDotNetNative)"-->
-<!--                          Lines="$([System.IO.File]::ReadAllText($(BootsharpDotNetNative))-->
-<!--                                .Replace('var _scriptDir = import.meta.url','var _scriptDir = &quot;file:/&quot;')-->
-<!--                                .Replace('require(&apos;url&apos;).fileURLToPath(new URL(&apos;./&apos;, import.meta.url))','&quot;./&quot;')-->
-<!--                                .Replace('new URL(&apos;dotnet.native.wasm&apos;, import.meta.url).href','&quot;file:/&quot;')-->
-<!--                                .Replace('import(','import(/*@vite-ignore*//*webpackIgnore:true*/'))"-->
-<!--                          Overwrite="true"/>-->
+        <WriteLinesToFile File="$(BootsharpDotNetMain)"
+                          Lines="$([System.IO.File]::ReadAllText($(BootsharpDotNetMain))
+                                .Replace('=import.meta.url','=&quot;file:/&quot;')
+                                .Replace('import(','import(/*@vite-ignore*//*webpackIgnore:true*/'))"
+                          Overwrite="true"/>
+        <WriteLinesToFile File="$(BootsharpDotNetNative)"
+                          Lines="$([System.IO.File]::ReadAllText($(BootsharpDotNetNative))
+                                .Replace('var _scriptDir = import.meta.url','var _scriptDir = &quot;file:/&quot;')
+                                .Replace('require(&apos;url&apos;).fileURLToPath(new URL(&apos;./&apos;, import.meta.url))','&quot;./&quot;')
+                                .Replace('new URL(&apos;dotnet.native.wasm&apos;, import.meta.url).href','&quot;file:/&quot;')
+                                .Replace('import(','import(/*@vite-ignore*//*webpackIgnore:true*/'))"
+                          Overwrite="true"/>
 <!--        <WriteLinesToFile File="$(BootsharpDotNetRuntime)"-->
 <!--                          Lines="$([System.IO.File]::ReadAllText($(BootsharpDotNetRuntime))-->
 <!--                                .Replace('pt(%27WebAssembly resource does not have the expected content type &quot;application/wasm&quot;, so falling back to slower ArrayBuffer instantiation.%27)','true')-->
@@ -122,8 +122,8 @@
         <Move SourceFiles="$(BootsharpBuildDirectory)/bootsharp.d.ts"
               DestinationFiles="$(BootsharpBuildDirectory)/$(BootsharpName).d.ts"/>
 
-        <!-- Compile generated JavaScript solution; rollup fails on ubuntu, so using esbuild. -->
-        <Exec Command="npx esbuild bootsharp.js --bundle --tree-shaking=false --format=esm --outfile=$(BootsharpName).js --allow-overwrite --external:process --external:module"
+        <!-- Compile generated JavaScript solution. -->
+        <Exec Command="npx rollup bootsharp.js -o $(BootsharpName).js -f es -g process,module"
               WorkingDirectory="$(BootsharpBuildDirectory)"
               StdOutEncoding="utf-8" StdErrEncoding="utf-8"/>
 
