@@ -48,7 +48,7 @@ public class BindingTest : BuildTest
             export const Foo = {
                 Bar: {
                     get fun() { return this._fun; },
-                    set fun($fun) { this._fun = () => $fun(); this.$fun = $fun; }
+                    set fun($fun) { this._fun = () => this.$fun(); this.$fun = $fun; }
                 }
             };
             """);
@@ -109,7 +109,7 @@ public class BindingTest : BuildTest
             export const Bar = {
                 Nya: {
                     get fun() { return this._fun; },
-                    set fun($fun) { this._fun = () => $fun(); this.$fun = $fun; }
+                    set fun($fun) { this._fun = () => this.$fun(); this.$fun = $fun; }
                 }
             };
             export const Foo = {
@@ -129,7 +129,7 @@ public class BindingTest : BuildTest
         Contains(
             """
                 get fun() { return this._fun; },
-                set fun($fun) { this._fun = () => $fun(); this.$fun = $fun; }
+                set fun($fun) { this._fun = () => this.$fun(); this.$fun = $fun; }
             """);
     }
 
@@ -145,7 +145,7 @@ public class BindingTest : BuildTest
             export const Nya = {
                 Bar: {
                     get fun() { return this._fun; },
-                    set fun($fun) { this._fun = () => $fun(); this.$fun = $fun; }
+                    set fun($fun) { this._fun = () => this.$fun(); this.$fun = $fun; }
                 },
                 Foo: {
                     foo: () => exports.Nya_Foo_MockClass.Foo()
@@ -165,7 +165,7 @@ public class BindingTest : BuildTest
             export const Bar = {
                 Nya: {
                     get fun() { return this._fun; },
-                    set fun($fun) { this._fun = () => $fun(); this.$fun = $fun; }
+                    set fun($fun) { this._fun = () => this.$fun(); this.$fun = $fun; }
                 }
             };
             export const Foo = {
@@ -186,7 +186,7 @@ public class BindingTest : BuildTest
             export const Global = {
                 nya: () => exports.MockClass.Nya(),
                 get fun() { return this._fun; },
-                set fun($fun) { this._fun = () => $fun(); this.$fun = $fun; }
+                set fun($fun) { this._fun = () => this.$fun(); this.$fun = $fun; }
             };
             """);
     }
@@ -203,7 +203,7 @@ public class BindingTest : BuildTest
             """
             export const Fun = {
                 get onFun() { return this._onFun; },
-                set onFun($onFun) { this._onFun = () => $onFun(); this.$onFun = $onFun; }
+                set onFun($onFun) { this._onFun = () => this.$onFun(); this.$onFun = $onFun; }
             };
             export const Nya = {
                 getNya: () => exports.Foo_Bar_Nya_MockClass.GetNya()
@@ -238,7 +238,7 @@ public class BindingTest : BuildTest
             export const Global = {
                 foo: (i) => JSON.parse(exports.MockClass.Foo(JSON.stringify(i))),
                 get bar() { return this._bar; },
-                set bar($bar) { this._bar = (i) => JSON.stringify($bar(JSON.parse(i))); this.$bar = $bar; },
+                set bar($bar) { this._bar = (i) => JSON.stringify(this.$bar(JSON.parse(i))); this.$bar = $bar; },
                 baz: new Event({ convert: i => JSON.parse(i) })
             };
             """);
@@ -257,7 +257,7 @@ public class BindingTest : BuildTest
             export const Global = {
                 foo: async (i) => JSON.parse(await exports.MockClass.Foo(JSON.stringify(i))),
                 get bar() { return this._bar; },
-                set bar($bar) { this._bar = async (i) => JSON.stringify(await $bar(JSON.parse(i))); this.$bar = $bar; }
+                set bar($bar) { this._bar = async (i) => JSON.stringify(await this.$bar(JSON.parse(i))); this.$bar = $bar; }
             };
             """);
     }

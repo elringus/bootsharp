@@ -11,6 +11,9 @@ public class BuildTest : TaskTest
     public BuildTest ()
     {
         Task = CreateTask();
+        Project.WriteFile("dotnet.js", "MockDotNetContent"u8);
+        Project.WriteFile("dotnet.native.js", "MockNativeContent"u8);
+        Project.WriteFile("dotnet.runtime.js", "MockRuntimeContent"u8);
         Project.WriteFile("dotnet.native.wasm", MockWasmBinary);
     }
 

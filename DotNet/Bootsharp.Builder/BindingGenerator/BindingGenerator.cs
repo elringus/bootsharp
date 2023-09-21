@@ -101,7 +101,7 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
         var invArgs = string.Join(", ", method.JSArguments.Select(arg =>
             arg.ShouldSerialize ? $"JSON.parse({arg.Name})" : arg.Name
         ));
-        var body = $"{(wait ? "await " : "")}${name}({invArgs})";
+        var body = $"{(wait ? "await " : "")}this.${name}({invArgs})";
         if (method.ShouldSerializeReturnType) body = $"JSON.stringify({body})";
         var setter = $"{(wait ? "async " : "")}({funcArgs}) => {body}";
         builder.Append($"{Comma()}\n{Pad(level + 1)}get {name}() {{ return this._{name}; }}");

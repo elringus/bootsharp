@@ -22,10 +22,10 @@ public sealed class MockProject : IDisposable
         compiler.Compile(assembly.Sources, assemblyPath);
     }
 
-    public void WriteFile (string name, byte[] content)
+    public void WriteFile (string name, ReadOnlySpan<byte> content)
     {
         var filePath = Path.Combine(Root, name);
-        File.WriteAllBytes(filePath, content);
+        File.WriteAllBytes(filePath, content.ToArray());
     }
 
     private static string CreateUniqueRootDirectory ()

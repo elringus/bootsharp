@@ -3,8 +3,7 @@ import { beforeEach, describe, it, mock } from "node:test";
 import { setTimeout } from "node:timers";
 import bootsharp, { bins, Test } from "../cs.mjs";
 
-Test.onMainInvoked = mock.fn();
-beforeEach(() => Test.$onMainInvoked.mock.resetCalls());
+beforeEach(() => Test.onMainInvoked = mock.fn());
 
 describe("boot", () => {
     it("throws when missing WASM boot resource", async () => {
