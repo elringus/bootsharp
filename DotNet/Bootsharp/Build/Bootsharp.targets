@@ -102,11 +102,11 @@
                                 .Replace('new URL(&apos;dotnet.native.wasm&apos;, import.meta.url).href','&quot;file:/&quot;')
                                 )"
                           Overwrite="true"/>
-        <WriteLinesToFile File="$(BootsharpDotNetRuntime)"
-                          Lines="$([System.IO.File]::ReadAllText($(BootsharpDotNetRuntime))
-                                .Replace('pt(%27WebAssembly resource does not have the expected content type &quot;application/wasm&quot;, so falling back to slower ArrayBuffer instantiation.%27)','true')
-                                )"
-                          Overwrite="true"/>
+<!--        <WriteLinesToFile File="$(BootsharpDotNetRuntime)"-->
+<!--                          Lines="$([System.IO.File]::ReadAllText($(BootsharpDotNetRuntime))-->
+<!--                                .Replace('pt(%27WebAssembly resource does not have the expected content type &quot;application/wasm&quot;, so falling back to slower ArrayBuffer instantiation.%27)','true')-->
+<!--                                )"-->
+<!--                          Overwrite="true"/>-->
 
         <!-- Generate bindings, type declarations and (optionally) embed binaries. -->
         <BuildBootsharp BuildDirectory="$(BootsharpBuildDirectory)"
