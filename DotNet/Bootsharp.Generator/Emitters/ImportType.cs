@@ -32,7 +32,7 @@ internal sealed class ImportType(Compilation compilation, ITypeSymbol type, Attr
                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "{{space}}.{{implType}}", "{{compilation.Assembly.Name}}")]
                internal static void RegisterDynamicDependencies ()
                {
-                   Bootsharp.Injection.AddImport(typeof({{specType}}), new {{implType}}());
+                   Bootsharp.BindingRegistry.Register(typeof({{specType}}), new ImportBinding(new {{implType}}()));
                }
 
                {{string.Join("\n    ", methods.Select(EmitBinding))}}

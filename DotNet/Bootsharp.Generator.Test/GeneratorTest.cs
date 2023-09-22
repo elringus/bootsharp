@@ -99,10 +99,11 @@ public class GeneratorTest
         var root = $"{Environment.CurrentDirectory}/../../../../Bootsharp";
         foreach (var path in Directory.EnumerateFiles($"{root}/Attributes", "*.cs"))
             sourceCache.Add((Path.GetFileName(path), File.ReadAllText(path)));
+        foreach (var path in Directory.EnumerateFiles($"{root}/Binding", "*.cs"))
+            sourceCache.Add((Path.GetFileName(path), File.ReadAllText(path)));
         foreach (var path in Directory.EnumerateFiles($"{root}/Interop", "*.cs"))
             sourceCache.Add((Path.GetFileName(path), File.ReadAllText(path)));
         sourceCache.Add(("Error.cs", File.ReadAllText($"{root}/Error.cs")));
-        sourceCache.Add(("Injection.cs", File.ReadAllText($"{root}/Injection.cs")));
         sourceCache.Add(("DependencyInjection.cs",
             """
             namespace Microsoft.Extensions.DependencyInjection;

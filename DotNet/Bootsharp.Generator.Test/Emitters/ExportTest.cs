@@ -37,7 +37,7 @@ public static class ExportTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies ()
                 {
-                    Bootsharp.Injection.AddExport(typeof(global::IFoo), typeof(JSFoo), handler => new JSFoo((global::IFoo)handler));
+                    Bootsharp.BindingRegistry.Register(typeof(JSFoo), new ExportBinding(typeof(global::IFoo), handler => new JSFoo((global::IFoo)handler)));
                 }
 
                 [JSInvokable] public static void Foo (global::System.String? foo) => handler.Foo(foo);
@@ -74,7 +74,7 @@ public static class ExportTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies ()
                 {
-                    Bootsharp.Injection.AddExport(typeof(global::IFoo), typeof(JSFoo), handler => new JSFoo((global::IFoo)handler));
+                    Bootsharp.BindingRegistry.Register(typeof(JSFoo), new ExportBinding(typeof(global::IFoo), handler => new JSFoo((global::IFoo)handler)));
                 }
 
                 [JSInvokable] public static void Bar (global::System.String foo) => handler.Foo(foo)/**/;
@@ -110,7 +110,7 @@ public static class ExportTest
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies ()
                 {
-                    Bootsharp.Injection.AddExport(typeof(global::A.B.C.IFoo), typeof(JSFoo), handler => new JSFoo((global::A.B.C.IFoo)handler));
+                    Bootsharp.BindingRegistry.Register(typeof(JSFoo), new ExportBinding(typeof(global::A.B.C.IFoo), handler => new JSFoo((global::A.B.C.IFoo)handler)));
                 }
 
                 [JSInvokable] public static void Foo () => handler.Foo();

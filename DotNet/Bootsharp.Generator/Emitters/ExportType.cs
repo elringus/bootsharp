@@ -36,7 +36,7 @@ internal sealed class ExportType(Compilation compilation, ITypeSymbol type, Attr
                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "{{space}}.{{implType}}", "{{compilation.Assembly.Name}}")]
                internal static void RegisterDynamicDependencies ()
                {
-                   Bootsharp.Injection.AddExport(typeof({{specType}}), typeof({{implType}}), handler => new {{implType}}(({{specType}})handler));
+                   Bootsharp.BindingRegistry.Register(typeof({{implType}}), new ExportBinding(typeof({{specType}}), handler => new {{implType}}(({{specType}})handler)));
                }
 
                {{string.Join("\n    ", type.GetMembers().OfType<IMethodSymbol>().Select(EmitMethod))}}
