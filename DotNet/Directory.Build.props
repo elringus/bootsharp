@@ -1,0 +1,20 @@
+<Project>
+    <PropertyGroup>
+        <Version>0.1.0-rc.2.55</Version>
+        <Authors>Elringus</Authors>
+        <PackageTags>javascript typescript ts js wasm bindings interop codegen</PackageTags>
+        <PackageProjectUrl>https://bootsharp.com</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Elringus/Bootsharp.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageIcon>PackageIcon.png</PackageIcon>
+        <PackageIconUrl>https://raw.githubusercontent.com/Elringus/Bootsharp/main/Assets/PackageIcon.svg</PackageIconUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)../README.md" Pack="true" PackagePath="/" Visible="false"/>
+        <None Include="$(MSBuildThisFileDirectory)../Assets/PackageIcon.png" Pack="true" PackagePath="/" Visible="false"/>
+    </ItemGroup>
+</Project>

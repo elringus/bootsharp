@@ -4,8 +4,15 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AssemblyTitle>Bootsharp.Common</AssemblyTitle>
+        <PackageId>Bootsharp.Common</PackageId>
+        <Description>Platform-agnostic common Bootsharp APIs.</Description>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <NoWarn>NU5100,CS1591</NoWarn>
+        <NoWarn>CS1591</NoWarn>
     </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Bootsharp.Common.Test"/>
+    </ItemGroup>
 
 </Project>
