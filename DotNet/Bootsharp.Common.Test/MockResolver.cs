@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
-namespace Bootsharp.Test;
+namespace Bootsharp.Common.Test;
 
 public class MockResolver : IJsonTypeInfoResolver
 {

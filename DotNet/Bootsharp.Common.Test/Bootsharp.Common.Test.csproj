@@ -32,7 +32,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../Bootsharp/Bootsharp.csproj"/>
+        <ProjectReference Include="../Bootsharp.Common/Bootsharp.Common.csproj"/>
         <ProjectReference Include="../Bootsharp.Generator/Bootsharp.Generator.csproj"
                           PrivateAssets="all"
                           ReferenceOutputAssembly="false"

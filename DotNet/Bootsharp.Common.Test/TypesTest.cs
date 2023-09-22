@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using Bootsharp;
-using Bootsharp.Test;
+using Bootsharp.Common.Test;
 
 [assembly: JSExport(
     typeof(IBackend),
@@ -20,7 +20,7 @@ using Bootsharp.Test;
     EventReplacement = "ImportEventReplacement"
 )]
 
-namespace Bootsharp.Test;
+namespace Bootsharp.Common.Test;
 
 public class TypesTest
 {

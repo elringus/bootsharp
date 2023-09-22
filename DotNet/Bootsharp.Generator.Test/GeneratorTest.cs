@@ -96,7 +96,7 @@ public class GeneratorTest
                 sources.Add(source);
             return;
         }
-        var root = $"{Environment.CurrentDirectory}/../../../../Bootsharp";
+        var root = $"{Environment.CurrentDirectory}/../../../../Bootsharp.Common";
         foreach (var path in Directory.EnumerateFiles($"{root}/Attributes", "*.cs"))
             sourceCache.Add((Path.GetFileName(path), File.ReadAllText(path)));
         foreach (var path in Directory.EnumerateFiles($"{root}/Binding", "*.cs"))

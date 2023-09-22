@@ -7,7 +7,7 @@
         <AssemblyTitle>Bootsharp</AssemblyTitle>
         <Title>Bootsharp</Title>
         <PackageId>Bootsharp</PackageId>
-        <Version>0.1.0-rc.2.43</Version>
+        <Version>0.1.0-rc.2.53</Version>
         <Authors>Elringus</Authors>
         <Description>Compile C# solution into single-file ES module with auto-generated JavaScript bindings and type definitions.</Description>
         <PackageTags>javascript typescript ts js wasm bindings interop codegen</PackageTags>
@@ -19,8 +19,6 @@
         <PackageIconUrl>https://raw.githubusercontent.com/Elringus/Bootsharp/main/Assets/PackageIcon.svg</PackageIconUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <NoWarn>NU5100,CS1591</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -31,11 +29,13 @@
         <Content Include="Build/**" Pack="true" PackagePath="build/"/>
         <Content Include="../../JavaScript/dist/**" Pack="true" PackagePath="js/" Visible="false"/>
         <None Include="../Bootsharp.Generator/bin/Release/netstandard2.0/Bootsharp.Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="../Bootsharp.Common/bin/Release/net8.0/Bootsharp.Common.dll" Pack="true" PackagePath="lib/net8.0" Visible="false"/>
+        <None Include="../Bootsharp.Common/bin/Release/net8.0/Bootsharp.Common.xml" Pack="true" PackagePath="lib/net8.0" Visible="false"/>
         <None Include="../../README.md" Pack="true" PackagePath="/" Visible="false"/>
         <None Include="$(MSBuildThisFileDirectory)../../Assets/PackageIcon.png" Pack="true" PackagePath="/" Visible="false"/>
     </ItemGroup>
 
-    <Target Name="GetTasksOutputDlls" BeforeTargets="CoreCompile">
+    <Target Name="PackBuilder" BeforeTargets="CoreCompile">
         <MSBuild Projects="../Bootsharp.Builder/Bootsharp.Builder.csproj" Targets="Publish;PublishItemsOutputGroup" Properties="Configuration=Release">
             <Output TaskParameter="TargetOutputs" ItemName="_TasksProjectOutputs"/>
         </MSBuild>

@@ -1,4 +1,4 @@
-﻿namespace Bootsharp.Test;
+﻿namespace Bootsharp.Common.Test;
 
 public interface IBackend;
 public interface IFrontend;

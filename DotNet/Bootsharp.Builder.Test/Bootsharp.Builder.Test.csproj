@@ -32,7 +32,7 @@
 
     <ItemGroup>
         <ProjectReference Include="../Bootsharp.Builder/Bootsharp.Builder.csproj"/>
-        <ProjectReference Include="../Bootsharp/Bootsharp.csproj"/>
+        <ProjectReference Include="../Bootsharp.Common/Bootsharp.Common.csproj"/>
     </ItemGroup>
 
 </Project>

@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using static Bootsharp.Serializer;
 
-namespace Bootsharp.Test;
+namespace Bootsharp.Common.Test;
 
 public enum MockEnum { Foo, Bar }
 public record MockItem(string Id);

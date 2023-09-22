@@ -3,7 +3,7 @@ using Bootsharp;
 
 [assembly: JSNamespace("pattern", "replacement")]
 
-namespace Bootsharp.Test;
+namespace Bootsharp.Common.Test;
 
 public class NamespaceTest
 {
