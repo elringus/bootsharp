@@ -1,7 +1,6 @@
 import assert from "node:assert";
 import { beforeEach, describe, it, mock } from "node:test";
-import { setTimeout } from "node:timers";
-import bootsharp, { bins, Test } from "../cs.mjs";
+import bootsharp, { bins, exit, Test } from "../cs.mjs";
 
 beforeEach(() => Test.onMainInvoked = mock.fn());
 
@@ -23,7 +22,7 @@ describe("boot", () => {
             asm.content = bins.assemblies.find(a => a.name === asm.name).content;
         await assert.doesNotReject(bootsharp.boot);
         assert.strictEqual(Test.$onMainInvoked.mock.calls.length, 1);
-        setTimeout(bootsharp.exit, 0);
+        exit();
     });
     it("can boot with base64 content", async () => {
         bootsharp.resources.wasm.content = bins.wasm.toString("base64");
@@ -31,6 +30,6 @@ describe("boot", () => {
             asm.content = bins.assemblies.find(a => a.name === asm.name).content.toString("base64");
         await assert.doesNotReject(bootsharp.boot);
         assert.strictEqual(Test.$onMainInvoked.mock.calls.length, 1);
-        setTimeout(bootsharp.exit, 0);
+        exit();
     });
 });

@@ -105,7 +105,8 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
         var body = $"{(wait ? "await " : "")}this.${name}({invArgs})";
         if (method.ShouldSerializeReturnType) body = $"JSON.stringify({body})";
         var setter = $"{(wait ? "async " : "")}({funcArgs}) => {body}";
-        builder.Append($"{Comma()}\n{Pad(level + 1)}get {name}() {{ return this._{name}; }}");
+        var error = $"throw Error(\"Failed to invoke '{binding.Namespace}.{name}' JavaScript function: undefined.\")";
+        builder.Append($"{Comma()}\n{Pad(level + 1)}get {name}() {{ if (this._{name} == null) {error}; return this._{name}; }}");
         builder.Append($"{Comma()}\n{Pad(level + 1)}set {name}(${name}) {{ this._{name} = {setter}; this.${name} = ${name}; }}");
     }
 
@@ -119,7 +120,7 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
     private void EmitEnum (Type @enum)
     {
         var values = Enum.GetNames(@enum);
-        var fields = string.Join(", ", values.Select(v => $"{v}: \"{v}\""));
+        var fields = string.Join(", ", values.Select((v, i) => $"{v}: {i}"));
         builder.Append($"{Comma()}\n{Pad(level + 1)}{@enum.Name}: {{ {fields} }}");
     }
 

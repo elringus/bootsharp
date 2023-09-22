@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
 namespace Bootsharp;
@@ -11,7 +12,9 @@ public static class Serializer
     /// <summary>
     /// Options for <see cref="JsonSerializer"/> used under the hood.
     /// </summary>
-    public static JsonSerializerOptions Options { get; set; } = new(JsonSerializerDefaults.Web);
+    public static JsonSerializerOptions Options { get; set; } = new(JsonSerializerDefaults.Web) {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
 
     /// <summary>
     /// Serializes specified object to JSON string.

@@ -274,7 +274,7 @@ public class BindingTest : BuildTest
             """
             export const n = {
                 getFoo: () => JSON.parse(__inv().n_MockClass.GetFoo()),
-                Foo: { A: "A", B: "B" }
+                Foo: { A: 0, B: 1 }
             };
             """);
     }
