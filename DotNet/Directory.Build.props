@@ -1,8 +1,8 @@
 <Project>
     <PropertyGroup>
-        <Version>0.1.0-rc.2.55</Version>
+        <Version>0.1.0-rc.7</Version>
         <Authors>Elringus</Authors>
-        <PackageTags>javascript typescript ts js wasm bindings interop codegen</PackageTags>
+        <PackageTags>javascript typescript ts js wasm node deno bun interop codegen</PackageTags>
         <PackageProjectUrl>https://bootsharp.com</PackageProjectUrl>
         <RepositoryUrl>https://github.com/Elringus/Bootsharp.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>

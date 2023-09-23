@@ -55,7 +55,7 @@ public class GeneratorTest
             """);
     }
 
-    [Theory, MemberData(nameof(FunctionTest.Data), MemberType = typeof(InvokableTest))]
+    [Theory, MemberData(nameof(InvokableTest.Data), MemberType = typeof(InvokableTest))]
     public Task PartialInvokableAreImplemented (string source, string expected)
         => Verify(source, ("FooInvokable.g.cs", expected));
 

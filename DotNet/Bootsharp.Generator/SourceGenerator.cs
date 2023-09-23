@@ -37,8 +37,9 @@ public sealed class SourceGenerator : IIncrementalGenerator
     {
         var receiver = new SyntaxReceiver();
         foreach (var tree in compilation.SyntaxTrees)
-        foreach (var node in tree.GetRoot().DescendantNodesAndSelf())
-            receiver.VisitNode(node, compilation);
+            if (!tree.FilePath.EndsWith(".g.cs"))
+                foreach (var node in tree.GetRoot().DescendantNodesAndSelf())
+                    receiver.VisitNode(node, compilation);
         return receiver;
     }
 }

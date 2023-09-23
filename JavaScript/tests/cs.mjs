@@ -26,7 +26,7 @@ export function exit() {
     setTimeout(bootsharp.exit, 0);
 }
 
-function getDeclarations() {
+export function getDeclarations() {
     const file = path.resolve("tests/cs/Test/bin/bootsharp/types/bindings.g.d.ts");
     assertPathExists(file);
     return fs.readFileSync(file).toString();

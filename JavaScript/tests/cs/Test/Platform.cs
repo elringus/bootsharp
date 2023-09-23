@@ -24,7 +24,7 @@ public static partial class Platform
     public static string ThrowCS (string message) => throw new Exception(message);
 
     [JSFunction]
-    private static partial void ThrowJS ();
+    public static partial void ThrowJS ();
 
     [JSInvokable]
     public static async Task<string> EchoViaWebSocket (string uri, string message, int timeout)

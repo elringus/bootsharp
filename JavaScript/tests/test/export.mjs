@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
-import bootsharp from "../cs.mjs";
+import bootsharp, { getDeclarations } from "../cs.mjs";
 
 describe("export", () => {
     it("exports bootsharp api", () => {
@@ -12,5 +12,8 @@ describe("export", () => {
         assert.strictEqual(typeof bootsharp.dotnet.builder, "object");
         assert.strictEqual(typeof bootsharp.dotnet.native, "object");
         assert.strictEqual(typeof bootsharp.dotnet.runtime, "object");
+    });
+    it("exports type declarations", () => {
+        assert(getDeclarations());
     });
 });

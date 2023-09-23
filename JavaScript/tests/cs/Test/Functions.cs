@@ -3,7 +3,7 @@ using Bootsharp;
 
 namespace Test;
 
-public static partial class Function
+public static partial class Functions
 {
     [JSInvokable]
     public static string TestEchoFunction (string value) => EchoFunction(value);
@@ -12,7 +12,11 @@ public static partial class Function
     public static partial string EchoFunction (string value);
 
     [JSInvokable]
-    public static Task<string> TestAsyncEchoFunction (string value) => AsyncEchoFunction(value);
+    public static void TestAsyncEchoFunction (string value)
+    {
+        AsyncEchoFunction(value).ContinueWith(v => OnAsyncJSFunctionComplete(v.Result)).ConfigureAwait(false);
+        return;
+    }
 
     [JSFunction]
     public static partial Task<string> AsyncEchoFunction (string value);
@@ -22,4 +26,7 @@ public static partial class Function
 
     [JSFunction]
     public static partial string[] ArrayArgFunction (string[] values);
+
+    [JSEvent]
+    public static partial void OnAsyncJSFunctionComplete (string result);
 }
