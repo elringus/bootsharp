@@ -36,7 +36,9 @@ jobs:
           cd DotNet
           dotnet workload restore
           mkdir bin
-          dotnet pack -c Release -o bin
+          cd Bootsharp.Common
+          dotnet pack -c Release -o ../bin
+          cd ..
           dotnet build
           cd ../JavaScript
           npm install
