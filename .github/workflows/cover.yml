@@ -28,10 +28,9 @@ jobs:
           cd ../../DotNet
           dotnet workload restore
           mkdir bin
-          cd Bootsharp.Common
-          dotnet pack -c Release -o ../bin
-          cd ..
-          dotnet pack -c Release -o bin
+          dotnet pack Bootsharp.Common -c Release -o bin
+          dotnet build -c Release
+          dotnet pack Bootsharp -c Release -o bin
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
           cd ../JavaScript/scripts
           bash compile-test.sh
