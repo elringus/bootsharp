@@ -27,6 +27,7 @@ jobs:
           bash build.sh
           cd ../../DotNet
           dotnet workload restore
+          mkdir bin
           dotnet pack -c Release -o bin
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
           cd ../JavaScript/scripts

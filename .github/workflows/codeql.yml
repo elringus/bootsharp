@@ -35,6 +35,7 @@ jobs:
         run: |
           cd DotNet
           dotnet workload restore
+          mkdir bin
           dotnet pack -c Release -o bin
           dotnet build
           cd ../JavaScript
