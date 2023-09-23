@@ -33,10 +33,12 @@ jobs:
         run: |
           cd DotNet
           dotnet workload restore
-          mkdir bin
-          dotnet build Bootsharp.Generator
+          mkdir .nuget
+          dotnet build Bootsharp.Generator -c Release
+          dotnet build Bootsharp.Common -c Release
           dotnet pack Bootsharp.Common -o .nuget
-          dotnet build
+          dotnet build -c Release
+          dotnet pack Bootsharp -o .nuget
           cd ../JavaScript
           npm install
           cd scripts

@@ -24,10 +24,11 @@ jobs:
           cd ../../DotNet
           dotnet workload restore
           mkdir .nuget
-          dotnet build -c Release Bootsharp.Generator
-          dotnet pack Bootsharp.Common -c Release -o .nuget
+          dotnet build Bootsharp.Generator -c Release
+          dotnet build Bootsharp.Common -c Release
+          dotnet pack Bootsharp.Common -o .nuget -c Release
           dotnet build -c Release
-          dotnet pack Bootsharp -c Release -o .nuget
+          dotnet pack Bootsharp -o .nuget -c Release
       - name: publish to nuget
         run: |
           dotnet nuget push "DotNet/.nuget/Bootsharp*.nupkg" -k ${{ secrets.NUGET_KEY }} -s https://www.nuget.org --skip-duplicate
