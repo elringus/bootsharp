@@ -28,8 +28,9 @@ jobs:
           dotnet workload restore
           mkdir .nuget
           dotnet build Bootsharp.Generator
+          dotnet build Bootsharp.Common
           dotnet pack Bootsharp.Common -o .nuget
-          dotnet build
+          dotnet build Bootsharp
           dotnet pack Bootsharp -o .nuget
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
           cd ../JavaScript/scripts
