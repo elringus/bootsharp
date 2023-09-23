@@ -55,6 +55,22 @@ public class GeneratorTest
             """);
     }
 
+    [Fact]
+    public async Task DoesntAnalyzeGeneratedFiles ()
+    {
+        // otherwise it'd pick files we generate in prepare build task
+        verifier.TestState.Sources.Add(("foo.g.cs",
+            """
+            public static partial class Foo
+            {
+                [JSInvokable] public static void Bar () { }
+                [JSFunction] public static void Baz () { }
+                [JSEvent] public static void Nya () { }
+            }
+            """));
+        await Verify("");
+    }
+
     [Theory, MemberData(nameof(InvokableTest.Data), MemberType = typeof(InvokableTest))]
     public Task PartialInvokableAreImplemented (string source, string expected)
         => Verify(source, ("FooInvokable.g.cs", expected));

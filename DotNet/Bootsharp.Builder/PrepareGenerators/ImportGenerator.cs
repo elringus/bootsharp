@@ -1,6 +1,6 @@
 namespace Bootsharp.Builder;
 
-internal sealed class ImportGenerator
+internal sealed class ImportGenerator(string entryAssembly)
 {
     public string Generate (AssemblyInspector inspector)
     {
@@ -22,7 +22,7 @@ internal sealed class ImportGenerator
     private string GenerateSpace (string space, IReadOnlyList<Method> methods)
     {
         var name = space.Replace('.', '_');
-        var asm = methods[0].Assembly;
+        var asm = entryAssembly[..^4];
         return
             $$"""
               public partial class {{name}}

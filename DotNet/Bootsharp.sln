@@ -1,7 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bootsharp", "Bootsharp/Bootsharp.csproj", "{8D23B7D8-3E5D-420D-80FF-6A437B03D303}"
 EndProject
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bootsharp.Common", "Bootsharp.Common/Bootsharp.Common.csproj", "{8F9E732C-8ABF-4293-BDFA-4B3A31669A04}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bootsharp.Common.Test", "Bootsharp.Common.Test/Bootsharp.Common.Test.csproj", "{AEE52DF2-26C4-479B-B62D-14B58903BCE7}"

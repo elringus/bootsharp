@@ -20,7 +20,6 @@
         </AssemblyAttribute>
         <Content Include="Build/**" Pack="true" PackagePath="build/"/>
         <Content Include="../../JavaScript/dist/**" Pack="true" PackagePath="js/" Visible="false"/>
-        <None Include="../Bootsharp.Generator/bin/Release/netstandard2.0/Bootsharp.Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
     </ItemGroup>
 
     <Target Name="PackBuilder" BeforeTargets="CoreCompile">

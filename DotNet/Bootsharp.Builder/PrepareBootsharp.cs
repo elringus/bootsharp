@@ -45,7 +45,7 @@ public sealed class PrepareBootsharp : Microsoft.Build.Utilities.Task
 
     private void GenerateImports (AssemblyInspector inspector)
     {
-        var generator = new ImportGenerator();
+        var generator = new ImportGenerator(EntryAssemblyName);
         var content = generator.Generate(inspector);
         Directory.CreateDirectory(Path.GetDirectoryName(InteropImportsFilePath)!);
         File.WriteAllText(InteropImportsFilePath, content);

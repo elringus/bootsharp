@@ -12,9 +12,6 @@
 
     <ItemGroup>
         <PackageReference Include="Bootsharp" Version="*-*"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="../Test.Types/Test.Types.csproj"/>
     </ItemGroup>
 

@@ -36,7 +36,7 @@ describe("while bootsharp is booted", () => {
                 { id: "tractor", trackType: TrackType.Rubber, maxSpeed: 15.9 }
             ]
         };
-        const actual = Test.echoRegistry(expected);
+        const actual = Test.Types.echoRegistry(expected);
         assert.deepStrictEqual(actual, expected);
     });
     it("throws when attempting to invoke un-assigned JS function", async () => {
@@ -46,9 +46,9 @@ describe("while bootsharp is booted", () => {
     });
     it("can invoke assigned JS functions in C#", async () => {
         Test.echoFunction = value => value;
-        Test.getRegistry = () => ({ wheeled: [{ maxSpeed: 1 }], tracked: [{ maxSpeed: 2 }] });
+        Test.Types.getRegistry = () => ({ wheeled: [{ maxSpeed: 1 }], tracked: [{ maxSpeed: 2 }] });
         assert.deepStrictEqual(Test.testEchoFunction("a"), "a");
-        assert.strictEqual(Test.countTotalSpeed(), 3);
+        assert.strictEqual(Test.Types.countTotalSpeed(), 3);
     });
     it("can transfer array of strings", async () => {
         Test.arrayArgFunction = values => values;
