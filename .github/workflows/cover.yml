@@ -30,7 +30,7 @@ jobs:
           dotnet build Bootsharp.Generator -c Release
           dotnet build Bootsharp.Common -c Release
           dotnet pack Bootsharp.Common -o .nuget
-          dotnet build Bootsharp -c Release
+          dotnet build -c Release
           dotnet pack Bootsharp -o .nuget
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
           cd ../JavaScript/scripts
