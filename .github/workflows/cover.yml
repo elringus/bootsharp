@@ -27,10 +27,10 @@ jobs:
           cd ../../DotNet
           dotnet workload restore
           mkdir .nuget
-          dotnet build -c Release Bootsharp.Generator
-          dotnet pack Bootsharp.Common -c Release -o .nuget
-          dotnet build -c Release
-          dotnet pack Bootsharp -c Release -o .nuget
+          dotnet build Bootsharp.Generator
+          dotnet pack Bootsharp.Common -o .nuget
+          dotnet build
+          dotnet pack Bootsharp -o .nuget
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
           cd ../JavaScript/scripts
           bash compile-test.sh
