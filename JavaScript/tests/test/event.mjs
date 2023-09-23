@@ -1,13 +1,13 @@
-import assert from "node:assert";
+import assert, { doesNotThrow, deepStrictEqual } from "node:assert";
 import { describe, it } from "node:test";
 import { Event } from "../cs.mjs";
 
 describe("event", () => {
     it("can broadcast without subscribers", () => {
-        assert.doesNotThrow(() => new Event().broadcast());
+        doesNotThrow(() => new Event().broadcast());
     });
     it("doesn't mind unsubscribing null handler", () => {
-        assert.doesNotThrow(() => new Event().unsubscribe(null));
+        doesNotThrow(() => new Event().unsubscribe(null));
     });
     it("warns when unsubscribing handler which is not subscribed", () => {
         let warning;
@@ -27,7 +27,7 @@ describe("event", () => {
         event.subscribe(() => result = "foo");
         event.subscribe(() => result = "bar");
         event.broadcast();
-        assert.deepStrictEqual(result, "bar");
+        deepStrictEqual(result, "bar");
     });
     it("doesn't invoke un-subscribed handler", () => {
         let result = false;
@@ -37,14 +37,14 @@ describe("event", () => {
         event.broadcast(true);
         event.unsubscribe(handler);
         event.broadcast(false);
-        assert.deepStrictEqual(result, true);
+        deepStrictEqual(result, true);
     });
     it("delivers broadcast argument to the handlers", () => {
         let result = "";
         const event = new Event();
         event.subscribe(v => result = v);
         event.broadcast("foo");
-        assert.deepStrictEqual(result, "foo");
+        deepStrictEqual(result, "foo");
     });
     it("doesnt add same handlers multiple times", () => {
         let result = 0;
@@ -53,7 +53,7 @@ describe("event", () => {
         for (let i = 0; i < 10; i++)
             event.subscribe(incrementer);
         event.broadcast();
-        assert.deepStrictEqual(result, 1);
+        deepStrictEqual(result, 1);
     });
     it("can un/subscribe by id", () => {
         let result = 0;
@@ -63,20 +63,20 @@ describe("event", () => {
             event.subscribeById(i.toString(), incrementer);
         event.unsubscribeById("0");
         event.broadcast();
-        assert.deepStrictEqual(result, 9);
+        deepStrictEqual(result, 9);
     });
     it("returns undefined last args until no broadcasts performed", () => {
-        assert.deepStrictEqual(new Event().last, undefined);
+        deepStrictEqual(new Event().last, undefined);
     });
     it("returns args of the last broadcasts", () => {
         const event = new Event();
         event.broadcast("foo");
         event.broadcast("bar");
-        assert.deepStrictEqual(event.last, "bar");
+        deepStrictEqual(event.last, "bar");
     });
     it("can transform payload", () => {
         const event = new Event({ convert: _ => "bar" });
         event.broadcast("foo");
-        assert.deepStrictEqual(event.last, "bar");
+        deepStrictEqual(event.last, "bar");
     });
 });

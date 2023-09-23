@@ -1,5 +1,6 @@
 {
     "scripts": {
+        "update": "ncu --interactive",
         "backend": "dotnet publish backend",
         "test": "bun test --preload ./test/register-dom.ts",
         "dev": "vite",
@@ -13,13 +14,14 @@
     },
     "devDependencies": {
         "typescript": "^5.2.2",
-        "@types/react": "^18.2.21",
+        "@types/react": "^18.2.22",
         "@types/react-dom": "^18.2.7",
-        "bun-types": "^1.0.2",
+        "bun-types": "^1.0.3",
         "vite": "^4.4.9",
         "@vitejs/plugin-react-swc": "^3.3.2",
         "@testing-library/react": "^14.0.0",
         "@testing-library/user-event": "^14.5.1",
-        "@happy-dom/global-registrator": "^12.1.0"
+        "@happy-dom/global-registrator": "^12.1.6",
+        "npm-check-updates": "^16.14.4"
     }
 }
