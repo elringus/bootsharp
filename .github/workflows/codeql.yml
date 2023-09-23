@@ -35,6 +35,7 @@ jobs:
         run: |
           cd DotNet
           dotnet workload restore
+          dotnet pack -c Release -o bin
           dotnet build
           cd ../JavaScript
           npm install
