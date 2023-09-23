@@ -8,4 +8,5 @@ obj
 
 *.suo
 *.user
+*.nupkg
 package-lock.json

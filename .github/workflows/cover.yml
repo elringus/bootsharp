@@ -22,15 +22,14 @@ jobs:
         run: |
           cd JavaScript
           npm install
-          npm install -g typescript
           cd scripts
           bash build.sh
           cd ../../DotNet
           dotnet workload restore
-          mkdir bin
-          dotnet pack Bootsharp.Common -c Release -o bin
+          mkdir .nuget
+          dotnet pack Bootsharp.Common -c Release -o .nuget
           dotnet build -c Release
-          dotnet pack Bootsharp -c Release -o bin
+          dotnet pack Bootsharp -c Release -o .nuget
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
           cd ../JavaScript/scripts
           bash compile-test.sh
