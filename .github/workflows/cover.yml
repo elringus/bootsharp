@@ -27,6 +27,7 @@ jobs:
           cd ../../DotNet
           dotnet workload restore
           mkdir .nuget
+          dotnet build -c Release Bootsharp.Generator
           dotnet pack Bootsharp.Common -c Release -o .nuget
           dotnet build -c Release
           dotnet pack Bootsharp -c Release -o .nuget
