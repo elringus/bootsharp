@@ -15,3 +15,5 @@
 # Bootsharp
 
 Compile C# solution into single-file ES module with auto-generated JavaScript bindings and type definitions.
+
+![](https://raw.githubusercontent.com/Elringus/Bootsharp/main/Assets/Banner.png)

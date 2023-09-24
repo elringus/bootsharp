@@ -8,6 +8,7 @@
         <TrimmerSingleWarn>false</TrimmerSingleWarn>
         <BootsharpEmbedBinaries>false</BootsharpEmbedBinaries>
         <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
+        <RunAOTCompilation>true</RunAOTCompilation>
     </PropertyGroup>
 
     <ItemGroup>
