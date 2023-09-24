@@ -1,4 +1,4 @@
-import { strictEqual, notStrictEqual, deepStrictEqual } from "node:assert";
+import { strictEqual, notStrictEqual } from "node:assert";
 import { describe, it, before, after } from "node:test";
 import { boot, exit, Test } from "../cs.mjs";
 import ws, { WebSocketServer } from "ws";
@@ -20,8 +20,8 @@ describe("platform", () => {
     it("can connect via websocket", async () => {
         const wss = new WebSocketServer({ port: 8080 });
         wss.on("connection", socket => socket.on("message", data => socket.send(data)));
-        const echo = await Test.echoViaWebSocket("ws://localhost:8080", "foo", 1);
-        deepStrictEqual(echo, "foo");
+        const echo = Test.echoViaWebSocket("ws://localhost:8080", "foo", 1);
+        strictEqual(echo, "foo");
         wss.close();
     });
 });

@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import bootsharp, { Backend, Frontend } from "../../Minimal/cs/bin/bootsharp/bootsharp.js";
+import bootsharp, { Backend, Frontend } from "../../Minimal/cs/bin/bootsharp/bootsharp.mjs";
 
 export async function activate(context) {
     Frontend.getName = () => "VS Code";

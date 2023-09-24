@@ -1,5 +1,5 @@
 // Named exports are auto-generated on C# build.
-import bootsharp, { Global } from "./cs/bin/bootsharp/bootsharp.js";
+import bootsharp, { Global } from "./cs/bin/bootsharp/bootsharp.mjs";
 
 // Binding 'Program.GetFrontendName' endpoint invoked in C#.
 Global.getFrontendName = () =>

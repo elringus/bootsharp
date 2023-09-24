@@ -1,12 +1,12 @@
 import assert from "node:assert";
 import path from "node:path";
 import fs from "node:fs";
-import bootsharp, { Test } from "./cs/Test/bin/bootsharp/bootsharp.js";
+import bootsharp, { Test } from "./cs/Test/bin/bootsharp/bootsharp.mjs";
 
 export default bootsharp;
-export * from "./cs/Test/bin/bootsharp/bootsharp.js";
+export * from "./cs/Test/bin/bootsharp/bootsharp.mjs";
 
-assertPathExists("tests/cs/Test/bin/bootsharp/bootsharp.js");
+assertPathExists("tests/cs/Test/bin/bootsharp/bootsharp.mjs");
 
 export const bins = {
     wasm: loadWasmBinary(),

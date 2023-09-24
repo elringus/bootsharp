@@ -1,4 +1,4 @@
-import bootsharp, { Global } from "./cs/bin/bootsharp/bootsharp.js";
+import bootsharp, { Global } from "./cs/bin/bootsharp/bootsharp.mjs";
 import zlib from "node:zlib";
 import util from "node:util";
 import fs from "node:fs/promises";

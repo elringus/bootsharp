@@ -3,8 +3,8 @@
         "target": "es2020",
         "module": "esnext",
         "moduleResolution": "bundler",
-        "types": ["bun-types"],
         "jsx": "react-jsx",
+        "noEmit": true,
         "strict": true
     },
     "include": ["src"]

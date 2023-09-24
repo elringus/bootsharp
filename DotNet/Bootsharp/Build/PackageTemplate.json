@@ -1,6 +1,5 @@
 {
     "name": "%MODULE_NAME%",
-    "type": "module",
-    "module": "%MODULE_DIR%/%MODULE_NAME%.js",
+    "main": "%MODULE_DIR%/%MODULE_NAME%.mjs",
     "types": "%TYPES_DIR%/%MODULE_NAME%.d.ts"
 }
