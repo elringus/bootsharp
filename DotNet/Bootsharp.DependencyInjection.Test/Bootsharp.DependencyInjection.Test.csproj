@@ -4,6 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
     </PropertyGroup>
 
     <ItemGroup>
@@ -11,6 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0-rc.1.23419.4"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0-preview-23424-02"/>
         <PackageReference Include="xunit" Version="2.5.1"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="2.5.1">
@@ -28,12 +30,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../Bootsharp.Common/Bootsharp.Common.csproj"/>
-        <ProjectReference Include="../Bootsharp.Generator/Bootsharp.Generator.csproj"
-                          PrivateAssets="all"
-                          ReferenceOutputAssembly="false"
-                          OutputItemType="Analyzer"
-                          SetTargetFramework="TargetFramework=netstandard2.0"/>
+        <ProjectReference Include="../Bootsharp.DependencyInjection/Bootsharp.DependencyInjection.csproj"/>
     </ItemGroup>
 
 </Project>
