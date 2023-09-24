@@ -20,7 +20,7 @@ describe("platform", () => {
     it("can connect via websocket", async () => {
         const wss = new WebSocketServer({ port: 8080 });
         wss.on("connection", socket => socket.on("message", data => socket.send(data)));
-        const echo = Test.echoViaWebSocket("ws://localhost:8080", "foo", 1);
+        const echo = await Test.echoViaWebSocket("ws://localhost:8080", "foo", 1);
         strictEqual(echo, "foo");
         wss.close();
     });
