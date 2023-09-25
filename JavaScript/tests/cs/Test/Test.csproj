@@ -8,6 +8,7 @@
         <TrimmerSingleWarn>false</TrimmerSingleWarn>
         <BootsharpEmbedBinaries>false</BootsharpEmbedBinaries>
         <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
+        <BootsharpBundleCommand>npx rollup bootsharp.js -d ./ -f es -g process,module --preserveModules --entryFileNames [name].mjs</BootsharpBundleCommand>
         <RunAOTCompilation>true</RunAOTCompilation>
     </PropertyGroup>
 

@@ -78,10 +78,10 @@
         <PropertyGroup>
             <BootsharpBuildDirectory>$(WasmAppDir)/$(WasmRuntimeAssetsLocation)</BootsharpBuildDirectory>
             <BootSharpBaseOutputPath>$(BaseOutputPath.Replace('\', '/'))</BootSharpBaseOutputPath>
-            <BootsharpPublishDirectory Condition="'$(BootsharpPublishDirectory)' == 'default'">$(BootSharpBaseOutputPath)$(BootsharpName)</BootsharpPublishDirectory>
-            <BootsharpTypesDirectory Condition="'$(BootsharpTypesDirectory)' == 'default'">$(BootsharpPublishDirectory)/types</BootsharpTypesDirectory>
-            <BootsharpBinariesDirectory Condition="'$(BootsharpBinariesDirectory)' == 'default'">$(BootsharpPublishDirectory)/bin</BootsharpBinariesDirectory>
-            <BootsharpPackageDirectory Condition="'$(BootsharpPackageDirectory)' == 'default'">$(BootsharpPublishDirectory)</BootsharpPackageDirectory>
+            <BootsharpPublishDirectory Condition="'$(BootsharpPublishDirectory)' == ''">$(BootSharpBaseOutputPath)$(BootsharpName)</BootsharpPublishDirectory>
+            <BootsharpTypesDirectory Condition="'$(BootsharpTypesDirectory)' == ''">$(BootsharpPublishDirectory)/types</BootsharpTypesDirectory>
+            <BootsharpBinariesDirectory Condition="'$(BootsharpBinariesDirectory)' == ''">$(BootsharpPublishDirectory)/bin</BootsharpBinariesDirectory>
+            <BootsharpPackageDirectory Condition="'$(BootsharpPackageDirectory)' == ''">$(BootsharpPublishDirectory)</BootsharpPackageDirectory>
         </PropertyGroup>
 
         <!-- Generate bindings, type declarations and (optionally) embed binaries. -->
@@ -99,13 +99,13 @@
               DestinationFiles="$(BootsharpBuildDirectory)/$(BootsharpName).d.ts"/>
 
         <!-- Compile generated JavaScript solution. -->
-        <Exec Command="npx rollup bootsharp.js -o $(BootsharpName).mjs -f es -g process,module"
+        <Exec Command="$(BootsharpBundleCommand)"
               WorkingDirectory="$(BootsharpBuildDirectory)"
               StdOutEncoding="utf-8" StdErrEncoding="utf-8"/>
 
         <!-- Publish module, binaries and type declarations. -->
         <ItemGroup>
-            <BootsharpModuleFile Include="$(BootsharpBuildDirectory)/$(BootsharpName).mjs"/>
+            <BootsharpModuleFiles Include="$(BootsharpBuildDirectory)/*.mjs"/>
             <BootsharpWasmFiles Include="$(BootsharpBuildDirectory)/*.wasm"/>
             <BootsharpTypeFiles Include="$(BootsharpBuildDirectory)/*.d.ts"/>
         </ItemGroup>
@@ -115,7 +115,7 @@
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy SourceFiles="@(BootsharpTypeFiles)"
               DestinationFolder="$(BootsharpTypesDirectory)"/>
-        <Copy SourceFiles="@(BootsharpModuleFile)"
+        <Copy SourceFiles="@(BootsharpModuleFiles)"
               DestinationFolder="$(BootsharpPublishDirectory)"/>
 
         <!-- Publish package file. -->

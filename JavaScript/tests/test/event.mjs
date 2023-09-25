@@ -57,7 +57,7 @@ describe("event", () => {
     });
     it("can un/subscribe by id", () => {
         let result = 0;
-        const event = new Event({ warn: () => {} });
+        const event = new Event();
         const incrementer = () => result++;
         for (let i = 0; i < 10; i++)
             event.subscribeById(i.toString(), incrementer);
