@@ -2,7 +2,6 @@ using System;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Bootsharp;
 
 namespace Test;
@@ -27,14 +26,17 @@ public static partial class Platform
     public static partial void ThrowJS ();
 
     [JSInvokable]
-    public static async Task<string> EchoViaWebSocket (string uri, string message, int timeout)
+    public static async void EchoWebSocket (string uri, string message, int timeout)
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
-        using var client = new ClientWebSocket();
-        await client.ConnectAsync(new Uri(uri), cts.Token);
+        using var cts = new CancellationTokenSource(timeout);
+        using var ws = new ClientWebSocket();
+        await ws.ConnectAsync(new Uri(uri), cts.Token);
         var buffer = Encoding.UTF8.GetBytes(message);
-        await client.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, cts.Token);
-        await client.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token);
-        return Encoding.UTF8.GetString(buffer);
+        await ws.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, cts.Token);
+        await ws.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token);
+        OnMessage(Encoding.UTF8.GetString(buffer));
     }
+
+    [JSEvent]
+    public static partial void OnMessage (string message);
 }

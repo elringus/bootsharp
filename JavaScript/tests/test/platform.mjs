@@ -1,11 +1,8 @@
 import { strictEqual, notStrictEqual } from "node:assert";
 import { describe, it, before, after } from "node:test";
 import { boot, exit, Test } from "../cs.mjs";
-import ws, { WebSocketServer } from "ws";
-
-// .NET requires ws package when running on node:
-// https://github.com/dotnet/runtime/blob/main/src/mono/wasm/features.md#websocket
-global.WebSocket = ws;
+import { Worker } from "node:worker_threads";
+import ws from "ws";
 
 describe("platform", () => {
     before(boot);
@@ -17,11 +14,18 @@ describe("platform", () => {
         strictEqual(guid2.length, 36);
         notStrictEqual(guid1, guid2);
     });
-    it("can connect via websocket", async () => {
-        const wss = new WebSocketServer({ port: 8080 });
-        wss.on("connection", socket => socket.on("message", data => socket.send(data)));
-        const echo = await Test.echoViaWebSocket("ws://localhost:8080", "foo", 1);
-        strictEqual(echo, "foo");
-        wss.close();
+    it("can communicate via websocket", async () => {
+        // .NET requires ws package when running on node:
+        // https://github.com/dotnet/runtime/blob/main/src/mono/wasm/features.md#websocket
+        global.WebSocket = ws;
+        let ready, preparing = new Promise(r => ready = r);
+        let echo, echoing = new Promise(r => echo = r);
+        Test.onMessage.subscribe(echo);
+        const worker = new Worker("./tests/wss.mjs");
+        worker.on("message", msg => msg === "ready" && ready());
+        await preparing;
+        Test.echoWebSocket("ws://localhost:8080", "foo", 3000);
+        strictEqual(await echoing, "foo");
+        await worker.terminate();
     });
 });
