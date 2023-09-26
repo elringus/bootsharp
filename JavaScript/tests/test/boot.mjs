@@ -32,4 +32,14 @@ describe("boot", () => {
         strictEqual(Test.$onMainInvoked.mock.calls.length, 1);
         exit();
     });
+    it("can boot with base64 content w/o native encoder available", async () => {
+        global.window = undefined;
+        global.Buffer = undefined;
+        bootsharp.resources.wasm.content = bins.wasm.toString("base64");
+        for (const asm of bootsharp.resources.assemblies)
+            asm.content = bins.assemblies.find(a => a.name === asm.name).content.toString("base64");
+        await doesNotReject(() => bootsharp.boot({}));
+        strictEqual(Test.$onMainInvoked.mock.calls.length, 1);
+        exit();
+    });
 });
