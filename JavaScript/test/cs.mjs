@@ -6,7 +6,7 @@ import bootsharp, { Test } from "./cs/Test/bin/bootsharp/bootsharp.mjs";
 export default bootsharp;
 export * from "./cs/Test/bin/bootsharp/bootsharp.mjs";
 
-assertPathExists("tests/cs/Test/bin/bootsharp/bootsharp.mjs");
+assertPathExists("test/cs/Test/bin/bootsharp/bootsharp.mjs");
 
 export const bins = {
     wasm: loadWasmBinary(),
@@ -27,13 +27,13 @@ export function exit() {
 }
 
 export function getDeclarations() {
-    const file = path.resolve("tests/cs/Test/bin/bootsharp/types/bindings.g.d.ts");
+    const file = path.resolve("test/cs/Test/bin/bootsharp/types/bindings.g.d.ts");
     assertPathExists(file);
     return fs.readFileSync(file).toString();
 }
 
 function loadWasmBinary() {
-    const file = path.resolve("tests/cs/Test/bin/bootsharp/bin/dotnet.native.wasm");
+    const file = path.resolve("test/cs/Test/bin/bootsharp/bin/dotnet.native.wasm");
     assertPathExists(file);
     return fs.readFileSync(file);
 }
@@ -47,7 +47,7 @@ function loadAssemblies() {
 
 function findAssemblies() {
     let assemblyPaths = [];
-    const dirPath = path.resolve("tests/cs/Test/bin/bootsharp/bin");
+    const dirPath = path.resolve("test/cs/Test/bin/bootsharp/bin");
     assertPathExists(dirPath);
     for (const fileName of fs.readdirSync(dirPath))
         if (!fileName.endsWith("dotnet.native.wasm") && fileName.endsWith(".wasm"))
