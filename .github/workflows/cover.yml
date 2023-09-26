@@ -36,7 +36,6 @@ jobs:
           cd ../JavaScript/scripts
           bash compile-test.sh
           cd ..
-          npm install -g nyc
-          nyc --reporter=lcov -x **/dotnet.*mjs npm run cover
+          npm run cover
       - name: upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
