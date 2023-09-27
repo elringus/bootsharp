@@ -24,6 +24,7 @@ describe("while bootsharp is booted", () => {
         expect(Test.joinStrings("foo", "bar")).toStrictEqual("foobar");
     });
     // it("can invoke async C# method", async () => {
+    //     // TODO: Async failing in node https://github.com/dotnet/runtime/issues/92713
     //     expect(await Test.joinStringsAsync("foo", "bar")).toStrictEqual("foobar");
     // });
     it("can transfer decimals", () => {
@@ -47,6 +48,7 @@ describe("while bootsharp is booted", () => {
         expect(Test.bytesToString(bytes)).toStrictEqual("Everything's shiny, Captain. Not to fret.");
     });
     it("can transfer structs", () => {
+        // TODO: Test async transfer structs to check serialization with await.
         const expected = {
             wheeled: [
                 { id: "car", wheelCount: 4, maxSpeed: 100.0 },

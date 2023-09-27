@@ -82,6 +82,7 @@
             <BootsharpTypesDirectory Condition="'$(BootsharpTypesDirectory)' == ''">$(BootsharpPublishDirectory)/types</BootsharpTypesDirectory>
             <BootsharpBinariesDirectory Condition="'$(BootsharpBinariesDirectory)' == ''">$(BootsharpPublishDirectory)/bin</BootsharpBinariesDirectory>
             <BootsharpPackageDirectory Condition="'$(BootsharpPackageDirectory)' == ''">$(BootsharpPublishDirectory)</BootsharpPackageDirectory>
+            <BootsharpBundleCommand Condition="'$(BootsharpBundleCommand)' == ''">npx rollup bootsharp.js -o $(BootsharpName).mjs -f es -g process,module</BootsharpBundleCommand>
         </PropertyGroup>
 
         <!-- Generate bindings, type declarations and (optionally) embed binaries. -->

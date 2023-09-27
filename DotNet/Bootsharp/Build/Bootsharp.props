@@ -19,7 +19,7 @@
         <!-- Whether to disable some .NET features to reduce binary size (true or false); false by default. -->
         <BootsharpAggressiveTrimming>false</BootsharpAggressiveTrimming>
         <!-- The command to run when compiling/bundling generated JavaScrip solution. -->
-        <BootsharpBundleCommand>npx rollup bootsharp.js -o $(BootsharpName).mjs -f es -g process,module</BootsharpBundleCommand>
+        <BootsharpBundleCommand/>
         <!-- Directory to publish generated JavaScript module; 'base-output/module-name' by default. -->
         <BootsharpPublishDirectory/>
         <!-- Directory to publish type declarations; 'publish-dir/types' by default. -->
