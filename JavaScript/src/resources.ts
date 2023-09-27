@@ -1,5 +1,6 @@
 import generated from "./resources.g";
 import { RuntimeConfig, AssetEntry, runtime, native } from "./external";
+import { decodeBase64 } from "./decoder";
 
 /** Resources required to boot .NET runtime. */
 export const resources: BootResources = generated;
@@ -68,14 +69,5 @@ function toBinary(data: Uint8Array | string): Uint8Array {
     if (typeof data !== "string") return data;
     if (typeof window === "object") return Uint8Array.from(window.atob(data), c => c.charCodeAt(0));
     if (typeof Buffer === "function") return Buffer.from(data, "base64");
-
-    const abc = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"];
-    const result = [];
-    for (let i = 0; i < data.length / 4; i++) {
-        const chunk = [...data.slice(4 * i, 4 * i + 4)];
-        const bin = chunk.map(x => abc.indexOf(x).toString(2).padStart(6, "0")).join("");
-        const bytes = bin.match(/.{1,8}/g)?.map(x => +("0b" + x)) ?? [];
-        result.push(...bytes.slice(0, 3 - Number(data[4 * i + 2] == "=") - Number(data[4 * i + 3] == "=")));
-    }
-    return Uint8Array.from(result);
+    return decodeBase64(data);
 }

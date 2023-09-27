@@ -11,9 +11,6 @@ public static partial class Invokable
     public static void InvokeVoid () { }
 
     [JSInvokable]
-    public static string Echo (string message) => message;
-
-    [JSInvokable]
     public static string JoinStrings (string a, string b) => a + b;
 
     [JSInvokable]
@@ -25,7 +22,7 @@ public static partial class Invokable
     [JSInvokable]
     public static async Task<string> JoinStringsAsync (string a, string b)
     {
-        await Task.Yield();
+        await Task.Delay(1).ConfigureAwait(false);
         return a + b;
     }
 

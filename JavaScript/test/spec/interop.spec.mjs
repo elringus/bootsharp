@@ -4,26 +4,49 @@ import { boot, Test } from "../cs.mjs";
 const TrackType = Test.Types.TrackType;
 
 describe("while bootsharp is not booted", () => {
-    it("throws when attempting to invoke C# APIs", async () => {
+    it("throws when attempting to invoke C# APIs", () => {
         expect(Test.invokeVoid).throw(/Boot the runtime before invoking C# APIs/);
     });
 });
 
 describe("while bootsharp is booted", () => {
     beforeAll(boot);
-    it("can send and receive string", () => {
+    it("throws when attempting to invoke un-assigned JS function", () => {
+        const error = /Failed to invoke '.+' JavaScript function: undefined/;
+        Test._onMainInvoked = undefined;
+        expect(() => Test.testEchoFunction("")).throw(error);
+        expect(() => Test.arrayArgFunction()).throw(error);
+        expect(() => Test.throwJS()).throw(error);
+        expect(() => Test.onMainInvoked()).throw(error);
+        expect(() => Test.Types.getRegistry()).throw(error);
+    });
+    it("can invoke C# method", async () => {
         expect(Test.joinStrings("foo", "bar")).toStrictEqual("foobar");
     });
-    it("can send and receive number", () => {
+    // it("can invoke async C# method", async () => {
+    //     expect(await Test.joinStringsAsync("foo", "bar")).toStrictEqual("foobar");
+    // });
+    it("can transfer decimals", () => {
         expect(Test.sumDoubles(-1, 2.75)).toStrictEqual(1.75);
     });
-    it("can send and receive date", () => {
+    it("can transfer dates", () => {
         const date = new Date(1977, 3, 2);
         const expected = new Date(1977, 3, 9);
         const actual = new Date(Test.addDays(date, 7));
         expect(actual).toStrictEqual(expected);
     });
-    it("can send and receive custom data type", () => {
+    it("can transfer arrays", () => {
+        Test.arrayArgFunction = values => values;
+        expect(Test.testArrayArgFunction(["a", "b"])).toStrictEqual(["a", "b"]);
+    });
+    it("can transfer raw bytes", () => {
+        const bytes = new Uint8Array([0x45, 0x76, 0x65, 0x72, 0x79, 0x74, 0x68, 0x69,
+            0x6e, 0x67, 0x27, 0x73, 0x20, 0x73, 0x68, 0x69, 0x6e, 0x79, 0x2c,
+            0x20, 0x43, 0x61, 0x70, 0x74, 0x61, 0x69, 0x6e, 0x2e, 0x20, 0x4e,
+            0x6f, 0x74, 0x20, 0x74, 0x6f, 0x20, 0x66, 0x72, 0x65, 0x74, 0x2e]);
+        expect(Test.bytesToString(bytes)).toStrictEqual("Everything's shiny, Captain. Not to fret.");
+    });
+    it("can transfer structs", () => {
         const expected = {
             wheeled: [
                 { id: "car", wheelCount: 4, maxSpeed: 100.0 },
@@ -37,28 +60,19 @@ describe("while bootsharp is booted", () => {
         const actual = Test.Types.echoRegistry(expected);
         expect(actual).toStrictEqual(expected);
     });
-    it("throws when attempting to invoke un-assigned JS function", async () => {
-        const error = /Failed to invoke 'Test\.(async)?[E|e]choFunction' JavaScript function: undefined/;
-        expect(() => Test.testEchoFunction("")).throw(error);
-        expect(() => Test.testAsyncEchoFunction("")).throw(error);
-    });
-    it("can invoke assigned JS functions in C#", async () => {
+    it("can invoke assigned JS functions in C#", () => {
         Test.echoFunction = value => value;
         Test.Types.getRegistry = () => ({ wheeled: [{ maxSpeed: 1 }], tracked: [{ maxSpeed: 2 }] });
         expect(Test.testEchoFunction("a")).toStrictEqual("a");
         expect(Test.Types.countTotalSpeed()).toStrictEqual(3);
     });
-    it("can transfer array of strings", async () => {
-        Test.arrayArgFunction = values => values;
-        expect(Test.testArrayArgFunction(["a", "b"])).toStrictEqual(["a", "b"]);
-    });
-    it("can subscribe to events", async () => {
+    it("can subscribe to events", () => {
         let result = "";
         Test.onEventBroadcast.subscribe(v => result = v);
         Test.broadcastEvent("foo");
         expect(result).toStrictEqual("foo");
     });
-    it("can un-subscribe from events", async () => {
+    it("can un-subscribe from events", () => {
         let result = "";
         const assigner = v => result = v;
         Test.onEventBroadcast.subscribe(assigner);
@@ -66,13 +80,6 @@ describe("while bootsharp is booted", () => {
         Test.onEventBroadcast.unsubscribe(assigner);
         Test.broadcastEvent("bar");
         expect(result).toStrictEqual("foo");
-    });
-    it("can transfer and decode raw bytes", () => {
-        const bytes = new Uint8Array([0x45, 0x76, 0x65, 0x72, 0x79, 0x74, 0x68, 0x69,
-            0x6e, 0x67, 0x27, 0x73, 0x20, 0x73, 0x68, 0x69, 0x6e, 0x79, 0x2c,
-            0x20, 0x43, 0x61, 0x70, 0x74, 0x61, 0x69, 0x6e, 0x2e, 0x20, 0x4e,
-            0x6f, 0x74, 0x20, 0x74, 0x6f, 0x20, 0x66, 0x72, 0x65, 0x74, 0x2e]);
-        expect(Test.bytesToString(bytes)).toStrictEqual("Everything's shiny, Captain. Not to fret.");
     });
     it("can catch js exception", () => {
         Test.throwJS = function () { throw new Error("foo"); };

@@ -7,5 +7,5 @@ export type * from "./dotnet.d.ts";
 export type RuntimeConfig = MonoConfig & { assets: AssetEntry[] };
 export const runtime = runtimeModule;
 export const native = nativeModule;
-export const dotnet: ModuleAPI = dotnetModule;
-export const builder: DotnetHostBuilder = dotnet.dotnet;
+export const module: ModuleAPI = dotnetModule;
+export const builder: DotnetHostBuilder = module.dotnet;

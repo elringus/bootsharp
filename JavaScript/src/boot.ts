@@ -1,4 +1,4 @@
-import { RuntimeConfig, RuntimeAPI, dotnet, builder } from "./external";
+import { RuntimeConfig, RuntimeAPI, module, builder } from "./external";
 import { buildConfig } from "./resources";
 import { bindImports } from "./imports";
 import { bindExports } from "./exports";
@@ -33,5 +33,5 @@ export async function boot(custom?: BootCustom): Promise<RuntimeAPI> {
  *  @param code Exit code; will use 0 (normal exit) by default.
  *  @param reason Exit reason description (optional). */
 export function exit(code?: number, reason?: string): void {
-    dotnet.exit(code ?? 0, reason);
+    module.exit(code ?? 0, reason);
 }
