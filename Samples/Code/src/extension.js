@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
-import bootsharp, { Backend, Frontend } from "../../Minimal/cs/bin/bootsharp/bootsharp.mjs";
+import bootsharp, { Global } from "../../Minimal/cs/bin/bootsharp/bootsharp.mjs";
 
 export async function activate(context) {
-    Frontend.getName = () => "VS Code";
+    Global.getFrontendName = () => "VS Code";
     try { await bootsharp.boot(); }
     catch (e) { vscode.window.showErrorMessage(e.message); }
     const command = vscode.commands.registerCommand("bootsharp.hello", greet);
@@ -14,6 +14,6 @@ export function deactivate() {
 }
 
 function greet() {
-    const message = `Welcome, ${Backend.getName()}! Enjoy your VS Code extension space.`;
+    const message = `Welcome, ${Global.getBackendName()}! Enjoy your VS Code extension space.`;
     vscode.window.showInformationMessage(message);
 }

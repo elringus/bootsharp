@@ -46,7 +46,8 @@
     <UsingTask TaskName="Bootsharp.Builder.BuildBootsharp" AssemblyFile="$(BootsharpBuilderAssembly)"/>
 
     <!-- A hack due to source generator compositing not possible. (https://github.com/dotnet/roslyn/issues/57239) -->
-    <Target Name="BootsharpPrepare" BeforeTargets="GenerateAdditionalSources" Condition="'$(BootsharpSkip)' != 'true'">
+    <Target Name="BootsharpPrepare" BeforeTargets="GenerateAdditionalSources"
+            Condition="'$(BootsharpSkip)' != 'true' And Exists('$(OutputPath)')">
 
         <!-- Pre-compile the solution, as we'll need to inspect the assemblies in the next step. -->
         <MSBuild Projects="$(MSBuildProjectFile)" Targets="BuildCompile" Properties="BootsharpSkip=true"/>
@@ -73,7 +74,8 @@
         <RemoveDir Directories="$(BootsharpIntermediateDirectory)"/>
     </Target>
 
-    <Target Name="BootsharpBuild" AfterTargets="_AfterWasmBuildApp">
+    <Target Name="BootsharpBuild" AfterTargets="_AfterWasmBuildApp"
+            Condition="Exists('$(PublishDir)') And Exists('$(WasmAppDir)')">
 
         <PropertyGroup>
             <BootsharpBuildDirectory>$(WasmAppDir)/$(WasmRuntimeAssetsLocation)</BootsharpBuildDirectory>
