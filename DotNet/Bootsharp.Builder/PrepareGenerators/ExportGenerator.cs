@@ -9,12 +9,18 @@ internal sealed class ExportGenerator
             .GroupBy(i => i.DeclaringName).ToArray();
         return bySpace.Length == 0 ? "" :
             $"""
+             #nullable enable
+             #pragma warning disable
+
              using System.Runtime.InteropServices.JavaScript;
              using static Bootsharp.Serializer;
 
              namespace Bootsharp.Exports;
 
              {JoinLines(bySpace.Select(g => GenerateSpace(g.Key, g)), 0)}
+
+             #pragma warning restore
+             #nullable restore
              """;
     }
 

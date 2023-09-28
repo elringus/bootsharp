@@ -9,6 +9,9 @@ internal sealed class ImportGenerator(string entryAssembly)
             .GroupBy(i => i.DeclaringName).ToArray();
         return bySpace.Length == 0 ? "" :
             $"""
+             #nullable enable
+             #pragma warning disable
+
              using System.Diagnostics.CodeAnalysis;
              using System.Runtime.CompilerServices;
              using System.Runtime.InteropServices.JavaScript;
@@ -16,6 +19,9 @@ internal sealed class ImportGenerator(string entryAssembly)
              namespace Bootsharp.Imports;
 
              {JoinLines(bySpace.Select(g => GenerateSpace(g.Key, g.ToArray())), 0)}
+
+             #pragma warning restore
+             #nullable restore
              """;
     }
 
