@@ -1,2 +1,4 @@
+fixes:
+  - "JavaScript/test/cs/Test/bin/bootsharp/*.mjs::JavaScript/src/*.ts"
 ignore:
   - "**/dotnet.*mjs"
