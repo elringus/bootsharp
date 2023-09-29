@@ -65,14 +65,17 @@ public sealed class BuildBootsharp : Microsoft.Build.Utilities.Task
 
         var dotnet = Path.Combine(BuildDirectory, "dotnet.js");
         File.WriteAllText(dotnet, File.ReadAllText(dotnet, Encoding.UTF8)
-            .Replace("=import.meta.url", "=\"file:/\"")
+            .Replace("import.meta.url", "\"file://dotnet.native.wasm\"")
             .Replace("import(", "import(/*@vite-ignore*//*webpackIgnore:true*/"), Encoding.UTF8);
 
         var native = Path.Combine(BuildDirectory, "dotnet.native.js");
         File.WriteAllText(native, File.ReadAllText(native, Encoding.UTF8)
             .Replace("var _scriptDir = import.meta.url", "var _scriptDir = \"file:/\"")
             .Replace("require('url').fileURLToPath(new URL('./', import.meta.url))", "\"./\"")
+            .Replace("require(\"url\").fileURLToPath(new URL(\"./\",import.meta.url))", "\"./\"") // when aggressive trimming enabled
             .Replace("new URL('dotnet.native.wasm', import.meta.url).href", "\"file:/\"")
+            .Replace("new URL(\"dotnet.native.wasm\",import.meta.url).href", "\"file:/\"") // when aggressive trimming enabled
+            .Replace("import.meta.url", "\"file://dotnet.native.wasm\"")
             .Replace("import(", "import(/*@vite-ignore*//*webpackIgnore:true*/"), Encoding.UTF8);
 
         var runtime = Path.Combine(BuildDirectory, "dotnet.runtime.js");
