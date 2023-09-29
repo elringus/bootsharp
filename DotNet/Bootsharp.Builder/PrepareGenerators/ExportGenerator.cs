@@ -36,7 +36,7 @@ internal sealed class ExportGenerator
     {
         const string attr = "[System.Runtime.InteropServices.JavaScript.JSExport]";
         var date = MarshalDate(inv.ReturnType, true);
-        var wait = inv.Arguments.Any(a => a.ShouldSerialize) && inv.ReturnsTaskLike;
+        var wait = inv.ReturnsTaskLike && inv.ShouldSerializeReturnType;
         return $"{attr} {date}internal static {GenerateSignature(inv, wait)} => {GenerateBody(inv, wait)};";
     }
 

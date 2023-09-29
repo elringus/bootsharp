@@ -152,4 +152,33 @@ public class ExportTest : PrepareTest
             }
             """);
     }
+
+    [Fact]
+    public void SerializeTypesThatShouldBeSerialized ()
+    {
+        AddAssembly(With(
+            """
+            namespace Space;
+
+            public record Info;
+
+            public class Foo
+            {
+                [JSInvokable] public static Task<Info[]> A () => default;
+            }
+            """, false));
+        Execute();
+        Contains(
+            """
+            using System.Runtime.InteropServices.JavaScript;
+            using static Bootsharp.Serializer;
+
+            namespace Bootsharp.Exports;
+
+            public partial class Space_Foo
+            {
+                [System.Runtime.InteropServices.JavaScript.JSExport] internal static async global::System.Threading.Tasks.Task<global::System.String> A () => Serialize(await global::Space.Foo.A());
+            }
+            """);
+    }
 }
