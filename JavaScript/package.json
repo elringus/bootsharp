@@ -1,7 +1,7 @@
 {
     "scripts": {
         "test": "vitest run --silent --experimental-vm-threads",
-        "cover": "npm test -- --coverage.enabled --coverage.include=**/bootsharp/*.mjs --coverage.allowExternal",
+        "cover": "npm test -- --coverage.enabled --coverage.100 --coverage.include=**/bootsharp/*.mjs --coverage.exclude=**/dotnet.* --coverage.allowExternal",
         "serve": "serve coverage"
     },
     "devDependencies": {
