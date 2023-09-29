@@ -153,6 +153,8 @@ public static class FunctionTest
                 public partial Info Bar (Info info1, Info info2);
                 [JSFunction]
                 public partial Task<Info> BarAsync (Info info);
+                [JSFunction]
+                public partial Task<byte[]> BazAsync ();
             }
             """,
             """
@@ -166,6 +168,7 @@ public static class FunctionTest
 
                 public partial global::Info Bar (global::Info info1, global::Info info2) => Deserialize<global::Info>(Get<global::System.Func<global::System.String, global::System.String, global::System.String>>("Global.bar")(Serialize(info1), Serialize(info2)));
                 public async partial global::System.Threading.Tasks.Task<global::Info> BarAsync (global::Info info) => Deserialize<global::Info>(await Get<global::System.Func<global::System.String, global::System.Threading.Tasks.Task<global::System.String>>>("Global.barAsync")(Serialize(info)));
+                public async partial global::System.Threading.Tasks.Task<global::System.Byte[]> BazAsync () => Deserialize<global::System.Byte[]>(await Get<global::System.Func<global::System.Threading.Tasks.Task<global::System.String>>>("Global.bazAsync")());
             }
             """
         },

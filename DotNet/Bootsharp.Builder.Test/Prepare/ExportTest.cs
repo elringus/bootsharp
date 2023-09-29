@@ -165,6 +165,7 @@ public class ExportTest : PrepareTest
             public class Foo
             {
                 [JSInvokable] public static Task<Info[]> A () => default;
+                [JSInvokable] public static Task<byte[]> B () => default;
             }
             """, false));
         Execute();
@@ -178,6 +179,7 @@ public class ExportTest : PrepareTest
             public partial class Space_Foo
             {
                 [System.Runtime.InteropServices.JavaScript.JSExport] internal static async global::System.Threading.Tasks.Task<global::System.String> A () => Serialize(await global::Space.Foo.A());
+                [System.Runtime.InteropServices.JavaScript.JSExport] internal static async global::System.Threading.Tasks.Task<global::System.String> B () => Serialize(await global::Space.Foo.B());
             }
             """);
     }

@@ -4,16 +4,16 @@ namespace Bootsharp.Generator;
 
 internal class BindingEmitter(IMethodSymbol method, bool @event, string space, string name)
 {
-    private bool @void, returnsTask, wait;
+    private bool @void, wait, shouldSerializeReturnType;
     private ITypeSymbol returnType, taskResult;
 
     public void Emit (out string signature, out string body)
     {
         @void = method.ReturnsVoid;
         returnType = method.ReturnType;
-        returnsTask = IsTaskWithResult(method.ReturnType, out var task);
-        taskResult = task?.TypeArguments.FirstOrDefault();
-        wait = returnsTask && ShouldSerialize(taskResult);
+        IsTaskWithResult(method.ReturnType, out taskResult);
+        shouldSerializeReturnType = ShouldSerialize(returnType);
+        wait = taskResult != null && shouldSerializeReturnType;
         signature = EmitSignature();
         body = EmitBody();
     }
@@ -32,8 +32,8 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
         var delegateType = GetDelegateType();
         var args = GetArgs();
         var body = $"""Get<{delegateType}>("{endpoint}")({args})""";
-        if (!ShouldSerialize(returnsTask ? taskResult : returnType)) return body;
-        var serialized = BuildFullName(returnsTask ? taskResult : returnType);
+        if (!shouldSerializeReturnType) return body;
+        var serialized = BuildFullName(taskResult ?? returnType);
         return $"Deserialize<{serialized}>({(wait ? "await " : "")}{body})";
     }
 
@@ -49,10 +49,9 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
     private string GetDelegateArgType (IParameterSymbol param) =>
         ShouldSerialize(param.Type) ? "global::System.String" : BuildFullName(param.Type);
 
-    private string GetDelegateReturnType () =>
-        ShouldSerialize(returnsTask ? taskResult : returnType)
-            ? (returnsTask ? "global::System.Threading.Tasks.Task<global::System.String>" : "global::System.String")
-            : BuildFullName(returnType);
+    private string GetDelegateReturnType () => shouldSerializeReturnType
+        ? (taskResult != null ? "global::System.Threading.Tasks.Task<global::System.String>" : "global::System.String")
+        : BuildFullName(returnType);
 
     private string GetEndpoint (string module)
     {
@@ -76,10 +75,11 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
     // https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop
     private static bool ShouldSerialize (ITypeSymbol type)
     {
+        if (IsTaskWithResult(type, out var taskResult)) type = taskResult;
         var array = type is IArrayTypeSymbol;
         if (array) type = ((IArrayTypeSymbol)type).ElementType;
         if (IsNullable(type, out var nullable)) type = nullable.TypeArguments.FirstOrDefault();
-        if (array) return !IsArrayTransferable(type);
+        if (array) return taskResult != null || !IsArrayTransferable(type);
         return !IsStandaloneTransferable(type);
 
         static bool IsNullable (ITypeSymbol type, out INamedTypeSymbol nullable)
@@ -101,9 +101,9 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
             $"{type.ContainingNamespace}.{type.MetadataName}" == typeof(T).FullName;
     }
 
-    private static bool IsTaskWithResult (ITypeSymbol type, out INamedTypeSymbol named)
+    private static bool IsTaskWithResult (ITypeSymbol type, out ITypeSymbol result)
     {
-        var result = $"{type.ContainingNamespace}.{type.MetadataName}" == typeof(Task<>).FullName;
-        return (named = result ? (INamedTypeSymbol)type : null) != null;
+        return (result = $"{type.ContainingNamespace}.{type.MetadataName}" == typeof(Task<>).FullName
+            ? ((INamedTypeSymbol)type).TypeArguments[0] : null) != null;
     }
 }

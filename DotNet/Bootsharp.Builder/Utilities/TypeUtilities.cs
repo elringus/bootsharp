@@ -1,5 +1,6 @@
 ﻿global using static Bootsharp.Builder.TypeUtilities;
 using System.Collections.Frozen;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -25,14 +26,10 @@ internal static class TypeUtilities
         return type.GetMethod(nameof(Task.GetAwaiter)) != null;
     }
 
-    public static bool IsTaskWithResult (Type type)
+    public static bool IsTaskWithResult (Type type, [NotNullWhen(true)] out Type? result)
     {
-        return IsTaskLike(type) && type.GenericTypeArguments.Length == 1;
-    }
-
-    public static Type GetTaskResult (Type type)
-    {
-        return type.GenericTypeArguments[0];
+        return (result = IsTaskLike(type) && type.GenericTypeArguments.Length == 1
+            ? type.GenericTypeArguments[0] : null) != null;
     }
 
     public static string MarshalDate (string fullname, bool @return)
@@ -155,7 +152,8 @@ internal static class TypeUtilities
     public static bool ShouldSerialize (Type type)
     {
         if (IsVoid(type)) return false;
-        if (IsTaskWithResult(type)) return ShouldSerialize(GetTaskResult(type));
+        if (IsTaskWithResult(type, out var result))
+            return IsList(result) || ShouldSerialize(result);
         var array = type.IsArray;
         if (array) type = type.GetElementType()!;
         if (IsNullable(type)) type = GetNullableUnderlyingType(type);
