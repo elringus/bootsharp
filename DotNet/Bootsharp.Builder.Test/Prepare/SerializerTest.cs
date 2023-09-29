@@ -15,7 +15,7 @@ public class SerializerTest : PrepareTest
 
             namespace Bootsharp;
 
-            [JsonSerializable(typeof(string))]
+            [JsonSerializable(typeof(global::System.String), TypeInfoPropertyName = "System_String")]
             internal partial class SerializerContext : JsonSerializerContext
             {
                 [System.Runtime.CompilerServices.ModuleInitializer]
@@ -39,7 +39,7 @@ public class SerializerTest : PrepareTest
 
             namespace Bootsharp;
 
-            [JsonSerializable(typeof(string))]
+            [JsonSerializable(typeof(global::System.String), TypeInfoPropertyName = "System_String")]
             internal partial class SerializerContext : JsonSerializerContext
             {
                 [System.Runtime.CompilerServices.ModuleInitializer]
@@ -72,15 +72,15 @@ public class SerializerTest : PrepareTest
 
             namespace Bootsharp;
 
-            [JsonSerializable(typeof(global::n.Baz))]
-            [JsonSerializable(typeof(global::n.MockClass+Bar))]
-            [JsonSerializable(typeof(global::n.ReadonlyRecordStruct))]
-            [JsonSerializable(typeof(global::n.RecordClass))]
-            [JsonSerializable(typeof(global::n.Struct))]
-            [JsonSerializable(typeof(global::n.ReadonlyStruct))]
-            [JsonSerializable(typeof(global::n.Foo))]
-            [JsonSerializable(typeof(global::n.Enum))]
-            [JsonSerializable(typeof(string))]
+            [JsonSerializable(typeof(global::n.Baz), TypeInfoPropertyName = "n_Baz")]
+            [JsonSerializable(typeof(global::n.MockClass+Bar), TypeInfoPropertyName = "n_MockClass_Bar")]
+            [JsonSerializable(typeof(global::n.ReadonlyRecordStruct), TypeInfoPropertyName = "n_ReadonlyRecordStruct")]
+            [JsonSerializable(typeof(global::n.RecordClass), TypeInfoPropertyName = "n_RecordClass")]
+            [JsonSerializable(typeof(global::n.Struct), TypeInfoPropertyName = "n_Struct")]
+            [JsonSerializable(typeof(global::n.ReadonlyStruct), TypeInfoPropertyName = "n_ReadonlyStruct")]
+            [JsonSerializable(typeof(global::n.Foo), TypeInfoPropertyName = "n_Foo")]
+            [JsonSerializable(typeof(global::n.Enum), TypeInfoPropertyName = "n_Enum")]
+            [JsonSerializable(typeof(global::System.String), TypeInfoPropertyName = "System_String")]
             internal partial class SerializerContext : JsonSerializerContext
             {
                 [System.Runtime.CompilerServices.ModuleInitializer]

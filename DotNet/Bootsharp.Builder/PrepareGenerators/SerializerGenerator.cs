@@ -5,7 +5,7 @@ internal sealed class SerializerGenerator
     public string Generate (AssemblyInspector inspector)
     {
         var types = inspector.Types.Select(t => $"global::{t.FullName}");
-        var attrs = types.Select(BuildAttribute).Append(BuildAttribute("string"));
+        var attrs = types.Select(BuildAttribute).Append(BuildAttribute("global::System.String"));
         return
             $$"""
               using System.Text.Json;
@@ -25,5 +25,8 @@ internal sealed class SerializerGenerator
               """;
     }
 
-    private string BuildAttribute (string type) => $"[JsonSerializable(typeof({type}))]";
+    private string BuildAttribute (string type) =>
+        $"[JsonSerializable(typeof({type}), TypeInfoPropertyName = \"{BuildHint(type)}\")]";
+
+    private string BuildHint (string type) => type[8..].Replace('.', '_').Replace('+', '_');
 }
