@@ -63,9 +63,13 @@ public sealed class BuildBootsharp : Microsoft.Build.Utilities.Task
         // that are offending bundlers and breaking usage in restricted environments,
         // such as VS Code web extensions. (https://github.com/dotnet/runtime/issues/91558)
 
+        var url = Environment.OSVersion.Platform == PlatformID.Win32NT
+            ? "\"file://dotnet.native.wasm\""
+            : "\"file:///dotnet.native.wasm\"";
+
         var dotnet = Path.Combine(BuildDirectory, "dotnet.js");
         File.WriteAllText(dotnet, File.ReadAllText(dotnet, Encoding.UTF8)
-            .Replace("import.meta.url", "\"file://dotnet.native.wasm\"")
+            .Replace("import.meta.url", url)
             .Replace("import(", "import(/*@vite-ignore*//*webpackIgnore:true*/"), Encoding.UTF8);
 
         var native = Path.Combine(BuildDirectory, "dotnet.native.js");
@@ -75,7 +79,7 @@ public sealed class BuildBootsharp : Microsoft.Build.Utilities.Task
             .Replace("require(\"url\").fileURLToPath(new URL(\"./\",import.meta.url))", "\"./\"") // when aggressive trimming enabled
             .Replace("new URL('dotnet.native.wasm', import.meta.url).href", "\"file:/\"")
             .Replace("new URL(\"dotnet.native.wasm\",import.meta.url).href", "\"file:/\"") // when aggressive trimming enabled
-            .Replace("import.meta.url", "\"file://dotnet.native.wasm\"")
+            .Replace("import.meta.url", url)
             .Replace("import(", "import(/*@vite-ignore*//*webpackIgnore:true*/"), Encoding.UTF8);
 
         var runtime = Path.Combine(BuildDirectory, "dotnet.runtime.js");
