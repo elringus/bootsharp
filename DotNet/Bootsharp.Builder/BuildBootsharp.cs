@@ -1,4 +1,5 @@
-﻿using System.Text;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using Microsoft.Build.Framework;
 
 namespace Bootsharp.Builder;
@@ -57,6 +58,7 @@ public sealed class BuildBootsharp : Microsoft.Build.Utilities.Task
         File.WriteAllText(Path.Combine(BuildDirectory, "resources.g.js"), content);
     }
 
+    [ExcludeFromCodeCoverage(Justification = "How to merge coverage from multiple OS?")]
     private void PatchInternals ()
     {
         // Remove unnecessary environment-specific calls in .NET's internals,
