@@ -25,8 +25,11 @@ internal sealed class SerializerGenerator
               """;
     }
 
-    private string BuildAttribute (string type) =>
-        $"[JsonSerializable(typeof({type}), TypeInfoPropertyName = \"{BuildHint(type)}\")]";
-
-    private string BuildHint (string type) => type[8..].Replace('.', '_').Replace('+', '_');
+    private string BuildAttribute (string type)
+    {
+        if (type.StartsWith("global::System.", StringComparison.Ordinal))
+            return $"[JsonSerializable(typeof({type}))]";
+        var hint = type.Replace("global::", "").Replace('.', '_').Replace('+', '_');
+        return $"[JsonSerializable(typeof({type}), TypeInfoPropertyName = \"{hint}\")]";
+    }
 }

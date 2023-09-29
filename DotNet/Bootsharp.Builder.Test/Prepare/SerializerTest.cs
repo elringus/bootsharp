@@ -15,7 +15,7 @@ public class SerializerTest : PrepareTest
 
             namespace Bootsharp;
 
-            [JsonSerializable(typeof(global::System.String), TypeInfoPropertyName = "System_String")]
+            [JsonSerializable(typeof(global::System.String))]
             internal partial class SerializerContext : JsonSerializerContext
             {
                 [System.Runtime.CompilerServices.ModuleInitializer]
@@ -39,7 +39,7 @@ public class SerializerTest : PrepareTest
 
             namespace Bootsharp;
 
-            [JsonSerializable(typeof(global::System.String), TypeInfoPropertyName = "System_String")]
+            [JsonSerializable(typeof(global::System.String))]
             internal partial class SerializerContext : JsonSerializerContext
             {
                 [System.Runtime.CompilerServices.ModuleInitializer]
@@ -80,7 +80,7 @@ public class SerializerTest : PrepareTest
             [JsonSerializable(typeof(global::n.ReadonlyStruct), TypeInfoPropertyName = "n_ReadonlyStruct")]
             [JsonSerializable(typeof(global::n.Foo), TypeInfoPropertyName = "n_Foo")]
             [JsonSerializable(typeof(global::n.Enum), TypeInfoPropertyName = "n_Enum")]
-            [JsonSerializable(typeof(global::System.String), TypeInfoPropertyName = "System_String")]
+            [JsonSerializable(typeof(global::System.String))]
             internal partial class SerializerContext : JsonSerializerContext
             {
                 [System.Runtime.CompilerServices.ModuleInitializer]
