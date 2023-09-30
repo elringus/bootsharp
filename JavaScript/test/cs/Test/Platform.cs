@@ -12,7 +12,7 @@ public static partial class Platform
     public static string GetGuid () => Guid.NewGuid().ToString();
 
     [JSInvokable]
-    public static string CatchException ()
+    public static string? CatchException ()
     {
         try { ThrowJS(); }
         catch (Exception e) { return e.Message; }

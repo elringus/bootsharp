@@ -69,17 +69,29 @@ describe("while bootsharp is booted", () => {
         expect(Test.Types.countTotalSpeed()).toStrictEqual(3);
     });
     it("can subscribe to events", () => {
-        let result = "";
-        Test.onEventBroadcast.subscribe(v => result = v);
+        let eventArg1, multipleArg1, multipleArg2, multipleArg3;
+        Test.onEvent.subscribe(v => eventArg1 = v);
+        Test.onEventMultiple.subscribe((a1, a2, a3) => {
+            multipleArg1 = a1;
+            multipleArg2 = a2;
+            multipleArg3 = a3;
+        });
         Test.broadcastEvent("foo");
-        expect(result).toStrictEqual("foo");
+        Test.broadcastEventMultiple(1, { id: "foo", maxSpeed: 50 }, TrackType.Rubber);
+        expect(multipleArg1).toStrictEqual(1);
+        expect(multipleArg2).toStrictEqual({ id: "foo", maxSpeed: 50 });
+        expect(multipleArg3).toStrictEqual(TrackType.Rubber);
+        Test.broadcastEventMultiple(255, undefined, TrackType.Chain);
+        expect(multipleArg1).toStrictEqual(255);
+        expect(multipleArg2).toBeUndefined();
+        expect(multipleArg3).toStrictEqual(TrackType.Chain);
     });
     it("can un-subscribe from events", () => {
         let result = "";
         const assigner = v => result = v;
-        Test.onEventBroadcast.subscribe(assigner);
+        Test.onEvent.subscribe(assigner);
         Test.broadcastEvent("foo");
-        Test.onEventBroadcast.unsubscribe(assigner);
+        Test.onEvent.unsubscribe(assigner);
         Test.broadcastEvent("bar");
         expect(result).toStrictEqual("foo");
     });

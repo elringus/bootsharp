@@ -44,19 +44,21 @@ public class DeclarationTest : BuildTest
     }
 
     [Fact]
-    public void EventPropertyIsExportedForEventMethod ()
+    public void EventPropertiesAreExportedForEventMethods ()
     {
-        AddAssembly(With("Foo", "[JSEvent] public static void OnFoo () { }"));
+        AddAssembly(
+            With("Foo", "[JSEvent] public static void OnFoo () { }"),
+            With("Foo", "[JSEvent] public static void OnBar (string baz) { }"),
+            With("Foo", "[JSEvent] public static void OnFar (int yaz, bool? nya) { }"));
         Execute();
-        Contains("export namespace Foo {\n    export const onFoo: Event<void>;\n}");
-    }
-
-    [Fact]
-    public void GenericEventIsExportedForEventMethodWithArguments ()
-    {
-        AddAssembly(With("Foo", "[JSEvent] public static void OnFoo (string bar) { }"));
-        Execute();
-        Contains("export namespace Foo {\n    export const onFoo: Event<string>;\n}");
+        Contains(
+            """
+            export namespace Foo {
+                export const onFoo: Event<[]>;
+                export const onBar: Event<[baz: string]>;
+                export const onFar: Event<[yaz: number, nya?: boolean]>;
+            }
+            """);
     }
 
     [Fact]
@@ -117,7 +119,7 @@ public class DeclarationTest : BuildTest
     public void NamespaceAttributeOverrideSpaceNames ()
     {
         AddAssembly(
-            With(@"[assembly:JSNamespace(@""Foo\.Bar\.(\S+)"", ""$1"")]", false),
+            With("""[assembly:JSNamespace(@"Foo\.Bar\.(\S+)", "$1")]""", false),
             With("Foo.Bar.Nya", "public class Nya { }", false),
             With("Foo.Bar.Fun", "[JSFunction] public static void OnFun (Nya.Nya nya) { }"));
         Execute();
@@ -471,14 +473,6 @@ public class DeclarationTest : BuildTest
         Execute();
         Matches(@"export enum Foo {\s*A,\s*B\s*}");
         Matches(@"export interface Bar {\s*foo\?: n.Foo;\s*}");
-    }
-
-    [Fact]
-    public void NullableEventTypesUnionWithUndefined ()
-    {
-        AddAssembly(With("[JSEvent] public static void OnFoo (string? bar) { }"));
-        Execute();
-        Contains("export const onFoo: Event<string | undefined>;");
     }
 
     [Fact]

@@ -47,9 +47,9 @@ public class SerializerTest
     }
 
     [Fact]
-    public void SerializesNullAsUndefined ()
+    public void SerializesNullAsNull ()
     {
-        Assert.Equal("undefined", Serialize(null));
+        Assert.Equal("null", Serialize(null));
     }
 
     [Fact]
@@ -62,10 +62,13 @@ public class SerializerTest
     [Fact]
     public void DeserializesNullAndUndefinedAsDefault ()
     {
+        Assert.Null(Deserialize<MockItem>(null));
         Assert.Null(Deserialize<MockItem>("null"));
         Assert.Null(Deserialize<MockItem>("undefined"));
+        Assert.Null(Deserialize<int?>(null));
         Assert.Null(Deserialize<int?>("null"));
         Assert.Null(Deserialize<int?>("undefined"));
+        Assert.False(Deserialize<bool>(null));
         Assert.False(Deserialize<bool>("null"));
         Assert.False(Deserialize<bool>("undefined"));
     }

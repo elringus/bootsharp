@@ -21,16 +21,17 @@ public static class Serializer
     /// </summary>
     public static string Serialize (object? @object)
     {
-        if (@object is null) return "undefined";
+        if (@object is null) return "null";
         return JsonSerializer.Serialize(@object, GetInfo(@object.GetType()));
     }
 
     /// <summary>
     /// Deserializes specified JSON string to the object of specified type.
     /// </summary>
-    public static T? Deserialize<T> (string json)
+    public static T? Deserialize<T> (string? json)
     {
-        if (json.Equals("null", StringComparison.Ordinal) ||
+        if (json is null ||
+            json.Equals("null", StringComparison.Ordinal) ||
             json.Equals("undefined", StringComparison.Ordinal)) return default;
         var info = (JsonTypeInfo<T>)GetInfo(typeof(T));
         return JsonSerializer.Deserialize(json, info);

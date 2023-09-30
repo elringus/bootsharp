@@ -68,9 +68,9 @@ internal sealed class MethodDeclarationGenerator
 
     private void DeclareEvent ()
     {
-        var arg = method.JSArguments.Count == 0 ? "void" : method.JSArguments[0].Type;
-        if (method.JSArguments.Count > 0 && method.JSArguments[0].Nullable) arg += " | undefined";
-        builder.Append($"\n    export const {ToFirstLower(method.Name)}: Event<{arg}>;");
+        builder.Append($"\n    export const {ToFirstLower(method.Name)}: Event<[");
+        builder.AppendJoin(", ", method.JSArguments.Select(BuildArgumentDeclaration));
+        builder.Append("]>;");
     }
 
     private string BuildArgumentDeclaration (Argument arg)

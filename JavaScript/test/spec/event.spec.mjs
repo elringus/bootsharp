@@ -45,6 +45,17 @@ describe("event", () => {
         event.broadcast("foo");
         expect(result).toStrictEqual("foo");
     });
+    it("can broadcast multiple arguments", () => {
+        let resultA, resultB;
+        const event = new Event();
+        event.subscribe(function (a, b) {
+            resultA = a;
+            resultB = b;
+        });
+        event.broadcast(["foo", "bar", undefined, null], "nya");
+        expect(resultA).toStrictEqual(["foo", "bar", undefined, null]);
+        expect(resultB).toStrictEqual("nya");
+    });
     it("doesnt add same handlers multiple times", () => {
         let result = 0;
         const event = new Event({ warn: () => {} });
@@ -71,7 +82,7 @@ describe("event", () => {
         const event = new Event();
         event.broadcast("foo");
         event.broadcast("bar");
-        expect(event.last).toStrictEqual("bar");
+        expect(event.last).toStrictEqual(["bar"]);
     });
     it("can transform payload", () => {
         const event = new Event({ convert: _ => "bar" });

@@ -21,6 +21,7 @@ public class BindingTest : BuildTest
             import { exports } from "./exports";
             import { Event } from "./event";
             function __inv () { if (exports == null) throw Error("Boot the runtime before invoking C# APIs."); return exports; }
+            function parseJson(obj) { const result = JSON.parse(obj); if (result === null) return undefined; return result; }
             """);
     }
 
@@ -58,12 +59,15 @@ public class BindingTest : BuildTest
     [Fact]
     public void BindingForEventMethodIsGenerated ()
     {
-        AddAssembly(With("[JSEvent] public static void OnFoo (string bar) { }"));
+        AddAssembly(
+            With("[JSEvent] public static void OnFoo (string bar) { }"),
+            With("[JSEvent] public static void OnBaz (int yaz, bool nya) { }"));
         Execute();
         Contains(
             """
             export const Global = {
-                onFoo: new Event()
+                onFoo: new Event(),
+                onBaz: new Event()
             };
             """);
     }
@@ -232,15 +236,17 @@ public class BindingTest : BuildTest
             With("public record Info;", false),
             With("[JSInvokable] public static Info Foo (Info i) => default;"),
             With("[JSFunction] public static Info? Bar (Info? i) => default;"),
-            With("[JSEvent] public static void Baz (Info?[] i) { }"));
+            With("[JSEvent] public static void Baz (Info?[] i) { }"),
+            With("[JSEvent] public static void Yaz (int a, Info i) { }"));
         Execute();
         Contains(
             """
             export const Global = {
-                foo: (i) => JSON.parse(__inv().MockClass.Foo(JSON.stringify(i))),
+                foo: (i) => parseJson(__inv().MockClass.Foo(JSON.stringify(i))),
                 get bar() { if (this._bar == null) throw Error("Failed to invoke 'Global.bar' JavaScript function: undefined."); return this._bar; },
-                set bar($bar) { this._bar = (i) => JSON.stringify(this.$bar(JSON.parse(i))); this.$bar = $bar; },
-                baz: new Event({ convert: i => JSON.parse(i) })
+                set bar($bar) { this._bar = (i) => JSON.stringify(this.$bar(parseJson(i))); this.$bar = $bar; },
+                baz: new Event({ convert: (i) => [parseJson(i)] }),
+                yaz: new Event({ convert: (a, i) => [a, parseJson(i)] })
             };
             """);
     }
@@ -256,9 +262,9 @@ public class BindingTest : BuildTest
         Contains(
             """
             export const Global = {
-                foo: async (i) => JSON.parse(await __inv().MockClass.Foo(JSON.stringify(i))),
+                foo: async (i) => parseJson(await __inv().MockClass.Foo(JSON.stringify(i))),
                 get bar() { if (this._bar == null) throw Error("Failed to invoke 'Global.bar' JavaScript function: undefined."); return this._bar; },
-                set bar($bar) { this._bar = async (i) => JSON.stringify(await this.$bar(JSON.parse(i))); this.$bar = $bar; }
+                set bar($bar) { this._bar = async (i) => JSON.stringify(await this.$bar(parseJson(i))); this.$bar = $bar; }
             };
             """);
     }
@@ -273,7 +279,7 @@ public class BindingTest : BuildTest
         Contains(
             """
             export const n = {
-                getFoo: () => JSON.parse(__inv().n_MockClass.GetFoo()),
+                getFoo: () => parseJson(__inv().n_MockClass.GetFoo()),
                 Foo: { A: 0, B: 1 }
             };
             """);

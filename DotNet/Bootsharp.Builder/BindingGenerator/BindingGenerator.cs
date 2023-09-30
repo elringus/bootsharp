@@ -32,6 +32,7 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
         builder.Append("import { exports } from \"./exports\";\n");
         builder.Append("import { Event } from \"./event\";\n");
         builder.Append("function __inv () { if (exports == null) throw Error(\"Boot the runtime before invoking C# APIs.\"); return exports; }\n");
+        builder.Append("function parseJson(obj) { const result = JSON.parse(obj); if (result === null) return undefined; return result; }\n");
     }
 
     private void EmitBinding ()
@@ -89,7 +90,7 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
             arg.ShouldSerialize ? $"JSON.stringify({arg.Name})" : arg.Name
         ));
         var body = $"{(wait ? "await " : "")}{endpoint}({invArgs})";
-        if (method.ShouldSerializeReturnType) body = $"JSON.parse({body})";
+        if (method.ShouldSerializeReturnType) body = $"parseJson({body})";
         var func = $"{(wait ? "async " : "")}({funcArgs}) => {body}";
         builder.Append($"{Comma()}\n{Pad(level + 1)}{ToFirstLower(method.Name)}: {func}");
     }
@@ -100,7 +101,7 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
         var name = ToFirstLower(method.Name);
         var funcArgs = string.Join(", ", method.JSArguments.Select(a => a.Name));
         var invArgs = string.Join(", ", method.JSArguments.Select(arg =>
-            arg.ShouldSerialize ? $"JSON.parse({arg.Name})" : arg.Name
+            arg.ShouldSerialize ? $"parseJson({arg.Name})" : arg.Name
         ));
         var body = $"{(wait ? "await " : "")}this.${name}({invArgs})";
         if (method.ShouldSerializeReturnType) body = $"JSON.stringify({body})";
@@ -112,9 +113,17 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
 
     private void EmitEvent (Method method)
     {
-        var options = method.JSArguments.FirstOrDefault() is { ShouldSerialize: true } arg ?
-            $"{{ convert: {arg.Name} => JSON.parse({arg.Name}) }}" : "";
-        builder.Append($"{Comma()}\n{Pad(level + 1)}{ToFirstLower(method.Name)}: new Event({options})");
+        var name = ToFirstLower(method.Name);
+        var options = "";
+        if (method.JSArguments.Any(a => a.ShouldSerialize))
+        {
+            var funcArgs = string.Join(", ", method.JSArguments.Select(a => a.Name));
+            var invArgs = string.Join(", ", method.JSArguments.Select(arg =>
+                arg.ShouldSerialize ? $"parseJson({arg.Name})" : arg.Name
+            ));
+            options = $"{{ convert: ({funcArgs}) => [{invArgs}] }}";
+        }
+        builder.Append($"{Comma()}\n{Pad(level + 1)}{name}: new Event({options})");
     }
 
     private void EmitEnum (Type @enum)
