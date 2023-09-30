@@ -104,3 +104,30 @@ describe("boot", () => {
         expect(customs.export).toHaveBeenCalledOnce();
     });
 });
+
+describe("boot status", () => {
+    it("is standby by default", async () => {
+        const { bootsharp } = await setup();
+        expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Standby);
+    });
+    it("transitions to booting and then to booted", async () => {
+        const { bootsharp, bins } = await setup();
+        bootsharp.resources.wasm.content = bins.wasm;
+        for (const asm of bootsharp.resources.assemblies)
+            asm.content = bins.assemblies.find(a => a.name === asm.name).content;
+        const promise = bootsharp.boot({});
+        expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Booting);
+        await promise;
+        expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Booted);
+    });
+    it("transitions to standby on exit", async () => {
+        const { bootsharp, bins } = await setup();
+        bootsharp.resources.wasm.content = bins.wasm;
+        for (const asm of bootsharp.resources.assemblies)
+            asm.content = bins.assemblies.find(a => a.name === asm.name).content;
+        await bootsharp.boot({});
+        expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Booted);
+        bootsharp.exit();
+        expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Standby);
+    });
+});
