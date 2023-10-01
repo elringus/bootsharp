@@ -13,6 +13,8 @@ export type BootResources = {
     readonly assemblies: BinaryResource[];
     /** Name of the entry (main) assembly, without file extension. */
     readonly entryAssemblyName: string;
+    /** Absolute URL to <code>dotnet.native.worker.js</code> file required in multithreading mode. */
+    workerUrl?: string;
 }
 
 /** Binary resource required to boot .NET runtime.*/
@@ -38,6 +40,10 @@ export function buildConfig(): RuntimeConfig {
                 name: "dotnet.native.js",
                 moduleExports: native,
                 behavior: "js-module-native"
+            },
+            {
+                name: resources.workerUrl!,
+                behavior: "js-module-threads"
             },
             {
                 name: "dotnet.native.wasm",

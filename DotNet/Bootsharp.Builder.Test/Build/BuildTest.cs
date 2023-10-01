@@ -29,6 +29,7 @@ public class BuildTest : TaskTest
         InspectedDirectory = Project.Root,
         EntryAssemblyName = "System.Runtime.dll",
         BuildEngine = Engine,
-        EmbedBinaries = false
+        EmbedBinaries = false,
+        Multithreading = false
     };
 }

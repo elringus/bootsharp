@@ -91,7 +91,8 @@
         <BuildBootsharp BuildDirectory="$(BootsharpBuildDirectory)"
                         InspectedDirectory="$(PublishDir)"
                         EntryAssemblyName="$(BootsharpEntryAssemblyName)"
-                        EmbedBinaries="$(BootsharpEmbedBinaries)"/>
+                        EmbedBinaries="$(BootsharpEmbedBinaries)"
+                        Multithreading="$(WasmEnableThreads)"/>
 
         <!-- Copy bootsharp source files to the build directory. -->
         <ItemGroup>
@@ -111,6 +112,7 @@
             <BootsharpModuleFiles Include="$(BootsharpBuildDirectory)/*.mjs"/>
             <BootsharpWasmFiles Include="$(BootsharpBuildDirectory)/*.wasm"/>
             <BootsharpTypeFiles Include="$(BootsharpBuildDirectory)/*.d.ts"/>
+            <BootsharpWorkerFile Include="$(BootsharpBuildDirectory)/dotnet.native.worker.js"/>
         </ItemGroup>
         <RemoveDir Directories="$(BootsharpBinariesDirectory);$(BootsharpTypesDirectory)"/>
         <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'"
@@ -120,6 +122,8 @@
               DestinationFolder="$(BootsharpTypesDirectory)"/>
         <Copy SourceFiles="@(BootsharpModuleFiles)"
               DestinationFolder="$(BootsharpPublishDirectory)"/>
+        <Copy SourceFiles="@(BootsharpWorkerFile)"
+              DestinationFolder="$(BootsharpBinariesDirectory)"/>
 
         <!-- Publish package file. -->
         <ItemGroup>

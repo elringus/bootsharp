@@ -5,6 +5,7 @@ export async function bootBackend() {
         fetchContent(backend.resources.wasm),
         ...backend.resources.assemblies.map(fetchContent)
     ]);
+    backend.resources.workerUrl = "/bin/dotnet.native.worker.js";
     await backend.boot();
 }
 
