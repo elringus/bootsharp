@@ -8,7 +8,7 @@ export function decodeBase64(source: string): Uint8Array {
     let tmp;
     let i = 0;
     let byteIndex = 0;
-    let buffer = [];
+    const buffer = [];
 
     for (; i < baseLength; i += 4) {
         tmp = (lookup[source.charCodeAt(i)] << 18) | (lookup[source.charCodeAt(i + 1)] << 12) | (lookup[source.charCodeAt(i + 2)] << 6) | (lookup[source.charCodeAt(i + 3)]);
