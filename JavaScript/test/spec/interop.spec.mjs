@@ -23,10 +23,9 @@ describe("while bootsharp is booted", () => {
     it("can invoke C# method", async () => {
         expect(Test.joinStrings("foo", "bar")).toStrictEqual("foobar");
     });
-    // it("can invoke async C# method", async () => {
-    //     // TODO: Async failing in node https://github.com/dotnet/runtime/issues/92713
-    //     expect(await Test.joinStringsAsync("foo", "bar")).toStrictEqual("foobar");
-    // });
+    it("can invoke async C# method", async () => {
+        expect(await Test.joinStringsAsync("foo", "bar")).toStrictEqual("foobar");
+    });
     it("can transfer decimals", () => {
         expect(Test.sumDoubles(-1, 2.75)).toStrictEqual(1.75);
     });

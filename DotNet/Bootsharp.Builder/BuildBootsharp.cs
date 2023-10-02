@@ -8,7 +8,7 @@ public sealed class BuildBootsharp : Microsoft.Build.Utilities.Task
     [Required] public required string InspectedDirectory { get; set; }
     [Required] public required string EntryAssemblyName { get; set; }
     [Required] public required bool EmbedBinaries { get; set; }
-    [Required] public required bool Multithreading { get; set; }
+    [Required] public required bool Threading { get; set; }
 
     public override bool Execute ()
     {
@@ -17,7 +17,7 @@ public sealed class BuildBootsharp : Microsoft.Build.Utilities.Task
         GenerateBindings(inspector, spaceBuilder);
         GenerateDeclarations(inspector, spaceBuilder);
         GenerateResources(inspector);
-        PatchInternals();
+        PatchModules();
         return true;
     }
 
@@ -57,9 +57,9 @@ public sealed class BuildBootsharp : Microsoft.Build.Utilities.Task
         File.WriteAllText(Path.Combine(BuildDirectory, "resources.g.js"), content);
     }
 
-    private void PatchInternals ()
+    private void PatchModules ()
     {
-        var patcher = new InternalPatcher(BuildDirectory, Multithreading);
+        var patcher = new ModulePatcher(BuildDirectory, Threading, EmbedBinaries);
         patcher.Patch();
     }
 }

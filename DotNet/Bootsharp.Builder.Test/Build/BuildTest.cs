@@ -30,6 +30,6 @@ public class BuildTest : TaskTest
         EntryAssemblyName = "System.Runtime.dll",
         BuildEngine = Engine,
         EmbedBinaries = false,
-        Multithreading = false
+        Threading = false
     };
 }

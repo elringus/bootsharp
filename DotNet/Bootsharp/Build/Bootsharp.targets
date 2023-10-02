@@ -85,14 +85,9 @@
             <BootsharpBinariesDirectory Condition="'$(BootsharpBinariesDirectory)' == ''">$(BootsharpPublishDirectory)/bin</BootsharpBinariesDirectory>
             <BootsharpPackageDirectory Condition="'$(BootsharpPackageDirectory)' == ''">$(BootsharpPublishDirectory)</BootsharpPackageDirectory>
             <BootsharpBundleCommand Condition="'$(BootsharpBundleCommand)' == ''">npx rollup bootsharp.js -o $(BootsharpName).mjs -f es -g process,module</BootsharpBundleCommand>
+            <BootsharpThreading Condition="'$(WasmEnableThreads)' == 'true'">true</BootsharpThreading>
+            <BootsharpThreading Condition="'$(WasmEnableThreads)' != 'true'">false</BootsharpThreading>
         </PropertyGroup>
-
-        <!-- Generate bindings, type declarations and (optionally) embed binaries. -->
-        <BuildBootsharp BuildDirectory="$(BootsharpBuildDirectory)"
-                        InspectedDirectory="$(PublishDir)"
-                        EntryAssemblyName="$(BootsharpEntryAssemblyName)"
-                        EmbedBinaries="$(BootsharpEmbedBinaries)"
-                        Multithreading="$(WasmEnableThreads)"/>
 
         <!-- Copy bootsharp source files to the build directory. -->
         <ItemGroup>
@@ -102,28 +97,40 @@
         <Move SourceFiles="$(BootsharpBuildDirectory)/bootsharp.d.ts"
               DestinationFiles="$(BootsharpBuildDirectory)/$(BootsharpName).d.ts"/>
 
+        <!-- Generate bindings, type declarations and (optionally) embed binaries. -->
+        <BuildBootsharp BuildDirectory="$(BootsharpBuildDirectory)"
+                        InspectedDirectory="$(PublishDir)"
+                        EntryAssemblyName="$(BootsharpEntryAssemblyName)"
+                        EmbedBinaries="$(BootsharpEmbedBinaries)"
+                        Threading="$(BootsharpThreading)"/>
+
         <!-- Compile generated JavaScript solution. -->
         <Exec Command="$(BootsharpBundleCommand)"
               WorkingDirectory="$(BootsharpBuildDirectory)"
               StdOutEncoding="utf-8" StdErrEncoding="utf-8"/>
 
-        <!-- Publish module, binaries and type declarations. -->
+        <!-- Publish modules, binaries and type declarations. -->
         <ItemGroup>
             <BootsharpModuleFiles Include="$(BootsharpBuildDirectory)/*.mjs"/>
             <BootsharpWasmFiles Include="$(BootsharpBuildDirectory)/*.wasm"/>
             <BootsharpTypeFiles Include="$(BootsharpBuildDirectory)/*.d.ts"/>
+            <BootsharpRuntimeFile Include="$(BootsharpBuildDirectory)/dotnet.runtime.js"/>
+            <BootsharpNativeFile Include="$(BootsharpBuildDirectory)/dotnet.native.js"/>
             <BootsharpWorkerFile Include="$(BootsharpBuildDirectory)/dotnet.native.worker.js"/>
         </ItemGroup>
         <RemoveDir Directories="$(BootsharpBinariesDirectory);$(BootsharpTypesDirectory)"/>
-        <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'"
-              SourceFiles="@(BootsharpWasmFiles)"
+        <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'" SourceFiles="@(BootsharpWasmFiles)"
+              DestinationFolder="$(BootsharpBinariesDirectory)"/>
+        <Copy Condition="$(BootsharpThreading)" SourceFiles="@(BootsharpRuntimeFile)"
+              DestinationFolder="$(BootsharpBinariesDirectory)"/>
+        <Copy Condition="$(BootsharpThreading)" SourceFiles="@(BootsharpNativeFile)"
+              DestinationFolder="$(BootsharpBinariesDirectory)"/>
+        <Copy Condition="$(BootsharpThreading)" SourceFiles="@(BootsharpWorkerFile)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy SourceFiles="@(BootsharpTypeFiles)"
               DestinationFolder="$(BootsharpTypesDirectory)"/>
         <Copy SourceFiles="@(BootsharpModuleFiles)"
               DestinationFolder="$(BootsharpPublishDirectory)"/>
-        <Copy SourceFiles="@(BootsharpWorkerFile)"
-              DestinationFolder="$(BootsharpBinariesDirectory)"/>
 
         <!-- Publish package file. -->
         <ItemGroup>

@@ -9,8 +9,7 @@ describe("export", () => {
     });
     it("exports dotnet api", () => {
         expect(bootsharp.dotnet.builder).toBeTypeOf("object");
-        expect(bootsharp.dotnet.native).toBeTypeOf("object");
-        expect(bootsharp.dotnet.runtime).toBeTypeOf("object");
+        expect(bootsharp.dotnet.module).toBeTypeOf("object");
     });
     it("exports type declarations", () => {
         expect(getDeclarations()).toBeTruthy();

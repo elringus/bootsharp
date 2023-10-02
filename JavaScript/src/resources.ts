@@ -1,73 +1,51 @@
 import generated from "./resources.g";
-import { RuntimeConfig, AssetEntry, runtime, native } from "./external";
+import { RuntimeConfig, AssetEntry, runtime, native, AssetBehaviors } from "./external";
 import { decodeBase64 } from "./decoder";
 
 /** Resources required to boot .NET runtime. */
-export const resources: BootResources = generated;
-
-/** Resources required to boot .NET runtime. */
 export type BootResources = {
-    /** Either binary or base64-encoded string of the runtime WASM content. */
-    wasm: BinaryResource;
-    /** C# assemblies required to boot the runtime. */
+    /** Compiled .NET WASM runtime module. */
+    readonly wasm: BinaryResource;
+    /** Compiled .NET assemblies. */
     readonly assemblies: BinaryResource[];
     /** Name of the entry (main) assembly, without file extension. */
     readonly entryAssemblyName: string;
-    /** Absolute URL to <code>dotnet.native.worker.js</code> file required in multithreading mode. */
-    workerUrl?: string;
+    /** URL of the remote directory where boot resources are hosted (eg, <code>/bin</code>).
+     *  When resource content is missing in boot config, will attempt to fetch it from the remote.
+     *  Required for streaming WASM compilation and multithreading mode. */
+    root?: string;
 }
 
 /** Binary resource required to boot .NET runtime.*/
 export type BinaryResource = {
     /** Name of the binary file, including extension. */
     readonly name: string;
-    /** Either binary or base64-encoded string of the file content. */
+    /** Embedded binary or base64-encoded string of the resource content. */
     content?: Uint8Array | string;
 }
 
-// https://github.com/dotnet/runtime/tree/main/src/mono/sample/wasm/browser-minimal-config
+/** Resources required to boot .NET runtime. */
+export const resources: BootResources = generated;
+
 export function buildConfig(): RuntimeConfig {
-    validate(resources);
     return {
         mainAssemblyName: resources.entryAssemblyName,
         assets: [
-            {
-                name: "dotnet.runtime.js",
-                moduleExports: runtime,
-                behavior: "js-module-runtime"
-            },
-            {
-                name: "dotnet.native.js",
-                moduleExports: native,
-                behavior: "js-module-native"
-            },
-            {
-                name: resources.workerUrl!,
-                behavior: "js-module-threads"
-            },
-            {
-                name: "dotnet.native.wasm",
-                buffer: toBinary(resources.wasm.content!),
-                behavior: "dotnetwasm"
-            },
-            ...resources.assemblies.map(buildAssembly)
+            buildResource({ name: "dotnet.runtime.js" }, "js-module-runtime", runtime),
+            buildResource({ name: "dotnet.native.js" }, "js-module-native", native),
+            buildResource({ name: "dotnet.native.worker.js" }, "js-module-threads"),
+            buildResource(resources.wasm, "dotnetwasm"),
+            ...resources.assemblies.map(a => buildResource(a, "assembly"))
         ]
     };
 }
 
-function validate(res: BootResources): void {
-    if (res.wasm.content == null || res.wasm.content.length === 0)
-        throw Error("Missing WASM boot resource.");
-    for (const asm of res.assemblies)
-        if (asm.content == null || asm.content.length === 0)
-            throw Error(`Missing '${asm.name}' assembly boot resource.`);
-}
-
-function buildAssembly(res: BinaryResource): AssetEntry {
+function buildResource(res: BinaryResource, behaviour: AssetBehaviors, module?: unknown): AssetEntry {
     return {
-        name: res.name,
-        buffer: toBinary(res.content!),
-        behavior: "assembly"
+        name: resources.root == null ? res.name : `${resources.root}/${res.name}`,
+        moduleExports: module,
+        buffer: res.content ? toBinary(res.content) : undefined,
+        behavior: behaviour
     };
 }
 

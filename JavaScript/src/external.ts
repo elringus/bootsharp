@@ -1,5 +1,5 @@
-import * as runtimeModule from "./dotnet.runtime";
-import * as nativeModule from "./dotnet.native";
+import * as runtimeModule from "./dotnet.runtime.g";
+import * as nativeModule from "./dotnet.native.g";
 import * as dotnetModule from "./dotnet";
 import type { DotnetHostBuilder, MonoConfig, AssetEntry, ModuleAPI } from "./dotnet.d.ts";
 

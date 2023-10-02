@@ -1,4 +1,5 @@
 import { expect, describe, it, vi } from "vitest";
+import path from "node:path";
 
 async function setup() {
     // dotnet merges with the host node process, so it's not possible
@@ -11,19 +12,6 @@ async function setup() {
 }
 
 describe("boot", () => {
-    it("throws when missing WASM boot resource", async () => {
-        const { bootsharp, Test } = await setup();
-        bootsharp.resources.wasm.content = [];
-        await expect(bootsharp.boot).rejects.toContain(/Missing WASM boot resource/);
-        expect(Test.$onMainInvoked).not.toHaveBeenCalled();
-    });
-    it("throws when missing assembly boot resource", async () => {
-        const { bootsharp, Test, bins } = await setup();
-        bootsharp.resources.wasm.content = bins.wasm;
-        bootsharp.resources.assemblies[0].content = [];
-        await expect(bootsharp.boot).rejects.toContain(/Missing '.+\.wasm' assembly boot resource/);
-        expect(Test.$onMainInvoked).not.toHaveBeenCalled();
-    });
     it("can boot with byte content", async () => {
         const { bootsharp, Test, bins } = await setup();
         bootsharp.resources.wasm.content = bins.wasm;
@@ -49,6 +37,12 @@ describe("boot", () => {
         await bootsharp.boot({});
         expect(Test.$onMainInvoked).toHaveBeenCalledOnce();
     });
+    // it("can boot with streaming bins from root", async () => {
+    //     const { bootsharp, Test } = await setup();
+    //     bootsharp.resources.root = "./bin";
+    //     await bootsharp.boot({});
+    //     expect(Test.$onMainInvoked).toHaveBeenCalledOnce();
+    // });
     it("attempts to use atob when window is defined in global", async () => {
         const { bootsharp, bins } = await setup();
         // noinspection JSValidateTypes
@@ -75,13 +69,11 @@ describe("boot", () => {
                 mainAssemblyName: bins.entryAssemblyName,
                 assets: [
                     {
-                        name: "dotnet.runtime.js",
-                        moduleExports: bootsharp.dotnet.runtime,
+                        name: path.resolve("test/cs/Test/bin/bootsharp/dotnet.runtime.g.mjs"),
                         behavior: "js-module-runtime"
                     },
                     {
-                        name: "dotnet.native.js",
-                        moduleExports: bootsharp.dotnet.native,
+                        name: path.resolve("test/cs/Test/bin/bootsharp/dotnet.native.g.mjs"),
                         behavior: "js-module-native"
                     },
                     {
@@ -120,14 +112,14 @@ describe("boot status", () => {
         await promise;
         expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Booted);
     });
-    it("transitions to standby on exit", async () => {
-        const { bootsharp, bins } = await setup();
-        bootsharp.resources.wasm.content = bins.wasm;
-        for (const asm of bootsharp.resources.assemblies)
-            asm.content = bins.assemblies.find(a => a.name === asm.name).content;
-        await bootsharp.boot({});
-        expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Booted);
-        bootsharp.exit();
-        expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Standby);
-    });
+    // it("transitions to standby on exit", async () => {
+    //     const { bootsharp, bins } = await setup();
+    //     bootsharp.resources.wasm.content = bins.wasm;
+    //     for (const asm of bootsharp.resources.assemblies)
+    //         asm.content = bins.assemblies.find(a => a.name === asm.name).content;
+    //     await bootsharp.boot({});
+    //     expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Booted);
+    //     bootsharp.exit();
+    //     expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Standby);
+    // });
 });

@@ -1,2 +1,2 @@
 // Resolved when building C# solution.
-export default {};
+export default undefined;

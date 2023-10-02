@@ -41,6 +41,8 @@ export async function boot(custom?: BootCustom): Promise<RuntimeAPI> {
     status = BootStatus.Booting;
     const config = custom?.config ?? buildConfig();
     const runtime = await custom?.create?.(config) || await builder.withConfig(config).create();
+    // TODO: Remove once https://github.com/dotnet/runtime/issues/92713 fix is merged.
+    (<{ runtimeKeepalivePush: () => void }><unknown>runtime.Module).runtimeKeepalivePush();
     await custom?.import?.(runtime) || bindImports(runtime);
     await custom?.run?.(runtime) || await runtime.runMain(config.mainAssemblyName!, []);
     await custom?.export?.(runtime) || await bindExports(runtime, config.mainAssemblyName!);
