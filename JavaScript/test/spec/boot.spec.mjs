@@ -112,14 +112,14 @@ describe("boot status", () => {
         await promise;
         expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Booted);
     });
-    // it("transitions to standby on exit", async () => {
-    //     const { bootsharp, bins } = await setup();
-    //     bootsharp.resources.wasm.content = bins.wasm;
-    //     for (const asm of bootsharp.resources.assemblies)
-    //         asm.content = bins.assemblies.find(a => a.name === asm.name).content;
-    //     await bootsharp.boot({});
-    //     expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Booted);
-    //     bootsharp.exit();
-    //     expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Standby);
-    // });
+    it("transitions to standby on exit", async () => {
+        const { bootsharp, bins } = await setup();
+        bootsharp.resources.wasm.content = bins.wasm;
+        for (const asm of bootsharp.resources.assemblies)
+            asm.content = bins.assemblies.find(a => a.name === asm.name).content;
+        await bootsharp.boot({});
+        expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Booted);
+        bootsharp.exit();
+        expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Standby);
+    });
 });
