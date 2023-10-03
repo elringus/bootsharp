@@ -91,4 +91,26 @@ public class SerializerTest : PrepareTest
         Contains("[JsonSerializable(typeof(global::System.Collections.Generic.IReadOnlyDictionary<global::System.String, global::System.Int32>)");
         Contains("[JsonSerializable(typeof(global::System.Collections.Generic.Dictionary<global::System.String, global::System.Int32>)");
     }
+
+    [Fact]
+    public void DoesntAddProxiesForTaskWithoutResult ()
+    {
+        AddAssembly(With("[JSInvokable] public static Task Foo () => default;"));
+        Execute();
+        Assert.Empty(TestedContent);
+    }
+
+    [Fact]
+    public void AddsProxiesForTaskWithResult ()
+    {
+        AddAssembly(
+            With("public record Info;", false),
+            With("[JSInvokable] public static Task<Info> Foo () => default;"),
+            With("[JSInvokable] public static Task<IReadOnlyList<bool>> Bar () => default;"));
+        Execute();
+        Contains("[JsonSerializable(typeof(global::Info)");
+        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.IReadOnlyList<global::System.Boolean>)");
+        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.List<global::System.Boolean>)");
+        Contains("[JsonSerializable(typeof(global::System.Boolean[])");
+    }
 }

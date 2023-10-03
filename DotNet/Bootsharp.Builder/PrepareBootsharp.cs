@@ -6,8 +6,8 @@ public sealed class PrepareBootsharp : Microsoft.Build.Utilities.Task
 {
     [Required] public required string InspectedDirectory { get; set; }
     [Required] public required string EntryAssemblyName { get; set; }
-    [Required] public required string InteropExportsFilePath { get; set; }
-    [Required] public required string InteropImportsFilePath { get; set; }
+    [Required] public required string ExportsFilePath { get; set; }
+    [Required] public required string ImportsFilePath { get; set; }
     [Required] public required string SerializerFilePath { get; set; }
 
     public override bool Execute ()
@@ -39,16 +39,16 @@ public sealed class PrepareBootsharp : Microsoft.Build.Utilities.Task
     {
         var generator = new ExportGenerator();
         var content = generator.Generate(inspector);
-        Directory.CreateDirectory(Path.GetDirectoryName(InteropExportsFilePath)!);
-        File.WriteAllText(InteropExportsFilePath, content);
+        Directory.CreateDirectory(Path.GetDirectoryName(ExportsFilePath)!);
+        File.WriteAllText(ExportsFilePath, content);
     }
 
     private void GenerateImports (AssemblyInspector inspector)
     {
         var generator = new ImportGenerator(EntryAssemblyName);
         var content = generator.Generate(inspector);
-        Directory.CreateDirectory(Path.GetDirectoryName(InteropImportsFilePath)!);
-        File.WriteAllText(InteropImportsFilePath, content);
+        Directory.CreateDirectory(Path.GetDirectoryName(ImportsFilePath)!);
+        File.WriteAllText(ImportsFilePath, content);
     }
 
     private void GenerateSerializer (AssemblyInspector inspector)

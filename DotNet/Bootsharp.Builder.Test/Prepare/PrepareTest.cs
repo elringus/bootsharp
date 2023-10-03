@@ -15,8 +15,8 @@ public class PrepareTest : TaskTest
     private PrepareBootsharp CreateTask () => new() {
         InspectedDirectory = Project.Root,
         EntryAssemblyName = LastAddedAssemblyName ?? "System.Runtime.dll",
-        InteropExportsFilePath = exportPath,
-        InteropImportsFilePath = importPath,
+        ExportsFilePath = exportPath,
+        ImportsFilePath = importPath,
         SerializerFilePath = serializerPath,
         BuildEngine = Engine
     };

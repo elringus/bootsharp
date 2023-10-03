@@ -5,8 +5,8 @@
         <BootsharpSourceDirectory>$(BootsharpRoot)/js</BootsharpSourceDirectory>
         <BootsharpBuilderAssembly>$(BootsharpRoot)/tasks/Bootsharp.Builder.dll</BootsharpBuilderAssembly>
         <BootsharpIntermediateDirectory>$(IntermediateOutputPath)bootsharp</BootsharpIntermediateDirectory>
-        <BootsharpInteropExportsFilePath>$(BootsharpIntermediateDirectory)/InteropExports.g.cs</BootsharpInteropExportsFilePath>
-        <BootsharpInteropImportsFilePath>$(BootsharpIntermediateDirectory)/InteropImports.g.cs</BootsharpInteropImportsFilePath>
+        <BootsharpExportsFilePath>$(BootsharpIntermediateDirectory)/InteropExports.g.cs</BootsharpExportsFilePath>
+        <BootsharpImportsFilePath>$(BootsharpIntermediateDirectory)/InteropImports.g.cs</BootsharpImportsFilePath>
         <BootsharpSerializerFilePath>$(BootsharpIntermediateDirectory)/SerializerContext.g.cs</BootsharpSerializerFilePath>
         <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
     </PropertyGroup>
@@ -55,15 +55,15 @@
         <!-- Generate code to be analyzed by .NET's source generators: interop methods and serialized type hints. -->
         <PrepareBootsharp InspectedDirectory="$(OutputPath)"
                           EntryAssemblyName="$(BootsharpEntryAssemblyName)"
-                          InteropExportsFilePath="$(BootsharpInteropExportsFilePath)"
-                          InteropImportsFilePath="$(BootsharpInteropImportsFilePath)"
+                          ExportsFilePath="$(BootsharpExportsFilePath)"
+                          ImportsFilePath="$(BootsharpImportsFilePath)"
                           SerializerFilePath="$(BootsharpSerializerFilePath)"/>
         <ItemGroup>
-            <Compile Remove="$(BootsharpInteropExportsFilePath)"/>
-            <Compile Remove="$(BootsharpInteropImportsFilePath)"/>
+            <Compile Remove="$(BootsharpExportsFilePath)"/>
+            <Compile Remove="$(BootsharpImportsFilePath)"/>
             <Compile Remove="$(BootsharpSerializerFilePath)"/>
-            <Compile Include="$(BootsharpInteropExportsFilePath)"/>
-            <Compile Include="$(BootsharpInteropImportsFilePath)"/>
+            <Compile Include="$(BootsharpExportsFilePath)"/>
+            <Compile Include="$(BootsharpImportsFilePath)"/>
             <Compile Include="$(BootsharpSerializerFilePath)"/>
         </ItemGroup>
 

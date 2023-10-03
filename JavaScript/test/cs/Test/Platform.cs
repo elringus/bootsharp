@@ -21,7 +21,7 @@ public static partial class Platform
     }
 
     [JSInvokable]
-    public static string ThrowCS (string message) => throw new Exception(message);
+    public static void ThrowCS (string message) => throw new Exception(message);
 
     [JSFunction]
     public static partial void ThrowJS ();

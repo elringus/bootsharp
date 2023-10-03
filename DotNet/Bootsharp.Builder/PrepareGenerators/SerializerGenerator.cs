@@ -38,9 +38,15 @@ internal sealed class SerializerGenerator
 
     private void CollectAttributes (string syntax, Type type)
     {
-        attributes.Add(BuildAttribute(syntax, type));
+        if (IsTaskLike(type))
+        {
+            if (IsTaskWithResult(type, out var result))
+                CollectAttributes(BuildSyntax(result), result);
+            return;
+        }
         if (IsListInterface(type)) AddListProxies(type);
         if (IsDictInterface(type)) AddDictProxies(type);
+        attributes.Add(BuildAttribute(syntax, type));
     }
 
     private static string BuildAttribute (string syntax, Type type)
@@ -52,15 +58,15 @@ internal sealed class SerializerGenerator
 
     private void AddListProxies (Type list)
     {
-        var element = $"global::{list.GenericTypeArguments[0].FullName}";
+        var element = BuildSyntax(list.GenericTypeArguments[0]);
         attributes.Add(BuildAttribute($"{element}[]", list));
         attributes.Add(BuildAttribute($"global::System.Collections.Generic.List<{element}>", list));
     }
 
     private void AddDictProxies (Type dict)
     {
-        var key = $"global::{dict.GenericTypeArguments[0].FullName}";
-        var value = $"global::{dict.GenericTypeArguments[1].FullName}";
+        var key = BuildSyntax(dict.GenericTypeArguments[0]);
+        var value = BuildSyntax(dict.GenericTypeArguments[1]);
         attributes.Add(BuildAttribute($"global::System.Collections.Generic.Dictionary<{key}, {value}>", dict));
     }
 
