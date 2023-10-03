@@ -167,7 +167,7 @@ internal static class TypeUtilities
 
     private static string BuildSyntax (Type type, NullabilityInfo? nul, bool forceNil = false)
     {
-        var nil = nul != null && (forceNil || nul.ReadState == NullabilityState.Nullable) ? "?" : "";
+        var nil = (forceNil || nul?.ReadState == NullabilityState.Nullable) ? "?" : "";
         if (IsVoid(type)) return "void";
         if (type.IsArray) return $"{BuildSyntax(GetListElementType(type), nul?.ElementType)}[]{nil}";
         if (type.IsGenericType) return BuildGeneric(type, type.GenericTypeArguments);
