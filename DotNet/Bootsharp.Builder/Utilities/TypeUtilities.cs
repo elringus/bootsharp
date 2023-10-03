@@ -32,12 +32,12 @@ internal static class TypeUtilities
             ? type.GenericTypeArguments[0] : null) != null;
     }
 
-    public static string MarshalDate (string fullname, bool @return)
+    public static string MarshalDate (string typeSyntax, bool @return)
     {
         var ret = @return ? "return: " : "";
-        if (fullname.StartsWith("global::System.DateTime"))
+        if (typeSyntax.StartsWith("global::System.DateTime"))
             return $"[{ret}JSMarshalAs<JSType.Date>] ";
-        if (fullname.StartsWith("global::System.Threading.Tasks.Task<global::System.DateTime"))
+        if (typeSyntax.StartsWith("global::System.Threading.Tasks.Task<global::System.DateTime"))
             return $"[{ret}JSMarshalAs<JSType.Promise<JSType.Date>>] ";
         return "";
     }
