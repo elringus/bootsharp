@@ -16,15 +16,15 @@ export enum BootStatus {
 /** Allows customizing boot process. */
 export type BootCustom = {
     /** Customize .NET runtime configuration. */
-    config?: RuntimeConfig;
+    readonly config?: RuntimeConfig;
     /** Customize .NET runtime factoring. */
-    create?: (config: RuntimeConfig) => Promise<RuntimeAPI>;
+    readonly create?: (config: RuntimeConfig) => Promise<RuntimeAPI>;
     /** Customize binding imported C# APIs. */
-    import?: (runtime: RuntimeAPI) => Promise<void>;
+    readonly import?: (runtime: RuntimeAPI) => Promise<void>;
     /** Customize .NET runtime startup. */
-    run?: (runtime: RuntimeAPI) => Promise<void>;
+    readonly run?: (runtime: RuntimeAPI) => Promise<void>;
     /** Customize binding exported C# APIs. */
-    export?: (runtime: RuntimeAPI) => Promise<void>;
+    readonly export?: (runtime: RuntimeAPI) => Promise<void>;
 }
 
 let status = BootStatus.Standby;
