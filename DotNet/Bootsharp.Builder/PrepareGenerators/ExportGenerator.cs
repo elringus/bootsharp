@@ -35,7 +35,7 @@ internal sealed class ExportGenerator
     private string GenerateExport (Method inv)
     {
         const string attr = "[System.Runtime.InteropServices.JavaScript.JSExport]";
-        var date = MarshalDate(inv.ReturnType, true);
+        var date = MarshalDate(inv.ReturnTypeSyntax, true);
         var wait = inv.ReturnsTaskLike && inv.ShouldSerializeReturnType;
         return $"{attr} {date}internal static {GenerateSignature(inv, wait)} => {GenerateBody(inv, wait)};";
     }
@@ -45,7 +45,7 @@ internal sealed class ExportGenerator
         var args = string.Join(", ", inv.Arguments.Select(GenerateSignatureArg));
         var @return = inv.ReturnsVoid ? "void" : (inv.ShouldSerializeReturnType
             ? $"global::System.String{(inv.ReturnsNullable ? "?" : "")}"
-            : inv.ReturnType);
+            : inv.ReturnTypeSyntax);
         if (inv.ShouldSerializeReturnType && inv.ReturnsTaskLike)
             @return = $"global::System.Threading.Tasks.Task<{@return}>";
         var signature = $"{@return} {inv.Name} ({args})";
@@ -66,13 +66,13 @@ internal sealed class ExportGenerator
     {
         var type = arg.ShouldSerialize
             ? $"global::System.String{(arg.Nullable ? "?" : "")}"
-            : arg.Type;
-        return $"{MarshalDate(arg.Type, false)}{type} {arg.Name}";
+            : arg.TypeSyntax;
+        return $"{MarshalDate(arg.TypeSyntax, false)}{type} {arg.Name}";
     }
 
     private string GenerateBodyArg (Argument arg)
     {
         if (!arg.ShouldSerialize) return arg.Name;
-        return $"Deserialize<{arg.Type}>({arg.Name})";
+        return $"Deserialize<{arg.TypeSyntax}>({arg.Name})";
     }
 }

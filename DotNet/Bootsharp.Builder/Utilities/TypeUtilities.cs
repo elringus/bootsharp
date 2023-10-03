@@ -161,21 +161,21 @@ internal static class TypeUtilities
         return !native.Contains(type.FullName!);
     }
 
-    public static string BuildFullName (Type type, ParameterInfo info) => BuildFullName(type, GetNullability(info));
+    public static string BuildSyntax (Type type, ParameterInfo info) => BuildSyntax(type, GetNullability(info));
 
-    private static string BuildFullName (Type type, NullabilityInfo nul, bool forceNil = false)
+    private static string BuildSyntax (Type type, NullabilityInfo nul, bool forceNil = false)
     {
         var nil = (forceNil || nul.ReadState == NullabilityState.Nullable) ? "?" : "";
         if (IsVoid(type)) return "void";
-        if (type.IsArray) return $"{BuildFullName(GetListElementType(type), nul.ElementType!)}[]{nil}";
+        if (type.IsArray) return $"{BuildSyntax(GetListElementType(type), nul.ElementType!)}[]{nil}";
         if (type.IsGenericType) return BuildGeneric(type, type.GenericTypeArguments);
         return $"global::{ResolveTypeName(type)}{nil}";
 
         string BuildGeneric (Type type, Type[] args)
         {
-            if (IsNullable(type)) return BuildFullName(args[0], nul, true);
+            if (IsNullable(type)) return BuildSyntax(args[0], nul, true);
             var name = GetGenericNameWithoutArgs(ResolveTypeName(type));
-            var typeArgs = string.Join(", ", args.Select((a, i) => BuildFullName(a, nul.GenericTypeArguments[i])));
+            var typeArgs = string.Join(", ", args.Select((a, i) => BuildSyntax(a, nul.GenericTypeArguments[i])));
             return $"global::{name}<{typeArgs}>";
         }
 

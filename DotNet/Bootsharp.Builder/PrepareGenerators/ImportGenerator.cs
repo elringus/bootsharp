@@ -54,11 +54,11 @@ internal sealed class ImportGenerator(string entryAssembly)
         var args = string.Join(", ", method.Arguments.Select(GenerateArg));
         var @return = method.ReturnsVoid ? "void" : (method.ShouldSerializeReturnType
             ? $"global::System.String{(method.ReturnsNullable ? "?" : "")}"
-            : method.ReturnType);
+            : method.ReturnTypeSyntax);
         if (method.ShouldSerializeReturnType && method.ReturnsTaskLike)
             @return = $"global::System.Threading.Tasks.Task<{@return}>";
         var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{BuildEndpoint(method)}", "Bootsharp")]""";
-        var date = MarshalDate(method.ReturnType, true);
+        var date = MarshalDate(method.ReturnTypeSyntax, true);
         return $"{attr} {date}internal static partial {@return} {method.Name} ({args});";
     }
 
@@ -66,8 +66,8 @@ internal sealed class ImportGenerator(string entryAssembly)
     {
         var type = arg.ShouldSerialize
             ? $"global::System.String{(arg.Nullable ? "?" : "")}"
-            : arg.Type;
-        return $"{MarshalDate(arg.Type, false)}{type} {arg.Name}";
+            : arg.TypeSyntax;
+        return $"{MarshalDate(arg.TypeSyntax, false)}{type} {arg.Name}";
     }
 
     private string BuildEndpoint (Method method)

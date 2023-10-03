@@ -18,7 +18,7 @@ internal sealed class ImportType(Compilation compilation, ITypeSymbol type, Attr
 
     public string EmitSource ()
     {
-        specType = BuildFullName(type);
+        specType = BuildSyntax(type);
         var implType = BuildBindingType(type);
         var methods = type.GetMembers().OfType<IMethodSymbol>().ToArray();
         var space = BuildBindingNamespace(type);
@@ -54,8 +54,8 @@ internal sealed class ImportType(Compilation compilation, ITypeSymbol type, Attr
 
     private string EmitSpec (IMethodSymbol method)
     {
-        var args = method.Parameters.Select(p => $"{BuildFullName(p.Type)} {p.Name}");
-        var sig = $"{BuildFullName(method.ReturnType)} {specType}.{method.Name} ({string.Join(", ", args)})";
+        var args = method.Parameters.Select(p => $"{BuildSyntax(p.Type)} {p.Name}");
+        var sig = $"{BuildSyntax(method.ReturnType)} {specType}.{method.Name} ({string.Join(", ", args)})";
         var methodName = ConvertMethodName(method.Name, attribute);
         var @params = method.Parameters.Select(p => p.Name);
         return $"{sig} => {methodName}({string.Join(", ", @params)});";

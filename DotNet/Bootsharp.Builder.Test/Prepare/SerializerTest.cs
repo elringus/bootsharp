@@ -5,54 +5,39 @@ public class SerializerTest : PrepareTest
     protected override string TestedContent => GeneratedSerializer;
 
     [Fact]
-    public void WhenNothingInspectedHasOnlyString ()
+    public void WhenNothingInspectedIsEmpty ()
     {
         Execute();
-        Contains(
-            """
-            using System.Text.Json;
-            using System.Text.Json.Serialization;
-
-            namespace Bootsharp;
-
-            [JsonSerializable(typeof(global::System.String))]
-            internal partial class SerializerContext : JsonSerializerContext
-            {
-                [System.Runtime.CompilerServices.ModuleInitializer]
-                internal static void InjectTypeInfoResolver ()
-                {
-                    Serializer.Options.TypeInfoResolver = SerializerContext.Default;
-                }
-            }
-            """);
+        Assert.Empty(TestedContent);
     }
 
     [Fact]
-    public void WhenNoCrawledTypesHasOnlyString ()
+    public void WhenNoSerializableTypesIsEmpty ()
     {
         AddAssembly(With("[JSInvokable] public static bool? Foo (string a, int b, double[] c) => default;"));
         Execute();
+        Assert.Empty(TestedContent);
+    }
+
+    [Fact]
+    public void AssignsTypeInfoResolver ()
+    {
+        AddAssembly(
+            With("n", "public record Info;", false),
+            With("n", "[JSInvokable] public static void Foo (Info i) {}"));
+        Execute();
         Contains(
             """
-            using System.Text.Json;
-            using System.Text.Json.Serialization;
-
-            namespace Bootsharp;
-
-            [JsonSerializable(typeof(global::System.String))]
-            internal partial class SerializerContext : JsonSerializerContext
-            {
                 [System.Runtime.CompilerServices.ModuleInitializer]
                 internal static void InjectTypeInfoResolver ()
                 {
                     Serializer.Options.TypeInfoResolver = SerializerContext.Default;
                 }
-            }
             """);
     }
 
     [Fact]
-    public void AddsCrawledTypes ()
+    public void AddsOnlyTopLevelTypes ()
     {
         AddAssembly(
             With("n", "public struct Struct { public double A { get; set; } }", false),
@@ -65,30 +50,45 @@ public class SerializerTest : PrepareTest
             With("n", "public class Baz { public List<MockClass.Bar?> Bars { get; } public Enum E { get; } }", false),
             With("n", "[JSInvokable] public static Baz? GetBaz () => default;"));
         Execute();
-        Contains(
-            """
-            using System.Text.Json;
-            using System.Text.Json.Serialization;
+        Assert.Single(Matches("JsonSerializable"));
+        Contains("[JsonSerializable(typeof(global::n.Baz)");
+    }
 
-            namespace Bootsharp;
+    [Fact]
+    public void AddsProxiesForListInterface ()
+    {
+        AddAssembly(With("[JSInvokable] public static void Foo (IList<string> a) {}"));
+        Execute();
+        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.IList<global::System.String>)");
+        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.List<global::System.String>)");
+        Contains("[JsonSerializable(typeof(global::System.String[])");
+    }
 
-            [JsonSerializable(typeof(global::n.Baz), TypeInfoPropertyName = "n_Baz")]
-            [JsonSerializable(typeof(global::n.MockClass+Bar), TypeInfoPropertyName = "n_MockClass_Bar")]
-            [JsonSerializable(typeof(global::n.ReadonlyRecordStruct), TypeInfoPropertyName = "n_ReadonlyRecordStruct")]
-            [JsonSerializable(typeof(global::n.RecordClass), TypeInfoPropertyName = "n_RecordClass")]
-            [JsonSerializable(typeof(global::n.Struct), TypeInfoPropertyName = "n_Struct")]
-            [JsonSerializable(typeof(global::n.ReadonlyStruct), TypeInfoPropertyName = "n_ReadonlyStruct")]
-            [JsonSerializable(typeof(global::n.Foo), TypeInfoPropertyName = "n_Foo")]
-            [JsonSerializable(typeof(global::n.Enum), TypeInfoPropertyName = "n_Enum")]
-            [JsonSerializable(typeof(global::System.String))]
-            internal partial class SerializerContext : JsonSerializerContext
-            {
-                [System.Runtime.CompilerServices.ModuleInitializer]
-                internal static void InjectTypeInfoResolver ()
-                {
-                    Serializer.Options.TypeInfoResolver = SerializerContext.Default;
-                }
-            }
-            """);
+    [Fact]
+    public void AddsProxiesForReadOnlyListInterface ()
+    {
+        AddAssembly(With("[JSInvokable] public static void Foo (IReadOnlyList<string> a) {}"));
+        Execute();
+        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.IReadOnlyList<global::System.String>)");
+        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.List<global::System.String>)");
+        Contains("[JsonSerializable(typeof(global::System.String[])");
+    }
+
+    [Fact]
+    public void AddsProxiesForDictInterface ()
+    {
+        AddAssembly(With("[JSInvokable] public static void Foo (IDictionary<string, int> a) {}"));
+        Execute();
+        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.IDictionary<global::System.String, global::System.Int32>)");
+        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.Dictionary<global::System.String, global::System.Int32>)");
+    }
+
+    [Fact]
+    public void AddsProxiesForReadOnlyDictInterface ()
+    {
+        AddAssembly(With("[JSInvokable] public static void Foo (IReadOnlyDictionary<string, int> a) {}"));
+        Execute();
+        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.IReadOnlyDictionary<global::System.String, global::System.Int32>)");
+        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.Dictionary<global::System.String, global::System.Int32>)");
     }
 }

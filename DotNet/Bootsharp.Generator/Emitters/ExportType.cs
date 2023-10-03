@@ -16,7 +16,7 @@ internal sealed class ExportType(Compilation compilation, ITypeSymbol type, Attr
 
     public string EmitSource ()
     {
-        var specType = BuildFullName(type);
+        var specType = BuildSyntax(type);
         var implType = BuildBindingType(type);
         var space = BuildBindingNamespace(type);
         return EmitCommon
@@ -50,8 +50,8 @@ internal sealed class ExportType(Compilation compilation, ITypeSymbol type, Attr
             string EmitSignature ()
             {
                 var methodName = ConvertMethodName(method.Name, attribute);
-                var args = method.Parameters.Select(p => $"{BuildFullName(p.Type)} {p.Name}");
-                return $"{BuildFullName(method.ReturnType)} {methodName} ({string.Join(", ", args)})";
+                var args = method.Parameters.Select(p => $"{BuildSyntax(p.Type)} {p.Name}");
+                return $"{BuildSyntax(method.ReturnType)} {methodName} ({string.Join(", ", args)})";
             }
 
             string EmitBody ()

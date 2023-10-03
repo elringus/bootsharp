@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Bootsharp;
 
 namespace Test.Types;
@@ -20,6 +21,26 @@ public partial class Registry
                registry.Wheeled.Sum(t => t.MaxSpeed);
     }
 
+    [JSInvokable]
+    public static async Task<IReadOnlyList<Registry>> ConcatRegistriesAsync (IReadOnlyList<Registry> registries)
+    {
+        await Task.Delay(10);
+        return registries.Concat(GetRegistries()).ToArray();
+    }
+
+    [JSInvokable]
+    public static async Task<IReadOnlyDictionary<string, Registry>> MapRegistriesAsync (IReadOnlyDictionary<string, Registry> registries)
+    {
+        await Task.Delay(10);
+        return registries.Concat(GetRegistryMap()).ToDictionary(kv => kv.Key, kv => kv.Value);
+    }
+
     [JSFunction]
     public static partial Registry GetRegistry ();
+
+    [JSFunction]
+    public static partial IReadOnlyList<Registry> GetRegistries ();
+
+    [JSFunction]
+    public static partial IReadOnlyDictionary<string, Registry> GetRegistryMap ();
 }

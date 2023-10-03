@@ -56,7 +56,7 @@ public class DeclarationTest : BuildTest
             export namespace Foo {
                 export const onFoo: Event<[]>;
                 export const onBar: Event<[baz: string]>;
-                export const onFar: Event<[yaz: number, nya?: boolean]>;
+                export const onFar: Event<[yaz: number, nya: boolean | undefined]>;
             }
             """);
     }
@@ -399,15 +399,15 @@ public class DeclarationTest : BuildTest
     }
 
     [Fact]
-    public void NullableMethodArgumentsHaveOptionalModificator ()
+    public void NullableMethodArgumentsUnionWithUndefined ()
     {
         AddAssembly(
             With("[JSInvokable] public static void Foo (string? bar) { }"),
             With("[JSFunction] public static void Fun (int? nya) { }")
         );
         Execute();
-        Contains("export function foo(bar?: string): void;");
-        Contains("export let fun: (nya?: number) => void;");
+        Contains("export function foo(bar: string | undefined): void;");
+        Contains("export let fun: (nya: number | undefined) => void;");
     }
 
     [Fact]
@@ -432,9 +432,9 @@ public class DeclarationTest : BuildTest
             With("[JSFunction] public static List<Foo?>? Fun (int?[]? bar, Foo[]?[]? nya, Foo?[]?[]? far) => default;")
         );
         Execute();
-        Contains("export let fun: (bar?: Array<number | null>," +
-                 " nya?: Array<Array<Global.Foo> | null>," +
-                 " far?: Array<Array<Global.Foo | null> | null>) =>" +
+        Contains("export let fun: (bar: Array<number | null> | undefined," +
+                 " nya: Array<Array<Global.Foo> | null> | undefined," +
+                 " far: Array<Array<Global.Foo | null> | null> | undefined) =>" +
                  " Array<Global.Foo | null> | null;");
     }
 

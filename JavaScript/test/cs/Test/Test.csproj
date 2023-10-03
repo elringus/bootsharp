@@ -14,7 +14,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bootsharp" Version="0.1.0-rc.74" />
+        <PackageReference Include="Bootsharp" Version="0.1.0-rc.101" />
         <ProjectReference Include="../Test.Types/Test.Types.csproj"/>
     </ItemGroup>
 

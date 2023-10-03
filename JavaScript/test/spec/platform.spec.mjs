@@ -1,7 +1,6 @@
 import { describe, it, beforeAll, expect } from "vitest";
 import { boot, Test } from "../cs.mjs";
-import { Worker } from "node:worker_threads";
-import ws from "ws";
+import ws, { WebSocketServer } from "ws";
 
 describe("platform", () => {
     beforeAll(boot);
@@ -16,14 +15,9 @@ describe("platform", () => {
         // .NET requires ws package when running on node:
         // https://github.com/dotnet/runtime/blob/main/src/mono/wasm/features.md#websocket
         global.WebSocket = ws;
-        let ready, preparing = new Promise(r => ready = r);
-        let echo, echoing = new Promise(r => echo = r);
-        Test.onMessage.subscribe(echo);
-        const worker = new Worker("./test/wss.mjs");
-        worker.on("message", msg => msg === "ready" && ready());
-        await preparing;
-        Test.echoWebSocket("ws://localhost:8080", "foo", 3000);
-        expect(await echoing).toStrictEqual("foo");
-        await worker.terminate();
+        const wss = new WebSocketServer({ port: 8080 });
+        wss.on("connection", socket => socket.on("message", socket.send));
+        expect(await Test.echoWebSocket("ws://localhost:8080", "foo", 3000)).toStrictEqual("foo");
+        wss.close();
     });
 });

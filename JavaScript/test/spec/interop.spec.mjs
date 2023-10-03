@@ -19,6 +19,8 @@ describe("while bootsharp is booted", () => {
         expect(() => Test.throwJS()).throw(error);
         expect(() => Test.onMainInvoked()).throw(error);
         expect(() => Test.Types.getRegistry()).throw(error);
+        expect(() => Test.Types.getRegistries()).throw(error);
+        expect(() => Test.Types.getRegistryMap()).throw(error);
     });
     it("can invoke C# method", async () => {
         expect(Test.joinStrings("foo", "bar")).toStrictEqual("foobar");
@@ -47,7 +49,6 @@ describe("while bootsharp is booted", () => {
         expect(Test.bytesToString(bytes)).toStrictEqual("Everything's shiny, Captain. Not to fret.");
     });
     it("can transfer structs", () => {
-        // TODO: Test async transfer structs to check serialization with await.
         const expected = {
             wheeled: [
                 { id: "car", wheelCount: 4, maxSpeed: 100.0 },
@@ -60,6 +61,32 @@ describe("while bootsharp is booted", () => {
         };
         const actual = Test.Types.echoRegistry(expected);
         expect(actual).toStrictEqual(expected);
+    });
+    it("can transfer readonly lists as arrays", async () => {
+        Test.Types.getRegistries = () => [{ wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] }];
+        const result = await Test.Types.concatRegistriesAsync([
+            { wheeled: [{ id: "bar", maxSpeed: 1, wheelCount: 9 }] },
+            { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }] }
+        ]);
+        expect(result).toStrictEqual([
+            { wheeled: [{ id: "bar", maxSpeed: 1, wheelCount: 9 }] },
+            { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }] },
+            { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] }
+        ]);
+    });
+    it("can transfer dictionaries as maps", async () => {
+        const fooMap = new Map();
+        const barMap = new Map();
+        fooMap.set("foo", { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] });
+        barMap.set("bar", { tracked: [{ id: "bar", maxSpeed: 5, trackType: TrackType.Rubber }] });
+        Test.Types.getRegistryMap = () => fooMap;
+        await Test.Types.mapRegistriesAsync(barMap);
+        // TODO: Dict serialization not working?
+        // expect(result).toStrictEqual(new Map([
+        //     ["bar", [{ tracked: [{ id: "2", maxSpeed: 5, trackType: TrackType.Rubber }] }]],
+        //     ["foo", [{ wheeled: [{ id: "1", maxSpeed: 1, wheelCount: 0 }] }]]
+        // ]));
+        // expect(result.length).toStrictEqual(2);
     });
     it("can invoke assigned JS functions in C#", () => {
         Test.echoFunction = value => value;

@@ -47,18 +47,18 @@ internal static class Common
         return type.Name.Substring(1);
     }
 
-    public static string BuildFullName (ITypeSymbol type)
+    public static string BuildSyntax (ITypeSymbol type)
     {
         if (type.SpecialType == SpecialType.System_Void) return "void";
-        if (type is IArrayTypeSymbol arrayType) return $"{BuildFullName(arrayType.ElementType)}[]";
+        if (type is IArrayTypeSymbol arrayType) return $"{BuildSyntax(arrayType.ElementType)}[]";
         var nullable = type.NullableAnnotation == NullableAnnotation.Annotated ? "?" : "";
         if (IsGeneric(type, out var args)) return BuildGeneric(type, args) + nullable;
         return $"global::{ResolveTypeName(type)}{nullable}";
 
         static string BuildGeneric (ITypeSymbol type, ImmutableArray<ITypeSymbol> args)
         {
-            if (type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T) return BuildFullName(args[0]);
-            return $"global::{ResolveTypeName(type)}<{string.Join(", ", args.Select(BuildFullName))}>";
+            if (type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T) return BuildSyntax(args[0]);
+            return $"global::{ResolveTypeName(type)}<{string.Join(", ", args.Select(BuildSyntax))}>";
         }
 
         static string ResolveTypeName (ITypeSymbol type)

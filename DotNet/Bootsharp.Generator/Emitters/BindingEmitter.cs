@@ -20,8 +20,8 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
 
     private string EmitSignature ()
     {
-        var args = method.Parameters.Select(p => $"{BuildFullName(p.Type)} {p.Name}");
-        var sig = $"{BuildFullName(method.ReturnType)} {name} ({string.Join(", ", args)})";
+        var args = method.Parameters.Select(p => $"{BuildSyntax(p.Type)} {p.Name}");
+        var sig = $"{BuildSyntax(method.ReturnType)} {name} ({string.Join(", ", args)})";
         if (wait) return sig = "async " + sig;
         return sig;
     }
@@ -33,7 +33,7 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
         var args = GetArgs();
         var body = $"""Get<{delegateType}>("{endpoint}")({args})""";
         if (!shouldSerializeReturnType) return body;
-        var serialized = BuildFullName(taskResult ?? returnType);
+        var serialized = BuildSyntax(taskResult ?? returnType);
         return $"Deserialize<{serialized}>({(wait ? "await " : "")}{body})";
     }
 
@@ -47,11 +47,11 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
     }
 
     private string GetDelegateArgType (IParameterSymbol param) =>
-        ShouldSerialize(param.Type) ? "global::System.String" : BuildFullName(param.Type);
+        ShouldSerialize(param.Type) ? "global::System.String" : BuildSyntax(param.Type);
 
     private string GetDelegateReturnType () => shouldSerializeReturnType
         ? (taskResult != null ? "global::System.Threading.Tasks.Task<global::System.String>" : "global::System.String")
-        : BuildFullName(returnType);
+        : BuildSyntax(returnType);
 
     private string GetEndpoint (string module)
     {
