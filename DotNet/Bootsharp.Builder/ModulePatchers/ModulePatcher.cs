@@ -4,7 +4,6 @@ namespace Bootsharp.Builder;
 
 internal sealed class ModulePatcher(string buildDirectory, bool threading, bool embed)
 {
-    private const string undefined = "export default undefined;";
     private readonly string dotnet = Path.Combine(buildDirectory, "dotnet.js");
     private readonly string runtime = Path.Combine(buildDirectory, "dotnet.runtime.js");
     private readonly string native = Path.Combine(buildDirectory, "dotnet.native.js");
@@ -15,7 +14,7 @@ internal sealed class ModulePatcher(string buildDirectory, bool threading, bool 
     {
         if (threading) PatchThreading();
         if (embed) new InternalPatcher(dotnet, runtime, native).Patch();
-        CopyInternals(threading ? undefined : runtime, threading ? undefined : native);
+        CopyInternals();
     }
 
     private void PatchThreading ()
@@ -27,9 +26,10 @@ internal sealed class ModulePatcher(string buildDirectory, bool threading, bool 
             .Replace("&&Te(!1,\"This build of dotnet is multi-threaded, it doesn't support shell environments like V8 or NodeJS. See also https://aka.ms/dotnet-wasm-features\")", ""), Encoding.UTF8);
     }
 
-    private void CopyInternals (string runtime, string native)
+    private void CopyInternals ()
     {
-        File.WriteAllText(runtimeGen, File.ReadAllText(runtime, Encoding.UTF8), Encoding.UTF8);
-        File.WriteAllText(nativeGen, File.ReadAllText(native, Encoding.UTF8), Encoding.UTF8);
+        const string undefined = "export default undefined;";
+        File.WriteAllText(runtimeGen, threading ? undefined : File.ReadAllText(runtime, Encoding.UTF8), Encoding.UTF8);
+        File.WriteAllText(nativeGen, threading ? undefined : File.ReadAllText(native, Encoding.UTF8), Encoding.UTF8);
     }
 }

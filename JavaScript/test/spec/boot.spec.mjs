@@ -37,12 +37,15 @@ describe("boot", () => {
         await bootsharp.boot({});
         expect(Test.$onMainInvoked).toHaveBeenCalledOnce();
     });
-    // it("can boot with streaming bins from root", async () => {
-    //     const { bootsharp, Test } = await setup();
-    //     bootsharp.resources.root = "./bin";
-    //     await bootsharp.boot({});
-    //     expect(Test.$onMainInvoked).toHaveBeenCalledOnce();
-    // });
+    it("can boot while streaming wasm from root", async () => {
+        const { bootsharp, Test, bins } = await setup();
+        bootsharp.resources.root = "./bin";
+        bootsharp.resources.wasm.content = undefined;
+        for (const asm of bootsharp.resources.assemblies)
+            asm.content = bins.assemblies.find(a => a.name === asm.name).content;
+        await bootsharp.boot({});
+        expect(Test.$onMainInvoked).toHaveBeenCalledOnce();
+    });
     it("attempts to use atob when window is defined in global", async () => {
         const { bootsharp, bins } = await setup();
         // noinspection JSValidateTypes

@@ -40,12 +40,12 @@ export function buildConfig(): RuntimeConfig {
     };
 }
 
-function buildResource(res: BinaryResource, behaviour: AssetBehaviors, module?: unknown): AssetEntry {
+function buildResource(res: BinaryResource, behavior: AssetBehaviors, module?: unknown): AssetEntry {
     return {
-        name: resources.root == null ? res.name : `${resources.root}/${res.name}`,
-        moduleExports: module,
+        name: (!resources.root || res.content) ? res.name : `${resources.root}/${res.name}`,
         buffer: res.content ? toBinary(res.content) : undefined,
-        behavior: behaviour
+        moduleExports: module,
+        behavior
     };
 }
 

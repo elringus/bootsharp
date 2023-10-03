@@ -4,16 +4,22 @@ public class BuildTest : TaskTest
 {
     protected BuildBootsharp Task { get; }
     protected byte[] MockWasmBinary { get; } = "MockWasmContent"u8.ToArray();
+    protected string MockRuntimeContent { get; } = "MockRuntimeContent";
+    protected string MockNativeContent { get; } = "MockNativeContent";
     protected string GeneratedBindings => ReadProjectFile("bindings.g.js");
     protected string GeneratedDeclarations => ReadProjectFile("bindings.g.d.ts");
     protected string GeneratedResources => ReadProjectFile("resources.g.js");
+    protected string GeneratedRuntimeModule => ReadProjectFile("dotnet.runtime.g.js");
+    protected string GeneratedNativeModule => ReadProjectFile("dotnet.native.g.js");
 
     public BuildTest ()
     {
         Task = CreateTask();
         Project.WriteFile("dotnet.js", "MockDotNetContent"u8);
-        Project.WriteFile("dotnet.native.js", "MockNativeContent"u8);
-        Project.WriteFile("dotnet.runtime.js", "MockRuntimeContent"u8);
+        Project.WriteFile("dotnet.runtime.js", MockRuntimeContent);
+        Project.WriteFile("dotnet.native.js", MockNativeContent);
+        Project.WriteFile("dotnet.runtime.g.js", "MockRuntimeGeneratedContent");
+        Project.WriteFile("dotnet.native.g.js", "MockNativeGeneratedContent");
         Project.WriteFile("dotnet.native.wasm", MockWasmBinary);
     }
 

@@ -28,6 +28,12 @@ public sealed class MockProject : IDisposable
         File.WriteAllBytes(filePath, content.ToArray());
     }
 
+    public void WriteFile (string name, string content)
+    {
+        var filePath = Path.Combine(Root, name);
+        File.WriteAllText(filePath, content);
+    }
+
     private static string CreateUniqueRootDirectory ()
     {
         var testAssembly = System.Reflection.Assembly.GetExecutingAssembly().Location;
