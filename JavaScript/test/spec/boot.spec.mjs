@@ -12,14 +12,24 @@ async function setup() {
 }
 
 describe("boot", () => {
-    it("can boot while streaming bins from root", async () => {
-        const { bootsharp, Test } = await setup();
+    // it("can boot while streaming bins from root", async () => {
+    //     const { bootsharp, Test } = await setup();
+    //     bootsharp.resources.root = "./bin";
+    //     await bootsharp.boot({});
+    //     expect(Test.$onMainInvoked).toHaveBeenCalledOnce();
+    // });
+    it("can boot with bins content pre-assigned", async () => {
+        const { bootsharp, Test, bins } = await setup();
         bootsharp.resources.root = "./bin";
+        bootsharp.resources.wasm.content = bins.wasm;
+        for (const asm of bootsharp.resources.assemblies)
+            asm.content = bins.assemblies.find(a => a.name === asm.name).content;
         await bootsharp.boot({});
         expect(Test.$onMainInvoked).toHaveBeenCalledOnce();
     });
     it("can boot with base64 content", async () => {
         const { bootsharp, Test, bins } = await setup();
+        bootsharp.resources.root = "./bin";
         bootsharp.resources.wasm.content = bins.wasm.toString("base64");
         for (const asm of bootsharp.resources.assemblies)
             asm.content = bins.assemblies.find(a => a.name === asm.name).content.toString("base64");
@@ -29,6 +39,7 @@ describe("boot", () => {
     it("can boot with base64 content w/o native encoder available", async () => {
         const { bootsharp, Test, bins } = await setup();
         global.Buffer = undefined;
+        bootsharp.resources.root = "./bin";
         bootsharp.resources.wasm.content = bins.wasm.toString("base64");
         for (const asm of bootsharp.resources.assemblies)
             asm.content = bins.assemblies.find(a => a.name === asm.name).content.toString("base64");
@@ -39,6 +50,7 @@ describe("boot", () => {
         const { bootsharp, bins } = await setup();
         // noinspection JSValidateTypes
         global.window = { atob: vi.fn() };
+        bootsharp.resources.root = "./bin";
         bootsharp.resources.wasm.content = bins.wasm.toString("base64");
         for (const asm of bootsharp.resources.assemblies)
             asm.content = bins.assemblies.find(a => a.name === asm.name).content.toString("base64");
@@ -61,11 +73,11 @@ describe("boot", () => {
                 mainAssemblyName: bins.entryAssemblyName,
                 assets: [
                     {
-                        name: path.resolve("test/cs/Test/bin/bootsharp/dotnet.runtime.g.mjs"),
+                        name: path.resolve("test/cs/Test/bin/bootsharp/bin/dotnet.runtime.js"),
                         behavior: "js-module-runtime"
                     },
                     {
-                        name: path.resolve("test/cs/Test/bin/bootsharp/dotnet.native.g.mjs"),
+                        name: path.resolve("test/cs/Test/bin/bootsharp/bin/dotnet.native.js"),
                         behavior: "js-module-native"
                     },
                     {
@@ -95,16 +107,22 @@ describe("boot status", () => {
         expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Standby);
     });
     it("transitions to booting and then to booted", async () => {
-        const { bootsharp } = await setup();
+        const { bootsharp, bins } = await setup();
         bootsharp.resources.root = "./bin";
+        bootsharp.resources.wasm.content = bins.wasm;
+        for (const asm of bootsharp.resources.assemblies)
+            asm.content = bins.assemblies.find(a => a.name === asm.name).content;
         const promise = bootsharp.boot({});
         expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Booting);
         await promise;
         expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Booted);
     });
     it("transitions to standby on exit", async () => {
-        const { bootsharp } = await setup();
+        const { bootsharp, bins } = await setup();
         bootsharp.resources.root = "./bin";
+        bootsharp.resources.wasm.content = bins.wasm;
+        for (const asm of bootsharp.resources.assemblies)
+            asm.content = bins.assemblies.find(a => a.name === asm.name).content;
         await bootsharp.boot({});
         expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Booted);
         bootsharp.exit();

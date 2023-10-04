@@ -15,25 +15,25 @@ export type BootResources = {
     root?: string;
 }
 
-/** Binary boot resource with binary content. */
+/** Boot resource with binary content. */
 export type BinaryResource = {
     /** Name of the binary file, including extension. */
     readonly name: string;
-    /** Base64-encoded content of the file or undefined when embedding disabled. */
-    readonly content?: string;
+    /** Binary or base64-encoded content of the file; undefined when embedding disabled. */
+    content?: Uint8Array | string;
 }
 
 /** Resources required to boot .NET runtime. */
 export const resources: BootResources = generated;
 
 export function buildConfig(): RuntimeConfig {
-    const embedded = resources.wasm.content != null;
-    if (!embedded && resources.root == null)
+    const embed = resources.wasm.content != null;
+    if (!embed && resources.root == null)
         throw Error("Resources root has to be specified when binaries are not embedded.");
     return {
         mainAssemblyName: resources.entryAssemblyName,
-        resources: embedded ? undefined : buildResources(),
-        assets: embedded ? buildAssets() : undefined
+        resources: embed ? undefined : buildResources(),
+        assets: embed ? buildAssets() : undefined
     };
 }
 
@@ -56,9 +56,11 @@ function buildResourceList(...names: string[]): ResourceList {
 }
 
 function buildAssets(): AssetEntry[] {
+    const runtimeModule = runtime.default ? runtime : undefined;
+    const nativeModule = native.default ? native : undefined;
     return [
-        buildAsset({ name: "dotnet.runtime.js" }, "js-module-runtime", runtime),
-        buildAsset({ name: "dotnet.native.js" }, "js-module-native", native),
+        buildAsset({ name: "dotnet.runtime.js" }, "js-module-runtime", runtimeModule),
+        buildAsset({ name: "dotnet.native.js" }, "js-module-native", nativeModule),
         buildAsset(resources.wasm, "dotnetwasm"),
         ...resources.assemblies.map(a => buildAsset(a, "assembly"))
     ];
@@ -66,8 +68,8 @@ function buildAssets(): AssetEntry[] {
 
 function buildAsset(res: BinaryResource, behavior: AssetBehaviors, module?: unknown): AssetEntry {
     return {
-        name: res.name,
-        buffer: res.content ? decodeBase64(res.content) : undefined,
+        name: (!resources.root || res.content) ? res.name : `${resources.root}/${res.name}`,
+        buffer: typeof res.content === "string" ? decodeBase64(res.content) : res.content,
         moduleExports: module,
         behavior
     };

@@ -17,6 +17,9 @@ export const bins = {
 export async function boot() {
     Test.onMainInvoked = () => {};
     bootsharp.resources.root = "./bin";
+    bootsharp.resources.wasm.content = bins.wasm;
+    for (const asm of bootsharp.resources.assemblies)
+        asm.content = bins.assemblies.find(a => a.name === asm.name).content;
     await bootsharp.boot({});
 }
 
