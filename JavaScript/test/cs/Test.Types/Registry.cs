@@ -29,10 +29,10 @@ public partial class Registry
     }
 
     [JSInvokable]
-    public static async Task<IReadOnlyDictionary<string, Registry>> MapRegistriesAsync (IReadOnlyDictionary<string, Registry> registries)
+    public static async Task<IReadOnlyDictionary<string, Registry>> MapRegistriesAsync (IReadOnlyDictionary<string, Registry> map)
     {
         await Task.Delay(10);
-        return registries.Concat(GetRegistryMap()).ToDictionary(kv => kv.Key, kv => kv.Value);
+        return map.Concat(GetRegistryMap()).ToDictionary(kv => kv.Key, kv => kv.Value);
     }
 
     [JSFunction]

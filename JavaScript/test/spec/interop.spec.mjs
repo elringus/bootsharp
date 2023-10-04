@@ -65,7 +65,7 @@ describe("while bootsharp is booted", () => {
         const actual = Test.Types.echoRegistry(expected);
         expect(actual).toStrictEqual(expected);
     });
-    it("can transfer readonly lists as arrays", async () => {
+    it("can transfer lists as arrays", async () => {
         Test.Types.getRegistries = () => [{ wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] }];
         const result = await Test.Types.concatRegistriesAsync([
             { wheeled: [{ id: "bar", maxSpeed: 1, wheelCount: 9 }] },
@@ -78,18 +78,21 @@ describe("while bootsharp is booted", () => {
         ]);
     });
     it("can transfer dictionaries as maps", async () => {
-        const fooMap = new Map();
-        const barMap = new Map();
-        fooMap.set("foo", { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] });
-        barMap.set("bar", { tracked: [{ id: "bar", maxSpeed: 5, trackType: TrackType.Rubber }] });
-        Test.Types.getRegistryMap = () => fooMap;
-        await Test.Types.mapRegistriesAsync(barMap);
-        // TODO: Dict serialization not working?
-        // expect(result).toStrictEqual(new Map([
-        //     ["bar", [{ tracked: [{ id: "2", maxSpeed: 5, trackType: TrackType.Rubber }] }]],
-        //     ["foo", [{ wheeled: [{ id: "1", maxSpeed: 1, wheelCount: 0 }] }]]
-        // ]));
-        // expect(result.length).toStrictEqual(2);
+        // ES6 Map doesn't natively support JSON serialization, so using plain objects.
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
+        Test.Types.getRegistryMap = () => ({
+            foo: { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] },
+            bar: { wheeled: [{ id: "bar", maxSpeed: 15, wheelCount: 5 }] }
+        });
+        const result = await Test.Types.mapRegistriesAsync({
+            baz: { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }] }
+        });
+        console.log(result);
+        expect(result).toStrictEqual({
+            baz: { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }] },
+            foo: { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] },
+            bar: { wheeled: [{ id: "bar", maxSpeed: 15, wheelCount: 5 }] }
+        });
     });
     it("can invoke assigned JS functions in C#", () => {
         Test.echoFunction = value => value;
