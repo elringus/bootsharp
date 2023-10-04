@@ -3,18 +3,18 @@ namespace Bootsharp.Builder.Test;
 public class PatcherTest : BuildTest
 {
     [Fact]
-    public void WhenThreadingDisabledModulesAreCopied ()
+    public void WhenEmbedEnabledModulesAreCopied ()
     {
-        Task.Threading = false;
+        Task.EmbedBinaries = true;
         Execute();
         Assert.Equal(MockRuntimeContent, GeneratedRuntimeModule);
         Assert.Equal(MockNativeContent, GeneratedNativeModule);
     }
 
     [Fact]
-    public void WhenThreadingEnabledModulesAreUndefined ()
+    public void WhenEmbedDisabledModulesAreUndefined ()
     {
-        Task.Threading = true;
+        Task.EmbedBinaries = false;
         Execute();
         Assert.Equal("export default undefined;", GeneratedRuntimeModule);
         Assert.Equal("export default undefined;", GeneratedNativeModule);

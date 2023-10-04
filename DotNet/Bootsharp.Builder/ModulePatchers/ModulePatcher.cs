@@ -29,7 +29,7 @@ internal sealed class ModulePatcher(string buildDirectory, bool threading, bool 
     private void CopyInternals ()
     {
         const string undefined = "export default undefined;";
-        File.WriteAllText(runtimeGen, threading ? undefined : File.ReadAllText(runtime, Encoding.UTF8), Encoding.UTF8);
-        File.WriteAllText(nativeGen, threading ? undefined : File.ReadAllText(native, Encoding.UTF8), Encoding.UTF8);
+        File.WriteAllText(runtimeGen, embed ? File.ReadAllText(runtime, Encoding.UTF8) : undefined, Encoding.UTF8);
+        File.WriteAllText(nativeGen, embed ? File.ReadAllText(native, Encoding.UTF8) : undefined, Encoding.UTF8);
     }
 }

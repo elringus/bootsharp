@@ -1,5 +1,5 @@
 import generated from "./resources.g";
-import { RuntimeConfig, AssetEntry, runtime, native, AssetBehaviors } from "./external";
+import { RuntimeConfig, AssetEntry, AssetBehaviors, ResourceGroups, ResourceList, runtime, native } from "./external";
 import { decodeBase64 } from "./decoder";
 
 /** Resources required to boot .NET runtime. */
@@ -8,50 +8,67 @@ export type BootResources = {
     readonly wasm: BinaryResource;
     /** Compiled .NET assemblies. */
     readonly assemblies: BinaryResource[];
-    /** Name of the entry (main) assembly, without file extension. */
+    /** Name of the entry (main) assembly, with .dll extension. */
     readonly entryAssemblyName: string;
     /** URL of the remote directory where boot resources are hosted (eg, <code>/bin</code>).
-     *  When resource content is missing in boot config, will attempt to fetch it from the remote.
-     *  Required for streaming WASM compilation and multithreading mode. */
+     *  Has to be assigned before boot when <code>BootsharpEmbedBinaries</code> is disabled. */
     root?: string;
 }
 
-/** Binary resource required to boot .NET runtime.*/
+/** Binary boot resource with binary content. */
 export type BinaryResource = {
     /** Name of the binary file, including extension. */
     readonly name: string;
-    /** Embedded binary or base64-encoded string of the resource content. */
-    content?: Uint8Array | string;
+    /** Base64-encoded content of the file or undefined when embedding disabled. */
+    readonly content?: string;
 }
 
 /** Resources required to boot .NET runtime. */
 export const resources: BootResources = generated;
 
 export function buildConfig(): RuntimeConfig {
+    const embedded = resources.wasm.content != null;
+    if (!embedded && resources.root == null)
+        throw Error("Resources root has to be specified when binaries are not embedded.");
     return {
         mainAssemblyName: resources.entryAssemblyName,
-        assets: [
-            buildResource({ name: "dotnet.runtime.js" }, "js-module-runtime", runtime),
-            buildResource({ name: "dotnet.native.js" }, "js-module-native", native),
-            buildResource({ name: "dotnet.native.worker.js" }, "js-module-threads"),
-            buildResource(resources.wasm, "dotnetwasm"),
-            ...resources.assemblies.map(a => buildResource(a, "assembly"))
-        ]
+        resources: embedded ? undefined : buildResources(),
+        assets: embedded ? buildAssets() : undefined
     };
 }
 
-function buildResource(res: BinaryResource, behavior: AssetBehaviors, module?: unknown): AssetEntry {
+function buildResources(): ResourceGroups {
     return {
-        name: (!resources.root || res.content) ? res.name : `${resources.root}/${res.name}`,
-        buffer: res.content ? toBinary(res.content) : undefined,
+        jsModuleRuntime: buildResourceList("dotnet.runtime.js"),
+        jsModuleNative: buildResourceList("dotnet.native.js"),
+        jsModuleWorker: buildResourceList("dotnet.native.worker.js"),
+        wasmNative: buildResourceList("dotnet.native.wasm"),
+        wasmSymbols: buildResourceList("dotnet.native.js.symbols"),
+        assembly: buildResourceList(...resources.assemblies.map(a => a.name))
+    };
+}
+
+function buildResourceList(...names: string[]): ResourceList {
+    const list: ResourceList = {};
+    for (const name of names)
+        list[`${resources.root}/${name}`] = "";
+    return list;
+}
+
+function buildAssets(): AssetEntry[] {
+    return [
+        buildAsset({ name: "dotnet.runtime.js" }, "js-module-runtime", runtime),
+        buildAsset({ name: "dotnet.native.js" }, "js-module-native", native),
+        buildAsset(resources.wasm, "dotnetwasm"),
+        ...resources.assemblies.map(a => buildAsset(a, "assembly"))
+    ];
+}
+
+function buildAsset(res: BinaryResource, behavior: AssetBehaviors, module?: unknown): AssetEntry {
+    return {
+        name: res.name,
+        buffer: res.content ? decodeBase64(res.content) : undefined,
         moduleExports: module,
         behavior
     };
-}
-
-function toBinary(data: Uint8Array | string): Uint8Array {
-    if (typeof data !== "string") return data;
-    if (typeof window === "object") return Uint8Array.from(window.atob(data), c => c.charCodeAt(0));
-    if (typeof Buffer === "function") return Buffer.from(data, "base64");
-    return decodeBase64(data);
 }

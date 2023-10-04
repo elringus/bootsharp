@@ -177,10 +177,10 @@ type MonoConfig = {
         [name: string]: any;
     };
 };
-type ResourceExtensions = {
+export type ResourceExtensions = {
     [extensionName: string]: ResourceList;
 };
-interface ResourceGroups {
+export interface ResourceGroups {
     hash?: string;
     assembly?: ResourceList;
     lazyAssembly?: ResourceList;
@@ -204,7 +204,7 @@ interface ResourceGroups {
 /**
  * A "key" is name of the file, a "value" is optional hash for integrity check.
  */
-type ResourceList = {
+export type ResourceList = {
     [name: string]: string | null | "";
 };
 /**
@@ -219,7 +219,7 @@ type ResourceList = {
  * When returned string is not qualified with `./` or absolute URL, it will be resolved against the application base URI.
  */
 type LoadBootResourceCallback = (type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string, behavior: AssetBehaviors) => string | Promise<Response> | null | undefined;
-interface LoadingResource {
+export interface LoadingResource {
     name: string;
     url: string;
     response: Promise<Response>;

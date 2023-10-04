@@ -87,6 +87,7 @@
             <BootsharpBundleCommand Condition="'$(BootsharpBundleCommand)' == ''">npx rollup bootsharp.js -o $(BootsharpName).mjs -f es -g process,module</BootsharpBundleCommand>
             <BootsharpThreading Condition="'$(WasmEnableThreads)' == 'true'">true</BootsharpThreading>
             <BootsharpThreading Condition="'$(WasmEnableThreads)' != 'true'">false</BootsharpThreading>
+            <BootsharpEmbedBinaries Condition="$(BootsharpThreading)">false</BootsharpEmbedBinaries>
         </PropertyGroup>
 
         <!-- Copy bootsharp source files to the build directory. -->
@@ -121,9 +122,9 @@
         <RemoveDir Directories="$(BootsharpBinariesDirectory);$(BootsharpTypesDirectory)"/>
         <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'" SourceFiles="@(BootsharpWasmFiles)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy Condition="$(BootsharpThreading)" SourceFiles="@(BootsharpRuntimeFile)"
+        <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'" SourceFiles="@(BootsharpRuntimeFile)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy Condition="$(BootsharpThreading)" SourceFiles="@(BootsharpNativeFile)"
+        <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'" SourceFiles="@(BootsharpNativeFile)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy Condition="$(BootsharpThreading)" SourceFiles="@(BootsharpWorkerFile)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
@@ -131,6 +132,19 @@
               DestinationFolder="$(BootsharpTypesDirectory)"/>
         <Copy SourceFiles="@(BootsharpModuleFiles)"
               DestinationFolder="$(BootsharpPublishDirectory)"/>
+
+        <!-- Publish debug symbols and maps when aggressive trimming is disabled. -->
+        <ItemGroup>
+            <BootsharpMaps Include="$(BootsharpBuildDirectory)/*.map"/>
+            <BootsharpSymbols Include="$(BootsharpBuildDirectory)/*.symbols"/>
+            <BootsharpPdbs Include="$(BootsharpBuildDirectory)/*.pdb"/>
+        </ItemGroup>
+        <Copy Condition="'$(BootsharpAggressiveTrimming)' != 'true'" SourceFiles="@(BootsharpMaps)"
+              DestinationFolder="$(BootsharpBinariesDirectory)"/>
+        <Copy Condition="'$(BootsharpAggressiveTrimming)' != 'true'" SourceFiles="@(BootsharpSymbols)"
+              DestinationFolder="$(BootsharpBinariesDirectory)"/>
+        <Copy Condition="'$(BootsharpAggressiveTrimming)' != 'true'" SourceFiles="@(BootsharpPdbs)"
+              DestinationFolder="$(BootsharpBinariesDirectory)"/>
 
         <!-- Publish package file. -->
         <ItemGroup>

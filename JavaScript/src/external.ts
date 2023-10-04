@@ -4,7 +4,7 @@ import * as dotnetModule from "./dotnet";
 import type { DotnetHostBuilder, MonoConfig, AssetEntry, ModuleAPI } from "./dotnet.d.ts";
 
 export type * from "./dotnet.d.ts";
-export type RuntimeConfig = MonoConfig & { assets: AssetEntry[] };
+export type RuntimeConfig = MonoConfig & { assets?: AssetEntry[] };
 export const runtime = runtimeModule;
 export const native = nativeModule;
 export const module: ModuleAPI = dotnetModule;
