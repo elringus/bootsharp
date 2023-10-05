@@ -87,7 +87,6 @@ describe("while bootsharp is booted", () => {
         const result = await Test.Types.mapRegistriesAsync({
             baz: { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }] }
         });
-        console.log(result);
         expect(result).toStrictEqual({
             baz: { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }] },
             foo: { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] },

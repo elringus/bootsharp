@@ -6,9 +6,9 @@
     },
     "devDependencies": {
         "typescript": "^5.2.2",
-        "@types/node": "^20.6.3",
-        "vitest": "^0.34.5",
-        "@vitest/coverage-v8": "^0.34.5",
+        "@types/node": "^20.8.2",
+        "vitest": "^0.34.6",
+        "@vitest/coverage-v8": "^0.34.6",
         "ws": "^8.14.2"
     }
 }
