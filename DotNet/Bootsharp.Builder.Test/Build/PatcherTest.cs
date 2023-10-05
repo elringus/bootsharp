@@ -19,4 +19,11 @@ public class PatcherTest : BuildTest
         Assert.Equal("export default undefined;", GeneratedRuntimeModule);
         Assert.Equal("export default undefined;", GeneratedNativeModule);
     }
+
+    [Fact]
+    public void CanBuildWithThreadingEnabled ()
+    {
+        Task.Threading = true;
+        Execute();
+    }
 }
