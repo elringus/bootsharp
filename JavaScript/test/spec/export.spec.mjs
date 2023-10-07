@@ -1,15 +1,15 @@
 import { describe, it, expect } from "vitest";
-import bootsharp, { getDeclarations } from "../cs.mjs";
+import { embedded, getDeclarations } from "../cs.mjs";
 
 describe("export", () => {
     it("exports bootsharp api", () => {
-        expect(bootsharp.boot).toBeTypeOf("function");
-        expect(bootsharp.exit).toBeTypeOf("function");
-        expect(bootsharp.resources).toBeTypeOf("object");
+        expect(embedded.boot).toBeTypeOf("function");
+        expect(embedded.exit).toBeTypeOf("function");
+        expect(embedded.resources).toBeTypeOf("object");
     });
     it("exports dotnet api", () => {
-        expect(bootsharp.dotnet.builder).toBeTypeOf("object");
-        expect(bootsharp.dotnet.module).toBeTypeOf("object");
+        expect(embedded.dotnet.builder).toBeTypeOf("object");
+        expect(embedded.dotnet.module).toBeTypeOf("object");
     });
     it("exports type declarations", () => {
         expect(getDeclarations()).toBeTruthy();

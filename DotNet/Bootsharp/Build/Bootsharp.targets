@@ -133,19 +133,6 @@
         <Copy SourceFiles="@(BootsharpModuleFiles)"
               DestinationFolder="$(BootsharpPublishDirectory)"/>
 
-        <!-- Publish debug symbols and maps when aggressive trimming is disabled. -->
-        <ItemGroup>
-            <BootsharpMaps Include="$(BootsharpBuildDirectory)/*.map"/>
-            <BootsharpSymbols Include="$(BootsharpBuildDirectory)/*.symbols"/>
-            <BootsharpPdbs Include="$(BootsharpBuildDirectory)/*.pdb"/>
-        </ItemGroup>
-        <Copy Condition="'$(BootsharpAggressiveTrimming)' != 'true'" SourceFiles="@(BootsharpMaps)"
-              DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy Condition="'$(BootsharpAggressiveTrimming)' != 'true'" SourceFiles="@(BootsharpSymbols)"
-              DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy Condition="'$(BootsharpAggressiveTrimming)' != 'true'" SourceFiles="@(BootsharpPdbs)"
-              DestinationFolder="$(BootsharpBinariesDirectory)"/>
-
         <!-- Publish package file. -->
         <ItemGroup>
             <BootsharpPackageFile Include="$(BootsharpPackageDirectory)/package.json"/>

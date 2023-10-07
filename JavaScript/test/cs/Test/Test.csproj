@@ -7,14 +7,13 @@
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>
         <TrimmerSingleWarn>false</TrimmerSingleWarn>
-        <BootsharpEmbedBinaries>false</BootsharpEmbedBinaries>
         <BootsharpBundleCommand>npx rollup bootsharp.js -d ./ -f es -g process,module --preserveModules --entryFileNames [name].mjs</BootsharpBundleCommand>
-        <!--        <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>-->
-        <!--        <RunAOTCompilation>true</RunAOTCompilation>-->
+        <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
+        <RunAOTCompilation>true</RunAOTCompilation>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bootsharp" Version="0.1.0-rc.113" />
+        <PackageReference Include="Bootsharp" Version="*-*"/>
         <ProjectReference Include="../Test.Types/Test.Types.csproj"/>
     </ItemGroup>
 

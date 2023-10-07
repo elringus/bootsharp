@@ -28,8 +28,16 @@ internal sealed class ModulePatcher(string buildDirectory, bool threading, bool 
 
     private void CopyInternals ()
     {
-        const string undefined = "export default undefined;";
-        File.WriteAllText(runtimeGen, embed ? File.ReadAllText(runtime, Encoding.UTF8) : undefined, Encoding.UTF8);
-        File.WriteAllText(nativeGen, embed ? File.ReadAllText(native, Encoding.UTF8) : undefined, Encoding.UTF8);
+        if (embed)
+        {
+            File.WriteAllText(runtimeGen, File.ReadAllText(runtime, Encoding.UTF8), Encoding.UTF8);
+            File.WriteAllText(nativeGen, File.ReadAllText(native, Encoding.UTF8), Encoding.UTF8);
+        }
+        else
+        {
+            const string sideload = "export const embedded = false;\n";
+            File.WriteAllText(runtimeGen, sideload, Encoding.UTF8);
+            File.WriteAllText(nativeGen, sideload, Encoding.UTF8);
+        }
     }
 }

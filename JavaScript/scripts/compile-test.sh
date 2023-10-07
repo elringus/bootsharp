@@ -1,5 +1,3 @@
-# dotnet workload install wasm-tools --source https://api.nuget.org/v3/index.json
-# dotnet build-server shutdown
 cd ../test/cs
-dotnet workload restore
-dotnet publish #-v:Normal -fl -flp:logfile=Build.log;verbosity=diagnostic
+dotnet publish -p:BootsharpName=embedded -p:BootsharpEmbedBinaries=true
+dotnet publish -p:BootsharpName=sideload -p:BootsharpEmbedBinaries=false

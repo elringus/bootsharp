@@ -12,12 +12,12 @@ public class PatcherTest : BuildTest
     }
 
     [Fact]
-    public void WhenEmbedDisabledModulesAreUndefined ()
+    public void WhenEmbedDisabledModuleExportFalseFlag ()
     {
         Task.EmbedBinaries = false;
         Execute();
-        Assert.Equal("export default undefined;", GeneratedRuntimeModule);
-        Assert.Equal("export default undefined;", GeneratedNativeModule);
+        Assert.Equal("export const embedded = false;\n", GeneratedRuntimeModule);
+        Assert.Equal("export const embedded = false;\n", GeneratedNativeModule);
     }
 
     [Fact]

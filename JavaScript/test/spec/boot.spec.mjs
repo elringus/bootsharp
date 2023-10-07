@@ -1,5 +1,5 @@
-import { expect, describe, it, vi } from "vitest";
-import path from "node:path";
+import { describe, expect, it, vi } from "vitest";
+import { resolve } from "node:path";
 
 async function setup() {
     // dotnet merges with the host node process, so it's not possible
@@ -7,20 +7,27 @@ async function setup() {
     // this is a workaround to simulate clean environment in each test
     vi.resetModules();
     const cs = await import("../cs.mjs");
-    cs.Test.onMainInvoked = vi.fn();
-    return { bootsharp: cs.default, ...cs, Test: cs.Test, bins: cs.bins };
+    cs.SideloadTest.onMainInvoked = vi.fn();
+    return { ...cs, bootsharp: cs.sideload, Test: cs.SideloadTest };
 }
 
 describe("boot", () => {
-    // it("can boot while streaming bins from root", async () => {
-    //     const { bootsharp, Test } = await setup();
-    //     bootsharp.resources.root = "./bin";
-    //     await bootsharp.boot({});
-    //     expect(Test.$onMainInvoked).toHaveBeenCalledOnce();
-    // });
+    it("can boot in embedded mode", async () => {
+        vi.resetModules();
+        const cs = await import("../cs.mjs");
+        cs.EmbeddedTest.onMainInvoked = vi.fn();
+        await cs.embedded.boot({});
+        expect(cs.EmbeddedTest.$onMainInvoked).toHaveBeenCalledOnce();
+    });
+    it("can boot while streaming bins from root", async () => {
+        const { bootsharp, root, Test } = await setup();
+        bootsharp.resources.root = root;
+        await bootsharp.boot({});
+        expect(Test.$onMainInvoked).toHaveBeenCalledOnce();
+    });
     it("can boot with bins content pre-assigned", async () => {
-        const { bootsharp, Test, bins } = await setup();
-        bootsharp.resources.root = "./bin";
+        const { bootsharp, Test, root, bins } = await setup();
+        bootsharp.resources.root = root;
         bootsharp.resources.wasm.content = bins.wasm;
         for (const asm of bootsharp.resources.assemblies)
             asm.content = bins.assemblies.find(a => a.name === asm.name).content;
@@ -28,8 +35,8 @@ describe("boot", () => {
         expect(Test.$onMainInvoked).toHaveBeenCalledOnce();
     });
     it("can boot with base64 content", async () => {
-        const { bootsharp, Test, bins } = await setup();
-        bootsharp.resources.root = "./bin";
+        const { bootsharp, Test, root, bins } = await setup();
+        bootsharp.resources.root = root;
         bootsharp.resources.wasm.content = bins.wasm.toString("base64");
         for (const asm of bootsharp.resources.assemblies)
             asm.content = bins.assemblies.find(a => a.name === asm.name).content.toString("base64");
@@ -37,9 +44,9 @@ describe("boot", () => {
         expect(Test.$onMainInvoked).toHaveBeenCalledOnce();
     });
     it("can boot with base64 content w/o native encoder available", async () => {
-        const { bootsharp, Test, bins } = await setup();
+        const { bootsharp, Test, root, bins } = await setup();
         global.Buffer = undefined;
-        bootsharp.resources.root = "./bin";
+        bootsharp.resources.root = root;
         bootsharp.resources.wasm.content = bins.wasm.toString("base64");
         for (const asm of bootsharp.resources.assemblies)
             asm.content = bins.assemblies.find(a => a.name === asm.name).content.toString("base64");
@@ -47,10 +54,10 @@ describe("boot", () => {
         expect(Test.$onMainInvoked).toHaveBeenCalledOnce();
     });
     it("attempts to use atob when window is defined in global", async () => {
-        const { bootsharp, bins } = await setup();
+        const { bootsharp, root, bins } = await setup();
         // noinspection JSValidateTypes
         global.window = { atob: vi.fn() };
-        bootsharp.resources.root = "./bin";
+        bootsharp.resources.root = root;
         bootsharp.resources.wasm.content = bins.wasm.toString("base64");
         for (const asm of bootsharp.resources.assemblies)
             asm.content = bins.assemblies.find(a => a.name === asm.name).content.toString("base64");
@@ -60,11 +67,11 @@ describe("boot", () => {
     });
     it("invokes dotnet.exit on exit", async () => {
         const exitMock = vi.fn();
-        vi.doMock("../cs/Test/bin/bootsharp/dotnet", () => ({ exit: exitMock, dotnet: {} }));
+        vi.doMock("../cs/Test/bin/sideload/dotnet", () => ({ exit: exitMock, dotnet: {} }));
         const { bootsharp } = await setup();
         bootsharp.exit();
         expect(exitMock).toHaveBeenCalledOnce();
-        vi.doUnmock("../cs/Test/bin/bootsharp/dotnet");
+        vi.doUnmock("../cs/Test/bin/sideload/dotnet");
     });
     it("respects boot customs", async () => {
         const { bootsharp, bins } = await setup();
@@ -73,11 +80,11 @@ describe("boot", () => {
                 mainAssemblyName: bins.entryAssemblyName,
                 assets: [
                     {
-                        name: path.resolve("test/cs/Test/bin/bootsharp/bin/dotnet.runtime.js"),
+                        name: resolve("test/cs/Test/bin/sideload/bin/dotnet.runtime.js"),
                         behavior: "js-module-runtime"
                     },
                     {
-                        name: path.resolve("test/cs/Test/bin/bootsharp/bin/dotnet.native.js"),
+                        name: resolve("test/cs/Test/bin/sideload/bin/dotnet.native.js"),
                         behavior: "js-module-native"
                     },
                     {
@@ -107,22 +114,16 @@ describe("boot status", () => {
         expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Standby);
     });
     it("transitions to booting and then to booted", async () => {
-        const { bootsharp, bins } = await setup();
-        bootsharp.resources.root = "./bin";
-        bootsharp.resources.wasm.content = bins.wasm;
-        for (const asm of bootsharp.resources.assemblies)
-            asm.content = bins.assemblies.find(a => a.name === asm.name).content;
+        const { bootsharp, root } = await setup();
+        bootsharp.resources.root = root;
         const promise = bootsharp.boot({});
         expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Booting);
         await promise;
         expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Booted);
     });
     it("transitions to standby on exit", async () => {
-        const { bootsharp, bins } = await setup();
-        bootsharp.resources.root = "./bin";
-        bootsharp.resources.wasm.content = bins.wasm;
-        for (const asm of bootsharp.resources.assemblies)
-            asm.content = bins.assemblies.find(a => a.name === asm.name).content;
+        const { bootsharp, root } = await setup();
+        bootsharp.resources.root = root;
         await bootsharp.boot({});
         expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Booted);
         bootsharp.exit();

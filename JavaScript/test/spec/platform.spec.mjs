@@ -1,9 +1,9 @@
 import { describe, it, beforeAll, expect } from "vitest";
-import { boot, Test } from "../cs.mjs";
+import { bootSideload, Test } from "../cs.mjs";
 import ws, { WebSocketServer } from "ws";
 
 describe("platform", () => {
-    beforeAll(boot);
+    beforeAll(bootSideload);
     it("can provide unique guid", () => {
         const guid1 = Test.getGuid();
         const guid2 = Test.getGuid();

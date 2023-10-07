@@ -1,5 +1,5 @@
 import generated from "./resources.g";
-import { RuntimeConfig, AssetEntry, AssetBehaviors, ResourceGroups, ResourceList, runtime, native } from "./external";
+import { RuntimeConfig, AssetEntry, AssetBehaviors, runtime, native } from "./external";
 import { decodeBase64 } from "./decoder";
 
 /** Resources required to boot .NET runtime. */
@@ -27,50 +27,27 @@ export type BinaryResource = {
 export const resources: BootResources = generated;
 
 export function buildConfig(): RuntimeConfig {
-    const embed = resources.wasm.content != null;
-    if (!embed && resources.root == null)
-        throw Error("Resources root has to be specified when binaries are not embedded.");
     return {
         mainAssemblyName: resources.entryAssemblyName,
-        resources: embed ? undefined : buildResources(),
-        assets: embed ? buildAssets() : undefined
+        assets: [
+            buildAsset({ name: "dotnet.runtime.js" }, "js-module-runtime", runtime),
+            buildAsset({ name: "dotnet.native.js" }, "js-module-native", native),
+            buildAsset({ name: "dotnet.native.worker.js)" }, "js-module-threads", {}, true),
+            buildAsset(resources.wasm, "dotnetwasm"),
+            ...resources.assemblies.map(a => buildAsset(a, "assembly"))
+        ]
     };
 }
 
-function buildResources(): ResourceGroups {
+function buildAsset(res: BinaryResource, behavior: AssetBehaviors,
+    module?: { embedded?: boolean }, optional?: boolean): AssetEntry {
+    const url = `${resources.root}/${res.name}`;
     return {
-        jsModuleRuntime: buildResourceList("dotnet.runtime.js"),
-        jsModuleNative: buildResourceList("dotnet.native.js"),
-        jsModuleWorker: buildResourceList("dotnet.native.worker.js"),
-        wasmNative: buildResourceList("dotnet.native.wasm"),
-        wasmSymbols: buildResourceList("dotnet.native.js.symbols"),
-        assembly: buildResourceList(...resources.assemblies.map(a => a.name))
-    };
-}
-
-function buildResourceList(...names: string[]): ResourceList {
-    const list: ResourceList = {};
-    for (const name of names)
-        list[`${resources.root}/${name}`] = "";
-    return list;
-}
-
-function buildAssets(): AssetEntry[] {
-    const runtimeModule = runtime.default ? runtime : undefined;
-    const nativeModule = native.default ? native : undefined;
-    return [
-        buildAsset({ name: "dotnet.runtime.js" }, "js-module-runtime", runtimeModule),
-        buildAsset({ name: "dotnet.native.js" }, "js-module-native", nativeModule),
-        buildAsset(resources.wasm, "dotnetwasm"),
-        ...resources.assemblies.map(a => buildAsset(a, "assembly"))
-    ];
-}
-
-function buildAsset(res: BinaryResource, behavior: AssetBehaviors, module?: unknown): AssetEntry {
-    return {
-        name: (!resources.root || res.content) ? res.name : `${resources.root}/${res.name}`,
+        name: (res.content || behavior === "assembly") ? res.name : url,
+        resolvedUrl: (res.content || !resources.root) ? undefined : url,
         buffer: typeof res.content === "string" ? decodeBase64(res.content) : res.content,
-        moduleExports: module,
+        moduleExports: module?.embedded === false ? undefined : module,
+        isOptional: optional,
         behavior
     };
 }

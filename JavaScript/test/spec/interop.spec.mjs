@@ -1,5 +1,5 @@
 import { describe, it, beforeAll, expect } from "vitest";
-import { boot, Test } from "../cs.mjs";
+import { bootSideload, Test } from "../cs.mjs";
 
 const TrackType = Test.Types.TrackType;
 
@@ -10,7 +10,7 @@ describe("while bootsharp is not booted", () => {
 });
 
 describe("while bootsharp is booted", () => {
-    beforeAll(boot);
+    beforeAll(bootSideload);
     it("throws when attempting to invoke un-assigned JS function", () => {
         const error = /Failed to invoke '.+' JavaScript function: undefined/;
         Test._onMainInvoked = undefined;

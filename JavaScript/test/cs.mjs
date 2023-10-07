@@ -1,12 +1,20 @@
+import emb, { Test as EmbTest } from "./cs/Test/bin/embedded/bootsharp.mjs";
+import sid, { Test as SidTest } from "./cs/Test/bin/sideload/bootsharp.mjs";
 import assert from "node:assert";
-import path from "node:path";
-import fs from "node:fs";
-import bootsharp, { Test } from "./cs/Test/bin/bootsharp/bootsharp.mjs";
+import { resolve, parse, basename } from "node:path";
+import { readdirSync, readFileSync, existsSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 
-export default bootsharp;
-export * from "./cs/Test/bin/bootsharp/bootsharp.mjs";
+export const embedded = emb;
+export const sideload = sid;
+export const EmbeddedTest = EmbTest;
+export const SideloadTest = SidTest;
+export const root = pathToFileURL("./test/cs/Test/bin/sideload/bin").toString();
 
-assertPathExists("test/cs/Test/bin/bootsharp/bootsharp.mjs");
+export * from "./cs/Test/bin/sideload/bootsharp.mjs";
+
+assertPathExists("test/cs/Test/bin/embedded/bootsharp.mjs");
+assertPathExists("test/cs/Test/bin/sideload/bootsharp.mjs");
 
 export const bins = {
     wasm: loadWasmBinary(),
@@ -14,29 +22,27 @@ export const bins = {
     entryAssemblyName: "Test.dll"
 };
 
-export async function boot() {
-    Test.onMainInvoked = () => {};
-    bootsharp.resources.root = "./bin";
-    bootsharp.resources.wasm.content = bins.wasm;
-    for (const asm of bootsharp.resources.assemblies)
-        asm.content = bins.assemblies.find(a => a.name === asm.name).content;
-    await bootsharp.boot({});
+export async function bootEmbedded() {
+    EmbeddedTest.onMainInvoked = () => {};
+    await embedded.boot({});
 }
 
-export function exit() {
-    setTimeout(bootsharp.exit, 0);
+export async function bootSideload() {
+    SideloadTest.onMainInvoked = () => {};
+    sideload.resources.root = root;
+    await sideload.boot({});
 }
 
 export function getDeclarations() {
-    const file = path.resolve("test/cs/Test/bin/bootsharp/types/bindings.g.d.ts");
+    const file = resolve("test/cs/Test/bin/embedded/types/bindings.g.d.ts");
     assertPathExists(file);
-    return fs.readFileSync(file).toString();
+    return readFileSync(file).toString();
 }
 
 function loadWasmBinary() {
-    const file = path.resolve("test/cs/Test/bin/bootsharp/bin/dotnet.native.wasm");
+    const file = resolve("test/cs/Test/bin/sideload/bin/dotnet.native.wasm");
     assertPathExists(file);
-    return fs.readFileSync(file);
+    return readFileSync(file);
 }
 
 function loadAssemblies() {
@@ -48,9 +54,9 @@ function loadAssemblies() {
 
 function findAssemblies() {
     let assemblyPaths = [];
-    const dirPath = path.resolve("test/cs/Test/bin/bootsharp/bin");
+    const dirPath = resolve("test/cs/Test/bin/sideload/bin");
     assertPathExists(dirPath);
-    for (const fileName of fs.readdirSync(dirPath))
+    for (const fileName of readdirSync(dirPath))
         if (!fileName.endsWith("dotnet.native.wasm") && fileName.endsWith(".wasm"))
             assemblyPaths.push(`${dirPath}/${fileName}`);
     return assemblyPaths;
@@ -58,12 +64,12 @@ function findAssemblies() {
 
 function loadAssembly(assemblyPath) {
     return {
-        name: path.parse(assemblyPath).base,
-        content: fs.readFileSync(assemblyPath)
+        name: parse(assemblyPath).base,
+        content: readFileSync(assemblyPath)
     };
 }
 
 function assertPathExists(pathToCheck) {
-    const name = path.basename(pathToCheck);
-    assert(fs.existsSync(pathToCheck), `Missing test project artifact: '${name}'. Run 'scripts/compile-test.sh'.`);
+    const name = basename(pathToCheck);
+    assert(existsSync(pathToCheck), `Missing test project artifact: '${name}'. Run 'scripts/compile-test.sh'.`);
 }
