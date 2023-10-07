@@ -33,10 +33,11 @@ jobs:
           dotnet build -c Release
           dotnet pack Bootsharp -o .nuget
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-          cd ../JavaScript/scripts
+          cd ../JavaScript/test/cs
           dotnet workload restore
-          bash compile-test.sh
-          cd ..
+          dotnet publish -p:BootsharpName=embedded -p:BootsharpEmbedBinaries=true
+          dotnet publish -p:BootsharpName=sideload -p:BootsharpEmbedBinaries=false
+          cd ../..
           npm run cover
       - name: upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
