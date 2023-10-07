@@ -34,6 +34,7 @@ jobs:
           dotnet pack Bootsharp -o .nuget
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
           cd ../JavaScript/scripts
+          dotnet workload restore
           bash compile-test.sh
           cd ..
           npm run cover
