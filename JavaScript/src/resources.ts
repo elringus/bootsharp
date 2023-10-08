@@ -32,7 +32,7 @@ export function buildConfig(): RuntimeConfig {
         assets: [
             buildAsset({ name: "dotnet.runtime.js" }, "js-module-runtime", runtime),
             buildAsset({ name: "dotnet.native.js" }, "js-module-native", native),
-            buildAsset({ name: "dotnet.native.worker.js)" }, "js-module-threads", {}, true),
+            buildAsset({ name: "dotnet.native.worker.js" }, "js-module-threads", {}, true),
             buildAsset(resources.wasm, "dotnetwasm"),
             ...resources.assemblies.map(a => buildAsset(a, "assembly"))
         ]
