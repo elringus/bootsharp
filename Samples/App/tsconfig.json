@@ -1,10 +1,9 @@
 {
     "compilerOptions": {
-        "target": "es2020",
+        "target": "es2022",
         "module": "esnext",
         "moduleResolution": "bundler",
         "jsx": "react-jsx",
-        "noEmit": true,
         "strict": true
     },
     "include": ["src"]

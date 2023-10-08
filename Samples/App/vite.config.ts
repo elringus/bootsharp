@@ -7,7 +7,7 @@ export default defineConfig({
     plugins: [react()],
     test: {
         environment: "happy-dom",
-        setupFiles: ["./test/setup.ts"],
+        setupFiles: ["test/setup.ts"],
         coverage: { include: ["src/**"] }
     },
     server: {
@@ -16,7 +16,10 @@ export default defineConfig({
             "Cross-Origin-Embedder-Policy": "require-corp"
         }
     },
-    // Ignore node-specific calls in .NET's JavaScript:
-    // https://github.com/dotnet/runtime/issues/91558.
-    build: { rollupOptions: { external: ["process", "module"] } }
+    build: {
+        target: "chrome89",
+        // Ignore node-specific calls in .NET's JavaScript:
+        // https://github.com/dotnet/runtime/issues/91558.
+        rollupOptions: { external: ["process", "module"] }
+    }
 });
