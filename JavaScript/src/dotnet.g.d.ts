@@ -1,4 +1,7 @@
-// Source: https://github.com/dotnet/runtime/blob/main/src/mono/wasm/runtime/dotnet.d.ts
+// Resolved when building C# solution.
+export const embedded = false;
+
+// Types: https://github.com/dotnet/runtime/blob/main/src/mono/wasm/runtime/dotnet.d.ts
 
 declare interface NativePointer {
     __brandNativePointer: "NativePointer";

@@ -8,12 +8,12 @@
         <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>
         <TrimmerSingleWarn>false</TrimmerSingleWarn>
         <BootsharpBundleCommand>npx rollup bootsharp.js -d ./ -f es -g process,module --preserveModules --entryFileNames [name].mjs</BootsharpBundleCommand>
-        <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
-        <RunAOTCompilation>true</RunAOTCompilation>
+<!--        <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>-->
+<!--        <RunAOTCompilation>true</RunAOTCompilation>-->
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bootsharp" Version="*-*"/>
+        <PackageReference Include="Bootsharp" Version="0.1.0-rc.124" />
         <ProjectReference Include="../Test.Types/Test.Types.csproj"/>
     </ItemGroup>
 

@@ -7,6 +7,7 @@ public class PatcherTest : BuildTest
     {
         Task.EmbedBinaries = true;
         Execute();
+        Assert.Equal(MockDotNetContent, GeneratedDotNetModule);
         Assert.Equal(MockRuntimeContent, GeneratedRuntimeModule);
         Assert.Equal(MockNativeContent, GeneratedNativeModule);
     }
@@ -16,6 +17,7 @@ public class PatcherTest : BuildTest
     {
         Task.EmbedBinaries = false;
         Execute();
+        Assert.Equal("export const embedded = false;\n", GeneratedDotNetModule);
         Assert.Equal("export const embedded = false;\n", GeneratedRuntimeModule);
         Assert.Equal("export const embedded = false;\n", GeneratedNativeModule);
     }

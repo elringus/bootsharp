@@ -1,5 +1,5 @@
-import { RuntimeConfig, RuntimeAPI, module, builder } from "./external";
-import { buildConfig } from "./resources";
+import { RuntimeConfig, RuntimeAPI, getMain } from "./modules";
+import { buildConfig } from "./config";
 import { bindImports } from "./imports";
 import { bindExports } from "./exports";
 
@@ -39,7 +39,8 @@ export function getStatus(): BootStatus {
  *  @return Promise that resolves into .NET runtime instance. */
 export async function boot(custom?: BootCustom): Promise<RuntimeAPI> {
     status = BootStatus.Booting;
-    const config = custom?.config ?? buildConfig();
+    const config = custom?.config ?? await buildConfig();
+    const builder = (await getMain()).dotnet;
     const runtime = await custom?.create?.(config) || await builder.withConfig(config).create();
     // TODO: Remove once https://github.com/dotnet/runtime/issues/92713 fix is merged.
     (<{ runtimeKeepalivePush: () => void }><unknown>runtime.Module).runtimeKeepalivePush();
@@ -53,7 +54,8 @@ export async function boot(custom?: BootCustom): Promise<RuntimeAPI> {
 /** Terminates .NET runtime and removes WASM module from memory.
  *  @param code Exit code; will use 0 (normal exit) by default.
  *  @param reason Exit reason description (optional). */
-export function exit(code?: number, reason?: string): void {
+export async function exit(code?: number, reason?: string): Promise<void> {
+    const module = await getMain();
     module.exit(code ?? 0, reason);
     status = BootStatus.Standby;
 }

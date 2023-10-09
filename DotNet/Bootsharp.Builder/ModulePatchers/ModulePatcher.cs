@@ -7,6 +7,7 @@ internal sealed class ModulePatcher(string buildDirectory, bool threading, bool 
     private readonly string dotnet = Path.Combine(buildDirectory, "dotnet.js");
     private readonly string runtime = Path.Combine(buildDirectory, "dotnet.runtime.js");
     private readonly string native = Path.Combine(buildDirectory, "dotnet.native.js");
+    private readonly string dotnetGen = Path.Combine(buildDirectory, "dotnet.g.js");
     private readonly string runtimeGen = Path.Combine(buildDirectory, "dotnet.runtime.g.js");
     private readonly string nativeGen = Path.Combine(buildDirectory, "dotnet.native.g.js");
 
@@ -30,12 +31,14 @@ internal sealed class ModulePatcher(string buildDirectory, bool threading, bool 
     {
         if (embed)
         {
+            File.WriteAllText(dotnetGen, File.ReadAllText(dotnet, Encoding.UTF8), Encoding.UTF8);
             File.WriteAllText(runtimeGen, File.ReadAllText(runtime, Encoding.UTF8), Encoding.UTF8);
             File.WriteAllText(nativeGen, File.ReadAllText(native, Encoding.UTF8), Encoding.UTF8);
         }
         else
         {
             const string sideload = "export const embedded = false;\n";
+            File.WriteAllText(dotnetGen, sideload, Encoding.UTF8);
             File.WriteAllText(runtimeGen, sideload, Encoding.UTF8);
             File.WriteAllText(nativeGen, sideload, Encoding.UTF8);
         }

@@ -115,12 +115,15 @@
             <BootsharpModuleFiles Include="$(BootsharpBuildDirectory)/*.mjs"/>
             <BootsharpWasmFiles Include="$(BootsharpBuildDirectory)/*.wasm"/>
             <BootsharpTypeFiles Include="$(BootsharpBuildDirectory)/*.d.ts"/>
+            <BootsharpDotNetFile Include="$(BootsharpBuildDirectory)/dotnet.js"/>
             <BootsharpRuntimeFile Include="$(BootsharpBuildDirectory)/dotnet.runtime.js"/>
             <BootsharpNativeFile Include="$(BootsharpBuildDirectory)/dotnet.native.js"/>
             <BootsharpWorkerFile Include="$(BootsharpBuildDirectory)/dotnet.native.worker.js"/>
         </ItemGroup>
         <RemoveDir Directories="$(BootsharpBinariesDirectory);$(BootsharpTypesDirectory)"/>
         <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'" SourceFiles="@(BootsharpWasmFiles)"
+              DestinationFolder="$(BootsharpBinariesDirectory)"/>
+        <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'" SourceFiles="@(BootsharpDotNetFile)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'" SourceFiles="@(BootsharpRuntimeFile)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
@@ -132,6 +135,22 @@
               DestinationFolder="$(BootsharpTypesDirectory)"/>
         <Copy SourceFiles="@(BootsharpModuleFiles)"
               DestinationFolder="$(BootsharpPublishDirectory)"/>
+
+        <!-- Publish debug symbols and maps when aggressive trimming is disabled. -->
+        <ItemGroup>
+            <BootsharpMaps Include="$(BootsharpBuildDirectory)/*.map"/>
+            <BootsharpSymbols Include="$(BootsharpBuildDirectory)/*.symbols"/>
+            <BootsharpPdbs Include="$(BootsharpBuildDirectory)/*.pdb"/>
+        </ItemGroup>
+        <Copy Condition="'$(BootsharpAggressiveTrimming)' != 'true' And '$(BootsharpEmbedBinaries)' != 'true'"
+              SourceFiles="@(BootsharpMaps)"
+              DestinationFolder="$(BootsharpBinariesDirectory)"/>
+        <Copy Condition="'$(BootsharpAggressiveTrimming)' != 'true' And '$(BootsharpEmbedBinaries)' != 'true'"
+              SourceFiles="@(BootsharpSymbols)"
+              DestinationFolder="$(BootsharpBinariesDirectory)"/>
+        <Copy Condition="'$(BootsharpAggressiveTrimming)' != 'true' And '$(BootsharpEmbedBinaries)' != 'true'"
+              SourceFiles="@(BootsharpPdbs)"
+              DestinationFolder="$(BootsharpBinariesDirectory)"/>
 
         <!-- Publish package file. -->
         <ItemGroup>
