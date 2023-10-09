@@ -12,6 +12,27 @@ async function setup() {
 }
 
 describe("boot", () => {
+    it("uses embedded modules when root is not specified", async () => {
+        const { bootsharp } = await setup();
+        expect((await bootsharp.dotnet.getMain()).embedded).toStrictEqual(false);
+        expect((await bootsharp.dotnet.getNative()).embedded).toStrictEqual(false);
+        expect((await bootsharp.dotnet.getRuntime()).embedded).toStrictEqual(false);
+    });
+    it("uses sideload modules when root is specified", async () => {
+        const { bootsharp, root } = await setup();
+        bootsharp.resources.root = root;
+        expect((await bootsharp.dotnet.getMain()).embedded).toBeUndefined();
+        expect((await bootsharp.dotnet.getNative()).embedded).toBeUndefined();
+        expect((await bootsharp.dotnet.getRuntime()).embedded).toBeUndefined();
+    });
+    it("defines module exports when root is not specified", async () => {
+        await setup();
+        const module = await import("../cs/Test/bin/sideload/config");
+        const config = await module.buildConfig();
+        expect(config.assets[0].moduleExports).toBeDefined();
+        expect(config.assets[1].moduleExports).toBeDefined();
+        expect(config.assets[2].moduleExports).toBeDefined();
+    });
     it("can boot in embedded mode", async () => {
         vi.resetModules();
         const cs = await import("../cs.mjs");
@@ -67,11 +88,11 @@ describe("boot", () => {
     });
     it("invokes dotnet.exit on exit", async () => {
         const exitMock = vi.fn();
-        vi.doMock("../cs/Test/bin/sideload/dotnet", () => ({ exit: exitMock, dotnet: {} }));
+        vi.doMock("../cs/Test/bin/sideload/dotnet.g", () => ({ exit: exitMock, dotnet: {} }));
         const { bootsharp } = await setup();
-        bootsharp.exit();
+        await bootsharp.exit();
         expect(exitMock).toHaveBeenCalledOnce();
-        vi.doUnmock("../cs/Test/bin/sideload/dotnet");
+        vi.doUnmock("../cs/Test/bin/sideload/dotnet.g");
     });
     it("respects boot customs", async () => {
         const { bootsharp, bins } = await setup();
@@ -79,6 +100,10 @@ describe("boot", () => {
             config: {
                 mainAssemblyName: bins.entryAssemblyName,
                 assets: [
+                    {
+                        name: resolve("test/cs/Test/bin/sideload/bin/dotnet.js"),
+                        behavior: "js-module-dotnet"
+                    },
                     {
                         name: resolve("test/cs/Test/bin/sideload/bin/dotnet.runtime.js"),
                         behavior: "js-module-runtime"
@@ -95,7 +120,7 @@ describe("boot", () => {
                     ...bins.assemblies.map(a => ({ name: a.name, buffer: a.content, behavior: "assembly" }))
                 ]
             },
-            create: vi.fn(() => bootsharp.dotnet.builder.withConfig(customs.config).create()),
+            create: vi.fn(async () => (await import("../cs/Test/bin/sideload/bin/dotnet.js")).dotnet.withConfig(customs.config).create()),
             import: vi.fn(),
             run: vi.fn(),
             export: vi.fn()
@@ -126,7 +151,7 @@ describe("boot status", () => {
         bootsharp.resources.root = root;
         await bootsharp.boot({});
         expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Booted);
-        bootsharp.exit();
+        await bootsharp.exit();
         expect(bootsharp.getStatus()).toStrictEqual(bootsharp.BootStatus.Standby);
     });
 });

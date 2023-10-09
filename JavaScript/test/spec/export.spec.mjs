@@ -7,9 +7,10 @@ describe("export", () => {
         expect(embedded.exit).toBeTypeOf("function");
         expect(embedded.resources).toBeTypeOf("object");
     });
-    it("exports dotnet api", () => {
-        expect(embedded.dotnet.builder).toBeTypeOf("object");
-        expect(embedded.dotnet.module).toBeTypeOf("object");
+    it("exports dotnet modules", () => {
+        expect(embedded.dotnet.getMain).toBeTypeOf("function");
+        expect(embedded.dotnet.getNative).toBeTypeOf("function");
+        expect(embedded.dotnet.getRuntime).toBeTypeOf("function");
     });
     it("exports type declarations", () => {
         expect(getDeclarations()).toBeTruthy();
