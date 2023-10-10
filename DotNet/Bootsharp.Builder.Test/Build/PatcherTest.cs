@@ -17,15 +17,19 @@ public class PatcherTest : BuildTest
     {
         Task.EmbedBinaries = false;
         Execute();
-        Assert.Equal("export const embedded = false;\n", GeneratedDotNetModule);
-        Assert.Equal("export const embedded = false;\n", GeneratedRuntimeModule);
-        Assert.Equal("export const embedded = false;\n", GeneratedNativeModule);
+        Assert.Equal("export const embedded = false;\nexport const mt = false;", GeneratedDotNetModule);
+        Assert.Equal("export const embedded = false;\nexport const mt = false;", GeneratedRuntimeModule);
+        Assert.Equal("export const embedded = false;\nexport const mt = false;", GeneratedNativeModule);
     }
 
     [Fact]
-    public void CanBuildWithThreadingEnabled ()
+    public void WhenTreadingEnabledFlagIsSet ()
     {
+        Task.EmbedBinaries = false;
         Task.Threading = true;
         Execute();
+        Assert.Equal("export const embedded = false;\nexport const mt = true;", GeneratedDotNetModule);
+        Assert.Equal("export const embedded = false;\nexport const mt = true;", GeneratedRuntimeModule);
+        Assert.Equal("export const embedded = false;\nexport const mt = true;", GeneratedNativeModule);
     }
 }

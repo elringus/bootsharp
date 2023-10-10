@@ -37,10 +37,11 @@ internal sealed class ModulePatcher(string buildDirectory, bool threading, bool 
         }
         else
         {
-            const string sideload = "export const embedded = false;\n";
-            File.WriteAllText(dotnetGen, sideload, Encoding.UTF8);
-            File.WriteAllText(runtimeGen, sideload, Encoding.UTF8);
-            File.WriteAllText(nativeGen, sideload, Encoding.UTF8);
+            var mt = threading.ToString().ToLowerInvariant();
+            var content = $"export const embedded = false;\nexport const mt = {mt};";
+            File.WriteAllText(dotnetGen, content, Encoding.UTF8);
+            File.WriteAllText(runtimeGen, content, Encoding.UTF8);
+            File.WriteAllText(nativeGen, content, Encoding.UTF8);
         }
     }
 }

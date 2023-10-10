@@ -1,5 +1,6 @@
 // Resolved when building C# solution.
 export const embedded = false;
+export const mt = false;
 
 // Types: https://github.com/dotnet/runtime/blob/main/src/mono/wasm/runtime/dotnet.d.ts
 

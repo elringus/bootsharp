@@ -1,6 +1,6 @@
-Example on producing minimal possible build size via disabling binaries embedding, aggressive trimming, stripping non-essential .NET features and using source-generated JSON serialization instead of reflection-based.
+Example on producing minimal possible build size by disabling binaries embedding and utilizing aggressive trimming.
 
-To test and measure final build size:
+To test and measure build size:
 - Run `dotnet publish cs`;
 - Run `node main.mjs`.
 
@@ -8,4 +8,4 @@ To test and measure final build size:
 
 | .NET         | Raw   | Brotli |
 |--------------|-------|--------|
-| 8.0.100-rc.1 | 1,956 | 663    |
+| 8.0.100-rc.1 | 2,315 | 744    |

@@ -12,6 +12,7 @@ await Promise.all([
 ]);
 
 Global.log = console.log;
+bootsharp.resources.root = "./bin";
 await bootsharp.boot();
 
 async function measure(dir) {
