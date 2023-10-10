@@ -1,5 +1,3 @@
-/// <reference types="vite/client" />
-
 import backend from "backend";
 import react from "react-dom/client";
 import Computer from "./computer";
