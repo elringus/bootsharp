@@ -6,18 +6,18 @@ export type RuntimeConfig = MonoConfig & { assets?: AssetEntry[] };
 
 /** Fetches main dotnet module (<code>dotnet.js</code>). */
 export async function getMain(): Promise<ModuleAPI> {
-    if (resources.root) return await import(`${resources.root}/dotnet.js`);
-    return await import("./dotnet.g");
-}
-
-/** Fetches dotnet runtime module (<code>dotnet.runtime.js</code>). */
-export async function getRuntime(): Promise<unknown> {
-    if (resources.root) return await import(`${resources.root}/dotnet.runtime.js`);
-    return await import("./dotnet.runtime.g");
+    if (resources.root == null) return await import("./dotnet.g");
+    return await import(/*@vite-ignore*//*webpackIgnore:true*/`${resources.root}/dotnet.js`);
 }
 
 /** Fetches dotnet native module (<code>dotnet.native.js</code>). */
 export async function getNative(): Promise<unknown> {
-    if (resources.root) return await import(`${resources.root}/dotnet.native.js`);
-    return await import("./dotnet.native.g");
+    if (resources.root == null) return await import("./dotnet.native.g");
+    return await import(/*@vite-ignore*//*webpackIgnore:true*/`${resources.root}/dotnet.native.js`);
+}
+
+/** Fetches dotnet runtime module (<code>dotnet.runtime.js</code>). */
+export async function getRuntime(): Promise<unknown> {
+    if (resources.root == null) return await import("./dotnet.runtime.g");
+    return await import(/*@vite-ignore*//*webpackIgnore:true*/`${resources.root}/dotnet.runtime.js`);
 }
