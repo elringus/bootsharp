@@ -22,6 +22,16 @@ html {
     width: 300px;
 }
 
+#controls {
+    margin-top: 10px;
+}
+
+#controls input {
+    max-width: 60px;
+    margin-left: 7px;
+    margin-right: 15px;
+}
+
 #computer button {
     margin-top: 10px;
     width: 100%;

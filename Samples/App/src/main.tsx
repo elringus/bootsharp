@@ -9,5 +9,5 @@ await backend.boot();
 
 react.createRoot(document.getElementById("app")!).render(<>
     <Donut fps={60}/>
-    <Computer complexity={25000} resultLimit={9}/>
+    <Computer options={{ complexity: 25000, multithreading: true }} resultLimit={10}/>
 </>);
