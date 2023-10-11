@@ -4,7 +4,6 @@ internal record Method
 {
     public required MethodType Type { get; init; }
     public required string Assembly { get; init; }
-    public required string? Namespace { get; init; }
     public required string DeclaringName { get; init; }
     public required string Name { get; init; }
     public required IReadOnlyList<Argument> Arguments { get; init; }

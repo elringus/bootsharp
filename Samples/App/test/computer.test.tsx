@@ -1,4 +1,4 @@
-import { Computer as Backend, PrimeUI as UI } from "backend";
+import { Computer as Backend } from "backend";
 import { beforeEach, test, expect, vi } from "vitest";
 import { render, act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -17,12 +17,12 @@ test("not computing initially", () => {
 
 test("get options returns values specified in props", async () => {
     render(<Computer options={{ complexity: 666, multithreading: true }} resultLimit={0}/>);
-    expect(UI.$getOptions()).toStrictEqual({ complexity: 666, multithreading: true });
+    expect(Backend.$getOptions()).toStrictEqual({ complexity: 666, multithreading: true });
 });
 
 test("compute time is written to screen", async () => {
     render(<Computer options={{ complexity: 0, multithreading: false }} resultLimit={99}/>);
-    act(() => UI.onComplete.broadcast(13));
+    act(() => Backend.onComplete.broadcast(13));
     expect(screen.getByText(/Computed in 13ms/));
 });
 

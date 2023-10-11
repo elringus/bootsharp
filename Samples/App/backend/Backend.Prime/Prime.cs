@@ -15,10 +15,12 @@ public class Prime(IPrimeUI ui) : IComputer
     {
         cts?.Cancel();
         cts = new CancellationTokenSource();
+        cts.Token.Register(() => ui.NotifyComputing(false));
         var options = ui.GetOptions();
         if (!options.Multithreading) ComputeLoop(options.Complexity, cts.Token);
         else new Thread(() => ComputeLoop(options.Complexity, cts.Token)).Start();
         ObserveLoop(cts.Token);
+        ui.NotifyComputing(true);
     }
 
     public void StopComputing () => cts?.Cancel();
@@ -32,7 +34,11 @@ public class Prime(IPrimeUI ui) : IComputer
             watch.Restart();
             try { await semaphore.WaitAsync(token); }
             catch (OperationCanceledException) { }
-            finally { watch.Stop(); ui.NotifyComplete((int)watch.ElapsedMilliseconds); }
+            finally
+            {
+                watch.Stop();
+                ui.NotifyComplete((int)watch.ElapsedMilliseconds);
+            }
             await Task.Delay(1);
         }
     }

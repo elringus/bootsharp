@@ -1,13 +1,4 @@
 {
-    "scripts": {
-        "update": "ncu --interactive",
-        "backend": "dotnet publish backend",
-        "test": "vitest run",
-        "cover": "vitest run --coverage",
-        "dev": "vite",
-        "build": "vite build",
-        "preview": "vite preview"
-    },
     "dependencies": {
         "backend": "file:backend",
         "react": "^18.2.0",
@@ -15,15 +6,41 @@
     },
     "devDependencies": {
         "typescript": "^5.2.2",
-        "@types/react": "^18.2.25",
-        "@types/react-dom": "^18.2.11",
+        "@types/react": "^18.2.28",
+        "@types/react-dom": "^18.2.13",
         "vite": "^4.4.11",
         "@vitejs/plugin-react-swc": "^3.4.0",
         "vitest": "^0.34.6",
         "@vitest/coverage-v8": "^0.34.6",
-        "happy-dom": "^12.9.0",
+        "happy-dom": "^12.9.1",
         "@testing-library/react": "^14.0.0",
         "@testing-library/user-event": "^14.5.1",
+        "eslint": "^8.51.0",
+        "eslint-plugin-react": "^7.33.2",
+        "eslint-plugin-react-hooks": "^4.6.0",
+        "@typescript-eslint/eslint-plugin": "^6.7.5",
         "npm-check-updates": "^16.14.5"
+    },
+    "scripts": {
+        "update": "ncu --interactive",
+        "backend": "dotnet publish backend",
+        "lint": "eslint src test",
+        "test": "vitest run",
+        "cover": "vitest run --coverage",
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
+    },
+    "eslintConfig": {
+        "extends": [
+            "eslint:recommended",
+            "plugin:react/recommended",
+            "plugin:react/jsx-runtime",
+            "plugin:react-hooks/recommended",
+            "plugin:@typescript-eslint/recommended"
+        ],
+        "rules": { "react/display-name": "off" },
+        "settings": { "react": { "version": "detect" } },
+        "env": { "browser": true }
     }
 }

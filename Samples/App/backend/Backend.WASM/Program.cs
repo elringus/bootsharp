@@ -13,8 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 [assembly: JSExport(typeof(IComputer))]
 // Generate JavaScript -> C# interop handlers for specified contracts.
 [assembly: JSImport(typeof(IPrimeUI))]
-// Group JavaScript artifacts under last part of the associated C# namespace.
-// [assembly: JSNamespace(@".*?([^\.]+?)(?:UI)?$", "$1")]
+// Group all generated JavaScript artifacts under 'Computer' namespace.
+[assembly: JSNamespace("^.*$", "Computer")]
 
 // Perform dependency injection.
 new ServiceCollection()

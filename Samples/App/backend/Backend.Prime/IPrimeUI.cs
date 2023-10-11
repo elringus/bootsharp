@@ -11,5 +11,6 @@ public interface IPrimeUI
     // be converted to JavaScript events and renamed to "On...".
     // This can be configured with "JSImport.EventPattern" and
     // "JSImport.EventReplacement" attribute parameters.
+    void NotifyComputing (bool computing);
     void NotifyComplete (int time);
 }

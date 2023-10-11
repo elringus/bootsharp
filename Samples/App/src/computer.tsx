@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback, ChangeEvent } from "react";
-import { Computer, Backend, PrimeUI } from "backend";
+import { Computer } from "backend";
 
 type Props = {
-    options: Backend.Prime.Options;
+    options: Computer.Options;
     resultLimit: number;
 };
 
@@ -13,20 +13,17 @@ export default ({ options, resultLimit }: Props) => {
     const [results, setResults] = useState("");
 
     const toggleCompute = useCallback(() => {
-        if (Computer.isComputing()) Computer.stopComputing();
+        if (computing) Computer.stopComputing();
         else Computer.startComputing();
-        setComputing(!computing);
     }, [computing]);
 
     const toggleMultithreading = useCallback(() => {
         setMultithreading(!multithreading);
-        if (computing) Computer.startComputing();
-    }, [multithreading, computing]);
+    }, [multithreading]);
 
     const handleComplexityInputChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-        setComplexity(event.target.valueAsNumber);
-        if (computing) Computer.startComputing();
-    }, [computing]);
+        setComplexity(Math.min(Math.max(event.target.valueAsNumber, 99), 99999));
+    }, []);
 
     const logResult = useCallback((time: number) => {
         setResults(i => {
@@ -35,16 +32,22 @@ export default ({ options, resultLimit }: Props) => {
             const stamp = new Date().toLocaleTimeString([], { hour12: false });
             return `[${stamp}] Computed in ${time}ms.\n${i}`;
         });
-    }, []);
+    }, [resultLimit]);
 
     useEffect(() => {
-        PrimeUI.getOptions = () => ({ complexity, multithreading });
-    }, [complexity, multithreading]);
+        Computer.getOptions = () => ({ complexity, multithreading });
+        if (computing) Computer.startComputing();
+    }, [complexity, multithreading, computing]);
 
     useEffect(() => {
-        PrimeUI.onComplete.subscribe(logResult);
-        return () => PrimeUI.onComplete.unsubscribe(logResult);
+        Computer.onComplete.subscribe(logResult);
+        return () => Computer.onComplete.unsubscribe(logResult);
     }, [logResult]);
+
+    useEffect(() => {
+        Computer.onComputing.subscribe(setComputing);
+        return () => Computer.onComputing.unsubscribe(setComputing);
+    }, []);
 
     return (
         <div id="computer">

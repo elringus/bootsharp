@@ -15,13 +15,14 @@
         <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
         <!-- AOT-compile for better compute performance at the cost of additional build time and size. -->
         <!-- <RunAOTCompilation>true</RunAOTCompilation>-->
+        <!-- Enable multithreaded mode to run CPU-intensive tasks on worker threads. -->
         <WasmEnableThreads>true</WasmEnableThreads>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Bootsharp" Version="*-*"/>
         <PackageReference Include="Bootsharp.DependencyInjection" Version="*-*"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0-rc.1.23419.4"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0-rc.2.23479.6"/>
     </ItemGroup>
 
     <ItemGroup>
