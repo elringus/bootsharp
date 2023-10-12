@@ -36,8 +36,8 @@ export default ({ options, resultLimit }: Props) => {
 
     useEffect(() => {
         Computer.getOptions = () => ({ complexity, multithreading });
-        if (computing) Computer.startComputing();
-    }, [complexity, multithreading, computing]);
+        if (Computer.isComputing()) Computer.startComputing();
+    }, [complexity, multithreading]);
 
     useEffect(() => {
         Computer.onComplete.subscribe(logResult);
