@@ -46,7 +46,7 @@ internal sealed class ImportGenerator(string entryAssembly)
 
     private string GenerateFunctionAssign (Method method)
     {
-        return $"""Function.Set("{BuildEndpoint(method)}", {method.Name});""";
+        return $"""Function.Set("{BuildEndpoint(method, false)}", {method.Name});""";
     }
 
     private string GenerateImport (Method method)
@@ -57,7 +57,7 @@ internal sealed class ImportGenerator(string entryAssembly)
             : method.ReturnTypeSyntax);
         if (method.ShouldSerializeReturnType && method.ReturnsTaskLike)
             @return = $"global::System.Threading.Tasks.Task<{@return}>";
-        var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{BuildEndpoint(method)}", "Bootsharp")]""";
+        var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{BuildEndpoint(method, true)}", "Bootsharp")]""";
         var date = MarshalAmbiguous(method.ReturnTypeSyntax, true);
         return $"{attr} {date}internal static partial {@return} {method.Name} ({args});";
     }
@@ -70,9 +70,11 @@ internal sealed class ImportGenerator(string entryAssembly)
         return $"{MarshalAmbiguous(arg.TypeSyntax, false)}{type} {arg.Name}";
     }
 
-    private string BuildEndpoint (Method method)
+    private string BuildEndpoint (Method method, bool js)
     {
         var name = char.ToLowerInvariant(method.Name[0]) + method.Name[1..];
-        return $"{method.JSSpace}.{name}{(method.Type == MethodType.Event ? ".broadcast" : "")}";
+        var evt = method.Type == MethodType.Event;
+        if (js && !evt) name = $"_{name}";
+        return $"{method.JSSpace}.{name}{(evt ? ".broadcast" : "")}";
     }
 }

@@ -11,16 +11,23 @@ describe("while bootsharp is not booted", () => {
 
 describe("while bootsharp is booted", () => {
     beforeAll(bootSideload);
-    it("throws when attempting to invoke un-assigned JS function", () => {
-        const error = /Failed to invoke '.+' JavaScript function: undefined/;
-        Test._onMainInvoked = undefined;
-        expect(() => Test.testEchoFunction("")).throw(error);
-        expect(() => Test.arrayArgFunction()).throw(error);
-        expect(() => Test.throwJS()).throw(error);
-        expect(() => Test.onMainInvoked()).throw(error);
-        expect(() => Test.Types.getRegistry()).throw(error);
-        expect(() => Test.Types.getRegistries()).throw(error);
-        expect(() => Test.Types.getRegistryMap()).throw(error);
+    it("throws when invoking un-assigned JS function from C#", () => {
+        const error = /Failed to invoke '.+' from C#. Make sure to assign function in JavaScript/;
+        Test.onMainInvoked = undefined;
+        expect(Test.echoFunction).toBeUndefined();
+        expect(Test.arrayArgFunction).toBeUndefined();
+        expect(Test.throwJS).toBeUndefined();
+        expect(Test.onMainInvoked).toBeUndefined();
+        expect(Test.Types.getRegistry).toBeUndefined();
+        expect(Test.Types.getRegistries).toBeUndefined();
+        expect(Test.Types.getRegistryMap).toBeUndefined();
+        expect(() => Test._echoFunction()).throw(error);
+        expect(() => Test._arrayArgFunction()).throw(error);
+        expect(() => Test._throwJS()).throw(error);
+        expect(() => Test._onMainInvoked()).throw(error);
+        expect(() => Test.Types._getRegistry()).throw(error);
+        expect(() => Test.Types._getRegistries()).throw(error);
+        expect(() => Test.Types._getRegistryMap()).throw(error);
     });
     it("can invoke C# method", async () => {
         expect(Test.joinStrings("foo", "bar")).toStrictEqual("foobar");

@@ -14,7 +14,7 @@
         <!-- Disable non-essential .NET features (debug, localization, reflection, etc) to reduce build size. -->
         <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
         <!-- AOT-compile for better compute performance at the cost of additional build time and size. -->
-        <!-- <RunAOTCompilation>true</RunAOTCompilation>-->
+        <RunAOTCompilation>true</RunAOTCompilation>
         <!-- Enable multithreaded mode to run CPU-intensive tasks on worker threads. -->
         <WasmEnableThreads>true</WasmEnableThreads>
     </PropertyGroup>

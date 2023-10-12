@@ -49,13 +49,13 @@ describe("boot", () => {
         const cs = await import("../cs.mjs");
         cs.EmbeddedTest.onMainInvoked = vi.fn();
         await cs.embedded.boot({});
-        expect(cs.EmbeddedTest.$onMainInvoked).toHaveBeenCalledOnce();
+        expect(cs.EmbeddedTest.onMainInvoked).toHaveBeenCalledOnce();
     });
     it("can boot while streaming bins from root", async () => {
         const { bootsharp, root, Test } = await setup();
         bootsharp.resources.root = root;
         await bootsharp.boot({});
-        expect(Test.$onMainInvoked).toHaveBeenCalledOnce();
+        expect(Test.onMainInvoked).toHaveBeenCalledOnce();
     });
     it("can boot with bins content pre-assigned", async () => {
         const { bootsharp, Test, root, bins } = await setup();
@@ -64,7 +64,7 @@ describe("boot", () => {
         for (const asm of bootsharp.resources.assemblies)
             asm.content = bins.assemblies.find(a => a.name === asm.name).content;
         await bootsharp.boot({});
-        expect(Test.$onMainInvoked).toHaveBeenCalledOnce();
+        expect(Test.onMainInvoked).toHaveBeenCalledOnce();
     });
     it("can boot with base64 content", async () => {
         const { bootsharp, Test, root, bins } = await setup();
@@ -73,7 +73,7 @@ describe("boot", () => {
         for (const asm of bootsharp.resources.assemblies)
             asm.content = bins.assemblies.find(a => a.name === asm.name).content.toString("base64");
         await bootsharp.boot({});
-        expect(Test.$onMainInvoked).toHaveBeenCalledOnce();
+        expect(Test.onMainInvoked).toHaveBeenCalledOnce();
     });
     it("can boot with base64 content w/o native encoder available", async () => {
         const { bootsharp, Test, root, bins } = await setup();
@@ -83,7 +83,7 @@ describe("boot", () => {
         for (const asm of bootsharp.resources.assemblies)
             asm.content = bins.assemblies.find(a => a.name === asm.name).content.toString("base64");
         await bootsharp.boot({});
-        expect(Test.$onMainInvoked).toHaveBeenCalledOnce();
+        expect(Test.onMainInvoked).toHaveBeenCalledOnce();
     });
     it("attempts to use atob when window is defined in global", async () => {
         const { bootsharp, root, bins } = await setup();

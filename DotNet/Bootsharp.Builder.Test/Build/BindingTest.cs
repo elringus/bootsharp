@@ -49,8 +49,9 @@ public class BindingTest : BuildTest
             """
             export const Foo = {
                 Bar: {
-                    get fun() { if (this._fun == null) throw Error("Failed to invoke 'Foo.Bar.fun' JavaScript function: undefined."); return this._fun; },
-                    set fun($fun) { this._fun = () => this.$fun(); this.$fun = $fun; }
+                    get _fun() { if (typeof this.$fun !== "function") throw Error("Failed to invoke 'Foo.Bar.fun' from C#. Make sure to assign function in JavaScript."); return this.__fun; },
+                    get fun() { return this.$fun; },
+                    set fun($fun) { this.__fun = () => this.$fun(); this.$fun = $fun; }
                 }
             };
             """);
@@ -113,8 +114,9 @@ public class BindingTest : BuildTest
             """
             export const Bar = {
                 Nya: {
-                    get fun() { if (this._fun == null) throw Error("Failed to invoke 'Bar.Nya.fun' JavaScript function: undefined."); return this._fun; },
-                    set fun($fun) { this._fun = () => this.$fun(); this.$fun = $fun; }
+                    get _fun() { if (typeof this.$fun !== "function") throw Error("Failed to invoke 'Bar.Nya.fun' from C#. Make sure to assign function in JavaScript."); return this.__fun; },
+                    get fun() { return this.$fun; },
+                    set fun($fun) { this.__fun = () => this.$fun(); this.$fun = $fun; }
                 }
             };
             export const Foo = {
@@ -133,8 +135,9 @@ public class BindingTest : BuildTest
         Contains("bar: () => __inv().Foo_MockClass.Bar()");
         Contains(
             """
-                get fun() { if (this._fun == null) throw Error("Failed to invoke 'Foo.fun' JavaScript function: undefined."); return this._fun; },
-                set fun($fun) { this._fun = () => this.$fun(); this.$fun = $fun; }
+                get _fun() { if (typeof this.$fun !== "function") throw Error("Failed to invoke 'Foo.fun' from C#. Make sure to assign function in JavaScript."); return this.__fun; },
+                get fun() { return this.$fun; },
+                set fun($fun) { this.__fun = () => this.$fun(); this.$fun = $fun; }
             """);
     }
 
@@ -149,8 +152,9 @@ public class BindingTest : BuildTest
             """
             export const Nya = {
                 Bar: {
-                    get fun() { if (this._fun == null) throw Error("Failed to invoke 'Nya.Bar.fun' JavaScript function: undefined."); return this._fun; },
-                    set fun($fun) { this._fun = () => this.$fun(); this.$fun = $fun; }
+                    get _fun() { if (typeof this.$fun !== "function") throw Error("Failed to invoke 'Nya.Bar.fun' from C#. Make sure to assign function in JavaScript."); return this.__fun; },
+                    get fun() { return this.$fun; },
+                    set fun($fun) { this.__fun = () => this.$fun(); this.$fun = $fun; }
                 },
                 Foo: {
                     foo: () => __inv().Nya_Foo_MockClass.Foo()
@@ -169,8 +173,9 @@ public class BindingTest : BuildTest
             """
             export const Bar = {
                 Nya: {
-                    get fun() { if (this._fun == null) throw Error("Failed to invoke 'Bar.Nya.fun' JavaScript function: undefined."); return this._fun; },
-                    set fun($fun) { this._fun = () => this.$fun(); this.$fun = $fun; }
+                    get _fun() { if (typeof this.$fun !== "function") throw Error("Failed to invoke 'Bar.Nya.fun' from C#. Make sure to assign function in JavaScript."); return this.__fun; },
+                    get fun() { return this.$fun; },
+                    set fun($fun) { this.__fun = () => this.$fun(); this.$fun = $fun; }
                 }
             };
             export const Foo = {
@@ -190,8 +195,9 @@ public class BindingTest : BuildTest
             """
             export const Global = {
                 nya: () => __inv().MockClass.Nya(),
-                get fun() { if (this._fun == null) throw Error("Failed to invoke 'Global.fun' JavaScript function: undefined."); return this._fun; },
-                set fun($fun) { this._fun = () => this.$fun(); this.$fun = $fun; }
+                get _fun() { if (typeof this.$fun !== "function") throw Error("Failed to invoke 'Global.fun' from C#. Make sure to assign function in JavaScript."); return this.__fun; },
+                get fun() { return this.$fun; },
+                set fun($fun) { this.__fun = () => this.$fun(); this.$fun = $fun; }
             };
             """);
     }
@@ -207,8 +213,9 @@ public class BindingTest : BuildTest
         Contains(
             """
             export const Fun = {
-                get onFun() { if (this._onFun == null) throw Error("Failed to invoke 'Fun.onFun' JavaScript function: undefined."); return this._onFun; },
-                set onFun($onFun) { this._onFun = () => this.$onFun(); this.$onFun = $onFun; }
+                get _onFun() { if (typeof this.$onFun !== "function") throw Error("Failed to invoke 'Fun.onFun' from C#. Make sure to assign function in JavaScript."); return this.__onFun; },
+                get onFun() { return this.$onFun; },
+                set onFun($onFun) { this.__onFun = () => this.$onFun(); this.$onFun = $onFun; }
             };
             export const Nya = {
                 getNya: () => __inv().Foo_Bar_Nya_MockClass.GetNya()
@@ -243,8 +250,9 @@ public class BindingTest : BuildTest
             """
             export const Global = {
                 foo: (i) => parseJson(__inv().MockClass.Foo(JSON.stringify(i))),
-                get bar() { if (this._bar == null) throw Error("Failed to invoke 'Global.bar' JavaScript function: undefined."); return this._bar; },
-                set bar($bar) { this._bar = (i) => JSON.stringify(this.$bar(parseJson(i))); this.$bar = $bar; },
+                get _bar() { if (typeof this.$bar !== "function") throw Error("Failed to invoke 'Global.bar' from C#. Make sure to assign function in JavaScript."); return this.__bar; },
+                get bar() { return this.$bar; },
+                set bar($bar) { this.__bar = (i) => JSON.stringify(this.$bar(parseJson(i))); this.$bar = $bar; },
                 baz: new Event({ convert: (i) => [parseJson(i)] }),
                 yaz: new Event({ convert: (a, i) => [a, parseJson(i)] })
             };
@@ -263,8 +271,9 @@ public class BindingTest : BuildTest
             """
             export const Global = {
                 foo: async (i) => parseJson(await __inv().MockClass.Foo(JSON.stringify(i))),
-                get bar() { if (this._bar == null) throw Error("Failed to invoke 'Global.bar' JavaScript function: undefined."); return this._bar; },
-                set bar($bar) { this._bar = async (i) => JSON.stringify(await this.$bar(parseJson(i))); this.$bar = $bar; }
+                get _bar() { if (typeof this.$bar !== "function") throw Error("Failed to invoke 'Global.bar' from C#. Make sure to assign function in JavaScript."); return this.__bar; },
+                get bar() { return this.$bar; },
+                set bar($bar) { this.__bar = async (i) => JSON.stringify(await this.$bar(parseJson(i))); this.$bar = $bar; }
             };
             """);
     }

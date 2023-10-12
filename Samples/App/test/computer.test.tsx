@@ -17,7 +17,7 @@ test("not computing initially", () => {
 
 test("get options returns values specified in props", async () => {
     render(<Computer options={{ complexity: 666, multithreading: true }} resultLimit={0}/>);
-    expect(Backend.$getOptions()).toStrictEqual({ complexity: 666, multithreading: true });
+    expect(Backend.getOptions()).toStrictEqual({ complexity: 666, multithreading: true });
 });
 
 test("compute time is written to screen", async () => {

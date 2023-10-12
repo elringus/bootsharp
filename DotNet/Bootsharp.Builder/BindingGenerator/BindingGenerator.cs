@@ -106,9 +106,10 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
         var body = $"{(wait ? "await " : "")}this.${name}({invArgs})";
         if (method.ShouldSerializeReturnType) body = $"JSON.stringify({body})";
         var setter = $"{(wait ? "async " : "")}({funcArgs}) => {body}";
-        var error = $"throw Error(\"Failed to invoke '{binding.Namespace}.{name}' JavaScript function: undefined.\")";
-        builder.Append($"{Comma()}\n{Pad(level + 1)}get {name}() {{ if (this._{name} == null) {error}; return this._{name}; }}");
-        builder.Append($"{Comma()}\n{Pad(level + 1)}set {name}(${name}) {{ this._{name} = {setter}; this.${name} = ${name}; }}");
+        var error = $"throw Error(\"Failed to invoke '{binding.Namespace}.{name}' from C#. Make sure to assign function in JavaScript.\")";
+        builder.Append($"{Comma()}\n{Pad(level + 1)}get _{name}() {{ if (typeof this.${name} !== \"function\") {error}; return this.__{name}; }}");
+        builder.Append($"{Comma()}\n{Pad(level + 1)}get {name}() {{ return this.${name}; }}");
+        builder.Append($"{Comma()}\n{Pad(level + 1)}set {name}(${name}) {{ this.__{name} = {setter}; this.${name} = ${name}; }}");
     }
 
     private void EmitEvent (Method method)
