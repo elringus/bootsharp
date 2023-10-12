@@ -13,9 +13,9 @@ export default ({ options, resultLimit }: Props) => {
     const [results, setResults] = useState("");
 
     const toggleCompute = useCallback(() => {
-        if (computing) Computer.stopComputing();
+        if (Computer.isComputing()) Computer.stopComputing();
         else Computer.startComputing();
-    }, [computing]);
+    }, []);
 
     const toggleMultithreading = useCallback(() => {
         setMultithreading(!multithreading);
@@ -25,7 +25,7 @@ export default ({ options, resultLimit }: Props) => {
         setComplexity(Math.min(Math.max(event.target.valueAsNumber, 99), 99999));
     }, []);
 
-    const logResult = useCallback((time: number) => {
+    const logResult = useCallback((time: bigint) => {
         setResults(i => {
             if ((i.match(/\n/g)?.length ?? 0) > resultLimit)
                 i = i.substring(0, i.lastIndexOf("\n"));

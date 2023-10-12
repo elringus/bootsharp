@@ -32,14 +32,18 @@ internal static class TypeUtilities
             ? type.GenericTypeArguments[0] : null) != null;
     }
 
-    public static string MarshalDate (string typeSyntax, bool @return)
+    public static string MarshalAmbiguous (string typeSyntax, bool @return)
     {
-        var ret = @return ? "return: " : "";
-        if (typeSyntax.StartsWith("global::System.DateTime"))
-            return $"[{ret}JSMarshalAs<JSType.Date>] ";
-        if (typeSyntax.StartsWith("global::System.Threading.Tasks.Task<global::System.DateTime"))
-            return $"[{ret}JSMarshalAs<JSType.Promise<JSType.Date>>] ";
-        return "";
+        var promise = typeSyntax.StartsWith("global::System.Threading.Tasks.Task<");
+        if (promise) typeSyntax = typeSyntax[36..];
+        var result =
+            typeSyntax.StartsWith("global::System.DateTime") ? "JSType.Date" :
+            typeSyntax.StartsWith("global::System.Int64") ? "JSType.BigInt" : "";
+        if (result == "") return "";
+        if (promise) result = $"JSType.Promise<{result}>";
+        result = $"JSMarshalAs<{result}>";
+        if (@return) result = $"return: {result}";
+        return $"[{result}] ";
     }
 
     public static bool IsVoid (Type type)

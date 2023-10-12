@@ -12,5 +12,5 @@ public interface IPrimeUI
     // This can be configured with "JSImport.EventPattern" and
     // "JSImport.EventReplacement" attribute parameters.
     void NotifyComputing (bool computing);
-    void NotifyComplete (int time);
+    void NotifyComplete (long time);
 }

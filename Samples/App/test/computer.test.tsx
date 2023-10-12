@@ -22,7 +22,7 @@ test("get options returns values specified in props", async () => {
 
 test("compute time is written to screen", async () => {
     render(<Computer options={{ complexity: 0, multithreading: false }} resultLimit={99}/>);
-    act(() => Backend.onComplete.broadcast(13));
+    act(() => Backend.onComplete.broadcast(BigInt(13)));
     expect(screen.getByText(/Computed in 13ms/));
 });
 

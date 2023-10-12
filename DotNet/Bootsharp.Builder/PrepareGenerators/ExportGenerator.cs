@@ -35,7 +35,7 @@ internal sealed class ExportGenerator
     private string GenerateExport (Method inv)
     {
         const string attr = "[System.Runtime.InteropServices.JavaScript.JSExport]";
-        var date = MarshalDate(inv.ReturnTypeSyntax, true);
+        var date = MarshalAmbiguous(inv.ReturnTypeSyntax, true);
         var wait = inv.ReturnsTaskLike && inv.ShouldSerializeReturnType;
         return $"{attr} {date}internal static {GenerateSignature(inv, wait)} => {GenerateBody(inv, wait)};";
     }
@@ -67,7 +67,7 @@ internal sealed class ExportGenerator
         var type = arg.ShouldSerialize
             ? $"global::System.String{(arg.Nullable ? "?" : "")}"
             : arg.TypeSyntax;
-        return $"{MarshalDate(arg.TypeSyntax, false)}{type} {arg.Name}";
+        return $"{MarshalAmbiguous(arg.TypeSyntax, false)}{type} {arg.Name}";
     }
 
     private string GenerateBodyArg (Argument arg)

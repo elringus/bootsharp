@@ -37,7 +37,7 @@ public class Prime(IPrimeUI ui) : IComputer
             finally
             {
                 watch.Stop();
-                ui.NotifyComplete((int)watch.ElapsedMilliseconds);
+                ui.NotifyComplete(watch.ElapsedMilliseconds);
             }
             await Task.Delay(1);
         }

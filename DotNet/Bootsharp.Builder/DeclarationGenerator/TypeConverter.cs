@@ -46,6 +46,7 @@ internal sealed class TypeConverter(NamespaceBuilder spaceBuilder)
             TypeCode.Int16 => "Int16Array",
             TypeCode.UInt32 => "Uint32Array",
             TypeCode.Int32 => "Int32Array",
+            TypeCode.Int64 => "BigInt64Array",
             _ => $"Array<{Convert(elementType)}>"
         };
     }
@@ -77,8 +78,9 @@ internal sealed class TypeConverter(NamespaceBuilder spaceBuilder)
         if (CrawledTypes.Contains(type)) return $"{spaceBuilder.Build(type)}.{type.Name}";
         return Type.GetTypeCode(type) switch {
             TypeCode.Byte or TypeCode.SByte or TypeCode.UInt16 or TypeCode.UInt32 or
-                TypeCode.UInt64 or TypeCode.Int16 or TypeCode.Int32 or TypeCode.Int64 or
+                TypeCode.UInt64 or TypeCode.Int16 or TypeCode.Int32 or
                 TypeCode.Decimal or TypeCode.Double or TypeCode.Single => "number",
+            TypeCode.Int64 => "bigint",
             TypeCode.Char or TypeCode.String => "string",
             TypeCode.Boolean => "boolean",
             TypeCode.DateTime => "Date",

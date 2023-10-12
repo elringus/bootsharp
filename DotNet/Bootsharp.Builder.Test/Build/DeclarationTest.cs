@@ -130,12 +130,20 @@ public class DeclarationTest : BuildTest
     [Fact]
     public void NumericsTranslatedToNumber ()
     {
-        var nums = new[] { "byte", "sbyte", "ushort", "uint", "ulong", "short", "int", "long", "decimal", "double", "float" };
+        var nums = new[] { "byte", "sbyte", "ushort", "uint", "ulong", "short", "int", "decimal", "double", "float" };
         var csArgs = string.Join(", ", nums.Select(n => $"{n} v{Array.IndexOf(nums, n)}"));
         var tsArgs = string.Join(", ", nums.Select(n => $"v{Array.IndexOf(nums, n)}: number"));
         AddAssembly(With($"[JSInvokable] public static void Num ({csArgs}) {{ }}"));
         Execute();
         Contains($"num({tsArgs})");
+    }
+
+    [Fact]
+    public void Int64TranslatedToBigInt ()
+    {
+        AddAssembly(With("[JSInvokable] public static void Foo (long bar) {}"));
+        Execute();
+        Contains("foo(bar: bigint): void");
     }
 
     [Fact]
@@ -198,7 +206,8 @@ public class DeclarationTest : BuildTest
             With("[JSInvokable] public static void Uint16 (ushort[] foo) {}"),
             With("[JSInvokable] public static void Int16 (short[] foo) {}"),
             With("[JSInvokable] public static void Uint32 (uint[] foo) {}"),
-            With("[JSInvokable] public static void Int32 (int[] foo) {}")
+            With("[JSInvokable] public static void Int32 (int[] foo) {}"),
+            With("[JSInvokable] public static void BigInt64 (long[] foo) {}")
         );
         Execute();
         Contains("uint8(foo: Uint8Array): void");
@@ -207,6 +216,7 @@ public class DeclarationTest : BuildTest
         Contains("int16(foo: Int16Array): void");
         Contains("uint32(foo: Uint32Array): void");
         Contains("int32(foo: Int32Array): void");
+        Contains("bigInt64(foo: BigInt64Array): void");
     }
 
     [Fact]
