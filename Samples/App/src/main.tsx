@@ -4,8 +4,7 @@ import Computer from "./computer";
 import Donut from "./donut";
 import "./index.css";
 
-backend.resources.root = "/bin";
-await backend.boot();
+await backend.boot({ root: "/bin" });
 
 react.createRoot(document.getElementById("app")!).render(<>
     <Donut fps={60}/>

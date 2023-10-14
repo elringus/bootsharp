@@ -6,14 +6,14 @@ import fs from "node:fs/promises";
 console.log(`Binary size: ${await measure("./cs/bin/bootsharp/bin")}KB`);
 console.log(`Brotli size: ${await measure("./cs/bin/bootsharp/bro")}KB`);
 
+const resources = { ...bootsharp.resources };
 await Promise.all([
-    fetchBro(bootsharp.resources.wasm),
-    ...bootsharp.resources.assemblies.map(fetchBro)
+    fetchBro(resources.wasm),
+    ...resources.assemblies.map(fetchBro)
 ]);
 
 Global.log = console.log;
-bootsharp.resources.root = "./bin";
-await bootsharp.boot();
+await bootsharp.boot({ root: "./bin", resources });
 
 async function measure(dir) {
     let size = 0;

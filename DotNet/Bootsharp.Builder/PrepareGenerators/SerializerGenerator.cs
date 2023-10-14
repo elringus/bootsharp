@@ -39,8 +39,11 @@ internal sealed class SerializerGenerator
 
     private void CollectAttributes (string syntax, Type type)
     {
+        if (IsTaskLike(type) && !type.IsGenericType) return;
+        if (IsTaskWithResult(type, out var result))
+            syntax = $"({BuildSyntax(result)}, byte)";
         AddProxies(type);
-        attributes.Add(BuildAttribute(syntax, type));
+        attributes.Add(BuildAttribute(syntax));
     }
 
     private void CollectDuplicates (AssemblyInspector inspector)
@@ -52,7 +55,7 @@ internal sealed class SerializerGenerator
             else names.Add(type.Name);
     }
 
-    private static string BuildAttribute (string syntax, Type type)
+    private static string BuildAttribute (string syntax)
     {
         syntax = syntax.Replace("?", "");
         var hint = $"X{syntax.GetHashCode():X}";
@@ -69,15 +72,15 @@ internal sealed class SerializerGenerator
     private void AddListProxies (Type list)
     {
         var element = BuildSyntax(list.GenericTypeArguments[0]);
-        attributes.Add(BuildAttribute($"{element}[]", list));
-        attributes.Add(BuildAttribute($"global::System.Collections.Generic.List<{element}>", list));
+        attributes.Add(BuildAttribute($"{element}[]"));
+        attributes.Add(BuildAttribute($"global::System.Collections.Generic.List<{element}>"));
     }
 
     private void AddDictProxies (Type dict)
     {
         var key = BuildSyntax(dict.GenericTypeArguments[0]);
         var value = BuildSyntax(dict.GenericTypeArguments[1]);
-        attributes.Add(BuildAttribute($"global::System.Collections.Generic.Dictionary<{key}, {value}>", dict));
+        attributes.Add(BuildAttribute($"global::System.Collections.Generic.Dictionary<{key}, {value}>"));
     }
 
     private static bool IsListInterface (Type type) =>

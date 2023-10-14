@@ -13,5 +13,5 @@ export default {
 
 export * from "./event";
 export * from "./bindings.g";
-export type { BootCustom } from "./boot";
+export type { BootOptions } from "./boot";
 export type { BootResources, BinaryResource } from "./resources";

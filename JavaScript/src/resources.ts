@@ -8,9 +8,6 @@ export type BootResources = {
     readonly assemblies: BinaryResource[];
     /** Name of the entry (main) assembly, with .dll extension. */
     readonly entryAssemblyName: string;
-    /** URL of the remote directory where boot resources are hosted (eg, <code>/bin</code>).
-     *  Has to be assigned before boot when <code>BootsharpEmbedBinaries</code> is disabled. */
-    root?: string;
 }
 
 /** Boot resource with binary content. */
@@ -18,7 +15,7 @@ export type BinaryResource = {
     /** Name of the binary file, including extension. */
     readonly name: string;
     /** Binary or base64-encoded content of the file; undefined when embedding disabled. */
-    content?: Uint8Array | string;
+    readonly content?: Uint8Array | string;
 }
 
 /** Resources required to boot .NET runtime. */

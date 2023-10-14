@@ -91,10 +91,10 @@ public class SerializerTest : PrepareTest
     [Fact]
     public void AddsProxiesForReadOnlyDictInterface ()
     {
-        AddAssembly(With("[JSInvokable] public static void Foo (IReadOnlyDictionary<string, int> a) {}"));
+        AddAssembly(With("[JSInvokable] public static void Foo (IReadOnlyDictionary<string, int[]> a) {}"));
         Execute();
-        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.IReadOnlyDictionary<global::System.String, global::System.Int32>)");
-        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.Dictionary<global::System.String, global::System.Int32>)");
+        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.IReadOnlyDictionary<global::System.String, global::System.Int32[]>)");
+        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.Dictionary<global::System.String, global::System.Int32[]>)");
     }
 
     [Fact]
@@ -113,8 +113,8 @@ public class SerializerTest : PrepareTest
             With("[JSInvokable] public static Task<Info> Foo () => default;"),
             With("[JSInvokable] public static Task<IReadOnlyList<bool>> Bar () => default;"));
         Execute();
-        Contains("[JsonSerializable(typeof(global::System.Threading.Tasks.Task<global::Info>)");
-        Contains("[JsonSerializable(typeof(global::System.Threading.Tasks.Task<global::System.Collections.Generic.IReadOnlyList<global::System.Boolean>>)");
+        Contains("[JsonSerializable(typeof((global::Info, byte))");
+        Contains("[JsonSerializable(typeof((global::System.Collections.Generic.IReadOnlyList<global::System.Boolean>, byte))");
         Contains("[JsonSerializable(typeof(global::System.Collections.Generic.List<global::System.Boolean>)");
         Contains("[JsonSerializable(typeof(global::System.Boolean[])");
     }

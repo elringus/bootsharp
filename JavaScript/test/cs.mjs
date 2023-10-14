@@ -29,8 +29,7 @@ export async function bootEmbedded() {
 
 export async function bootSideload() {
     SideloadTest.onMainInvoked = () => {};
-    sideload.resources.root = root;
-    await sideload.boot({});
+    await sideload.boot({ root });
 }
 
 export function getDeclarations() {
