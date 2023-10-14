@@ -14,7 +14,10 @@ public class SerializerTest : PrepareTest
     [Fact]
     public void WhenNoSerializableTypesIsEmpty ()
     {
-        AddAssembly(With("[JSInvokable] public static bool? Foo (string a, int b, double[] c) => default;"));
+        AddAssembly(
+            With("[JSInvokable] public static bool? Foo (string a, int b, char c, DateTime d, DateTimeOffset e) => default;"),
+            With("[JSInvokable] public static byte[] Bar (int[] a, double[] b, string[] c) => default;")
+        );
         Execute();
         Assert.Empty(TestedContent);
     }
@@ -36,11 +39,12 @@ public class SerializerTest : PrepareTest
             """);
     }
 
-    [Fact]
-    public void AddsOnlyTopLevelTypes ()
+    [Fact] // .NET's generator indexes types by short names (w/o namespace) and fails on duplicates.
+    public void AddsOnlyTopLevelTypesAndCrawledDuplicates ()
     {
         AddAssembly(
-            With("n", "public struct Struct { public double A { get; set; } }", false),
+            With("y", "public struct Struct { public double A { get; set; } }", false),
+            With("n", "public struct Struct { public y.Struct S { get; set; } }", false),
             With("n", "public readonly struct ReadonlyStruct { public double A { get; init; } }", false),
             With("n", "public readonly record struct ReadonlyRecordStruct(double A);", false),
             With("n", "public record class RecordClass(double A);", false),
@@ -50,8 +54,9 @@ public class SerializerTest : PrepareTest
             With("n", "public class Baz { public List<MockClass.Bar?> Bars { get; } public Enum E { get; } }", false),
             With("n", "[JSInvokable] public static Baz? GetBaz () => default;"));
         Execute();
-        Assert.Single(Matches("JsonSerializable"));
+        Assert.Equal(2, Matches("JsonSerializable").Count);
         Contains("[JsonSerializable(typeof(global::n.Baz)");
+        Contains("[JsonSerializable(typeof(global::y.Struct)");
     }
 
     [Fact]
@@ -108,8 +113,8 @@ public class SerializerTest : PrepareTest
             With("[JSInvokable] public static Task<Info> Foo () => default;"),
             With("[JSInvokable] public static Task<IReadOnlyList<bool>> Bar () => default;"));
         Execute();
-        Contains("[JsonSerializable(typeof(global::Info)");
-        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.IReadOnlyList<global::System.Boolean>)");
+        Contains("[JsonSerializable(typeof(global::System.Threading.Tasks.Task<global::Info>)");
+        Contains("[JsonSerializable(typeof(global::System.Threading.Tasks.Task<global::System.Collections.Generic.IReadOnlyList<global::System.Boolean>>)");
         Contains("[JsonSerializable(typeof(global::System.Collections.Generic.List<global::System.Boolean>)");
         Contains("[JsonSerializable(typeof(global::System.Boolean[])");
     }

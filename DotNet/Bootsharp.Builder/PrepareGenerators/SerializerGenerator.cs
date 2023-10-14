@@ -7,6 +7,7 @@ internal sealed class SerializerGenerator
     public string Generate (AssemblyInspector inspector)
     {
         inspector.Methods.ForEach(CollectAttributes);
+        CollectDuplicates(inspector);
         if (attributes.Count == 0) return "";
         return
             $$"""
@@ -38,15 +39,17 @@ internal sealed class SerializerGenerator
 
     private void CollectAttributes (string syntax, Type type)
     {
-        if (IsTaskLike(type))
-        {
-            if (IsTaskWithResult(type, out var result))
-                CollectAttributes(BuildSyntax(result), result);
-            return;
-        }
-        if (IsListInterface(type)) AddListProxies(type);
-        if (IsDictInterface(type)) AddDictProxies(type);
+        AddProxies(type);
         attributes.Add(BuildAttribute(syntax, type));
+    }
+
+    private void CollectDuplicates (AssemblyInspector inspector)
+    {
+        var names = new HashSet<string>();
+        foreach (var type in inspector.Types.DistinctBy(t => t.FullName))
+            if (names.Contains(type.Name))
+                CollectAttributes(BuildSyntax(type), type);
+            else names.Add(type.Name);
     }
 
     private static string BuildAttribute (string syntax, Type type)
@@ -54,6 +57,13 @@ internal sealed class SerializerGenerator
         syntax = syntax.Replace("?", "");
         var hint = $"X{syntax.GetHashCode():X}";
         return $"[JsonSerializable(typeof({syntax}), TypeInfoPropertyName = \"{hint}\")]";
+    }
+
+    private void AddProxies (Type type)
+    {
+        if (IsTaskWithResult(type, out var result)) type = result;
+        if (IsListInterface(type)) AddListProxies(type);
+        if (IsDictInterface(type)) AddDictProxies(type);
     }
 
     private void AddListProxies (Type list)
