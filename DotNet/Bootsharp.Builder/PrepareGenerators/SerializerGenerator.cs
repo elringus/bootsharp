@@ -41,6 +41,9 @@ internal sealed class SerializerGenerator
     {
         if (IsTaskLike(type) && !type.IsGenericType) return;
         if (IsTaskWithResult(type, out var result))
+            // Task<> produces trim warnings, so hacking with a proxy tuple.
+            // Passing just the result may conflict with a type inferred by
+            // .NET's generator from other types (it throws on duplicates).
             syntax = $"({BuildSyntax(result)}, byte)";
         AddProxies(type);
         attributes.Add(BuildAttribute(syntax));
