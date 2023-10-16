@@ -22,7 +22,7 @@ internal sealed class SerializerGenerator
                   [System.Runtime.CompilerServices.ModuleInitializer]
                   internal static void InjectTypeInfoResolver ()
                   {
-                      Serializer.Options.TypeInfoResolver = SerializerContext.Default;
+                      Serializer.Options.TypeInfoResolverChain.Add(SerializerContext.Default);
                   }
               }
               """;

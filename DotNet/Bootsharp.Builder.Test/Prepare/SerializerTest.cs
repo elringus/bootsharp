@@ -34,7 +34,7 @@ public class SerializerTest : PrepareTest
                 [System.Runtime.CompilerServices.ModuleInitializer]
                 internal static void InjectTypeInfoResolver ()
                 {
-                    Serializer.Options.TypeInfoResolver = SerializerContext.Default;
+                    Serializer.Options.TypeInfoResolverChain.Add(SerializerContext.Default);
                 }
             """);
     }
