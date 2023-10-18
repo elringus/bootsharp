@@ -30,7 +30,7 @@ internal sealed class SyntaxReceiver
         return syntax.Members
             .OfType<MethodDeclarationSyntax>()
             .Where(s => HasAttribute(s, attribute))
-            .Select(m => new PartialMethod(m, attribute == EventAttribute)).ToList();
+            .Select(m => new PartialMethod(m)).ToList();
     }
 
     private bool HasAttribute (MethodDeclarationSyntax syntax, string attributeName)

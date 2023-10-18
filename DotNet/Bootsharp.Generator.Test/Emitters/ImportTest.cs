@@ -64,7 +64,7 @@ public static class ImportTest
                     Bootsharp.BindingRegistry.Register(typeof(global::IFoo), new ImportBinding(new JSFoo()));
                 }
 
-                [JSEvent] public static void OnFoo (global::System.String foo) => Get<global::System.Action<global::System.String>>("Foo.onFoo.broadcast")(foo);
+                [JSEvent] public static void OnFoo (global::System.String foo) => Get<global::System.Action<global::System.String>>("Foo.onFoo")(foo);
 
                 void global::IFoo.NotifyFoo (global::System.String foo) => OnFoo(foo);
             }
@@ -92,7 +92,7 @@ public static class ImportTest
                     Bootsharp.BindingRegistry.Register(typeof(global::IFoo), new ImportBinding(new JSFoo()));
                 }
 
-                [JSEvent] public static void NotifyFoo (global::System.String foo) => Get<global::System.Action<global::System.String>>("Foo.notifyFoo.broadcast")(foo);
+                [JSEvent] public static void NotifyFoo (global::System.String foo) => Get<global::System.Action<global::System.String>>("Foo.notifyFoo")(foo);
 
                 void global::IFoo.NotifyFoo (global::System.String foo) => NotifyFoo(foo);
             }
@@ -120,7 +120,7 @@ public static class ImportTest
                     Bootsharp.BindingRegistry.Register(typeof(global::IFoo), new ImportBinding(new JSFoo()));
                 }
 
-                [JSEvent] public static void HandleFoo (global::System.String foo) => Get<global::System.Action<global::System.String>>("Foo.handleFoo.broadcast")(foo);
+                [JSEvent] public static void HandleFoo (global::System.String foo) => Get<global::System.Action<global::System.String>>("Foo.handleFoo")(foo);
 
                 void global::IFoo.FireFoo (global::System.String foo) => HandleFoo(foo);
             }
@@ -244,7 +244,7 @@ public static class ImportTest
                     Bootsharp.BindingRegistry.Register(typeof(global::IFoo), new ImportBinding(new JSFoo()));
                 }
 
-                [JSEvent] public static void OnFoo (global::Info info1, global::Info info2) => Get<global::System.Action<global::System.String, global::System.String>>("Foo.onFoo.broadcast")(Serialize(info1), Serialize(info2));
+                [JSEvent] public static void OnFoo (global::Info info1, global::Info info2) => Get<global::System.Action<global::System.String, global::System.String>>("Foo.onFoo")(Serialize(info1), Serialize(info2));
                 [JSFunction] public static global::Info Bar () => Deserialize<global::Info>(Get<global::System.Func<global::System.String>>("Foo.bar")());
                 [JSFunction] public static async global::System.Threading.Tasks.Task<global::Info> Far (global::Info info) => Deserialize<global::Info>(await Get<global::System.Func<global::System.String, global::System.Threading.Tasks.Task<global::System.String>>>("Foo.far")(Serialize(info)));
 

@@ -84,9 +84,4 @@ describe("event", () => {
         event.broadcast("bar");
         expect(event.last).toStrictEqual(["bar"]);
     });
-    it("can transform payload", () => {
-        const event = new Event({ convert: _ => "bar" });
-        event.broadcast("foo");
-        expect(event.last).toStrictEqual("bar");
-    });
 });

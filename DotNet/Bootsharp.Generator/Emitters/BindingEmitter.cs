@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Bootsharp.Generator;
 
-internal class BindingEmitter(IMethodSymbol method, bool @event, string space, string name)
+internal class BindingEmitter(IMethodSymbol method, string space, string name)
 {
     private bool @void, wait, shouldSerializeReturnType;
     private ITypeSymbol returnType, taskResult;
@@ -28,7 +28,7 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
 
     private string EmitBody ()
     {
-        var endpoint = GetEndpoint(space);
+        var endpoint = $"{space}.{ToFirstLower(name)}";
         var delegateType = GetDelegateType();
         var args = GetArgs();
         var body = $"""Get<{delegateType}>("{endpoint}")({args})""";
@@ -52,13 +52,6 @@ internal class BindingEmitter(IMethodSymbol method, bool @event, string space, s
     private string GetDelegateReturnType () => shouldSerializeReturnType
         ? (taskResult != null ? "global::System.Threading.Tasks.Task<global::System.String>" : "global::System.String")
         : BuildSyntax(returnType);
-
-    private string GetEndpoint (string module)
-    {
-        name = ToFirstLower(name);
-        if (@event) name += ".broadcast";
-        return $"{module}.{name}";
-    }
 
     private string GetArgs ()
     {

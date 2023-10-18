@@ -115,16 +115,10 @@ internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
     private void EmitEvent (Method method)
     {
         var name = ToFirstLower(method.Name);
-        var options = "";
-        if (method.JSArguments.Any(a => a.ShouldSerialize))
-        {
-            var funcArgs = string.Join(", ", method.JSArguments.Select(a => a.Name));
-            var invArgs = string.Join(", ", method.JSArguments.Select(arg =>
-                arg.ShouldSerialize ? $"parseJson({arg.Name})" : arg.Name
-            ));
-            options = $"{{ convert: ({funcArgs}) => [{invArgs}] }}";
-        }
-        builder.Append($"{Comma()}\n{Pad(level + 1)}{name}: new Event({options})");
+        builder.Append($"{Comma()}\n{Pad(level + 1)}{name}: new Event()");
+        var funcArgs = string.Join(", ", method.JSArguments.Select(a => a.Name));
+        var invArgs = string.Join(", ", method.JSArguments.Select(arg => arg.ShouldSerialize ? $"parseJson({arg.Name})" : arg.Name));
+        builder.Append($"{Comma()}\n{Pad(level + 1)}_{name}: ({funcArgs}) => {method.JSSpace}.{name}.broadcast({invArgs})");
     }
 
     private void EmitEnum (Type @enum)

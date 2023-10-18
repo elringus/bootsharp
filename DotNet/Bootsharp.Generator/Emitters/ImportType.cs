@@ -47,7 +47,7 @@ internal sealed class ImportType(Compilation compilation, ITypeSymbol type, Attr
         var @event = IsEvent(method.Name, attribute);
         var space = ConvertNamespace(BuildBindingNamespace(method.ContainingType), compilation.Assembly);
         var name = ConvertMethodName(method.Name, attribute);
-        new BindingEmitter(method, @event, space, name).Emit(out var sig, out var body);
+        new BindingEmitter(method, space, name).Emit(out var sig, out var body);
         var attr = @event ? $"[{EventAttribute}]" : $"[{FunctionAttribute}]";
         return $"{attr} public static {sig} => {ConvertMethodInvocation(body, attribute)};";
     }

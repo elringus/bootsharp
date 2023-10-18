@@ -73,8 +73,6 @@ internal sealed class ImportGenerator(string entryAssembly)
     private string BuildEndpoint (Method method, bool js)
     {
         var name = char.ToLowerInvariant(method.Name[0]) + method.Name[1..];
-        var evt = method.Type == MethodType.Event;
-        if (js && !evt) name = $"_{name}";
-        return $"{method.JSSpace}.{name}{(evt ? ".broadcast" : "")}";
+        return $"{method.JSSpace}.{(js ? "_" : "")}{name}";
     }
 }

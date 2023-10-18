@@ -4,13 +4,13 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Bootsharp.Generator;
 
-internal sealed class PartialMethod(MethodDeclarationSyntax syntax, bool @event)
+internal sealed class PartialMethod(MethodDeclarationSyntax syntax)
 {
     public string EmitSource (Compilation compilation)
     {
         var symbol = compilation.GetSemanticModel(syntax.SyntaxTree).GetDeclaredSymbol(syntax)!;
         var space = GetNamespace(symbol, compilation);
-        new BindingEmitter(symbol, @event, space, symbol.Name).Emit(out var sig, out var body);
+        new BindingEmitter(symbol, space, symbol.Name).Emit(out var sig, out var body);
         return $"{syntax.Modifiers} {sig} => {body};".Replace("partial async", "async partial");
     }
 

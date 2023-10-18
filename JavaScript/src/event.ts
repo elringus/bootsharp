@@ -18,30 +18,26 @@ export interface EventSubscriber<T extends unknown[]> {
 }
 
 /** Optional configuration of an event instance. */
-export type EventOptions<T extends unknown[]> = {
+export type EventOptions = {
     /** Custom warnings handler; by default <code>console.warn</code> is used. */
-    warn?: (message: string) => void,
-    /** When assigned, will transform broadcast payload with the handler. */
-    convert?: (...args: unknown[]) => [...T]
+    warn?: (message: string) => void
 };
 
 /** Allows attaching handlers and broadcasting events. */
 export class Event<T extends unknown[]> implements EventBroadcaster<T>, EventSubscriber<T> {
     private readonly handlers = new Map<string, (...args: [...T]) => void>();
     private readonly warn: (message: string) => void;
-    private readonly convert?: (...args: unknown[]) => [...T];
     private lastArgs?: [...T];
 
     /** Creates new event instance. */
-    constructor(options?: EventOptions<T>) {
-        this.convert = options?.convert;
+    constructor(options?: EventOptions) {
         this.warn = options?.warn ?? console.warn;
     }
 
     /** Notifies attached handlers with specified payload.
      *  @param args The payload of the notification. */
     public broadcast(...args: [...T]) {
-        this.lastArgs = this.convert !== undefined ? this.convert(...args) : args;
+        this.lastArgs = args;
         for (const handler of this.handlers.values())
             handler(...this.lastArgs);
     }

@@ -61,14 +61,19 @@ public class BindingTest : BuildTest
     public void BindingForEventMethodIsGenerated ()
     {
         AddAssembly(
-            With("[JSEvent] public static void OnFoo (string bar) { }"),
-            With("[JSEvent] public static void OnBaz (int yaz, bool nya) { }"));
+            With("[JSEvent] public static void OnFoo () { }"),
+            With("[JSEvent] public static void OnBar (string a) { }"),
+            With("[JSEvent] public static void OnBaz (int a, bool b) { }"));
         Execute();
         Contains(
             """
             export const Global = {
                 onFoo: new Event(),
-                onBaz: new Event()
+                _onFoo: () => Global.onFoo.broadcast(),
+                onBar: new Event(),
+                _onBar: (a) => Global.onBar.broadcast(a),
+                onBaz: new Event(),
+                _onBaz: (a, b) => Global.onBaz.broadcast(a, b)
             };
             """);
     }
@@ -253,8 +258,10 @@ public class BindingTest : BuildTest
                 get _bar() { if (typeof this.$bar !== "function") throw Error("Failed to invoke 'Global.bar' from C#. Make sure to assign function in JavaScript."); return this.__bar; },
                 get bar() { return this.$bar; },
                 set bar($bar) { this.__bar = (i) => JSON.stringify(this.$bar(parseJson(i))); this.$bar = $bar; },
-                baz: new Event({ convert: (i) => [parseJson(i)] }),
-                yaz: new Event({ convert: (a, i) => [a, parseJson(i)] })
+                baz: new Event(),
+                _baz: (i) => Global.baz.broadcast(parseJson(i)),
+                yaz: new Event(),
+                _yaz: (a, i) => Global.yaz.broadcast(a, parseJson(i))
             };
             """);
     }

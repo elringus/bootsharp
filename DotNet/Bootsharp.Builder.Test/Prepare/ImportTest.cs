@@ -46,10 +46,10 @@ public class ImportTest : PrepareTest
                 internal static void RegisterDynamicDependencies ()
                 {
                     Function.Set("Global.bar", Bar);
-                    Function.Set("Global.baz.broadcast", Baz);
+                    Function.Set("Global.baz", Baz);
                 }
                 [System.Runtime.InteropServices.JavaScript.JSImport("Global._bar", "Bootsharp")] internal static partial void Bar ();
-                [System.Runtime.InteropServices.JavaScript.JSImport("Global.baz.broadcast", "Bootsharp")] internal static partial void Baz ();
+                [System.Runtime.InteropServices.JavaScript.JSImport("Global._baz", "Bootsharp")] internal static partial void Baz ();
             }
             """);
     }
@@ -97,10 +97,10 @@ public class ImportTest : PrepareTest
                 internal static void RegisterDynamicDependencies ()
                 {
                     Function.Set("Global.nya", Nya);
-                    Function.Set("Global.far.broadcast", Far);
+                    Function.Set("Global.far", Far);
                 }
                 [System.Runtime.InteropServices.JavaScript.JSImport("Global._nya", "Bootsharp")] internal static partial void Nya ();
-                [System.Runtime.InteropServices.JavaScript.JSImport("Global.far.broadcast", "Bootsharp")] internal static partial void Far ();
+                [System.Runtime.InteropServices.JavaScript.JSImport("Global._far", "Bootsharp")] internal static partial void Far ();
             }
             public partial class Foo_Baz
             {
@@ -109,10 +109,10 @@ public class ImportTest : PrepareTest
                 internal static void RegisterDynamicDependencies ()
                 {
                     Function.Set("Foo.nya", Nya);
-                    Function.Set("Foo.far.broadcast", Far);
+                    Function.Set("Foo.far", Far);
                 }
                 [System.Runtime.InteropServices.JavaScript.JSImport("Foo._nya", "Bootsharp")] internal static partial void Nya ();
-                [System.Runtime.InteropServices.JavaScript.JSImport("Foo.far.broadcast", "Bootsharp")] internal static partial void Far ();
+                [System.Runtime.InteropServices.JavaScript.JSImport("Foo._far", "Bootsharp")] internal static partial void Far ();
             }
             public partial class Foo_Bar_Baz
             {
@@ -121,10 +121,10 @@ public class ImportTest : PrepareTest
                 internal static void RegisterDynamicDependencies ()
                 {
                     Function.Set("Foo.Bar.nya", Nya);
-                    Function.Set("Foo.Bar.far.broadcast", Far);
+                    Function.Set("Foo.Bar.far", Far);
                 }
                 [System.Runtime.InteropServices.JavaScript.JSImport("Foo.Bar._nya", "Bootsharp")] internal static partial void Nya ();
-                [System.Runtime.InteropServices.JavaScript.JSImport("Foo.Bar.far.broadcast", "Bootsharp")] internal static partial void Far ();
+                [System.Runtime.InteropServices.JavaScript.JSImport("Foo.Bar._far", "Bootsharp")] internal static partial void Far ();
             }
             """);
     }
@@ -164,12 +164,12 @@ public class ImportTest : PrepareTest
                     Function.Set("Space.bar", Bar);
                     Function.Set("Space.baz", Baz);
                     Function.Set("Space.nya", Nya);
-                    Function.Set("Space.onBar.broadcast", OnBar);
+                    Function.Set("Space.onBar", OnBar);
                 }
                 [System.Runtime.InteropServices.JavaScript.JSImport("Space._bar", "Bootsharp")] internal static partial global::System.String Bar (global::System.String a, global::System.Int32[] b);
                 [System.Runtime.InteropServices.JavaScript.JSImport("Space._baz", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task Baz ();
                 [System.Runtime.InteropServices.JavaScript.JSImport("Space._nya", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.String?> Nya (global::System.String a);
-                [System.Runtime.InteropServices.JavaScript.JSImport("Space.onBar.broadcast", "Bootsharp")] internal static partial void OnBar (global::System.String? a, global::System.Boolean? b);
+                [System.Runtime.InteropServices.JavaScript.JSImport("Space._onBar", "Bootsharp")] internal static partial void OnBar (global::System.String? a, global::System.Boolean? b);
             }
             """);
     }
