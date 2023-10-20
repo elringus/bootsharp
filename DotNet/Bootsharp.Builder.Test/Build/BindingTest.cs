@@ -20,8 +20,9 @@ public class BindingTest : BuildTest
             """
             import { exports } from "./exports";
             import { Event } from "./event";
-            function __inv () { if (exports == null) throw Error("Boot the runtime before invoking C# APIs."); return exports; }
-            function parseJson(obj) { const result = JSON.parse(obj); if (result === null) return undefined; return result; }
+            function getExports () { if (exports == null) throw Error("Boot the runtime before invoking C# APIs."); return exports; }
+            function serialize(obj) { return JSON.stringify(obj); }
+            function deserialize(json) { const result = JSON.parse(json); if (result === null) return undefined; return result; }
             """);
     }
 
@@ -34,7 +35,7 @@ public class BindingTest : BuildTest
             """
             export const Foo = {
                 Bar: {
-                    nya: () => __inv().Foo_Bar_MockClass.Nya()
+                    nya: () => getExports().Foo_Bar_MockClass.Nya()
                 }
             };
             """);
@@ -49,9 +50,9 @@ public class BindingTest : BuildTest
             """
             export const Foo = {
                 Bar: {
-                    get _fun() { if (typeof this.$fun !== "function") throw Error("Failed to invoke 'Foo.Bar.fun' from C#. Make sure to assign function in JavaScript."); return this.__fun; },
-                    get fun() { return this.$fun; },
-                    set fun($fun) { this.__fun = () => this.$fun(); this.$fun = $fun; }
+                    get fun() { return this.funHandler; },
+                    set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
+                    get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Foo.Bar.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
                 }
             };
             """);
@@ -69,11 +70,11 @@ public class BindingTest : BuildTest
             """
             export const Global = {
                 onFoo: new Event(),
-                _onFoo: () => Global.onFoo.broadcast(),
+                onFooSerialized: () => Global.onFoo.broadcast(),
                 onBar: new Event(),
-                _onBar: (a) => Global.onBar.broadcast(a),
+                onBarSerialized: (a) => Global.onBar.broadcast(a),
                 onBaz: new Event(),
-                _onBaz: (a, b) => Global.onBaz.broadcast(a, b)
+                onBazSerialized: (a, b) => Global.onBaz.broadcast(a, b)
             };
             """);
     }
@@ -86,7 +87,7 @@ public class BindingTest : BuildTest
         Contains(
             """
             export const Foo = {
-                bar: () => __inv().Foo_MockClass.Bar()
+                bar: () => getExports().Foo_MockClass.Bar()
             };
             """);
     }
@@ -101,7 +102,7 @@ public class BindingTest : BuildTest
             export const Foo = {
                 Bar: {
                     Nya: {
-                        bar: () => __inv().Foo_Bar_Nya_MockClass.Bar()
+                        bar: () => getExports().Foo_Bar_Nya_MockClass.Bar()
                     }
                 }
             };
@@ -119,13 +120,13 @@ public class BindingTest : BuildTest
             """
             export const Bar = {
                 Nya: {
-                    get _fun() { if (typeof this.$fun !== "function") throw Error("Failed to invoke 'Bar.Nya.fun' from C#. Make sure to assign function in JavaScript."); return this.__fun; },
-                    get fun() { return this.$fun; },
-                    set fun($fun) { this.__fun = () => this.$fun(); this.$fun = $fun; }
+                    get fun() { return this.funHandler; },
+                    set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
+                    get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Bar.Nya.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
                 }
             };
             export const Foo = {
-                foo: () => __inv().Foo_MockClass.Foo()
+                foo: () => getExports().Foo_MockClass.Foo()
             };
             """);
     }
@@ -137,12 +138,12 @@ public class BindingTest : BuildTest
         AddAssembly(With("Foo", "[JSFunction] public static void Fun () { }"));
         Execute();
         Assert.Single(Matches("export const Foo"));
-        Contains("bar: () => __inv().Foo_MockClass.Bar()");
+        Contains("bar: () => getExports().Foo_MockClass.Bar()");
         Contains(
             """
-                get _fun() { if (typeof this.$fun !== "function") throw Error("Failed to invoke 'Foo.fun' from C#. Make sure to assign function in JavaScript."); return this.__fun; },
-                get fun() { return this.$fun; },
-                set fun($fun) { this.__fun = () => this.$fun(); this.$fun = $fun; }
+                get fun() { return this.funHandler; },
+                set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
+                get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Foo.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; },
             """);
     }
 
@@ -157,12 +158,12 @@ public class BindingTest : BuildTest
             """
             export const Nya = {
                 Bar: {
-                    get _fun() { if (typeof this.$fun !== "function") throw Error("Failed to invoke 'Nya.Bar.fun' from C#. Make sure to assign function in JavaScript."); return this.__fun; },
-                    get fun() { return this.$fun; },
-                    set fun($fun) { this.__fun = () => this.$fun(); this.$fun = $fun; }
+                    get fun() { return this.funHandler; },
+                    set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
+                    get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Nya.Bar.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
                 },
                 Foo: {
-                    foo: () => __inv().Nya_Foo_MockClass.Foo()
+                    foo: () => getExports().Nya_Foo_MockClass.Foo()
                 }
             };
             """);
@@ -178,13 +179,13 @@ public class BindingTest : BuildTest
             """
             export const Bar = {
                 Nya: {
-                    get _fun() { if (typeof this.$fun !== "function") throw Error("Failed to invoke 'Bar.Nya.fun' from C#. Make sure to assign function in JavaScript."); return this.__fun; },
-                    get fun() { return this.$fun; },
-                    set fun($fun) { this.__fun = () => this.$fun(); this.$fun = $fun; }
+                    get fun() { return this.funHandler; },
+                    set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
+                    get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Bar.Nya.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
                 }
             };
             export const Foo = {
-                foo: () => __inv().Foo_MockClass.Foo()
+                foo: () => getExports().Foo_MockClass.Foo()
             };
             """);
     }
@@ -199,10 +200,10 @@ public class BindingTest : BuildTest
         Contains(
             """
             export const Global = {
-                nya: () => __inv().MockClass.Nya(),
-                get _fun() { if (typeof this.$fun !== "function") throw Error("Failed to invoke 'Global.fun' from C#. Make sure to assign function in JavaScript."); return this.__fun; },
-                get fun() { return this.$fun; },
-                set fun($fun) { this.__fun = () => this.$fun(); this.$fun = $fun; }
+                nya: () => getExports().MockClass.Nya(),
+                get fun() { return this.funHandler; },
+                set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
+                get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Global.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
             };
             """);
     }
@@ -218,12 +219,12 @@ public class BindingTest : BuildTest
         Contains(
             """
             export const Fun = {
-                get _onFun() { if (typeof this.$onFun !== "function") throw Error("Failed to invoke 'Fun.onFun' from C#. Make sure to assign function in JavaScript."); return this.__onFun; },
-                get onFun() { return this.$onFun; },
-                set onFun($onFun) { this.__onFun = () => this.$onFun(); this.$onFun = $onFun; }
+                get onFun() { return this.onFunHandler; },
+                set onFun(handler) { this.onFunHandler = handler; this.onFunSerializedHandler = () => this.onFunHandler(); },
+                get onFunSerialized() { if (typeof this.onFunHandler !== "function") throw Error("Failed to invoke 'Fun.onFun' from C#. Make sure to assign function in JavaScript."); return this.onFunSerializedHandler; }
             };
             export const Nya = {
-                getNya: () => __inv().Foo_Bar_Nya_MockClass.GetNya()
+                getNya: () => getExports().Foo_Bar_Nya_MockClass.GetNya()
             };
             """);
     }
@@ -236,7 +237,7 @@ public class BindingTest : BuildTest
         Contains(
             """
             export const Global = {
-                fun: (fn) => __inv().MockClass.Fun(fn)
+                fun: (fn) => getExports().MockClass.Fun(fn)
             };
             """);
     }
@@ -254,14 +255,14 @@ public class BindingTest : BuildTest
         Contains(
             """
             export const Global = {
-                foo: (i) => parseJson(__inv().MockClass.Foo(JSON.stringify(i))),
-                get _bar() { if (typeof this.$bar !== "function") throw Error("Failed to invoke 'Global.bar' from C#. Make sure to assign function in JavaScript."); return this.__bar; },
-                get bar() { return this.$bar; },
-                set bar($bar) { this.__bar = (i) => JSON.stringify(this.$bar(parseJson(i))); this.$bar = $bar; },
+                foo: (i) => deserialize(getExports().MockClass.Foo(serialize(i))),
+                get bar() { return this.barHandler; },
+                set bar(handler) { this.barHandler = handler; this.barSerializedHandler = (i) => serialize(this.barHandler(deserialize(i))); },
+                get barSerialized() { if (typeof this.barHandler !== "function") throw Error("Failed to invoke 'Global.bar' from C#. Make sure to assign function in JavaScript."); return this.barSerializedHandler; },
                 baz: new Event(),
-                _baz: (i) => Global.baz.broadcast(parseJson(i)),
+                bazSerialized: (i) => Global.baz.broadcast(deserialize(i)),
                 yaz: new Event(),
-                _yaz: (a, i) => Global.yaz.broadcast(a, parseJson(i))
+                yazSerialized: (a, i) => Global.yaz.broadcast(a, deserialize(i))
             };
             """);
     }
@@ -272,15 +273,21 @@ public class BindingTest : BuildTest
         AddAssembly(
             With("public record Info;", false),
             With("[JSInvokable] public static Task<Info> Foo (Info i) => default;"),
-            With("[JSFunction] public static Task<Info?> Bar (Info? i) => default;"));
+            With("[JSFunction] public static Task<Info?> Bar (Info? i) => default;"),
+            With("[JSInvokable] public static Task<IReadOnlyList<Info>> Baz () => default;"),
+            With("[JSFunction] public static Task<IReadOnlyList<Info>> Yaz () => default;"));
         Execute();
         Contains(
             """
             export const Global = {
-                foo: async (i) => parseJson(await __inv().MockClass.Foo(JSON.stringify(i))),
-                get _bar() { if (typeof this.$bar !== "function") throw Error("Failed to invoke 'Global.bar' from C#. Make sure to assign function in JavaScript."); return this.__bar; },
-                get bar() { return this.$bar; },
-                set bar($bar) { this.__bar = async (i) => JSON.stringify(await this.$bar(parseJson(i))); this.$bar = $bar; }
+                foo: async (i) => deserialize(await getExports().MockClass.Foo(serialize(i))),
+                get bar() { return this.barHandler; },
+                set bar(handler) { this.barHandler = handler; this.barSerializedHandler = async (i) => serialize(await this.barHandler(deserialize(i))); },
+                get barSerialized() { if (typeof this.barHandler !== "function") throw Error("Failed to invoke 'Global.bar' from C#. Make sure to assign function in JavaScript."); return this.barSerializedHandler; },
+                baz: async () => deserialize(await getExports().MockClass.Baz()),
+                get yaz() { return this.yazHandler; },
+                set yaz(handler) { this.yazHandler = handler; this.yazSerializedHandler = async () => serialize(await this.yazHandler()); },
+                get yazSerialized() { if (typeof this.yazHandler !== "function") throw Error("Failed to invoke 'Global.yaz' from C#. Make sure to assign function in JavaScript."); return this.yazSerializedHandler; }
             };
             """);
     }
@@ -295,7 +302,7 @@ public class BindingTest : BuildTest
         Contains(
             """
             export const n = {
-                getFoo: () => parseJson(__inv().n_MockClass.GetFoo()),
+                getFoo: () => deserialize(getExports().n_MockClass.GetFoo()),
                 Foo: { A: 0, B: 1 }
             };
             """);

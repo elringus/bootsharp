@@ -21,13 +21,13 @@ describe("while bootsharp is booted", () => {
         expect(Test.Types.getRegistry).toBeUndefined();
         expect(Test.Types.getRegistries).toBeUndefined();
         expect(Test.Types.getRegistryMap).toBeUndefined();
-        expect(() => Test._echoFunction()).throw(error);
-        expect(() => Test._arrayArgFunction()).throw(error);
-        expect(() => Test._throwJS()).throw(error);
-        expect(() => Test._onMainInvoked()).throw(error);
-        expect(() => Test.Types._getRegistry()).throw(error);
-        expect(() => Test.Types._getRegistries()).throw(error);
-        expect(() => Test.Types._getRegistryMap()).throw(error);
+        expect(() => Test.echoFunctionSerialized()).throw(error);
+        expect(() => Test.arrayArgFunctionSerialized()).throw(error);
+        expect(() => Test.throwJSSerialized()).throw(error);
+        expect(() => Test.onMainInvokedSerialized()).throw(error);
+        expect(() => Test.Types.getRegistrySerialized()).throw(error);
+        expect(() => Test.Types.getRegistriesSerialized()).throw(error);
+        expect(() => Test.Types.getRegistryMapSerialized()).throw(error);
     });
     it("can invoke C# method", async () => {
         expect(Test.joinStrings("foo", "bar")).toStrictEqual("foobar");

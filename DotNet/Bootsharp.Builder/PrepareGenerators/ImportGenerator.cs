@@ -70,9 +70,9 @@ internal sealed class ImportGenerator(string entryAssembly)
         return $"{MarshalAmbiguous(arg.TypeSyntax, false)}{type} {arg.Name}";
     }
 
-    private string BuildEndpoint (Method method, bool js)
+    private string BuildEndpoint (Method method, bool import)
     {
         var name = char.ToLowerInvariant(method.Name[0]) + method.Name[1..];
-        return $"{method.JSSpace}.{(js ? "_" : "")}{name}";
+        return $"{method.JSSpace}.{name}{(import ? "Serialized" : "")}";
     }
 }
