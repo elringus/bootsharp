@@ -14,17 +14,17 @@ describe("while bootsharp is booted", () => {
     it("throws when invoking un-assigned JS function from C#", () => {
         const error = /Failed to invoke '.+' from C#. Make sure to assign function in JavaScript/;
         Test.onMainInvoked = undefined;
-        expect(Test.echoFunction).toBeUndefined();
-        expect(Test.arrayArgFunction).toBeUndefined();
+        expect(Test.getBytes).toBeUndefined();
+        expect(Test.getString).toBeUndefined();
+        expect(Test.getStringAsync).toBeUndefined();
         expect(Test.throwJS).toBeUndefined();
         expect(Test.onMainInvoked).toBeUndefined();
         expect(Test.Types.getRegistry).toBeUndefined();
         expect(Test.Types.getRegistries).toBeUndefined();
         expect(Test.Types.getRegistryMap).toBeUndefined();
+        expect(() => Test.getStringSerialized()).throw(error);
+        expect(() => Test.getStringAsyncSerialized()).throw(error);
         expect(() => Test.getBytesSerialized()).throw(error);
-        expect(() => Test.getBytesAsyncSerialized()).throw(error);
-        expect(() => Test.echoFunctionSerialized()).throw(error);
-        expect(() => Test.arrayArgFunctionSerialized()).throw(error);
         expect(() => Test.throwJSSerialized()).throw(error);
         expect(() => Test.onMainInvokedSerialized()).throw(error);
         expect(() => Test.Types.getRegistrySerialized()).throw(error);
@@ -37,6 +37,10 @@ describe("while bootsharp is booted", () => {
     it("can invoke async C# method", async () => {
         expect(await Test.joinStringsAsync("foo", "bar")).toStrictEqual("foobar");
     });
+    it("can transfer strings", () => {
+        Test.getString = () => "foo";
+        expect(Test.echoString()).toStrictEqual("foo");
+    });
     it("can transfer decimals", () => {
         expect(Test.sumDoubles(-1, 2.75)).toStrictEqual(1.75);
     });
@@ -46,11 +50,7 @@ describe("while bootsharp is booted", () => {
         const actual = new Date(Test.addDays(date, 7));
         expect(actual).toStrictEqual(expected);
     });
-    it("can transfer arrays", () => {
-        Test.arrayArgFunction = values => values;
-        expect(Test.testArrayArgFunction(["a", "b"])).toStrictEqual(["a", "b"]);
-    });
-    it("can transfer bytes", () => {
+    it("can transfer byte array", () => {
         Test.getBytes = () => new Uint8Array([
             0x45, 0x76, 0x65, 0x72, 0x79, 0x74, 0x68, 0x69, 0x6e,
             0x67, 0x27, 0x73, 0x20, 0x73, 0x68, 0x69, 0x6e, 0x79,
@@ -60,18 +60,6 @@ describe("while bootsharp is booted", () => {
         ]);
         const echo = Test.echoBytes();
         expect(Test.bytesToString(echo)).toStrictEqual("Everything's shiny, Captain. Not to fret.");
-    });
-    it("can transfer bytes async", async () => {
-        // TODO: .NET JS interop doesn't Task<byte[]> transfer; serialize the array?
-        // Test.getBytesAsync = async () => new Uint8Array([
-        //     0x45, 0x76, 0x65, 0x72, 0x79, 0x74, 0x68, 0x69, 0x6e,
-        //     0x67, 0x27, 0x73, 0x20, 0x73, 0x68, 0x69, 0x6e, 0x79,
-        //     0x2c, 0x20, 0x43, 0x61, 0x70, 0x74, 0x61, 0x69, 0x6e,
-        //     0x2e, 0x20, 0x4e, 0x6f, 0x74, 0x20, 0x74, 0x6f, 0x20,
-        //     0x66, 0x72, 0x65, 0x74, 0x2e
-        // ]);
-        // const echo = await Test.echoBytesAsync();
-        // expect(Test.bytesToString(echo)).toStrictEqual("Everything's shiny, Captain. Not to fret.");
     });
     it("can transfer structs", () => {
         const expected = {
@@ -116,9 +104,7 @@ describe("while bootsharp is booted", () => {
         });
     });
     it("can invoke assigned JS functions in C#", () => {
-        Test.echoFunction = value => value;
         Test.Types.getRegistry = () => ({ wheeled: [{ maxSpeed: 1 }], tracked: [{ maxSpeed: 2 }] });
-        expect(Test.testEchoFunction("a")).toStrictEqual("a");
         expect(Test.Types.countTotalSpeed()).toStrictEqual(3);
     });
     it("can subscribe to events", () => {
@@ -154,5 +140,12 @@ describe("while bootsharp is booted", () => {
     });
     it("can catch dotnet exceptions", () => {
         expect(() => Test.throwCS("bar")).throw("bar");
+    });
+    it("can invoke async method with async js callback", async () => {
+        Test.getStringAsync = async () => {
+            await new Promise(res => setTimeout(res, 100));
+            return "foo";
+        };
+        expect(await Test.echoStringAsync()).toStrictEqual("foo");
     });
 });

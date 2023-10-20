@@ -6,26 +6,24 @@ namespace Test;
 public static partial class Functions
 {
     [JSInvokable]
-    public static string TestEchoFunction (string value) => EchoFunction(value);
+    public static string EchoString () => GetString();
 
     [JSFunction]
-    public static partial string EchoFunction (string value);
+    public static partial string GetString ();
 
     [JSInvokable]
-    public static string[] TestArrayArgFunction (string[] values) => ArrayArgFunction(values);
+    public static async Task<string> EchoStringAsync ()
+    {
+        await Task.Delay(1);
+        return await GetStringAsync();
+    }
 
     [JSFunction]
-    public static partial string[] ArrayArgFunction (string[] values);
+    public static partial Task<string> GetStringAsync ();
 
     [JSInvokable]
     public static byte[] EchoBytes () => GetBytes();
 
-    [JSInvokable]
-    public static Task<byte[]> EchoBytesAsync () => GetBytesAsync();
-
     [JSFunction]
     public static partial byte[] GetBytes ();
-
-    [JSFunction]
-    public static partial Task<byte[]> GetBytesAsync ();
 }
