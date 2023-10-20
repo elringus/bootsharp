@@ -21,6 +21,8 @@ describe("while bootsharp is booted", () => {
         expect(Test.Types.getRegistry).toBeUndefined();
         expect(Test.Types.getRegistries).toBeUndefined();
         expect(Test.Types.getRegistryMap).toBeUndefined();
+        expect(() => Test.getBytesSerialized()).throw(error);
+        expect(() => Test.getBytesAsyncSerialized()).throw(error);
         expect(() => Test.echoFunctionSerialized()).throw(error);
         expect(() => Test.arrayArgFunctionSerialized()).throw(error);
         expect(() => Test.throwJSSerialized()).throw(error);
@@ -48,15 +50,28 @@ describe("while bootsharp is booted", () => {
         Test.arrayArgFunction = values => values;
         expect(Test.testArrayArgFunction(["a", "b"])).toStrictEqual(["a", "b"]);
     });
-    it("can transfer raw bytes", () => {
-        const bytes = new Uint8Array([
+    it("can transfer bytes", () => {
+        Test.getBytes = () => new Uint8Array([
             0x45, 0x76, 0x65, 0x72, 0x79, 0x74, 0x68, 0x69, 0x6e,
             0x67, 0x27, 0x73, 0x20, 0x73, 0x68, 0x69, 0x6e, 0x79,
             0x2c, 0x20, 0x43, 0x61, 0x70, 0x74, 0x61, 0x69, 0x6e,
             0x2e, 0x20, 0x4e, 0x6f, 0x74, 0x20, 0x74, 0x6f, 0x20,
             0x66, 0x72, 0x65, 0x74, 0x2e
         ]);
-        expect(Test.bytesToString(bytes)).toStrictEqual("Everything's shiny, Captain. Not to fret.");
+        const echo = Test.echoBytes();
+        expect(Test.bytesToString(echo)).toStrictEqual("Everything's shiny, Captain. Not to fret.");
+    });
+    it("can transfer bytes async", async () => {
+        // TODO: .NET JS interop doesn't Task<byte[]> transfer; serialize the array?
+        // Test.getBytesAsync = async () => new Uint8Array([
+        //     0x45, 0x76, 0x65, 0x72, 0x79, 0x74, 0x68, 0x69, 0x6e,
+        //     0x67, 0x27, 0x73, 0x20, 0x73, 0x68, 0x69, 0x6e, 0x79,
+        //     0x2c, 0x20, 0x43, 0x61, 0x70, 0x74, 0x61, 0x69, 0x6e,
+        //     0x2e, 0x20, 0x4e, 0x6f, 0x74, 0x20, 0x74, 0x6f, 0x20,
+        //     0x66, 0x72, 0x65, 0x74, 0x2e
+        // ]);
+        // const echo = await Test.echoBytesAsync();
+        // expect(Test.bytesToString(echo)).toStrictEqual("Everything's shiny, Captain. Not to fret.");
     });
     it("can transfer structs", () => {
         const expected = {
