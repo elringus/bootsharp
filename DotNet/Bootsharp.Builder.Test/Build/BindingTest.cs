@@ -303,7 +303,7 @@ public class BindingTest : BuildTest
             """
             export const n = {
                 getFoo: () => deserialize(getExports().n_MockClass.GetFoo()),
-                Foo: { A: 0, B: 1 }
+                Foo: { "0": "A", "1": "B", "A": 0, "B": 1 }
             };
             """);
     }
