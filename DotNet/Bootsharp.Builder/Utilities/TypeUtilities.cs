@@ -157,6 +157,7 @@ internal static class TypeUtilities
     {
         if (IsVoid(type)) return false;
         if (IsTaskWithResult(type, out var result))
+            // TODO: Remove IsList (eg, serialization of Task<byte[]>) when https://github.com/dotnet/runtime/issues/81348 is resolved.
             return IsList(result) || ShouldSerialize(result);
         var array = type.IsArray;
         if (array) type = type.GetElementType()!;
