@@ -148,4 +148,10 @@ describe("while bootsharp is booted", () => {
         };
         expect(await Test.echoStringAsync()).toStrictEqual("foo");
     });
+    it("maps enums by both indexes and strings", () => {
+        expect(TrackType[0]).toStrictEqual("Rubber");
+        expect(TrackType[1]).toStrictEqual("Chain");
+        expect(TrackType[TrackType.Rubber]).toStrictEqual("Rubber");
+        expect(TrackType[TrackType.Chain]).toStrictEqual("Chain");
+    });
 });

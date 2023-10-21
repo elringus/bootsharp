@@ -15,9 +15,9 @@ describe("platform", () => {
         // .NET requires ws package when running on node:
         // https://github.com/dotnet/runtime/blob/main/src/mono/wasm/features.md#websocket
         global.WebSocket = WebSocket;
-        const wss = new WebSocketServer({ port: 8080 });
+        const wss = new WebSocketServer({ port: 8877 });
         wss.on("connection", socket => socket.on("message", socket.send));
-        expect(await Test.echoWebSocket("ws://localhost:8080", "foo", 3000)).toStrictEqual("foo");
+        expect(await Test.echoWebSocket("ws://localhost:8877", "foo", 3000)).toStrictEqual("foo");
         wss.close();
     });
 });
