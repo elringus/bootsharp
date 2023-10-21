@@ -143,7 +143,7 @@ public class BindingTest : BuildTest
             """
                 get fun() { return this.funHandler; },
                 set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Foo.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; },
+                get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Foo.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
             """);
     }
 
