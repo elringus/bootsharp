@@ -100,7 +100,7 @@ public class SerializerTest : PrepareTest
     [Fact]
     public void DoesntAddProxiesForTaskWithoutResult ()
     {
-        AddAssembly(With("[JSInvokable] public static Task Foo () => default;"));
+        AddAssembly(With("[JSInvokable] public static Task Foo (Task bar) => default;"));
         Execute();
         Assert.Empty(TestedContent);
     }

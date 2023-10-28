@@ -39,7 +39,6 @@ internal sealed class SerializerGenerator
 
     private void CollectAttributes (string syntax, Type type)
     {
-        if (IsTaskLike(type) && !type.IsGenericType) return;
         if (IsTaskWithResult(type, out var result))
             // Task<> produces trim warnings, so hacking with a proxy tuple.
             // Passing just the result may conflict with a type inferred by

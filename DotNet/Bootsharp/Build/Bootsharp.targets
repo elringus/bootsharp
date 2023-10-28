@@ -102,6 +102,7 @@
         <BuildBootsharp BuildDirectory="$(BootsharpBuildDirectory)"
                         InspectedDirectory="$(PublishDir)"
                         EntryAssemblyName="$(BootsharpEntryAssemblyName)"
+                        TrimmingEnabled="$(BootsharpAggressiveTrimming)"
                         EmbedBinaries="$(BootsharpEmbedBinaries)"
                         Threading="$(BootsharpThreading)"/>
 

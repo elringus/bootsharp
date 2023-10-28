@@ -7,6 +7,7 @@ public sealed class BuildBootsharp : Microsoft.Build.Utilities.Task
     [Required] public required string BuildDirectory { get; set; }
     [Required] public required string InspectedDirectory { get; set; }
     [Required] public required string EntryAssemblyName { get; set; }
+    [Required] public required bool TrimmingEnabled { get; set; }
     [Required] public required bool EmbedBinaries { get; set; }
     [Required] public required bool Threading { get; set; }
 
@@ -59,7 +60,7 @@ public sealed class BuildBootsharp : Microsoft.Build.Utilities.Task
 
     private void PatchModules ()
     {
-        var patcher = new ModulePatcher(BuildDirectory, Threading, EmbedBinaries);
+        var patcher = new ModulePatcher(BuildDirectory, Threading, EmbedBinaries, TrimmingEnabled);
         patcher.Patch();
     }
 }
