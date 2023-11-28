@@ -6,6 +6,6 @@ To test and measure build size:
 
 ### Measurements (KB)
 
-| .NET         | Raw   | Brotli |
-|--------------|-------|--------|
-| 8.0.100-rc.1 | 2,315 | 744    |
+| .NET  | Raw   | Brotli |
+|-------|-------|--------|
+| 8.0.1 | 2,317 | 744    |
