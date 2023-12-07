@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace Bootsharp.Builder;
 
-internal sealed class TypeConverter(NamespaceBuilder spaceBuilder)
+internal sealed class TypeConverter (NamespaceBuilder spaceBuilder)
 {
     public IReadOnlyCollection<Type> CrawledTypes => crawler.Crawled;
 

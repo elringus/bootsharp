@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Bootsharp.Generator;
 
-internal sealed class PartialClass(
+internal sealed class PartialClass (
     Compilation compilation,
     ClassDeclarationSyntax syntax,
     IReadOnlyList<PartialMethod> methods,
@@ -16,8 +16,8 @@ internal sealed class PartialClass(
         EmitUsings() +
         WrapNamespace(
             EmitHeader() +
-            EmitDynamicDependenciesRegistration(compilation) +
-            EmitMethods(compilation) +
+            EmitDynamicDependenciesRegistration() +
+            EmitMethods() +
             EmitFooter()
         )
     );
@@ -32,7 +32,7 @@ internal sealed class PartialClass(
 
     private string EmitHeader () => $"{syntax.Modifiers} class {syntax.Identifier}\n{{";
 
-    private string EmitDynamicDependenciesRegistration (Compilation compilation)
+    private string EmitDynamicDependenciesRegistration ()
     {
         if (!emitDependenciesRegistration) return "";
         var space = syntax.Parent is BaseNamespaceDeclarationSyntax decl ? $"{decl.Name}." : "";
@@ -46,7 +46,7 @@ internal sealed class PartialClass(
                  """;
     }
 
-    private string EmitMethods (Compilation compilation)
+    private string EmitMethods ()
     {
         if (methods.Count == 0) return "";
         var sources = methods.Select(m => "    " + m.EmitSource(compilation));

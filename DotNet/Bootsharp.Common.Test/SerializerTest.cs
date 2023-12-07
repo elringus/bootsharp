@@ -6,9 +6,9 @@ using static Bootsharp.Serializer;
 namespace Bootsharp.Common.Test;
 
 public enum MockEnum { Foo, Bar }
-public record MockItem(string Id);
-public record MockItemWithEnum(MockEnum? Enum);
-public record MockRecord(IReadOnlyList<MockItem> Items);
+public record MockItem (string Id);
+public record MockItemWithEnum (MockEnum? Enum);
+public record MockRecord (IReadOnlyList<MockItem> Items);
 
 public class SerializerTest
 {

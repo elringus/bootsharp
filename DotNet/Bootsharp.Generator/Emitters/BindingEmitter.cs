@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Bootsharp.Generator;
 
-internal class BindingEmitter(IMethodSymbol method, string space, string name)
+internal class BindingEmitter (IMethodSymbol method, string space, string name)
 {
     private bool @void, wait, shouldSerializeReturnType;
     private ITypeSymbol returnType, taskResult;
@@ -40,10 +40,10 @@ internal class BindingEmitter(IMethodSymbol method, string space, string name)
     private string GetDelegateType ()
     {
         if (@void && method.Parameters.Length == 0) return "global::System.Action";
-        var name = @void ? "global::System.Action" : "global::System.Func";
+        var basename = @void ? "global::System.Action" : "global::System.Func";
         var args = method.Parameters.Select(GetDelegateArgType);
         if (!@void) args = args.Append(GetDelegateReturnType());
-        return $"{name}<{string.Join(", ", args)}>";
+        return $"{basename}<{string.Join(", ", args)}>";
     }
 
     private string GetDelegateArgType (IParameterSymbol param) =>

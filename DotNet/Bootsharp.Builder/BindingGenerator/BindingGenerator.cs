@@ -2,7 +2,7 @@
 
 namespace Bootsharp.Builder;
 
-internal sealed class BindingGenerator(NamespaceBuilder spaceBuilder)
+internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
 {
     private readonly StringBuilder builder = new();
 

@@ -1,6 +1,6 @@
 namespace Bootsharp.Builder;
 
-internal sealed class ImportGenerator(string entryAssembly)
+internal sealed class ImportGenerator (string entryAssembly)
 {
     public string Generate (AssemblyInspector inspector)
     {

@@ -1,6 +1,6 @@
 namespace Bootsharp.Builder;
 
-internal sealed class ResourcesTemplate(
+internal sealed class ResourcesTemplate (
     string wasm,
     IEnumerable<AssemblyResource> assemblies,
     string entryAssemblyName)

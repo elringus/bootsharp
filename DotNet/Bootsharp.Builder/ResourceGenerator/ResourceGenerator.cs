@@ -1,6 +1,6 @@
 ﻿namespace Bootsharp.Builder;
 
-internal sealed class ResourceGenerator(string entryName, string buildDir, bool embed)
+internal sealed class ResourceGenerator (string entryName, string buildDir, bool embed)
 {
     public string Generate (AssemblyInspector inspector) => new ResourcesTemplate(
         GenerateWasm(),

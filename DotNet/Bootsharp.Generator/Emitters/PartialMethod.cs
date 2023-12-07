@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Bootsharp.Generator;
 
-internal sealed class PartialMethod(MethodDeclarationSyntax syntax)
+internal sealed class PartialMethod (MethodDeclarationSyntax syntax)
 {
     public string EmitSource (Compilation compilation)
     {

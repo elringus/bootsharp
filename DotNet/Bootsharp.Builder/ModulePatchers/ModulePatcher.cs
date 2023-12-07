@@ -2,7 +2,7 @@ using System.Text;
 
 namespace Bootsharp.Builder;
 
-internal sealed class ModulePatcher(string buildDir, bool thread, bool embed, bool trim)
+internal sealed class ModulePatcher (string buildDir, bool thread, bool embed, bool trim)
 {
     private readonly string dotnet = Path.Combine(buildDir, "dotnet.js");
     private readonly string runtime = Path.Combine(buildDir, "dotnet.runtime.js");

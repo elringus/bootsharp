@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Bootsharp.Builder;
 
-internal sealed class NamespaceConverter(CustomAttributeData attribute)
+internal sealed class NamespaceConverter (CustomAttributeData attribute)
 {
     private readonly string pattern = (string)attribute.ConstructorArguments[0].Value!;
     private readonly string replacement = (string)attribute.ConstructorArguments[1].Value!;

@@ -1,3 +1,3 @@
 namespace Bootsharp.Builder;
 
-public record AssemblyResource(string Name, string Content);
+public record AssemblyResource (string Name, string Content);

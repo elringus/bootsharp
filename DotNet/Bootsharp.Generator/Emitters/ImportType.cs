@@ -2,7 +2,7 @@
 
 namespace Bootsharp.Generator;
 
-internal sealed class ImportType(Compilation compilation, ITypeSymbol type, AttributeData attribute)
+internal sealed class ImportType (Compilation compilation, ITypeSymbol type, AttributeData attribute)
 {
     public string Name { get; } = type.Name;
 
@@ -34,9 +34,9 @@ internal sealed class ImportType(Compilation compilation, ITypeSymbol type, Attr
                {
                    Bootsharp.BindingRegistry.Register(typeof({{specType}}), new ImportBinding(new {{implType}}()));
                }
-
+           
                {{string.Join("\n    ", methods.Select(EmitBinding))}}
-
+           
                {{string.Join("\n    ", methods.Select(EmitSpec))}}
            }
            """);

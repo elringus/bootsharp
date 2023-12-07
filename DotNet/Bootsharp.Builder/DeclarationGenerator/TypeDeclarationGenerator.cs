@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Bootsharp.Builder;
 
-internal sealed class TypeDeclarationGenerator(NamespaceBuilder spaceBuilder)
+internal sealed class TypeDeclarationGenerator (NamespaceBuilder spaceBuilder)
 {
     private readonly StringBuilder builder = new();
     private readonly TypeConverter converter = new(spaceBuilder);

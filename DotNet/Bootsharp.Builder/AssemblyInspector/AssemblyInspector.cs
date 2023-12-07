@@ -4,7 +4,7 @@ using Microsoft.Build.Utilities;
 
 namespace Bootsharp.Builder;
 
-internal sealed class AssemblyInspector(NamespaceBuilder spaceBuilder) : IDisposable
+internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder) : IDisposable
 {
     public List<Assembly> Assemblies { get; } = new();
     public List<Method> Methods { get; } = new();
