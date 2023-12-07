@@ -27,19 +27,19 @@ public static class ExportTest
             public class JSFoo
             {
                 private static global::IFoo handler = null!;
-            
+
                 public JSFoo (global::IFoo handler)
                 {
                     JSFoo.handler = handler;
                 }
-            
+
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies ()
                 {
                     Bootsharp.BindingRegistry.Register(typeof(JSFoo), new ExportBinding(typeof(global::IFoo), handler => new JSFoo((global::IFoo)handler)));
                 }
-            
+
                 [JSInvokable] public static void Foo (global::System.String? foo) => handler.Foo(foo);
                 [JSInvokable] public static global::System.Threading.Tasks.Task Bar () => handler.Bar();
                 [JSInvokable] public static global::Item? Baz () => handler.Baz();
@@ -64,19 +64,19 @@ public static class ExportTest
             public class JSFoo
             {
                 private static global::IFoo handler = null!;
-            
+
                 public JSFoo (global::IFoo handler)
                 {
                     JSFoo.handler = handler;
                 }
-            
+
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies ()
                 {
                     Bootsharp.BindingRegistry.Register(typeof(JSFoo), new ExportBinding(typeof(global::IFoo), handler => new JSFoo((global::IFoo)handler)));
                 }
-            
+
                 [JSInvokable] public static void Bar (global::System.String foo) => handler.Foo(foo)/**/;
             }
             """
@@ -100,19 +100,19 @@ public static class ExportTest
             public class JSFoo
             {
                 private static global::A.B.C.IFoo handler = null!;
-            
+
                 public JSFoo (global::A.B.C.IFoo handler)
                 {
                     JSFoo.handler = handler;
                 }
-            
+
                 [ModuleInitializer]
                 [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Foo.JSFoo", "GeneratorTest")]
                 internal static void RegisterDynamicDependencies ()
                 {
                     Bootsharp.BindingRegistry.Register(typeof(JSFoo), new ExportBinding(typeof(global::A.B.C.IFoo), handler => new JSFoo((global::A.B.C.IFoo)handler)));
                 }
-            
+
                 [JSInvokable] public static void Foo () => handler.Foo();
             }
             """

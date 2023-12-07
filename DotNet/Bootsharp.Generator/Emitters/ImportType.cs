@@ -34,9 +34,9 @@ internal sealed class ImportType (Compilation compilation, ITypeSymbol type, Att
                {
                    Bootsharp.BindingRegistry.Register(typeof({{specType}}), new ImportBinding(new {{implType}}()));
                }
-           
+
                {{string.Join("\n    ", methods.Select(EmitBinding))}}
-           
+
                {{string.Join("\n    ", methods.Select(EmitSpec))}}
            }
            """);

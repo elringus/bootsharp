@@ -26,19 +26,19 @@ internal sealed class ExportType (Compilation compilation, ITypeSymbol type, Att
            public class {{implType}}
            {
                private static {{specType}} handler = null!;
-           
+
                public {{implType}} ({{specType}} handler)
                {
                    {{implType}}.handler = handler;
                }
-           
+
                [ModuleInitializer]
                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "{{space}}.{{implType}}", "{{compilation.Assembly.Name}}")]
                internal static void RegisterDynamicDependencies ()
                {
                    Bootsharp.BindingRegistry.Register(typeof({{implType}}), new ExportBinding(typeof({{specType}}), handler => new {{implType}}(({{specType}})handler)));
                }
-           
+
                {{string.Join("\n    ", type.GetMembers().OfType<IMethodSymbol>().Select(EmitMethod))}}
            }
            """);
