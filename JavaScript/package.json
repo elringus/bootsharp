@@ -1,14 +1,13 @@
 {
     "scripts": {
-        "test": "vitest run --silent --experimental-vm-threads",
+        "test": "vitest run --silent --pool=vmThreads",
         "cover": "npm test -- --coverage.enabled --coverage.100 --coverage.include=**/sideload/*.mjs --coverage.exclude=**/dotnet.* --coverage.allowExternal",
         "serve": "serve coverage"
     },
     "devDependencies": {
-        "typescript": "^5.2.2",
-        "@types/node": "^20.8.3",
-        "vitest": "^0.34.6",
-        "@vitest/coverage-v8": "^0.34.6",
-        "ws": "^8.14.2"
+        "typescript": "^5.3.3",
+        "vitest": "^1.0.4",
+        "@vitest/coverage-v8": "^1.0.4",
+        "ws": "^8.15.1"
     }
 }
