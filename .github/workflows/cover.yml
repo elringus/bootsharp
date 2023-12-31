@@ -20,20 +20,19 @@ jobs:
           node-version: 20
       - name: cover
         run: |
-          cd JavaScript
+          cd src/js
           npm install
-          cd scripts
-          bash build.sh
-          cd ../../DotNet
+          bash scripts/build.sh
+          cd ../cs
           dotnet workload restore
           mkdir .nuget
-          dotnet build Bootsharp.Generator -c Release
+          dotnet build Bootsharp.Generate -c Release
           dotnet build Bootsharp.Common -c Release
           dotnet pack Bootsharp.Common -o .nuget
           dotnet build -c Release
           dotnet pack Bootsharp -o .nuget
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-          cd ../JavaScript/test/cs
+          cd ../js/test/cs
           dotnet workload restore
           dotnet publish -p:BootsharpName=embedded -p:BootsharpEmbedBinaries=true
           dotnet publish -p:BootsharpName=sideload -p:BootsharpEmbedBinaries=false

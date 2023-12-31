@@ -1,0 +1,16 @@
+{
+    "scripts": {
+        "compile": "sh scripts/compile-test.sh",
+        "test": "vitest run --silent --pool=vmThreads",
+        "cover": "npm test -- --coverage.enabled --coverage.100 --coverage.include=**/sideload/*.mjs --coverage.exclude=**/dotnet.* --coverage.allowExternal",
+        "serve": "serve coverage",
+        "build": "sh scripts/build.sh"
+    },
+    "devDependencies": {
+        "typescript": "^5.3.3",
+        "vitest": "^1.1.1",
+        "@vitest/coverage-v8": "^1.1.1",
+        "@types/node": "^20.10.6",
+        "ws": "^8.16.0"
+    }
+}

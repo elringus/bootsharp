@@ -2,6 +2,7 @@
 .idea
 node_modules
 coverage
+cache
 dist
 bin
 obj

@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'csharp', 'javascript' ]
+        language: [ "csharp", "javascript" ]
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -31,17 +31,16 @@ jobs:
           languages: ${{ matrix.language }}
       - name: build
         run: |
-          cd DotNet
+          cd src/cs
           dotnet workload restore
           mkdir .nuget
-          dotnet build Bootsharp.Generator -c Release
+          dotnet build Bootsharp.Generate -c Release
           dotnet build Bootsharp.Common -c Release
           dotnet pack Bootsharp.Common -o .nuget
           dotnet build -c Release
           dotnet pack Bootsharp -o .nuget
-          cd ../JavaScript
+          cd ../js
           npm install
-          cd scripts
-          bash build.sh
+          bash scripts/build.sh
       - name: analyze
         uses: github/codeql-action/analyze@v2

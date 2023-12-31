@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <AssemblyTitle>Bootsharp</AssemblyTitle>
+        <PackageId>Bootsharp</PackageId>
+        <Description>Compile C# solution into single-file ES module with auto-generated JavaScript bindings and type definitions.</Description>
+        <NoWarn>NU5100</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bootsharp.Common" Version="$(Version)"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatform">
+            <_Parameter1>browser</_Parameter1>
+        </AssemblyAttribute>
+        <Content Include="Build/**" Pack="true" PackagePath="build/"/>
+        <Content Include="../../../src/js/dist/**" Pack="true" PackagePath="js/" Visible="false"/>
+    </ItemGroup>
+
+    <Target Name="PackPublisher" BeforeTargets="CoreCompile">
+        <MSBuild Projects="../Bootsharp.Publish/Bootsharp.Publish.csproj" Targets="Publish;PublishItemsOutputGroup" Properties="Configuration=Release">
+            <Output TaskParameter="TargetOutputs" ItemName="_TasksProjectOutputs"/>
+        </MSBuild>
+        <ItemGroup>
+            <Content Include="@(_TasksProjectOutputs)"
+                     Condition="'%(_TasksProjectOutputs.Extension)' == '.dll'"
+                     Pack="true"
+                     PackagePath="tasks/%(_TasksProjectOutputs.TargetPath)"
+                     KeepMetadata="Pack;PackagePath"/>
+        </ItemGroup>
+    </Target>
+
+</Project>
