@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://bootsharp.com" target="_blank" rel="noopener noreferrer">
-    <img width="200" src="https://raw.githubusercontent.com/elringus/bootsharp/main/docs/plublic/favicon.svg" alt="Bootsharp">
+    <img width="200" src="https://raw.githubusercontent.com/elringus/bootsharp/main/docs/public/favicon.svg" alt="Bootsharp">
   </a>
 </p>
 <br/>
