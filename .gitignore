@@ -1,19 +1,13 @@
 .vs
 .idea
-
-[Bb]in
-[Oo]bj
-[Pp]ackages
+node_modules
+coverage
+cache
+dist
+bin
+obj
 
 *.suo
 *.user
-
-node_modules
-dist
-build
-.nyc_output
-
-JavaScript/native/emsdk
-JavaScript/native/runtime
-
-!DotNet/DotNetJS/Build
+*.nupkg
+package-lock.json

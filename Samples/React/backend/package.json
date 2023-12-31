@@ -1,6 +1,0 @@
-{
-    "private": true,
-    "name": "backend",
-    "main": "Backend.WASM/bin/dotnet.js",
-    "types": "Backend.WASM/bin/dotnet.d.ts"
-}

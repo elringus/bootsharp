@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>
+        <TrimmerSingleWarn>false</TrimmerSingleWarn>
+        <BootsharpBundleCommand>npx rollup bootsharp.js -d ./ -f es -g process,module --output.preserveModules --entryFileNames [name].mjs</BootsharpBundleCommand>
+        <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
+        <RunAOTCompilation>true</RunAOTCompilation>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bootsharp" Version="*-*"/>
+        <ProjectReference Include="../Test.Types/Test.Types.csproj"/>
+    </ItemGroup>
+
+</Project>

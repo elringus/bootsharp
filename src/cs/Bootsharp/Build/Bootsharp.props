@@ -1,0 +1,40 @@
+<Project>
+
+    <PropertyGroup>
+
+        <OutputType>Exe</OutputType>
+        <Configuration>Release</Configuration>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <TargetArchitecture>wasm</TargetArchitecture>
+        <TargetOS>browser</TargetOS>
+        <InvariantTimezone>true</InvariantTimezone>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <WasmGenerateAppBundle>true</WasmGenerateAppBundle>
+        <WasmEnableLegacyJsInterop>false</WasmEnableLegacyJsInterop>
+
+        <!-- Name of the generated JavaScript module; 'bootsharp' by default. -->
+        <BootsharpName>bootsharp</BootsharpName>
+        <!-- Whether to embed binaries to the JavaScript module file (true or false); true by default. -->
+        <BootsharpEmbedBinaries>true</BootsharpEmbedBinaries>
+        <!-- Whether to disable some .NET features to reduce binary size (true or false); false by default. -->
+        <BootsharpAggressiveTrimming>false</BootsharpAggressiveTrimming>
+        <!-- The command to run when compiling/bundling generated JavaScrip solution. -->
+        <BootsharpBundleCommand/>
+        <!-- Directory to publish generated JavaScript module; 'base-output/module-name' by default. -->
+        <BootsharpPublishDirectory/>
+        <!-- Directory to publish type declarations; 'publish-dir/types' by default. -->
+        <BootsharpTypesDirectory/>
+        <!-- Directory to publish binaries when 'EmbedBinaries' disabled; 'publish-dir/bin' by default. -->
+        <BootsharpBinariesDirectory/>
+        <!-- Directory to publish 'package.json' file; same as publish directory by default. -->
+        <BootsharpPackageDirectory/>
+
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatform">
+            <_Parameter1>browser</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
+
+</Project>
