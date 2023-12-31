@@ -1,7 +1,7 @@
 using Backend;
 using Backend.Prime;
 using Bootsharp;
-using Bootsharp.DependencyInjection;
+using Bootsharp.Inject;
 using Microsoft.Extensions.DependencyInjection;
 
 // Application entry point for browser-wasm build target.

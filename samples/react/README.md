@@ -2,6 +2,7 @@ Sample web application built with C# backend and [React](https://react.dev) fron
 
 How to test:
 - Run `npm run backend` to compile C# backend;
+- Run `npm install` to install NPM dependencies;
 - Run `npm run test` to run frontend unit tests;
 - Run `npm run cover` to gather code coverage;
 - Run `npm run dev` to run local dev server with hot reload;
