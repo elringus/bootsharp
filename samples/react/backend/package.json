@@ -1,5 +1,0 @@
-{
-    "name": "backend",
-    "main": "Backend.WASM/bin/backend/backend.mjs",
-    "types": "Backend.WASM/bin/backend/types/backend.d.ts"
-}
