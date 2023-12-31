@@ -1,0 +1,37 @@
+{
+    "name": "bootsharp",
+    "version": "0.0.2",
+    "displayName": "Hello, Bootsharp!",
+    "description": "A test web extension built with Bootsharp.",
+    "categories": [
+        "Other"
+    ],
+    "publisher": "Elringus",
+    "repository": "https://github.com/Elringus/Bootsharp",
+    "homepage": "https://bootsharp.com",
+    "icon": "assets/package-icon.png",
+    "engines": {
+        "vscode": "^1.81.1"
+    },
+    "browser": "./dist/extension.js",
+    "activationEvents": [
+        "onCommand:bootsharp.hello"
+    ],
+    "contributes": {
+        "commands": [
+            {
+                "command": "bootsharp.hello",
+                "title": "Hello, Bootsharp!",
+                "category": "Bootsharp"
+            }
+        ]
+    },
+    "scripts": {
+        "build": "rollup src/extension.js -o dist/extension.js -f cjs -g process,module,vscode",
+        "package": "vsce package"
+    },
+    "devDependencies": {
+        "@vscode/vsce": "^2.21.0",
+        "rollup": "^3.28.1"
+    }
+}
