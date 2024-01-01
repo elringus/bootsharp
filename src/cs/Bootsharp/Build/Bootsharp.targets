@@ -16,6 +16,7 @@
             <PropertyGroup>
                 <!-- https://learn.microsoft.com/en-us/aspnet/core/blazor/performance?#minimize-app-download-size -->
                 <!-- https://raw.githubusercontent.com/dotnet/runtime/main/docs/workflow/trimming/feature-switches.md -->
+                <!-- https://github.com/dotnet/runtime/issues/94805 -->
                 <PublishTrimmed>true</PublishTrimmed>
                 <TrimMode>full</TrimMode>
                 <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
