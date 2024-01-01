@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Bootsharp.Publish;
 
-internal static class TextUtilities
+internal static partial class TextUtilities
 {
     public static string JoinLines (IEnumerable<string?> values, int indent = 1, string separator = "\n")
     {
@@ -22,6 +22,9 @@ internal static class TextUtilities
 
     private static string RemoveEmptyLines (string content)
     {
-        return Regex.Replace(content, @"^\s*$\n|\r", string.Empty, RegexOptions.Multiline).Trim();
+        return RegexEmptyLines().Replace(content, string.Empty).Trim();
     }
+
+    [GeneratedRegex(@"^\s*$\n|\r", RegexOptions.Multiline)]
+    private static partial Regex RegexEmptyLines ();
 }

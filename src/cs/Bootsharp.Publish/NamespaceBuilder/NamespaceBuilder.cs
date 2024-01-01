@@ -6,7 +6,7 @@ internal sealed class NamespaceBuilder
 {
     private const string defaultSpace = "Global";
     private const string attributeName = "JSNamespaceAttribute";
-    private readonly List<NamespaceConverter> converters = new();
+    private readonly List<NamespaceConverter> converters = [];
 
     public void CollectConverters (string outDir, string entryAssembly)
     {

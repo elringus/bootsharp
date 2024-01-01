@@ -31,7 +31,7 @@ jobs:
           dotnet pack Bootsharp.Common -o .nuget
           dotnet build -c Release
           dotnet pack Bootsharp -o .nuget
-          dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+          dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:ExcludeByAttribute=GeneratedCodeAttribute
           cd ../js/test/cs
           dotnet workload restore
           dotnet publish -p:BootsharpName=embedded -p:BootsharpEmbedBinaries=true

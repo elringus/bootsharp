@@ -1,5 +1,5 @@
 try {
-	dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+	dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:ExcludeByAttribute=GeneratedCodeAttribute
 	reportgenerator "-reports:*/*.xml" "-targetdir:.cover" -reporttypes:HTML
 	serve .cover
 } finally {

@@ -12,7 +12,7 @@ public class PrepareTest : TaskTest
 
     public override void Execute () => CreateTask().Execute();
 
-    private PrepareBootsharp CreateTask () => new() {
+    private BootsharpEmit CreateTask () => new() {
         InspectedDirectory = Project.Root,
         EntryAssemblyName = LastAddedAssemblyName ?? "System.Runtime.dll",
         ExportsFilePath = exportPath,

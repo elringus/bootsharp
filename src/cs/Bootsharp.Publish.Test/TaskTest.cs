@@ -10,7 +10,11 @@ public abstract class TaskTest : IDisposable
     protected string LastAddedAssemblyName { get; private set; }
     protected virtual string TestedContent { get; } = "";
 
-    public virtual void Dispose () => Project.Dispose();
+    public virtual void Dispose ()
+    {
+        Project.Dispose();
+        GC.SuppressFinalize(this);
+    }
 
     public abstract void Execute ();
 

@@ -6,16 +6,19 @@ namespace Bootsharp.Publish;
 
 internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder) : IDisposable
 {
-    public List<Assembly> Assemblies { get; } = new();
-    public List<Method> Methods { get; } = new();
-    public List<Type> Types { get; } = new();
+    public IReadOnlyList<Assembly> Assemblies => assemblies;
+    public IReadOnlyList<Method> Methods => methods;
+    public IReadOnlyList<Type> Types => types;
 
     private const string invokableAttributeName = "JSInvokableAttribute";
     private const string functionAttributeName = "JSFunctionAttribute";
     private const string eventAttributeName = "JSEventAttribute";
 
-    private readonly List<string> warnings = new();
-    private readonly List<MetadataLoadContext> contexts = new();
+    private readonly List<Assembly> assemblies = [];
+    private readonly List<Method> methods = [];
+    private readonly List<Type> types = [];
+    private readonly List<string> warnings = [];
+    private readonly List<MetadataLoadContext> contexts = [];
     private readonly TypeConverter typeConverter = new(spaceBuilder);
 
     public void InspectInDirectory (string directory)
@@ -24,7 +27,7 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder) : IDispo
         foreach (var assemblyPath in Directory.GetFiles(directory, "*.dll"))
             try { InspectAssembly(assemblyPath, context); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
-        Types.AddRange(typeConverter.CrawledTypes);
+        types.AddRange(typeConverter.CrawledTypes);
         contexts.Add(context);
     }
 
@@ -49,7 +52,7 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder) : IDispo
 
     private void InspectAssembly (string assemblyPath, MetadataLoadContext context)
     {
-        Assemblies.Add(CreateAssembly(assemblyPath));
+        assemblies.Add(CreateAssembly(assemblyPath));
         if (!ShouldIgnoreAssembly(assemblyPath))
             InspectMethods(context.LoadFromAssemblyPath(assemblyPath));
     }
@@ -79,11 +82,11 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder) : IDispo
     private void InspectMethodWithAttribute (MethodInfo method, string attributeName)
     {
         if (attributeName == invokableAttributeName)
-            Methods.Add(CreateMethod(method, MethodType.Invokable));
+            methods.Add(CreateMethod(method, MethodType.Invokable));
         else if (attributeName == functionAttributeName)
-            Methods.Add(CreateMethod(method, MethodType.Function));
+            methods.Add(CreateMethod(method, MethodType.Function));
         else if (attributeName == eventAttributeName)
-            Methods.Add(CreateMethod(method, MethodType.Event));
+            methods.Add(CreateMethod(method, MethodType.Event));
     }
 
     private Method CreateMethod (MethodInfo info, MethodType type) => new() {

@@ -4,7 +4,7 @@ internal sealed class TypeCrawler
 {
     public IReadOnlyCollection<Type> Crawled => crawled;
 
-    private readonly HashSet<Type> crawled = new();
+    private readonly HashSet<Type> crawled = [];
 
     public void Crawl (Type type)
     {

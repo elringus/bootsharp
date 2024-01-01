@@ -2,7 +2,7 @@
 
 public class BuildTest : TaskTest
 {
-    protected BuildBootsharp Task { get; }
+    protected BootsharpPack Task { get; }
     protected byte[] MockWasmBinary { get; } = "MockWasmContent"u8.ToArray();
     protected string MockDotNetContent { get; } = "MockDotNetContent";
     protected string MockRuntimeContent { get; } = "MockRuntimeContent";
@@ -32,7 +32,7 @@ public class BuildTest : TaskTest
         Task.Execute();
     }
 
-    private BuildBootsharp CreateTask () => new() {
+    private BootsharpPack CreateTask () => new() {
         BuildDirectory = Project.Root,
         InspectedDirectory = Project.Root,
         EntryAssemblyName = "System.Runtime.dll",

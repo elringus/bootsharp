@@ -50,11 +50,11 @@ public sealed class MockProject : IDisposable
     private static string[] GetReferencePaths ()
     {
         var coreDir = Path.GetDirectoryName(typeof(object).Assembly.Location);
-        return new[] {
+        return [
             MetadataReference.CreateFromFile(Path.Combine(coreDir, "System.Runtime.dll")).FilePath,
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location).FilePath,
             MetadataReference.CreateFromFile(typeof(JSFunctionAttribute).Assembly.Location).FilePath,
             MetadataReference.CreateFromFile(typeof(JSInvokableAttribute).Assembly.Location).FilePath
-        };
+        ];
     }
 }

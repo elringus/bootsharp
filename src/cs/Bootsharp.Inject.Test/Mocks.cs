@@ -8,7 +8,7 @@ public class JSFrontend : IFrontend;
 
 public class JSBackend
 {
-    public static IBackend Handler;
+    public static IBackend Handler { get; private set; }
 
     public JSBackend (IBackend handler)
     {
