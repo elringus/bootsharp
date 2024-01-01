@@ -8,4 +8,4 @@ To test and measure build size:
 
 | .NET  | Raw   | Brotli |
 |-------|-------|--------|
-| 8.0.1 | 2,317 | 744    |
+| 8.0.1 | 2,298 | 739    |
