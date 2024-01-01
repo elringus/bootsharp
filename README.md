@@ -1,5 +1,4 @@
-> [!IMPORTANT]
-> The solution is undergoing a major rewrite for .NET 8 via https://github.com/Elringus/DotNetJS/pull/123 and is being renamed to **Bootsharp**. Feedback is welcome in the PR comments.
+Snapshot of the legacy version where .NET 6 was last supported, before the [major rewrite](https://github.com/Elringus/DotNetJS/pull/123).
 
 # DotNetJS
 
