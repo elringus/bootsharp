@@ -1,4 +1,5 @@
-Snapshot of the legacy version where .NET 6 was last supported, before the [major rewrite](https://github.com/Elringus/DotNetJS/pull/123).
+> [!NOTE]
+> Snapshot of the legacy version where .NET 6 was last supported, before the [major rewrite](https://github.com/Elringus/DotNetJS/pull/123).
 
 # DotNetJS
 
