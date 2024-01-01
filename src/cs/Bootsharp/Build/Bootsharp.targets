@@ -16,6 +16,7 @@
             <PropertyGroup>
                 <!-- https://learn.microsoft.com/en-us/aspnet/core/blazor/performance?#minimize-app-download-size -->
                 <!-- https://raw.githubusercontent.com/dotnet/runtime/main/docs/workflow/trimming/feature-switches.md -->
+                <!-- https://github.com/dotnet/runtime/issues/94805 -->
                 <PublishTrimmed>true</PublishTrimmed>
                 <TrimMode>full</TrimMode>
                 <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
@@ -38,6 +39,11 @@
                 <WasmEmitSourceMap>false</WasmEmitSourceMap>
                 <WasmNativeDebugSymbols>false</WasmNativeDebugSymbols>
                 <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+                <PredefinedCulturesOnly>true</PredefinedCulturesOnly>
+                <MetricsSupport>false</MetricsSupport>
+                <DisableDependencyInjectionDynamicEngine>true</DisableDependencyInjectionDynamicEngine>
+                <NullabilityInfoContextSupport>false</NullabilityInfoContextSupport>
+                <DynamicCodeSupport>false</DynamicCodeSupport>
             </PropertyGroup>
         </When>
     </Choose>
