@@ -16,7 +16,7 @@ internal static partial class TextUtilities
 
     public static string ToFirstLower (string value)
     {
-        if (value.Length == 1) char.ToLowerInvariant(value[0]);
+        if (value.Length == 1) return value.ToLowerInvariant();
         return char.ToLowerInvariant(value[0]) + value[1..];
     }
 
