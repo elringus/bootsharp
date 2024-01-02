@@ -2,7 +2,10 @@ using Microsoft.Build.Framework;
 
 namespace Bootsharp.Publish;
 
-public sealed class BuildBootsharp : Microsoft.Build.Utilities.Task
+/// <summary>
+/// Second pass: emits JS bindings and type declarations, bundles ES module.
+/// </summary>
+public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
 {
     [Required] public required string BuildDirectory { get; set; }
     [Required] public required string InspectedDirectory { get; set; }

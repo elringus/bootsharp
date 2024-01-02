@@ -5,12 +5,12 @@ namespace Bootsharp.Publish.Test;
 
 public class MockCompiler
 {
-    private static readonly string[] defaultUsings = {
+    private static readonly string[] defaultUsings = [
         "System",
         "System.Collections.Generic",
         "System.Threading.Tasks",
         "Bootsharp"
-    };
+    ];
 
     public void Compile (IEnumerable<MockSource> sources, string assemblyPath)
     {

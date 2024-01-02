@@ -4,7 +4,7 @@ public static class EventTest
 {
     public static IEnumerable<object[]> Data { get; } = new[] {
         // Can generate event binding without namespace and arguments.
-        new object[] {
+        [
             """
             partial class Foo
             {
@@ -22,9 +22,9 @@ public static class EventTest
                 partial void OnBar () => Get<global::System.Action>("Global.onBar")();
             }
             """
-        },
+        ],
         // Can generate event binding with namespace and arguments.
-        new object[] {
+        [
             """
             namespace Space;
 
@@ -46,7 +46,7 @@ public static class EventTest
                 public static partial void OnBar (global::System.String a, global::System.Int32 b) => Get<global::System.Action<global::System.String, global::System.Int32>>("Space.onBar")(a, b);
             }
             """
-        },
+        ],
         // Can generate event binding with serialized parameters.
         new object[] {
             """

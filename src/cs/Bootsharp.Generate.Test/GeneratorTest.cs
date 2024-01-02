@@ -6,7 +6,7 @@ namespace Bootsharp.Generate.Test;
 
 public class GeneratorTest
 {
-    private static readonly List<(string file, string content)> sourceCache = new();
+    private static readonly List<(string file, string content)> sourceCache = [];
     private readonly Verifier<SourceGenerator> verifier = new();
 
     [Fact]

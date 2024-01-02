@@ -1,6 +1,6 @@
 namespace Bootsharp.Publish.Test;
 
-public class ResourceTest : BuildTest
+public class ResourceTest : PackTest
 {
     protected override string TestedContent => GeneratedResources;
 

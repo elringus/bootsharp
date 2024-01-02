@@ -4,7 +4,7 @@ public static class InvokableTest
 {
     public static IEnumerable<object[]> Data { get; } = new[] {
         // Generates dynamic dependencies registration.
-        new object[] {
+        [
             """
             partial class Foo
             {
@@ -20,7 +20,7 @@ public static class InvokableTest
                 internal static void RegisterDynamicDependencies () { }
             }
             """
-        },
+        ],
         // Generates dynamic dependencies registration under namespace.
         new object[] {
             """

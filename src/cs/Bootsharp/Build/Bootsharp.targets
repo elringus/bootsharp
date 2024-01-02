@@ -3,7 +3,7 @@
     <PropertyGroup>
         <BootsharpRoot>$(MSBuildThisFileDirectory)../</BootsharpRoot>
         <BootsharpSourceDirectory>$(BootsharpRoot)/js</BootsharpSourceDirectory>
-        <BootsharpBuilderAssembly>$(BootsharpRoot)/tasks/Bootsharp.Publish.dll</BootsharpBuilderAssembly>
+        <BootsharpPublishAssembly>$(BootsharpRoot)/tasks/Bootsharp.Publish.dll</BootsharpPublishAssembly>
         <BootsharpIntermediateDirectory>$(IntermediateOutputPath)bootsharp</BootsharpIntermediateDirectory>
         <BootsharpExportsFilePath>$(BootsharpIntermediateDirectory)/InteropExports.g.cs</BootsharpExportsFilePath>
         <BootsharpImportsFilePath>$(BootsharpIntermediateDirectory)/InteropImports.g.cs</BootsharpImportsFilePath>
@@ -48,22 +48,22 @@
         </When>
     </Choose>
 
-    <UsingTask TaskName="Bootsharp.Publish.PrepareBootsharp" AssemblyFile="$(BootsharpBuilderAssembly)"/>
-    <UsingTask TaskName="Bootsharp.Publish.BuildBootsharp" AssemblyFile="$(BootsharpBuilderAssembly)"/>
+    <UsingTask TaskName="Bootsharp.Publish.BootsharpEmit" AssemblyFile="$(BootsharpPublishAssembly)"/>
+    <UsingTask TaskName="Bootsharp.Publish.BootsharpPack" AssemblyFile="$(BootsharpPublishAssembly)"/>
 
     <!-- A hack due to source generator compositing not possible. (https://github.com/dotnet/roslyn/issues/57239) -->
-    <Target Name="BootsharpPrepare" BeforeTargets="GenerateAdditionalSources"
+    <Target Name="BootsharpEmit" BeforeTargets="GenerateAdditionalSources"
             Condition="'$(BootsharpSkip)' != 'true' And Exists('$(OutputPath)')">
 
         <!-- Pre-compile the solution, as we'll need to inspect the assemblies in the next step. -->
         <MSBuild Projects="$(MSBuildProjectFile)" Targets="BuildCompile" Properties="BootsharpSkip=true"/>
 
-        <!-- Generate code to be analyzed by .NET's source generators: interop methods and serialized type hints. -->
-        <PrepareBootsharp InspectedDirectory="$(OutputPath)"
-                          EntryAssemblyName="$(BootsharpEntryAssemblyName)"
-                          ExportsFilePath="$(BootsharpExportsFilePath)"
-                          ImportsFilePath="$(BootsharpImportsFilePath)"
-                          SerializerFilePath="$(BootsharpSerializerFilePath)"/>
+        <!-- Emit code to be analyzed by .NET's source generators: interop methods and serialized type hints. -->
+        <BootsharpEmit InspectedDirectory="$(OutputPath)"
+                       EntryAssemblyName="$(BootsharpEntryAssemblyName)"
+                       ExportsFilePath="$(BootsharpExportsFilePath)"
+                       ImportsFilePath="$(BootsharpImportsFilePath)"
+                       SerializerFilePath="$(BootsharpSerializerFilePath)"/>
         <ItemGroup>
             <Compile Remove="$(BootsharpExportsFilePath)"/>
             <Compile Remove="$(BootsharpImportsFilePath)"/>
@@ -80,7 +80,7 @@
         <RemoveDir Directories="$(BootsharpIntermediateDirectory)"/>
     </Target>
 
-    <Target Name="BootsharpBuild" AfterTargets="_AfterWasmBuildApp"
+    <Target Name="BootsharpPack" AfterTargets="_AfterWasmBuildApp"
             Condition="Exists('$(PublishDir)') And Exists('$(WasmAppDir)')">
 
         <PropertyGroup>
@@ -105,12 +105,12 @@
               DestinationFiles="$(BootsharpBuildDirectory)/$(BootsharpName).d.ts"/>
 
         <!-- Generate bindings, type declarations and (optionally) embed binaries. -->
-        <BuildBootsharp BuildDirectory="$(BootsharpBuildDirectory)"
-                        InspectedDirectory="$(PublishDir)"
-                        EntryAssemblyName="$(BootsharpEntryAssemblyName)"
-                        TrimmingEnabled="$(BootsharpAggressiveTrimming)"
-                        EmbedBinaries="$(BootsharpEmbedBinaries)"
-                        Threading="$(BootsharpThreading)"/>
+        <BootsharpPack BuildDirectory="$(BootsharpBuildDirectory)"
+                       InspectedDirectory="$(PublishDir)"
+                       EntryAssemblyName="$(BootsharpEntryAssemblyName)"
+                       TrimmingEnabled="$(BootsharpAggressiveTrimming)"
+                       EmbedBinaries="$(BootsharpEmbedBinaries)"
+                       Threading="$(BootsharpThreading)"/>
 
         <!-- Compile generated JavaScript solution. -->
         <Exec Command="$(BootsharpBundleCommand)"

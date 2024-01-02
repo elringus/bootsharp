@@ -1,8 +1,8 @@
 ﻿namespace Bootsharp.Publish.Test;
 
-public class BuildTest : TaskTest
+public class PackTest : TaskTest
 {
-    protected BuildBootsharp Task { get; }
+    protected BootsharpPack Task { get; }
     protected byte[] MockWasmBinary { get; } = "MockWasmContent"u8.ToArray();
     protected string MockDotNetContent { get; } = "MockDotNetContent";
     protected string MockRuntimeContent { get; } = "MockRuntimeContent";
@@ -14,7 +14,7 @@ public class BuildTest : TaskTest
     protected string GeneratedRuntimeModule => ReadProjectFile("dotnet.runtime.g.js");
     protected string GeneratedNativeModule => ReadProjectFile("dotnet.native.g.js");
 
-    public BuildTest ()
+    public PackTest ()
     {
         Task = CreateTask();
         Project.WriteFile("dotnet.js", MockDotNetContent);
@@ -32,7 +32,7 @@ public class BuildTest : TaskTest
         Task.Execute();
     }
 
-    private BuildBootsharp CreateTask () => new() {
+    private BootsharpPack CreateTask () => new() {
         BuildDirectory = Project.Root,
         InspectedDirectory = Project.Root,
         EntryAssemblyName = "System.Runtime.dll",

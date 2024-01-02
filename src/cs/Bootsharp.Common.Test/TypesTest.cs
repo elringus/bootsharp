@@ -39,8 +39,8 @@ public class TypesTest
     [Fact]
     public void TypesAreAssigned ()
     {
-        Assert.Equal(new[] { typeof(IBackend) }, new JSExportAttribute(typeof(IBackend)).Types);
-        Assert.Equal(new[] { typeof(IFrontend) }, new JSImportAttribute(typeof(IFrontend)).Types);
+        Assert.Equal([typeof(IBackend)], new JSExportAttribute(typeof(IBackend)).Types);
+        Assert.Equal([typeof(IFrontend)], new JSImportAttribute(typeof(IFrontend)).Types);
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class TypesTest
     [Fact]
     public void ExportParametersEqualArguments ()
     {
-        Assert.Equal(new object[] { typeof(IBackend) },
+        Assert.Equal([typeof(IBackend)],
             (export.ConstructorArguments[0].Value as IReadOnlyCollection<CustomAttributeTypedArgument>).Select(a => a.Value));
         Assert.Equal("ExportNamePattern", GetNamedValue(export.NamedArguments, nameof(JSTypeAttribute.NamePattern)));
         Assert.Equal("ExportNameReplacement", GetNamedValue(export.NamedArguments, nameof(JSTypeAttribute.NameReplacement)));
@@ -75,7 +75,7 @@ public class TypesTest
     [Fact]
     public void ImportParametersEqualArguments ()
     {
-        Assert.Equal(new object[] { typeof(IFrontend) },
+        Assert.Equal([typeof(IFrontend)],
             (import.ConstructorArguments[0].Value as IReadOnlyCollection<CustomAttributeTypedArgument>).Select(a => a.Value));
         Assert.Equal("ImportNamePattern", GetNamedValue(import.NamedArguments, nameof(JSTypeAttribute.NamePattern)));
         Assert.Equal("ImportNameReplacement", GetNamedValue(import.NamedArguments, nameof(JSTypeAttribute.NameReplacement)));

@@ -2,7 +2,10 @@
 
 namespace Bootsharp.Publish;
 
-public sealed class PrepareBootsharp : Microsoft.Build.Utilities.Task
+/// <summary>
+/// First pass: emits code to be picked up by .NET's source generators.
+/// </summary>
+public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
 {
     [Required] public required string InspectedDirectory { get; set; }
     [Required] public required string EntryAssemblyName { get; set; }

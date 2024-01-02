@@ -10,7 +10,11 @@ public abstract class TaskTest : IDisposable
     protected string LastAddedAssemblyName { get; private set; }
     protected virtual string TestedContent { get; } = "";
 
-    public virtual void Dispose () => Project.Dispose();
+    public virtual void Dispose ()
+    {
+        Project.Dispose();
+        GC.SuppressFinalize(this);
+    }
 
     public abstract void Execute ();
 
@@ -25,14 +29,24 @@ public abstract class TaskTest : IDisposable
         AddAssembly($"MockAssembly{Guid.NewGuid():N}.dll", sources);
     }
 
-    protected MockSource With (string @namespace, string code, bool wrapInClass = true)
+    protected MockSource WithClass (string @namespace, string body)
     {
-        return new(@namespace, code, wrapInClass);
+        return new(@namespace, body, true);
     }
 
-    protected MockSource With (string code, bool wrapInClass = true)
+    protected MockSource WithClass (string body)
     {
-        return With(null, code, wrapInClass);
+        return WithClass(null, body);
+    }
+
+    protected MockSource With (string @namespace, string code)
+    {
+        return new(@namespace, code, false);
+    }
+
+    protected MockSource With (string code)
+    {
+        return With(null, code);
     }
 
     protected void Contains (string content)

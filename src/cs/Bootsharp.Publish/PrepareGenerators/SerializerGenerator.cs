@@ -2,11 +2,12 @@ namespace Bootsharp.Publish;
 
 internal sealed class SerializerGenerator
 {
-    private readonly HashSet<string> attributes = new();
+    private readonly HashSet<string> attributes = [];
 
     public string Generate (AssemblyInspector inspector)
     {
-        inspector.Methods.ForEach(CollectAttributes);
+        foreach (var method in inspector.Methods)
+            CollectAttributes(method);
         CollectDuplicates(inspector);
         if (attributes.Count == 0) return "";
         return
@@ -52,9 +53,8 @@ internal sealed class SerializerGenerator
     {
         var names = new HashSet<string>();
         foreach (var type in inspector.Types.DistinctBy(t => t.FullName))
-            if (names.Contains(type.Name))
+            if (!names.Add(type.Name))
                 CollectAttributes(BuildSyntax(type), type);
-            else names.Add(type.Name);
     }
 
     private static string BuildAttribute (string syntax)
