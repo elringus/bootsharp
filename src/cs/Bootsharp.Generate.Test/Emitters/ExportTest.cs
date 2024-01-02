@@ -4,7 +4,7 @@ public static class ExportTest
 {
     public static IEnumerable<object[]> Data { get; } = new[] {
         // Can export various APIs.
-        new object[] {
+        [
             """
             using System.Threading.Tasks;
 
@@ -47,9 +47,9 @@ public static class ExportTest
                 [JSInvokable] public static global::System.String[] Far (global::System.Int32[] far) => handler.Far(far);
             }
             """
-        },
+        ],
         // Can override name and invoke.
-        new object[] {
+        [
             """
             [assembly:JSExport(typeof(IFoo), NamePattern="Foo", NameReplacement="Bar", InvokePattern="(.+)", InvokeReplacement="$1/**/")]
 
@@ -80,7 +80,7 @@ public static class ExportTest
                 [JSInvokable] public static void Bar (global::System.String foo) => handler.Foo(foo)/**/;
             }
             """
-        },
+        ],
         // Can override namespace.
         new object[] {
             """

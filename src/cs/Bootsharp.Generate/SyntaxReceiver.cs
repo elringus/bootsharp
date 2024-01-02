@@ -5,9 +5,9 @@ namespace Bootsharp.Generate;
 
 internal sealed class SyntaxReceiver
 {
-    public List<PartialClass> InvokableClasses { get; } = new();
-    public List<PartialClass> FunctionClasses { get; } = new();
-    public List<PartialClass> EventClasses { get; } = new();
+    public List<PartialClass> InvokableClasses { get; } = [];
+    public List<PartialClass> FunctionClasses { get; } = [];
+    public List<PartialClass> EventClasses { get; } = [];
 
     public void VisitNode (SyntaxNode node, Compilation compilation)
     {

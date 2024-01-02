@@ -4,7 +4,7 @@ public static class FunctionTest
 {
     public static IEnumerable<object[]> Data { get; } = new[] {
         // Can generate void binding under root namespace.
-        new object[] {
+        [
             """
             partial class Foo
             {
@@ -22,9 +22,9 @@ public static class FunctionTest
                 partial void Bar () => Get<global::System.Action>("Global.bar")();
             }
             """
-        },
+        ],
         // Can generate void task binding under file-scoped namespace.
-        new object[] {
+        [
             """
             using System.Threading.Tasks;
 
@@ -50,9 +50,9 @@ public static class FunctionTest
                 private static partial global::System.Threading.Tasks.Task BarAsync (global::System.String a, global::System.Int32 b) => Get<global::System.Func<global::System.String, global::System.Int32, global::System.Threading.Tasks.Task>>("File.Scoped.barAsync")(a, b);
             }
             """
-        },
+        ],
         // Can generate value task binding.
-        new object[] {
+        [
             """
             using System.Threading.Tasks;
 
@@ -78,9 +78,9 @@ public static class FunctionTest
                 private static partial global::System.Threading.Tasks.Task<global::System.String?> BarAsync () => Get<global::System.Func<global::System.Threading.Tasks.Task<global::System.String?>>>("File.Scoped.barAsync")();
             }
             """
-        },
+        ],
         // Can generate under classic namespace.
-        new object[] {
+        [
             """
             using System;
             using System.Threading.Tasks;
@@ -113,9 +113,9 @@ public static class FunctionTest
                 }
             }
             """
-        },
+        ],
         // Can override namespace.
-        new object[] {
+        [
             """
             [assembly:JSNamespace(@"A\.B\.(\S+)", "$1")]
 
@@ -139,9 +139,9 @@ public static class FunctionTest
                 public static partial void OnFun (global::System.Boolean val) => Get<global::System.Action<global::System.Boolean>>("C.onFun")(val);
             }
             """
-        },
+        ],
         // Can generate void binding with serialized parameters.
-        new object[] {
+        [
             """
             using System.Threading.Tasks;
 
@@ -171,9 +171,9 @@ public static class FunctionTest
                 public async partial global::System.Threading.Tasks.Task<global::System.Byte[]> BazAsync () => Deserialize<global::System.Byte[]>(await Get<global::System.Func<global::System.Threading.Tasks.Task<global::System.String>>>("Global.bazAsync")());
             }
             """
-        },
+        ],
         // Doesn't serialize types that can be transferred as-is.
-        new object[] {
+        [
             """
             using System;
             using System.Threading.Tasks;
@@ -200,7 +200,7 @@ public static class FunctionTest
                 public partial global::System.Threading.Tasks.Task<global::System.Exception?> Baz (global::System.Boolean? a1, global::System.Byte? a2, global::System.Char? a3, global::System.Int16? a4, global::System.Int64? a5, global::System.Int32? a6, global::System.Single? a7, global::System.Double? a8, global::System.IntPtr? a9, global::System.DateTime? a10, global::System.DateTimeOffset? a11, global::System.String? a12, global::System.Byte?[] a13, global::System.Int32?[] a14, global::System.Double?[] a15, global::System.String?[] a16) => Get<global::System.Func<global::System.Boolean?, global::System.Byte?, global::System.Char?, global::System.Int16?, global::System.Int64?, global::System.Int32?, global::System.Single?, global::System.Double?, global::System.IntPtr?, global::System.DateTime?, global::System.DateTimeOffset?, global::System.String?, global::System.Byte?[], global::System.Int32?[], global::System.Double?[], global::System.String?[], global::System.Threading.Tasks.Task<global::System.Exception?>>>("Global.baz")(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16);
             }
             """
-        },
+        ],
         // Special corner case when UsingDirectiveSyntax.Name is null.
         new object[] {
             """

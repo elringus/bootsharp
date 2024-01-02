@@ -4,7 +4,7 @@ public static class ImportTest
 {
     public static IEnumerable<object[]> Data { get; } = new[] {
         // Can import various APIs; also, when event parameters are set to null, event is not detected.
-        new object[] {
+        [
             """
             using System.Threading.Tasks;
 
@@ -41,7 +41,7 @@ public static class ImportTest
                 global::System.Threading.Tasks.Task<global::System.String> global::IFoo.Far () => Far();
             }
             """
-        },
+        ],
         // Detects and overrides event methods with defaults.
         new object[] {
             """
