@@ -14,7 +14,7 @@ public class ExportTest : PrepareTest
     [Fact]
     public void WhenNoInvokablesNothingIsGenerated ()
     {
-        AddAssembly(With("[JSFunction] public static void Foo () {}"));
+        AddAssembly(WithClass("[JSFunction] public static void Foo () {}"));
         Execute();
         Assert.Empty(TestedContent);
     }
@@ -28,7 +28,7 @@ public class ExportTest : PrepareTest
             {
                 [JSInvokable] public static void Bar () {}
             }
-            """, false));
+            """));
         Execute();
         Contains(
             """
@@ -67,7 +67,7 @@ public class ExportTest : PrepareTest
             {
                 [JSInvokable] public static void Nya () {}
             }
-            """, false));
+            """));
         Execute();
         Contains(
             """
@@ -107,7 +107,7 @@ public class ExportTest : PrepareTest
                 [JSInvokable] public static Task Async () => default;
                 [JSInvokable] public static Task<Info?> AsyncWithArgs (Info? i) => default;
             }
-            """, false));
+            """));
         Execute();
         Contains(
             """
@@ -136,7 +136,7 @@ public class ExportTest : PrepareTest
                 [JSInvokable] public static Task<Exception> Bar (bool a1, byte a2, char a3, short a4, long a5, int a6, float a7, double a8, nint a9, DateTime a10, DateTimeOffset a11, string a12, byte[] a13, int[] a14, double[] a15, string[] a16) => default;
                 [JSInvokable] public static Task<DateTime> Baz (bool? a1, byte? a2, char? a3, short? a4, long? a5, int? a6, float? a7, double? a8, nint? a9, DateTime? a10, DateTimeOffset? a11, string? a12, byte?[] a13, int?[] a14, double?[] a15, string?[] a16) => default;
             }
-            """, false));
+            """));
         Execute();
         Contains(
             """
@@ -167,7 +167,7 @@ public class ExportTest : PrepareTest
                 [JSInvokable] public static Task<Info[]> A () => default;
                 [JSInvokable] public static Task<byte[]> B () => default;
             }
-            """, false));
+            """));
         Execute();
         Contains(
             """

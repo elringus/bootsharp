@@ -29,14 +29,24 @@ public abstract class TaskTest : IDisposable
         AddAssembly($"MockAssembly{Guid.NewGuid():N}.dll", sources);
     }
 
-    protected MockSource With (string @namespace, string code, bool wrapInClass = true)
+    protected MockSource WithClass (string @namespace, string code)
     {
-        return new(@namespace, code, wrapInClass);
+        return new(@namespace, code, true);
     }
 
-    protected MockSource With (string code, bool wrapInClass = true)
+    protected MockSource WithClass (string code)
     {
-        return With(null, code, wrapInClass);
+        return WithClass(null, code);
+    }
+
+    protected MockSource With (string @namespace, string code)
+    {
+        return new(@namespace, code, false);
+    }
+
+    protected MockSource With (string code)
+    {
+        return With(null, code);
     }
 
     protected void Contains (string content)

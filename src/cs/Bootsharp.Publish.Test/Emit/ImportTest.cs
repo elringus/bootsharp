@@ -14,7 +14,7 @@ public class ImportTest : PrepareTest
     [Fact]
     public void WhenNoFunctionsOrEventsNothingIsGenerated ()
     {
-        AddAssembly(With("[JSInvokable] public static void Foo () {}"));
+        AddAssembly(WithClass("[JSInvokable] public static void Foo () {}"));
         Execute();
         Assert.Empty(TestedContent);
     }
@@ -29,7 +29,7 @@ public class ImportTest : PrepareTest
                 [JSFunction] public static void Bar () {}
                 [JSEvent] public static void Baz () {}
             }
-            """, false));
+            """));
         Execute();
         Contains(
             """
@@ -80,7 +80,7 @@ public class ImportTest : PrepareTest
                 [JSFunction] public static void Nya () {}
                 [JSEvent] public static void Far () {}
             }
-            """, false));
+            """));
         Execute();
         Contains(
             """
@@ -145,7 +145,7 @@ public class ImportTest : PrepareTest
                 [JSFunction] public static Task<Info?> Nya (Info a) => default;
                 [JSEvent] public static void OnBar (Info? a, bool? b) {}
             }
-            """, false));
+            """));
         Execute();
         Contains(
             """
@@ -186,7 +186,7 @@ public class ImportTest : PrepareTest
                 [JSFunction] public static Task<Exception> Bar (bool a1, byte a2, char a3, short a4, long a5, int a6, float a7, double a8, nint a9, DateTime a10, DateTimeOffset a11, string a12, byte[] a13, int[] a14, double[] a15, string[] a16) => default;
                 [JSFunction] public static Task<DateTime> Baz (bool? a1, byte? a2, char? a3, short? a4, long? a5, int? a6, float? a7, double? a8, nint? a9, DateTime? a10, DateTimeOffset? a11, string? a12, byte?[] a13, int?[] a14, double?[] a15, string?[] a16) => default;
             }
-            """, false));
+            """));
         Execute();
         Contains(
             """

@@ -14,7 +14,7 @@ public class BindingTest : BuildTest
     [Fact]
     public void InteropFunctionsImported ()
     {
-        AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
+        AddAssembly(WithClass("Foo", "[JSInvokable] public static void Bar () { }"));
         Execute();
         Contains(
             """
@@ -29,7 +29,7 @@ public class BindingTest : BuildTest
     [Fact]
     public void BindingForInvokableMethodIsGenerated ()
     {
-        AddAssembly(With("Foo.Bar", "[JSInvokable] public static void Nya () { }"));
+        AddAssembly(WithClass("Foo.Bar", "[JSInvokable] public static void Nya () { }"));
         Execute();
         Contains(
             """
@@ -44,7 +44,7 @@ public class BindingTest : BuildTest
     [Fact]
     public void BindingForFunctionMethodIsGenerated ()
     {
-        AddAssembly(With("Foo.Bar", "[JSFunction] public static void Fun () { }"));
+        AddAssembly(WithClass("Foo.Bar", "[JSFunction] public static void Fun () { }"));
         Execute();
         Contains(
             """
@@ -62,9 +62,9 @@ public class BindingTest : BuildTest
     public void BindingForEventMethodIsGenerated ()
     {
         AddAssembly(
-            With("[JSEvent] public static void OnFoo () { }"),
-            With("[JSEvent] public static void OnBar (string a) { }"),
-            With("[JSEvent] public static void OnBaz (int a, bool b) { }"));
+            WithClass("[JSEvent] public static void OnFoo () { }"),
+            WithClass("[JSEvent] public static void OnBar (string a) { }"),
+            WithClass("[JSEvent] public static void OnBaz (int a, bool b) { }"));
         Execute();
         Contains(
             """
@@ -82,7 +82,7 @@ public class BindingTest : BuildTest
     [Fact]
     public void LibraryExportsNamespaceObject ()
     {
-        AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
+        AddAssembly(WithClass("Foo", "[JSInvokable] public static void Bar () { }"));
         Execute();
         Contains(
             """
@@ -95,7 +95,7 @@ public class BindingTest : BuildTest
     [Fact]
     public void WhenSpaceContainDotsObjectCreatedForEachPart ()
     {
-        AddAssembly(With("Foo.Bar.Nya", "[JSInvokable] public static void Bar () { }"));
+        AddAssembly(WithClass("Foo.Bar.Nya", "[JSInvokable] public static void Bar () { }"));
         Execute();
         Contains(
             """
@@ -113,8 +113,8 @@ public class BindingTest : BuildTest
     public void WhenMultipleSpacesEachGetItsOwnObject ()
     {
         AddAssembly(
-            With("Foo", "[JSInvokable] public static void Foo () { }"),
-            With("Bar.Nya", "[JSFunction] public static void Fun () { }"));
+            WithClass("Foo", "[JSInvokable] public static void Foo () { }"),
+            WithClass("Bar.Nya", "[JSFunction] public static void Fun () { }"));
         Execute();
         Contains(
             """
@@ -134,8 +134,8 @@ public class BindingTest : BuildTest
     [Fact]
     public void WhenMultipleAssembliesWithEqualSpaceObjectDeclaredOnlyOnce ()
     {
-        AddAssembly(With("Foo", "[JSInvokable] public static void Bar () { }"));
-        AddAssembly(With("Foo", "[JSFunction] public static void Fun () { }"));
+        AddAssembly(WithClass("Foo", "[JSInvokable] public static void Bar () { }"));
+        AddAssembly(WithClass("Foo", "[JSFunction] public static void Fun () { }"));
         Execute();
         Assert.Single(Matches("export const Foo"));
         Contains("bar: () => getExports().Foo_MockClass.Bar()");
@@ -151,8 +151,8 @@ public class BindingTest : BuildTest
     public void DifferentSpacesWithSameRootAssignedUnderSameObject ()
     {
         AddAssembly(
-            With("Nya.Foo", "[JSInvokable] public static void Foo () { }"),
-            With("Nya.Bar", "[JSFunction] public static void Fun () { }"));
+            WithClass("Nya.Foo", "[JSInvokable] public static void Foo () { }"),
+            WithClass("Nya.Bar", "[JSFunction] public static void Fun () { }"));
         Execute();
         Contains(
             """
@@ -172,8 +172,8 @@ public class BindingTest : BuildTest
     [Fact]
     public void BindingsFromMultipleSpacesAssignedToRespectiveObjects ()
     {
-        AddAssembly(With("Foo", "[JSInvokable] public static int Foo () => 0;"));
-        AddAssembly(With("Bar.Nya", "[JSFunction] public static void Fun () { }"));
+        AddAssembly(WithClass("Foo", "[JSInvokable] public static int Foo () => 0;"));
+        AddAssembly(WithClass("Bar.Nya", "[JSFunction] public static void Fun () { }"));
         Execute();
         Contains(
             """
@@ -194,8 +194,8 @@ public class BindingTest : BuildTest
     public void WhenNoSpaceBindingsAreAssignedToGlobalObject ()
     {
         AddAssembly(
-            With("[JSInvokable] public static Task<int> Nya () => Task.FromResult(0);"),
-            With("[JSFunction] public static void Fun () { }"));
+            WithClass("[JSInvokable] public static Task<int> Nya () => Task.FromResult(0);"),
+            WithClass("[JSFunction] public static void Fun () { }"));
         Execute();
         Contains(
             """
@@ -212,9 +212,9 @@ public class BindingTest : BuildTest
     public void NamespaceAttributeOverrideObjectNames ()
     {
         AddAssembly(
-            With("""[assembly:JSNamespace(@"Foo\.Bar\.(\S+)", "$1")]""", false),
-            With("Foo.Bar.Nya", "[JSInvokable] public static Task GetNya () => Task.CompletedTask;"),
-            With("Foo.Bar.Fun", "[JSFunction] public static void OnFun () { }"));
+            With("""[assembly:JSNamespace(@"Foo\.Bar\.(\S+)", "$1")]"""),
+            WithClass("Foo.Bar.Nya", "[JSInvokable] public static Task GetNya () => Task.CompletedTask;"),
+            WithClass("Foo.Bar.Fun", "[JSFunction] public static void OnFun () { }"));
         Execute();
         Contains(
             """
@@ -232,7 +232,7 @@ public class BindingTest : BuildTest
     [Fact]
     public void VariablesConflictingWithJSTypesAreRenamed ()
     {
-        AddAssembly(With("[JSInvokable] public static void Fun (string function) { }"));
+        AddAssembly(WithClass("[JSInvokable] public static void Fun (string function) { }"));
         Execute();
         Contains(
             """
@@ -246,11 +246,11 @@ public class BindingTest : BuildTest
     public void SerializesCustomType ()
     {
         AddAssembly(
-            With("public record Info;", false),
-            With("[JSInvokable] public static Info Foo (Info i) => default;"),
-            With("[JSFunction] public static Info? Bar (Info? i) => default;"),
-            With("[JSEvent] public static void Baz (Info?[] i) { }"),
-            With("[JSEvent] public static void Yaz (int a, Info i) { }"));
+            With("public record Info;"),
+            WithClass("[JSInvokable] public static Info Foo (Info i) => default;"),
+            WithClass("[JSFunction] public static Info? Bar (Info? i) => default;"),
+            WithClass("[JSEvent] public static void Baz (Info?[] i) { }"),
+            WithClass("[JSEvent] public static void Yaz (int a, Info i) { }"));
         Execute();
         Contains(
             """
@@ -271,11 +271,11 @@ public class BindingTest : BuildTest
     public void AwaitsWhenSerializingInAsyncFunctions ()
     {
         AddAssembly(
-            With("public record Info;", false),
-            With("[JSInvokable] public static Task<Info> Foo (Info i) => default;"),
-            With("[JSFunction] public static Task<Info?> Bar (Info? i) => default;"),
-            With("[JSInvokable] public static Task<IReadOnlyList<Info>> Baz () => default;"),
-            With("[JSFunction] public static Task<IReadOnlyList<Info>> Yaz () => default;"));
+            With("public record Info;"),
+            WithClass("[JSInvokable] public static Task<Info> Foo (Info i) => default;"),
+            WithClass("[JSFunction] public static Task<Info?> Bar (Info? i) => default;"),
+            WithClass("[JSInvokable] public static Task<IReadOnlyList<Info>> Baz () => default;"),
+            WithClass("[JSFunction] public static Task<IReadOnlyList<Info>> Yaz () => default;"));
         Execute();
         Contains(
             """
@@ -296,8 +296,8 @@ public class BindingTest : BuildTest
     public void ExportedEnumsAreDeclaredInJS ()
     {
         AddAssembly(
-            With("n", "public enum Foo { A, B }"),
-            With("n", "[JSInvokable] public static Foo GetFoo () => default;"));
+            WithClass("n", "public enum Foo { A, B }"),
+            WithClass("n", "[JSInvokable] public static Foo GetFoo () => default;"));
         Execute();
         Contains(
             """
