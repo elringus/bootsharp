@@ -1,6 +1,6 @@
 ﻿namespace Bootsharp.Publish.Test;
 
-public class SerializerTest : PrepareTest
+public class SerializerTest : EmitTest
 {
     protected override string TestedContent => GeneratedSerializer;
 

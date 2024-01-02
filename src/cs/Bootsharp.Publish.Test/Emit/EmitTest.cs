@@ -1,6 +1,6 @@
 ﻿namespace Bootsharp.Publish.Test;
 
-public class PrepareTest : TaskTest
+public class EmitTest : TaskTest
 {
     protected string GeneratedExports => ReadProjectFile(exportPath);
     protected string GeneratedImports => ReadProjectFile(importPath);

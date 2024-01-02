@@ -1,6 +1,6 @@
 namespace Bootsharp.Publish.Test;
 
-public class PatcherTest : BuildTest
+public class PatcherTest : PackTest
 {
     [Fact]
     public void WhenEmbedEnabledModulesAreCopied ()

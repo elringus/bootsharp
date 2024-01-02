@@ -1,6 +1,6 @@
 namespace Bootsharp.Publish.Test;
 
-public class BindingTest : BuildTest
+public class BindingTest : PackTest
 {
     protected override string TestedContent => GeneratedBindings;
 
