@@ -86,9 +86,9 @@ internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
     {
         var wait = ShouldWait(method);
         var endpoint = $"getExports().{method.DeclaringName.Replace('.', '_')}.{method.Name}";
-        var funcArgs = string.Join(", ", method.JSArguments.Select(a => a.Name));
-        var invArgs = string.Join(", ", method.JSArguments.Select(arg =>
-            arg.ShouldSerialize ? $"serialize({arg.Name})" : arg.Name
+        var funcArgs = string.Join(", ", method.Arguments.Select(a => a.JSName));
+        var invArgs = string.Join(", ", method.Arguments.Select(arg =>
+            arg.ShouldSerialize ? $"serialize({arg.JSName})" : arg.JSName
         ));
         var body = $"{(wait ? "await " : "")}{endpoint}({invArgs})";
         if (method.ShouldSerializeReturnType) body = $"deserialize({body})";
@@ -100,9 +100,9 @@ internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
     {
         var wait = ShouldWait(method);
         var name = ToFirstLower(method.Name);
-        var funcArgs = string.Join(", ", method.JSArguments.Select(a => a.Name));
-        var invArgs = string.Join(", ", method.JSArguments.Select(arg =>
-            arg.ShouldSerialize ? $"deserialize({arg.Name})" : arg.Name
+        var funcArgs = string.Join(", ", method.Arguments.Select(a => a.JSName));
+        var invArgs = string.Join(", ", method.Arguments.Select(arg =>
+            arg.ShouldSerialize ? $"deserialize({arg.JSName})" : arg.JSName
         ));
         var body = $"{(wait ? "await " : "")}this.{name}Handler({invArgs})";
         if (method.ShouldSerializeReturnType) body = $"serialize({body})";
@@ -118,8 +118,8 @@ internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
     {
         var name = ToFirstLower(method.Name);
         builder.Append($"{Comma()}\n{Pad(level + 1)}{name}: new Event()");
-        var funcArgs = string.Join(", ", method.JSArguments.Select(a => a.Name));
-        var invArgs = string.Join(", ", method.JSArguments.Select(arg => arg.ShouldSerialize ? $"deserialize({arg.Name})" : arg.Name));
+        var funcArgs = string.Join(", ", method.Arguments.Select(a => a.JSName));
+        var invArgs = string.Join(", ", method.Arguments.Select(arg => arg.ShouldSerialize ? $"deserialize({arg.JSName})" : arg.JSName));
         builder.Append($"{Comma()}\n{Pad(level + 1)}{name}Serialized: ({funcArgs}) => {method.JSSpace}.{name}.broadcast({invArgs})");
     }
 
@@ -134,5 +134,5 @@ internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
 
     private string Pad (int level) => new(' ', level * 4);
     private string Comma () => builder[^1] == '{' ? "" : ",";
-    private bool ShouldWait (Method method) => (method.JSArguments.Any(a => a.ShouldSerialize) || method.ShouldSerializeReturnType) && method.ReturnsTaskLike;
+    private bool ShouldWait (Method method) => (method.Arguments.Any(a => a.ShouldSerialize) || method.ShouldSerializeReturnType) && method.ReturnsTaskLike;
 }

@@ -55,27 +55,27 @@ internal sealed class MethodDeclarationGenerator
     private void DeclareInvokable ()
     {
         builder.Append($"\n    export function {ToFirstLower(method.Name)}(");
-        builder.AppendJoin(", ", method.JSArguments.Select(BuildArgumentDeclaration));
+        builder.AppendJoin(", ", method.Arguments.Select(BuildArgumentDeclaration));
         builder.Append($"): {BuildReturnDeclaration(method)};");
     }
 
     private void DeclareFunction ()
     {
         builder.Append($"\n    export let {ToFirstLower(method.Name)}: (");
-        builder.AppendJoin(", ", method.JSArguments.Select(BuildArgumentDeclaration));
+        builder.AppendJoin(", ", method.Arguments.Select(BuildArgumentDeclaration));
         builder.Append($") => {BuildReturnDeclaration(method)};");
     }
 
     private void DeclareEvent ()
     {
         builder.Append($"\n    export const {ToFirstLower(method.Name)}: Event<[");
-        builder.AppendJoin(", ", method.JSArguments.Select(BuildArgumentDeclaration));
+        builder.AppendJoin(", ", method.Arguments.Select(BuildArgumentDeclaration));
         builder.Append("]>;");
     }
 
     private string BuildArgumentDeclaration (Argument arg)
     {
-        return $"{arg.Name}: {arg.TypeSyntax}{(arg.Nullable ? " | undefined" : "")}";
+        return $"{arg.JSName}: {arg.JSTypeSyntax}{(arg.Nullable ? " | undefined" : "")}";
     }
 
     private string BuildReturnDeclaration (Method method)

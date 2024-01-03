@@ -10,8 +10,8 @@ public class AssemblyInspectionTest : PackTest
         _ = new MockAssembly("", default) with { Name = "foo" };
         _ = new AssemblyResource("", "") with { Name = "foo" };
         _ = new MockSource("", "", false) with { Namespace = "foo" };
-        _ = new Argument { Name = "", Type = default, Nullable = false, TypeSyntax = "", ShouldSerialize = false } with { Name = "foo" };
-        _ = new Method { Name = "", Arguments = default, Assembly = "", Type = default, DeclaringName = "", ReturnsNullable = true, ReturnsVoid = true, ReturnType = default, ReturnTypeSyntax = "", JSArguments = default, JSSpace = "", ReturnsTaskLike = true, JSReturnTypeSyntax = "", ShouldSerializeReturnType = true } with { Name = "foo" };
+        _ = new Argument { Name = "", Type = default, Nullable = false, TypeSyntax = "", ShouldSerialize = false, JSName = "", JSTypeSyntax = "" } with { Name = "foo" };
+        _ = new Method { Name = "", Arguments = default, Assembly = "", Type = default, DeclaringName = "", ReturnsNullable = true, ReturnsVoid = true, ReturnType = default, ReturnTypeSyntax = "", JSSpace = "", ReturnsTaskLike = true, JSReturnTypeSyntax = "", ShouldSerializeReturnType = true } with { Name = "foo" };
     }
 
     [Fact]

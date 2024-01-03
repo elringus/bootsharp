@@ -1,12 +1,12 @@
 ﻿namespace Bootsharp;
 
 /// <summary>
-/// Argument of an inspected method.
+/// Argument of an inspected interop method.
 /// </summary>
 public record Argument
 {
     /// <summary>
-    /// Name of the argument, as specified in source code.
+    /// C# name of the argument, as specified in source code.
     /// </summary>
     public required string Name { get; init; }
     /// <summary>
@@ -14,7 +14,7 @@ public record Argument
     /// </summary>
     public required Type Type { get; init; }
     /// <summary>
-    /// Syntax of the argument's type, as specified in source code.
+    /// C# syntax of the argument's type, as specified in source code.
     /// </summary>
     public required string TypeSyntax { get; init; }
     /// <summary>
@@ -25,6 +25,15 @@ public record Argument
     /// Whether the argument has to be serialized for interop.
     /// </summary>
     public required bool ShouldSerialize { get; init; }
+    /// <summary>
+    /// JavaScript name of the argument, as will be specified in source code.
+    /// </summary>
+    public required string JSName { get; init; }
+    /// <summary>
+    /// JavaScript (TypeScript) syntax of the argument's type,
+    /// as will be specified in source code.
+    /// </summary>
+    public required string JSTypeSyntax { get; init; }
 
     public override string ToString () => $"{Name}: {TypeSyntax}";
 }

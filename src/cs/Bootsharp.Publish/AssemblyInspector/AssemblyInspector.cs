@@ -75,7 +75,6 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
         ReturnsTaskLike = IsTaskLike(info.ReturnType),
         ShouldSerializeReturnType = ShouldSerialize(info.ReturnType),
         JSSpace = spaceBuilder.Build(info.DeclaringType),
-        JSArguments = info.GetParameters().Select(CreateJSArgument).ToArray(),
         JSReturnTypeSyntax = converter.ToTypeScript(info.ReturnType, GetNullability(info.ReturnParameter))
     };
 
@@ -84,15 +83,9 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
         Type = info.ParameterType,
         TypeSyntax = BuildSyntax(info.ParameterType, info),
         Nullable = IsNullable(info),
-        ShouldSerialize = ShouldSerialize(info.ParameterType)
-    };
-
-    private Argument CreateJSArgument (ParameterInfo info) => new() {
-        Name = info.Name == "function" ? "fn" : info.Name!,
-        Type = info.ParameterType,
-        TypeSyntax = converter.ToTypeScript(info.ParameterType, GetNullability(info)),
-        Nullable = IsNullable(info),
-        ShouldSerialize = ShouldSerialize(info.ParameterType)
+        ShouldSerialize = ShouldSerialize(info.ParameterType),
+        JSName = info.Name == "function" ? "fn" : info.Name!,
+        JSTypeSyntax = converter.ToTypeScript(info.ParameterType, GetNullability(info))
     };
 
     private static IEnumerable<MethodInfo> GetStaticMethods (System.Reflection.Assembly assembly)
