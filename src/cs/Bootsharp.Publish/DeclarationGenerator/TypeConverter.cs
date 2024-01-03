@@ -19,6 +19,8 @@ internal sealed class TypeConverter (NamespaceBuilder spaceBuilder)
         return Convert(type);
     }
 
+    public void Clear () => crawler.Clear();
+
     private string Convert (Type type)
     {
         crawler.Crawl(type);
@@ -29,8 +31,6 @@ internal sealed class TypeConverter (NamespaceBuilder spaceBuilder)
         if (type.IsGenericType && CrawledTypes.Contains(type)) return ConvertGeneric(type);
         return ConvertFinal(type);
     }
-
-    public void Clear () => crawler.Clear();
 
     private string ConvertNullable (Type type)
     {

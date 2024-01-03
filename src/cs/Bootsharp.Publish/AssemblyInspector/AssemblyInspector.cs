@@ -48,7 +48,7 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
         methods.ToImmutableArray(),
         converter.CrawledTypes.ToImmutableArray(),
         warnings.ToImmutableArray(),
-        [context]);
+        context);
 
     private Assembly CreateAssembly (string assemblyPath)
     {
