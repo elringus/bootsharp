@@ -15,6 +15,8 @@ internal sealed class TypeCrawler
         CrawlBaseType(type);
     }
 
+    public void Clear () => crawled.Clear();
+
     private bool ShouldCrawl (Type type)
     {
         type = GetUnderlyingType(type);

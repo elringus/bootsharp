@@ -14,4 +14,8 @@
         <PackageReference Include="System.Reflection.MetadataLoadContext" Version="8.0.0"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="../Bootsharp.Common/Bootsharp.Common.csproj"/>
+    </ItemGroup>
+
 </Project>

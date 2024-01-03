@@ -1,53 +1,31 @@
-﻿using System.Reflection;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
+﻿using System.Collections.Immutable;
+using System.Reflection;
 
 namespace Bootsharp.Publish;
 
-internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder) : IDisposable
+internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
 {
-    public IReadOnlyList<Assembly> Assemblies => assemblies;
-    public IReadOnlyList<Method> Methods => methods;
-    public IReadOnlyList<Type> Types => types;
-
-    private const string invokableAttributeName = "JSInvokableAttribute";
-    private const string functionAttributeName = "JSFunctionAttribute";
-    private const string eventAttributeName = "JSEventAttribute";
-
     private readonly List<Assembly> assemblies = [];
     private readonly List<Method> methods = [];
-    private readonly List<Type> types = [];
     private readonly List<string> warnings = [];
-    private readonly List<MetadataLoadContext> contexts = [];
-    private readonly TypeConverter typeConverter = new(spaceBuilder);
+    private readonly TypeConverter converter = new(spaceBuilder);
 
-    public void InspectInDirectory (string directory)
+    public AssemblyInspection InspectInDirectory (string directory)
     {
+        Reset();
         var context = CreateLoadContext(directory);
         foreach (var assemblyPath in Directory.GetFiles(directory, "*.dll"))
             try { InspectAssembly(assemblyPath, context); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
-        types.AddRange(typeConverter.CrawledTypes);
-        contexts.Add(context);
+        return CreateInspection(context);
     }
 
-    public void Report (TaskLoggingHelper logger)
+    private void Reset ()
     {
-        logger.LogMessage(MessageImportance.Normal, "Bootsharp assembly inspection result:");
-        logger.LogMessage(MessageImportance.Normal, JoinLines($"Discovered {Assemblies.Count} assemblies:",
-            JoinLines(Assemblies.Select(a => a.Name))));
-        logger.LogMessage(MessageImportance.Normal, JoinLines($"Discovered {Methods.Count} JS methods:",
-            JoinLines(Methods.Select(m => m.ToString()))));
-
-        foreach (var warning in warnings)
-            logger.LogWarning(warning);
-    }
-
-    public void Dispose ()
-    {
-        foreach (var context in contexts)
-            context.Dispose();
-        contexts.Clear();
+        assemblies.Clear();
+        methods.Clear();
+        warnings.Clear();
+        converter.Clear();
     }
 
     private void InspectAssembly (string assemblyPath, MetadataLoadContext context)
@@ -65,6 +43,13 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder) : IDispo
         warnings.Add(message);
     }
 
+    private AssemblyInspection CreateInspection (MetadataLoadContext context) => new(
+        assemblies.ToImmutableArray(),
+        methods.ToImmutableArray(),
+        converter.CrawledTypes.ToImmutableArray(),
+        warnings.ToImmutableArray(),
+        [context]);
+
     private Assembly CreateAssembly (string assemblyPath)
     {
         var name = Path.GetFileName(assemblyPath);
@@ -81,11 +66,11 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder) : IDispo
 
     private void InspectMethodWithAttribute (MethodInfo method, string attributeName)
     {
-        if (attributeName == invokableAttributeName)
+        if (attributeName == nameof(JSInvokableAttribute))
             methods.Add(CreateMethod(method, MethodType.Invokable));
-        else if (attributeName == functionAttributeName)
+        else if (attributeName == nameof(JSFunctionAttribute))
             methods.Add(CreateMethod(method, MethodType.Function));
-        else if (attributeName == eventAttributeName)
+        else if (attributeName == nameof(JSEventAttribute))
             methods.Add(CreateMethod(method, MethodType.Event));
     }
 
@@ -103,7 +88,7 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder) : IDispo
         ShouldSerializeReturnType = ShouldSerialize(info.ReturnType),
         JSSpace = spaceBuilder.Build(info.DeclaringType),
         JSArguments = info.GetParameters().Select(CreateJSArgument).ToArray(),
-        JSReturnTypeSyntax = typeConverter.ToTypeScript(info.ReturnType, GetNullability(info.ReturnParameter))
+        JSReturnTypeSyntax = converter.ToTypeScript(info.ReturnType, GetNullability(info.ReturnParameter))
     };
 
     private Argument CreateArgument (ParameterInfo info) => new() {
@@ -117,7 +102,7 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder) : IDispo
     private Argument CreateJSArgument (ParameterInfo info) => new() {
         Name = info.Name == "function" ? "fn" : info.Name!,
         Type = info.ParameterType,
-        TypeSyntax = typeConverter.ToTypeScript(info.ParameterType, GetNullability(info)),
+        TypeSyntax = converter.ToTypeScript(info.ParameterType, GetNullability(info)),
         Nullable = IsNullable(info),
         ShouldSerialize = ShouldSerialize(info.ParameterType)
     };

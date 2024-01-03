@@ -1,6 +1,6 @@
 ﻿namespace Bootsharp.Publish.Test;
 
-public class InspectionTest : PackTest
+public class AssemblyInspectionTest : PackTest
 {
     [Fact]
     public void Records ()

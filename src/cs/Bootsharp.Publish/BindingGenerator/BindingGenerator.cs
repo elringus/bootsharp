@@ -13,11 +13,11 @@ internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
     private Binding[] bindings = null!;
     private int index, level;
 
-    public string Generate (AssemblyInspector inspector)
+    public string Generate (AssemblyInspection inspection)
     {
-        bindings = inspector.Methods
+        bindings = inspection.Methods
             .Select(m => new Binding(m, null, m.JSSpace))
-            .Concat(inspector.Types.Where(t => t.IsEnum)
+            .Concat(inspection.Types.Where(t => t.IsEnum)
                 .Select(t => new Binding(null, t, spaceBuilder.Build(t))))
             .OrderBy(m => m.Namespace).ToArray();
         if (bindings.Length == 0) return "";

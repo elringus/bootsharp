@@ -17,10 +17,10 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
     public override bool Execute ()
     {
         var spaceBuilder = CreateNamespaceBuilder();
-        using var inspector = InspectAssemblies(spaceBuilder);
-        GenerateBindings(inspector, spaceBuilder);
-        GenerateDeclarations(inspector, spaceBuilder);
-        GenerateResources(inspector);
+        using var inspection = InspectAssemblies(spaceBuilder);
+        GenerateBindings(inspection, spaceBuilder);
+        GenerateDeclarations(inspection, spaceBuilder);
+        GenerateResources(inspection);
         PatchModules();
         return true;
     }
@@ -32,32 +32,32 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
         return builder;
     }
 
-    private AssemblyInspector InspectAssemblies (NamespaceBuilder spaceBuilder)
+    private AssemblyInspection InspectAssemblies (NamespaceBuilder spaceBuilder)
     {
         var inspector = new AssemblyInspector(spaceBuilder);
-        inspector.InspectInDirectory(InspectedDirectory);
-        inspector.Report(Log);
-        return inspector;
+        var inspection = inspector.InspectInDirectory(InspectedDirectory);
+        new InspectionReporter(Log).Report(inspection);
+        return inspection;
     }
 
-    private void GenerateBindings (AssemblyInspector inspector, NamespaceBuilder spaceBuilder)
+    private void GenerateBindings (AssemblyInspection inspection, NamespaceBuilder spaceBuilder)
     {
         var generator = new BindingGenerator(spaceBuilder);
-        var content = generator.Generate(inspector);
+        var content = generator.Generate(inspection);
         File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.js"), content);
     }
 
-    private void GenerateDeclarations (AssemblyInspector inspector, NamespaceBuilder spaceBuilder)
+    private void GenerateDeclarations (AssemblyInspection inspection, NamespaceBuilder spaceBuilder)
     {
         var generator = new DeclarationGenerator(spaceBuilder);
-        var content = generator.Generate(inspector);
+        var content = generator.Generate(inspection);
         File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.d.ts"), content);
     }
 
-    private void GenerateResources (AssemblyInspector inspector)
+    private void GenerateResources (AssemblyInspection inspection)
     {
         var generator = new ResourceGenerator(EntryAssemblyName, BuildDirectory, EmbedBinaries);
-        var content = generator.Generate(inspector);
+        var content = generator.Generate(inspection);
         File.WriteAllText(Path.Combine(BuildDirectory, "resources.g.js"), content);
     }
 

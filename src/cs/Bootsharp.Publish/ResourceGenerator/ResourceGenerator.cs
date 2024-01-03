@@ -2,9 +2,9 @@
 
 internal sealed class ResourceGenerator (string entryName, string buildDir, bool embed)
 {
-    public string Generate (AssemblyInspector inspector) => new ResourcesTemplate(
+    public string Generate (AssemblyInspection inspection) => new ResourcesTemplate(
         GenerateWasm(),
-        inspector.Assemblies.Select(GenerateAssembly),
+        inspection.Assemblies.Select(GenerateAssembly),
         entryName
     ).Build();
 

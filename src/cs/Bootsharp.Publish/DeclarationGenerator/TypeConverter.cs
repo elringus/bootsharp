@@ -30,6 +30,8 @@ internal sealed class TypeConverter (NamespaceBuilder spaceBuilder)
         return ConvertFinal(type);
     }
 
+    public void Clear () => crawler.Clear();
+
     private string ConvertNullable (Type type)
     {
         return $"{Convert(GetNullableUnderlyingType(type))} | null";

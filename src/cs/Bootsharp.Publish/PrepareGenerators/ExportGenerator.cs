@@ -2,9 +2,9 @@ namespace Bootsharp.Publish;
 
 internal sealed class ExportGenerator
 {
-    public string Generate (AssemblyInspector inspector)
+    public string Generate (AssemblyInspection inspection)
     {
-        var bySpace = inspector.Methods
+        var bySpace = inspection.Methods
             .Where(m => m.Type == MethodType.Invokable)
             .GroupBy(i => i.DeclaringName).ToArray();
         return bySpace.Length == 0 ? "" :
