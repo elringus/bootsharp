@@ -12,20 +12,11 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
 
     public AssemblyInspection InspectInDirectory (string directory)
     {
-        Reset();
         var context = CreateLoadContext(directory);
         foreach (var assemblyPath in Directory.GetFiles(directory, "*.dll"))
             try { InspectAssembly(assemblyPath, context); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
         return CreateInspection(context);
-    }
-
-    private void Reset ()
-    {
-        assemblies.Clear();
-        methods.Clear();
-        warnings.Clear();
-        converter.Clear();
     }
 
     private void InspectAssembly (string assemblyPath, MetadataLoadContext context)
@@ -43,12 +34,9 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
         warnings.Add(message);
     }
 
-    private AssemblyInspection CreateInspection (MetadataLoadContext context) => new(
-        assemblies.ToImmutableArray(),
-        methods.ToImmutableArray(),
-        converter.CrawledTypes.ToImmutableArray(),
-        warnings.ToImmutableArray(),
-        context);
+    private AssemblyInspection CreateInspection (MetadataLoadContext context) =>
+        new(context, assemblies.ToImmutableArray(), methods.ToImmutableArray(),
+            converter.CrawledTypes.ToImmutableArray(), warnings.ToImmutableArray());
 
     private Assembly CreateAssembly (string assemblyPath)
     {

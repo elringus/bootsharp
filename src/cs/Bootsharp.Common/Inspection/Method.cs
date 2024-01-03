@@ -1,6 +1,6 @@
-﻿namespace Bootsharp.Publish;
+﻿namespace Bootsharp;
 
-internal record Method
+public record Method
 {
     public required MethodType Type { get; init; }
     public required string Assembly { get; init; }

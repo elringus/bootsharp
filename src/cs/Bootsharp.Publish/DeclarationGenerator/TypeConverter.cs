@@ -19,8 +19,6 @@ internal sealed class TypeConverter (NamespaceBuilder spaceBuilder)
         return Convert(type);
     }
 
-    public void Clear () => crawler.Clear();
-
     private string Convert (Type type)
     {
         crawler.Crawl(type);
