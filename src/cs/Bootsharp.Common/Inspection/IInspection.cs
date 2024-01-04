@@ -19,8 +19,4 @@ public interface IInspection
     /// types associated with the prior types, crawled recursively.
     /// </summary>
     IReadOnlyList<Type> Types { get; }
-    /// <summary>
-    /// Inspection warnings, such as skipped assemblies.
-    /// </summary>
-    IReadOnlyList<string> Warnings { get; }
 }
