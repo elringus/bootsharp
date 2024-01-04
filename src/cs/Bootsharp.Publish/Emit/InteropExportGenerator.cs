@@ -1,6 +1,6 @@
 namespace Bootsharp.Publish;
 
-internal sealed class ExportGenerator
+internal sealed class InteropExportGenerator
 {
     public string Generate (AssemblyInspection inspection)
     {

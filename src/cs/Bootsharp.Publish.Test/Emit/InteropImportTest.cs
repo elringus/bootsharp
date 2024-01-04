@@ -1,8 +1,8 @@
 ﻿namespace Bootsharp.Publish.Test;
 
-public class ImportTest : EmitTest
+public class InteropImportTest : EmitTest
 {
-    protected override string TestedContent => GeneratedImports;
+    protected override string TestedContent => GeneratedInteropImports;
 
     [Fact]
     public void WhenNothingInspectedNothingIsGenerated ()

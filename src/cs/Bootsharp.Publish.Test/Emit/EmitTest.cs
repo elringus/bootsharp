@@ -2,12 +2,12 @@
 
 public class EmitTest : TaskTest
 {
-    protected string GeneratedExports => ReadProjectFile(exportPath);
-    protected string GeneratedImports => ReadProjectFile(importPath);
+    protected string GeneratedInteropExports => ReadProjectFile(interopExportsPath);
+    protected string GeneratedInteropImports => ReadProjectFile(interopImportsPath);
     protected string GeneratedSerializer => ReadProjectFile(serializerPath);
 
-    private string exportPath => $"{Project.Root}/InteropExports.g.cs";
-    private string importPath => $"{Project.Root}/InteropImports.g.cs";
+    private string interopExportsPath => $"{Project.Root}/InteropExports.g.cs";
+    private string interopImportsPath => $"{Project.Root}/InteropImports.g.cs";
     private string serializerPath => $"{Project.Root}/SerializerContext.g.cs";
 
     public override void Execute () => CreateTask().Execute();
@@ -15,8 +15,8 @@ public class EmitTest : TaskTest
     private BootsharpEmit CreateTask () => new() {
         InspectedDirectory = Project.Root,
         EntryAssemblyName = LastAddedAssemblyName ?? "System.Runtime.dll",
-        ExportsFilePath = exportPath,
-        ImportsFilePath = importPath,
+        ExportsFilePath = interopExportsPath,
+        ImportsFilePath = interopImportsPath,
         SerializerFilePath = serializerPath,
         BuildEngine = Engine
     };
