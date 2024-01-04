@@ -5,13 +5,8 @@ public class AssemblyInspectionTest : PackTest
     [Fact]
     public void Records ()
     {
-        // TODO: Remove once coverlet properly handles record coverage.
-        _ = new Assembly("", default) with { Name = "foo" };
-        _ = new MockAssembly("", default) with { Name = "foo" };
-        _ = new AssemblyResource("", "") with { Name = "foo" };
-        _ = new MockSource("", "", false) with { Namespace = "foo" };
-        _ = new Argument { Name = "", Type = default, Nullable = false, TypeSyntax = "", ShouldSerialize = false, JSName = "", JSTypeSyntax = "" } with { Name = "foo" };
-        _ = new Method { Name = "", Arguments = default, Assembly = "", Type = default, DeclaringName = "", ReturnsNullable = true, ReturnsVoid = true, ReturnType = default, ReturnTypeSyntax = "", JSSpace = "", JSName = "", ReturnsTaskLike = true, JSReturnTypeSyntax = "", ShouldSerializeReturnType = true } with { Name = "foo" };
+        // TODO: Remove when coverlet bug is resolved: https://github.com/coverlet-coverage/coverlet/issues/1561
+        _ = new Method { Name = "", Arguments = default, Assembly = "", Type = default, DeclaringName = "", ReturnsNullable = true, ReturnsVoid = true, ReturnType = default, ReturnTypeSyntax = "", JSSpace = "", JSName = "", ReturnsTaskLike = true, JSReturnTypeSyntax = "", ShouldSerializeReturnType = true };
     }
 
     [Fact]
