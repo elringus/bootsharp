@@ -30,7 +30,9 @@ public class TypesTest
     [Fact]
     public void Records ()
     {
-        // TODO: Remove once coverlet properly handles record coverage.
+        // TODO: Remove when coverlet bug is resolved: https://github.com/coverlet-coverage/coverlet/issues/1561
+        _ = new Method { Name = "", Arguments = default, Assembly = "", Type = default, DeclaringName = "", ReturnsNullable = true, ReturnsVoid = true, ReturnType = default, ReturnTypeSyntax = "", JSSpace = "", JSName = "", ReturnsTaskLike = true, JSReturnTypeSyntax = "", ShouldSerializeReturnType = true } with { Assembly = "foo" };
+        _ = new Argument { Name = "", Type = default, Nullable = false, TypeSyntax = "", ShouldSerialize = false, JSName = "", JSTypeSyntax = "" } with { Name = "foo" };
         _ = new MockItem("") with { Id = "foo" };
         _ = new MockItemWithEnum(default) with { Enum = MockEnum.Bar };
         _ = new MockRecord(default) with { Items = new[] { new MockItem("") } };

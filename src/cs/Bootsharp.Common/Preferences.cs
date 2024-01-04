@@ -1,9 +1,9 @@
-﻿namespace Bootsharp;
+﻿// namespace Bootsharp;
 
-/// <summary>
-/// User preferences for Bootsharp behaviour.
-/// </summary>
-public record Preferences
-{
-
-}
+// /// <summary>
+// /// User preferences for Bootsharp behaviour.
+// /// </summary>
+// public record Preferences
+// {
+//
+// }
