@@ -1,3 +1,3 @@
 ﻿namespace Bootsharp.Publish;
 
-internal record Binding (Method? Method, Type? Enum, string Namespace);
+internal record Binding (MethodMeta? Method, Type? Enum, string Namespace);

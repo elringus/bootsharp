@@ -75,37 +75,37 @@ internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
             else builder.Append($"\n{Pad(level)}}}");
     }
 
-    private void EmitMethod (Method method)
+    private void EmitMethod (MethodMeta method)
     {
         if (method.Type == MethodType.Invokable) EmitInvokable(method);
         else if (method.Type == MethodType.Function) EmitFunction(method);
         else EmitEvent(method);
     }
 
-    private void EmitInvokable (Method method)
+    private void EmitInvokable (MethodMeta method)
     {
         var wait = ShouldWait(method);
         var endpoint = $"getExports().{method.DeclaringName.Replace('.', '_')}.{method.Name}";
         var funcArgs = string.Join(", ", method.Arguments.Select(a => a.JSName));
         var invArgs = string.Join(", ", method.Arguments.Select(arg =>
-            arg.ShouldSerialize ? $"serialize({arg.JSName})" : arg.JSName
+            arg.Type.ShouldSerialize ? $"serialize({arg.JSName})" : arg.JSName
         ));
         var body = $"{(wait ? "await " : "")}{endpoint}({invArgs})";
-        if (method.ShouldSerializeReturnType) body = $"deserialize({body})";
+        if (method.ReturnType.ShouldSerialize) body = $"deserialize({body})";
         var func = $"{(wait ? "async " : "")}({funcArgs}) => {body}";
         builder.Append($"{Comma()}\n{Pad(level + 1)}{method.JSName}: {func}");
     }
 
-    private void EmitFunction (Method method)
+    private void EmitFunction (MethodMeta method)
     {
         var wait = ShouldWait(method);
         var name = method.JSName;
         var funcArgs = string.Join(", ", method.Arguments.Select(a => a.JSName));
         var invArgs = string.Join(", ", method.Arguments.Select(arg =>
-            arg.ShouldSerialize ? $"deserialize({arg.JSName})" : arg.JSName
+            arg.Type.ShouldSerialize ? $"deserialize({arg.JSName})" : arg.JSName
         ));
         var body = $"{(wait ? "await " : "")}this.{name}Handler({invArgs})";
-        if (method.ShouldSerializeReturnType) body = $"serialize({body})";
+        if (method.ReturnType.ShouldSerialize) body = $"serialize({body})";
         var set = $"this.{name}Handler = handler; this.{name}SerializedHandler = {(wait ? "async " : "")}({funcArgs}) => {body};";
         var error = $"throw Error(\"Failed to invoke '{binding.Namespace}.{name}' from C#. Make sure to assign function in JavaScript.\")";
         var serde = $"if (typeof this.{name}Handler !== \"function\") {error}; return this.{name}SerializedHandler;";
@@ -114,12 +114,12 @@ internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
         builder.Append($"{Comma()}\n{Pad(level + 1)}get {name}Serialized() {{ {serde} }}");
     }
 
-    private void EmitEvent (Method method)
+    private void EmitEvent (MethodMeta method)
     {
         var name = method.JSName;
         builder.Append($"{Comma()}\n{Pad(level + 1)}{name}: new Event()");
         var funcArgs = string.Join(", ", method.Arguments.Select(a => a.JSName));
-        var invArgs = string.Join(", ", method.Arguments.Select(arg => arg.ShouldSerialize ? $"deserialize({arg.JSName})" : arg.JSName));
+        var invArgs = string.Join(", ", method.Arguments.Select(arg => arg.Type.ShouldSerialize ? $"deserialize({arg.JSName})" : arg.JSName));
         builder.Append($"{Comma()}\n{Pad(level + 1)}{name}Serialized: ({funcArgs}) => {method.JSSpace}.{name}.broadcast({invArgs})");
     }
 
@@ -134,5 +134,7 @@ internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
 
     private string Pad (int level) => new(' ', level * 4);
     private string Comma () => builder[^1] == '{' ? "" : ",";
-    private bool ShouldWait (Method method) => (method.Arguments.Any(a => a.ShouldSerialize) || method.ShouldSerializeReturnType) && method.ReturnsTaskLike;
+    private bool ShouldWait (MethodMeta method) =>
+        (method.Arguments.Any(a => a.Type.ShouldSerialize) ||
+         method.ReturnType.ShouldSerialize) && method.ReturnType.TaskLike;
 }

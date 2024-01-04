@@ -5,8 +5,8 @@ namespace Bootsharp.Publish;
 
 internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
 {
-    private readonly List<Assembly> assemblies = [];
-    private readonly List<Method> methods = [];
+    private readonly List<AssemblyMeta> assemblies = [];
+    private readonly List<MethodMeta> methods = [];
     private readonly List<string> warnings = [];
     private readonly TypeConverter converter = new(spaceBuilder);
 
@@ -38,14 +38,14 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
         new(context, assemblies.ToImmutableArray(), methods.ToImmutableArray(),
             converter.CrawledTypes.ToImmutableArray(), warnings.ToImmutableArray());
 
-    private Assembly CreateAssembly (string assemblyPath)
+    private AssemblyMeta CreateAssembly (string assemblyPath)
     {
         var name = Path.GetFileName(assemblyPath);
         var bytes = File.ReadAllBytes(assemblyPath);
         return new(name, bytes);
     }
 
-    private void InspectMethods (System.Reflection.Assembly assembly)
+    private void InspectMethods (Assembly assembly)
     {
         foreach (var method in GetStaticMethods(assembly))
         foreach (var attribute in method.CustomAttributes)
@@ -62,34 +62,40 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
             methods.Add(CreateMethod(method, MethodType.Event));
     }
 
-    private Method CreateMethod (MethodInfo info, MethodType type) => new() {
+    private MethodMeta CreateMethod (MethodInfo info, MethodType type) => new() {
         Type = type,
         Assembly = info.DeclaringType!.Assembly.GetName().Name!,
         DeclaringName = info.DeclaringType.FullName!,
         Name = info.Name,
         Arguments = info.GetParameters().Select(CreateArgument).ToArray(),
-        ReturnType = info.ReturnType,
-        ReturnTypeSyntax = BuildSyntax(info.ReturnType, info.ReturnParameter),
-        ReturnsVoid = IsVoid(info.ReturnType),
-        ReturnsNullable = IsNullable(info),
-        ReturnsTaskLike = IsTaskLike(info.ReturnType),
-        ShouldSerializeReturnType = ShouldSerialize(info.ReturnType),
+        ReturnType = new() {
+            Type = info.ReturnType,
+            Syntax = BuildSyntax(info.ReturnType, info.ReturnParameter),
+            JSSyntax = converter.ToTypeScript(info.ReturnType, GetNullability(info.ReturnParameter)),
+            Void = IsVoid(info.ReturnType),
+            Nullable = IsNullable(info),
+            TaskLike = IsTaskLike(info.ReturnType),
+            ShouldSerialize = ShouldSerialize(info.ReturnType)
+        },
         JSSpace = spaceBuilder.Build(info.DeclaringType),
         JSName = ToFirstLower(info.Name),
-        JSReturnTypeSyntax = converter.ToTypeScript(info.ReturnType, GetNullability(info.ReturnParameter))
     };
 
-    private Argument CreateArgument (ParameterInfo info) => new() {
+    private ArgumentMeta CreateArgument (ParameterInfo info) => new() {
         Name = info.Name!,
-        Type = info.ParameterType,
-        TypeSyntax = BuildSyntax(info.ParameterType, info),
-        Nullable = IsNullable(info),
-        ShouldSerialize = ShouldSerialize(info.ParameterType),
         JSName = info.Name == "function" ? "fn" : info.Name!,
-        JSTypeSyntax = converter.ToTypeScript(info.ParameterType, GetNullability(info))
+        Type = new() {
+            Type = info.ParameterType,
+            Syntax = BuildSyntax(info.ParameterType, info),
+            JSSyntax = converter.ToTypeScript(info.ParameterType, GetNullability(info)),
+            Nullable = IsNullable(info),
+            ShouldSerialize = ShouldSerialize(info.ParameterType),
+            TaskLike = false,
+            Void = false
+        }
     };
 
-    private static IEnumerable<MethodInfo> GetStaticMethods (System.Reflection.Assembly assembly)
+    private static IEnumerable<MethodInfo> GetStaticMethods (Assembly assembly)
     {
         var exported = assembly.GetExportedTypes();
         return exported.SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Static));

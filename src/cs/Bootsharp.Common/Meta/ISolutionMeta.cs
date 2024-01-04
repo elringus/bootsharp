@@ -3,17 +3,17 @@
 /// <summary>
 /// Bootsharp-specific metadata of the compiled solution.
 /// </summary>
-public interface IInspection
+public interface ISolutionMeta
 {
     /// <summary>
-    /// Inspected solution assemblies.
+    /// Assemblies included in the solution.
     /// </summary>
-    IReadOnlyList<Assembly> Assemblies { get; }
+    IReadOnlyList<AssemblyMeta> Assemblies { get; }
     /// <summary>
-    /// Inspected interop methods: either top-level (eg [JSInvokable]) or
+    /// Interop methods in the solution: either top-level (eg [JSInvokable]) or
     /// members of the auto-generated interop classes (eg [JSExport]).
     /// </summary>
-    IReadOnlyList<Method> Methods { get; }
+    IReadOnlyList<MethodMeta> Methods { get; }
     /// <summary>
     /// Types referenced in the interop methods signatures, including
     /// types associated with the prior types, crawled recursively.

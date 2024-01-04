@@ -6,14 +6,14 @@ internal sealed class MethodDeclarationGenerator
 {
     private readonly StringBuilder builder = new();
 
-    private Method method => methods[index];
-    private Method? prevMethod => index == 0 ? null : methods[index - 1];
-    private Method? nextMethod => index == methods.Length - 1 ? null : methods[index + 1];
+    private MethodMeta method => methods[index];
+    private MethodMeta? prevMethod => index == 0 ? null : methods[index - 1];
+    private MethodMeta? nextMethod => index == methods.Length - 1 ? null : methods[index + 1];
 
-    private Method[] methods = null!;
+    private MethodMeta[] methods = null!;
     private int index;
 
-    public string Generate (IEnumerable<Method> sourceMethods)
+    public string Generate (IEnumerable<MethodMeta> sourceMethods)
     {
         methods = sourceMethods.OrderBy(m => m.JSSpace).ToArray();
         for (index = 0; index < methods.Length; index++)
@@ -73,16 +73,16 @@ internal sealed class MethodDeclarationGenerator
         builder.Append("]>;");
     }
 
-    private string BuildArgumentDeclaration (Argument arg)
+    private string BuildArgumentDeclaration (ArgumentMeta arg)
     {
-        return $"{arg.JSName}: {arg.JSTypeSyntax}{(arg.Nullable ? " | undefined" : "")}";
+        return $"{arg.JSName}: {arg.Type.JSSyntax}{(arg.Type.Nullable ? " | undefined" : "")}";
     }
 
-    private string BuildReturnDeclaration (Method method)
+    private string BuildReturnDeclaration (MethodMeta method)
     {
-        if (!method.ReturnsNullable) return method.JSReturnTypeSyntax;
-        if (!method.ReturnsTaskLike) return $"{method.JSReturnTypeSyntax} | null";
-        var insertIndex = method.JSReturnTypeSyntax.Length - 1;
-        return method.JSReturnTypeSyntax.Insert(insertIndex, " | null");
+        if (!method.ReturnType.Nullable) return method.ReturnType.JSSyntax;
+        if (!method.ReturnType.TaskLike) return $"{method.ReturnType.JSSyntax} | null";
+        var insertIndex = method.ReturnType.JSSyntax.Length - 1;
+        return method.ReturnType.JSSyntax.Insert(insertIndex, " | null");
     }
 }
