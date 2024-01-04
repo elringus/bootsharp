@@ -3,7 +3,7 @@
 /// <summary>
 /// User preferences for Bootsharp behaviour.
 /// </summary>
-public sealed record Preferences
+public record Preferences
 {
 
 }

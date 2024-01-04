@@ -93,13 +93,13 @@ internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
         var body = $"{(wait ? "await " : "")}{endpoint}({invArgs})";
         if (method.ShouldSerializeReturnType) body = $"deserialize({body})";
         var func = $"{(wait ? "async " : "")}({funcArgs}) => {body}";
-        builder.Append($"{Comma()}\n{Pad(level + 1)}{ToFirstLower(method.Name)}: {func}");
+        builder.Append($"{Comma()}\n{Pad(level + 1)}{method.JSName}: {func}");
     }
 
     private void EmitFunction (Method method)
     {
         var wait = ShouldWait(method);
-        var name = ToFirstLower(method.Name);
+        var name = method.JSName;
         var funcArgs = string.Join(", ", method.Arguments.Select(a => a.JSName));
         var invArgs = string.Join(", ", method.Arguments.Select(arg =>
             arg.ShouldSerialize ? $"deserialize({arg.JSName})" : arg.JSName
@@ -116,7 +116,7 @@ internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
 
     private void EmitEvent (Method method)
     {
-        var name = ToFirstLower(method.Name);
+        var name = method.JSName;
         builder.Append($"{Comma()}\n{Pad(level + 1)}{name}: new Event()");
         var funcArgs = string.Join(", ", method.Arguments.Select(a => a.JSName));
         var invArgs = string.Join(", ", method.Arguments.Select(arg => arg.ShouldSerialize ? $"deserialize({arg.JSName})" : arg.JSName));

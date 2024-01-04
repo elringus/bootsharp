@@ -54,6 +54,10 @@ public record Method
     /// </summary>
     public required string JSSpace { get; init; }
     /// <summary>
+    /// JavaScript name of the method (function), as will be specified in source code.
+    /// </summary>
+    public required string JSName { get; init; }
+    /// <summary>
     /// JavaScript (TypeScript) syntax of the return value type, as will
     /// be specified in source code.
     /// </summary>

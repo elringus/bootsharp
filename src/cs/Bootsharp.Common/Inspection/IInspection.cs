@@ -11,7 +11,7 @@ public interface IInspection
     IReadOnlyList<Assembly> Assemblies { get; }
     /// <summary>
     /// Inspected interop methods: either top-level (eg [JSInvokable]) or
-    /// members of the auto-generated interop classes (eg, [JSExport]).
+    /// members of the auto-generated interop classes (eg [JSExport]).
     /// </summary>
     IReadOnlyList<Method> Methods { get; }
     /// <summary>

@@ -75,6 +75,7 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
         ReturnsTaskLike = IsTaskLike(info.ReturnType),
         ShouldSerializeReturnType = ShouldSerialize(info.ReturnType),
         JSSpace = spaceBuilder.Build(info.DeclaringType),
+        JSName = ToFirstLower(info.Name),
         JSReturnTypeSyntax = converter.ToTypeScript(info.ReturnType, GetNullability(info.ReturnParameter))
     };
 
