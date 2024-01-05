@@ -18,7 +18,7 @@ public record TypeMeta
     /// </summary>
     public required string JSSyntax { get; init; }
     /// <summary>
-    /// Whether the type is optional/nullable.
+    /// Whether associated value is optional/nullable.
     /// </summary>
     public required bool Nullable { get; init; }
     /// <summary>
@@ -30,7 +30,7 @@ public record TypeMeta
     /// </summary>
     public required bool Void { get; init; }
     /// <summary>
-    /// Whether the type has to be serialized for interop.
+    /// Whether associated value has to be serialized for interop.
     /// </summary>
     public required bool ShouldSerialize { get; init; }
 }
