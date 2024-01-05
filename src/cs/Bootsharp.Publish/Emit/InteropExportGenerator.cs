@@ -6,7 +6,7 @@ internal sealed class InteropExportGenerator
     {
         var bySpace = inspection.Methods
             .Where(m => m.Type == MethodType.Invokable)
-            .GroupBy(i => i.DeclaringName).ToArray();
+            .GroupBy(i => i.Space).ToArray();
         return bySpace.Length == 0 ? "" :
             $"""
              #nullable enable
@@ -56,7 +56,7 @@ internal sealed class InteropExportGenerator
     private string GenerateBody (MethodMeta inv, bool wait)
     {
         var args = string.Join(", ", inv.Arguments.Select(GenerateBodyArg));
-        var body = $"global::{inv.DeclaringName}.{inv.Name}({args})";
+        var body = $"global::{inv.Space}.{inv.Name}({args})";
         if (wait) body = $"await {body}";
         if (inv.ReturnType.ShouldSerialize) body = $"Serialize({body})";
         return body;

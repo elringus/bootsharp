@@ -6,7 +6,7 @@ internal sealed class InteropImportGenerator (string entryAssembly)
     {
         var bySpace = inspection.Methods
             .Where(m => m.Type != MethodType.Invokable)
-            .GroupBy(i => i.DeclaringName).ToArray();
+            .GroupBy(i => i.Space).ToArray();
         return bySpace.Length == 0 ? "" :
             $"""
              #nullable enable

@@ -33,7 +33,7 @@ public class TypesTest
         // TODO: Remove when coverlet bug is resolved: https://github.com/coverlet-coverage/coverlet/issues/1561
         _ = new SolutionMeta { Assemblies = [], Methods = [], Types = [] } with { Assemblies = default };
         _ = new AssemblyMeta { Name = "", Bytes = [] } with { Name = "foo" };
-        _ = new MethodMeta { Name = "", JSName = "", Arguments = default, Assembly = "", Type = default, DeclaringName = "", JSSpace = "", ReturnType = default } with { Assembly = "foo" };
+        _ = new MethodMeta { Name = "", JSName = "", Arguments = default, Assembly = "", Type = default, Space = "", JSSpace = "", ReturnType = default } with { Assembly = "foo" };
         _ = new ArgumentMeta { Name = "", JSName = "", Type = default } with { Name = "foo" };
         _ = new TypeMeta { Type = default, Nullable = true, Syntax = "", Void = true, ShouldSerialize = true, TaskLike = true, JSSyntax = "" } with { Syntax = "foo" };
         _ = new MockItem("") with { Id = "foo" };

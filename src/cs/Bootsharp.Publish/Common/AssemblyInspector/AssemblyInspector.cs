@@ -66,7 +66,7 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
     private MethodMeta CreateMethod (MethodInfo info, MethodType type) => new() {
         Type = type,
         Assembly = info.DeclaringType!.Assembly.GetName().Name!,
-        DeclaringName = info.DeclaringType.FullName!,
+        Space = info.DeclaringType.FullName!,
         Name = info.Name,
         Arguments = info.GetParameters().Select(CreateArgument).ToArray(),
         ReturnType = new() {

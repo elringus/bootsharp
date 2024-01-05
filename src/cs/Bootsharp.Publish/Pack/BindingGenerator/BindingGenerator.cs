@@ -85,7 +85,7 @@ internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
     private void EmitInvokable (MethodMeta method)
     {
         var wait = ShouldWait(method);
-        var endpoint = $"getExports().{method.DeclaringName.Replace('.', '_')}.{method.Name}";
+        var endpoint = $"getExports().{method.Space.Replace('.', '_')}.{method.Name}";
         var funcArgs = string.Join(", ", method.Arguments.Select(a => a.JSName));
         var invArgs = string.Join(", ", method.Arguments.Select(arg =>
             arg.Type.ShouldSerialize ? $"serialize({arg.JSName})" : arg.JSName
