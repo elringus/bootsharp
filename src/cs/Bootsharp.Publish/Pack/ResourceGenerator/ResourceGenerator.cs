@@ -17,7 +17,7 @@ internal sealed class ResourceGenerator (string entryName, string buildDir, bool
     }
 
     private AssemblyResource GenerateAssembly (AssemblyMeta assembly) => new(
-        assembly.Name[..^3] + "wasm",
+        assembly.Name + ".wasm",
         embed ? ToBase64(assembly.Bytes) : "undefined"
     );
 

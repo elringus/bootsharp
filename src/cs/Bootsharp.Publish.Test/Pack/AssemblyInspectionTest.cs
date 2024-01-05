@@ -7,10 +7,10 @@ public class AssemblyInspectionTest : PackTest
     {
         AddAssembly("Foo.dll");
         Execute();
-        Assert.Contains(Engine.Messages, w => w.Contains("Foo.dll"));
-        Assert.Contains(Engine.Messages, w => w.Contains("Bootsharp.Common.dll"));
-        Assert.Contains(Engine.Messages, w => w.Contains("System.Runtime.dll"));
-        Assert.Contains(Engine.Messages, w => w.Contains("System.Private.CoreLib.dll"));
+        Assert.Contains(Engine.Messages, w => w.Contains("Foo"));
+        Assert.Contains(Engine.Messages, w => w.Contains("Bootsharp.Common"));
+        Assert.Contains(Engine.Messages, w => w.Contains("System.Runtime"));
+        Assert.Contains(Engine.Messages, w => w.Contains("System.Private.CoreLib"));
     }
 
     [Fact]

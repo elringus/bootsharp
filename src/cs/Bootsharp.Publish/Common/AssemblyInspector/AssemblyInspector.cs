@@ -42,7 +42,7 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
     };
 
     private AssemblyMeta CreateAssembly (string assemblyPath) => new() {
-        Name = Path.GetFileName(assemblyPath),
+        Name = Path.GetFileNameWithoutExtension(assemblyPath),
         Bytes = File.ReadAllBytes(assemblyPath)
     };
 

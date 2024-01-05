@@ -6,7 +6,7 @@
 public sealed record AssemblyMeta
 {
     /// <summary>
-    /// Name of the assembly; equals file name, including ".dll" extension.
+    /// Name of the assembly; equals DLL file name, w/o the extension.
     /// </summary>
     public required string Name { get; init; }
     /// <summary>
