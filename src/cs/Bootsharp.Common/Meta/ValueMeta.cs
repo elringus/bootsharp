@@ -1,7 +1,7 @@
 ﻿namespace Bootsharp;
 
 /// <summary>
-/// Bootsharp-specific metadata of an argument or return type of an interop method.
+/// Bootsharp-specific metadata of interop method's argument or returned value.
 /// </summary>
 public sealed record ValueMeta
 {
@@ -26,7 +26,7 @@ public sealed record ValueMeta
     /// </summary>
     public required bool Async { get; init; }
     /// <summary>
-    /// Whether the value is void (when describing method return type).
+    /// Whether the value is void (when method return value).
     /// </summary>
     public required bool Void { get; init; }
     /// <summary>

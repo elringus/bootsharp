@@ -14,7 +14,7 @@ public sealed record ArgumentMeta
     /// </summary>
     public required string JSName { get; init; }
     /// <summary>
-    /// Value metadata of the argument.
+    /// Metadata of the argument's value.
     /// </summary>
     public required ValueMeta Value { get; init; }
 
