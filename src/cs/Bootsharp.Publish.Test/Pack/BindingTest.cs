@@ -170,6 +170,27 @@ public class BindingTest : PackTest
     }
 
     [Fact]
+    public void DifferentSpacesStartingEquallyAreNotAssignedToSameObject ()
+    {
+        AddAssembly(
+            WithClass("Foo", "[JSInvokable] public static void Method () { }"),
+            WithClass("FooBar.Baz", "[JSInvokable] public static void Method () { }")
+        );
+        Execute();
+        Contains(
+            """
+            export const Foo = {
+                method: () => getExports().Foo_MockClass.Method()
+            };
+            export const FooBar = {
+                Baz: {
+                    method: () => getExports().FooBar_Baz_MockClass.Method()
+                }
+            };
+            """);
+    }
+
+    [Fact]
     public void BindingsFromMultipleSpacesAssignedToRespectiveObjects ()
     {
         AddAssembly(WithClass("Foo", "[JSInvokable] public static int Foo () => 0;"));
