@@ -1,12 +1,12 @@
 namespace Bootsharp.Publish;
 
-internal sealed class ImportGenerator (string entryAssembly)
+internal sealed class InteropImportGenerator (string entryAssembly)
 {
-    public string Generate (AssemblyInspector inspector)
+    public string Generate (AssemblyInspection inspection)
     {
-        var bySpace = inspector.Methods
+        var bySpace = inspection.Methods
             .Where(m => m.Type != MethodType.Invokable)
-            .GroupBy(i => i.DeclaringName).ToArray();
+            .GroupBy(i => i.Space).ToArray();
         return bySpace.Length == 0 ? "" :
             $"""
              #nullable enable
@@ -25,7 +25,7 @@ internal sealed class ImportGenerator (string entryAssembly)
              """;
     }
 
-    private string GenerateSpace (string space, IReadOnlyList<Method> methods)
+    private string GenerateSpace (string space, IReadOnlyList<MethodMeta> methods)
     {
         var name = space.Replace('.', '_');
         var asm = entryAssembly[..^4];
@@ -44,33 +44,33 @@ internal sealed class ImportGenerator (string entryAssembly)
               """;
     }
 
-    private string GenerateFunctionAssign (Method method)
+    private string GenerateFunctionAssign (MethodMeta method)
     {
         return $"""Function.Set("{BuildEndpoint(method, false)}", {method.Name});""";
     }
 
-    private string GenerateImport (Method method)
+    private string GenerateImport (MethodMeta method)
     {
         var args = string.Join(", ", method.Arguments.Select(GenerateArg));
-        var @return = method.ReturnsVoid ? "void" : (method.ShouldSerializeReturnType
-            ? $"global::System.String{(method.ReturnsNullable ? "?" : "")}"
-            : method.ReturnTypeSyntax);
-        if (method.ShouldSerializeReturnType && method.ReturnsTaskLike)
+        var @return = method.ReturnValue.Void ? "void" : (method.ReturnValue.Serialized
+            ? $"global::System.String{(method.ReturnValue.Nullable ? "?" : "")}"
+            : method.ReturnValue.TypeSyntax);
+        if (method.ReturnValue.Serialized && method.ReturnValue.Async)
             @return = $"global::System.Threading.Tasks.Task<{@return}>";
         var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{BuildEndpoint(method, true)}", "Bootsharp")]""";
-        var date = MarshalAmbiguous(method.ReturnTypeSyntax, true);
+        var date = MarshalAmbiguous(method.ReturnValue.TypeSyntax, true);
         return $"{attr} {date}internal static partial {@return} {method.Name} ({args});";
     }
 
-    private string GenerateArg (Argument arg)
+    private string GenerateArg (ArgumentMeta arg)
     {
-        var type = arg.ShouldSerialize
-            ? $"global::System.String{(arg.Nullable ? "?" : "")}"
-            : arg.TypeSyntax;
-        return $"{MarshalAmbiguous(arg.TypeSyntax, false)}{type} {arg.Name}";
+        var type = arg.Value.Serialized
+            ? $"global::System.String{(arg.Value.Nullable ? "?" : "")}"
+            : arg.Value.TypeSyntax;
+        return $"{MarshalAmbiguous(arg.Value.TypeSyntax, false)}{type} {arg.Name}";
     }
 
-    private string BuildEndpoint (Method method, bool import)
+    private string BuildEndpoint (MethodMeta method, bool import)
     {
         var name = char.ToLowerInvariant(method.Name[0]) + method.Name[1..];
         return $"{method.JSSpace}.{name}{(import ? "Serialized" : "")}";

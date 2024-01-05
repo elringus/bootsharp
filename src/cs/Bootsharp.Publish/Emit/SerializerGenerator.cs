@@ -4,11 +4,11 @@ internal sealed class SerializerGenerator
 {
     private readonly HashSet<string> attributes = [];
 
-    public string Generate (AssemblyInspector inspector)
+    public string Generate (AssemblyInspection inspection)
     {
-        foreach (var method in inspector.Methods)
+        foreach (var method in inspection.Methods)
             CollectAttributes(method);
-        CollectDuplicates(inspector);
+        CollectDuplicates(inspection);
         if (attributes.Count == 0) return "";
         return
             $$"""
@@ -29,13 +29,13 @@ internal sealed class SerializerGenerator
               """;
     }
 
-    private void CollectAttributes (Method method)
+    private void CollectAttributes (MethodMeta method)
     {
-        if (method.ShouldSerializeReturnType)
-            CollectAttributes(method.ReturnTypeSyntax, method.ReturnType);
+        if (method.ReturnValue.Serialized)
+            CollectAttributes(method.ReturnValue.TypeSyntax, method.ReturnValue.Type);
         foreach (var arg in method.Arguments)
-            if (arg.ShouldSerialize)
-                CollectAttributes(arg.TypeSyntax, arg.Type);
+            if (arg.Value.Serialized)
+                CollectAttributes(arg.Value.TypeSyntax, arg.Value.Type);
     }
 
     private void CollectAttributes (string syntax, Type type)
@@ -49,10 +49,10 @@ internal sealed class SerializerGenerator
         attributes.Add(BuildAttribute(syntax));
     }
 
-    private void CollectDuplicates (AssemblyInspector inspector)
+    private void CollectDuplicates (AssemblyInspection inspection)
     {
         var names = new HashSet<string>();
-        foreach (var type in inspector.Types.DistinctBy(t => t.FullName))
+        foreach (var type in inspection.Types.DistinctBy(t => t.FullName))
             if (!names.Add(type.Name))
                 CollectAttributes(BuildSyntax(type), type);
     }

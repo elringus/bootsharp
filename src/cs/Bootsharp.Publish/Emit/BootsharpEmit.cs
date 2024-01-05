@@ -3,7 +3,7 @@
 namespace Bootsharp.Publish;
 
 /// <summary>
-/// First pass: emits code to be picked up by .NET's source generators.
+/// First pass: emits code to be picked by .NET's source generators.
 /// </summary>
 public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
 {
@@ -16,10 +16,10 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
     public override bool Execute ()
     {
         var spaceBuilder = CreateNamespaceBuilder();
-        using var inspector = InspectAssemblies(spaceBuilder);
-        GenerateExports(inspector);
-        GenerateImports(inspector);
-        GenerateSerializer(inspector);
+        using var inspection = InspectAssemblies(spaceBuilder);
+        GenerateExports(inspection);
+        GenerateImports(inspection);
+        GenerateSerializer(inspection);
         return true;
     }
 
@@ -30,34 +30,34 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
         return builder;
     }
 
-    private AssemblyInspector InspectAssemblies (NamespaceBuilder spaceBuilder)
+    private AssemblyInspection InspectAssemblies (NamespaceBuilder spaceBuilder)
     {
         var inspector = new AssemblyInspector(spaceBuilder);
-        inspector.InspectInDirectory(InspectedDirectory);
-        inspector.Report(Log);
-        return inspector;
+        var inspection = inspector.InspectInDirectory(InspectedDirectory);
+        new InspectionReporter(Log).Report(inspection);
+        return inspection;
     }
 
-    private void GenerateExports (AssemblyInspector inspector)
+    private void GenerateExports (AssemblyInspection inspection)
     {
-        var generator = new ExportGenerator();
-        var content = generator.Generate(inspector);
+        var generator = new InteropExportGenerator();
+        var content = generator.Generate(inspection);
         Directory.CreateDirectory(Path.GetDirectoryName(ExportsFilePath)!);
         File.WriteAllText(ExportsFilePath, content);
     }
 
-    private void GenerateImports (AssemblyInspector inspector)
+    private void GenerateImports (AssemblyInspection inspection)
     {
-        var generator = new ImportGenerator(EntryAssemblyName);
-        var content = generator.Generate(inspector);
+        var generator = new InteropImportGenerator(EntryAssemblyName);
+        var content = generator.Generate(inspection);
         Directory.CreateDirectory(Path.GetDirectoryName(ImportsFilePath)!);
         File.WriteAllText(ImportsFilePath, content);
     }
 
-    private void GenerateSerializer (AssemblyInspector inspector)
+    private void GenerateSerializer (AssemblyInspection inspection)
     {
         var generator = new SerializerGenerator();
-        var content = generator.Generate(inspector);
+        var content = generator.Generate(inspection);
         Directory.CreateDirectory(Path.GetDirectoryName(SerializerFilePath)!);
         File.WriteAllText(SerializerFilePath, content);
     }
