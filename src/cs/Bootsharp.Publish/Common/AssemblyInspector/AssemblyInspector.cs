@@ -69,14 +69,14 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
         Space = info.DeclaringType.FullName!,
         Name = info.Name,
         Arguments = info.GetParameters().Select(CreateArgument).ToArray(),
-        ReturnType = new() {
+        ReturnValue = new() {
             Type = info.ReturnType,
-            Syntax = BuildSyntax(info.ReturnType, info.ReturnParameter),
-            JSSyntax = converter.ToTypeScript(info.ReturnType, GetNullability(info.ReturnParameter)),
-            Void = IsVoid(info.ReturnType),
+            TypeSyntax = BuildSyntax(info.ReturnType, info.ReturnParameter),
+            JSTypeSyntax = converter.ToTypeScript(info.ReturnType, GetNullability(info.ReturnParameter)),
             Nullable = IsNullable(info),
-            TaskLike = IsTaskLike(info.ReturnType),
-            ShouldSerialize = ShouldSerialize(info.ReturnType)
+            Async = IsTaskLike(info.ReturnType),
+            Void = IsVoid(info.ReturnType),
+            Serialized = ShouldSerialize(info.ReturnType)
         },
         JSSpace = spaceBuilder.Build(info.DeclaringType),
         JSName = ToFirstLower(info.Name),
@@ -85,14 +85,14 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
     private ArgumentMeta CreateArgument (ParameterInfo info) => new() {
         Name = info.Name!,
         JSName = info.Name == "function" ? "fn" : info.Name!,
-        Type = new() {
+        Value = new() {
             Type = info.ParameterType,
-            Syntax = BuildSyntax(info.ParameterType, info),
-            JSSyntax = converter.ToTypeScript(info.ParameterType, GetNullability(info)),
+            TypeSyntax = BuildSyntax(info.ParameterType, info),
+            JSTypeSyntax = converter.ToTypeScript(info.ParameterType, GetNullability(info)),
             Nullable = IsNullable(info),
-            ShouldSerialize = ShouldSerialize(info.ParameterType),
-            TaskLike = false,
-            Void = false
+            Async = false,
+            Void = false,
+            Serialized = ShouldSerialize(info.ParameterType)
         }
     };
 

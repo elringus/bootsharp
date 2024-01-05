@@ -52,22 +52,22 @@ internal sealed class InteropImportGenerator (string entryAssembly)
     private string GenerateImport (MethodMeta method)
     {
         var args = string.Join(", ", method.Arguments.Select(GenerateArg));
-        var @return = method.ReturnType.Void ? "void" : (method.ReturnType.ShouldSerialize
-            ? $"global::System.String{(method.ReturnType.Nullable ? "?" : "")}"
-            : method.ReturnType.Syntax);
-        if (method.ReturnType.ShouldSerialize && method.ReturnType.TaskLike)
+        var @return = method.ReturnValue.Void ? "void" : (method.ReturnValue.Serialized
+            ? $"global::System.String{(method.ReturnValue.Nullable ? "?" : "")}"
+            : method.ReturnValue.TypeSyntax);
+        if (method.ReturnValue.Serialized && method.ReturnValue.Async)
             @return = $"global::System.Threading.Tasks.Task<{@return}>";
         var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{BuildEndpoint(method, true)}", "Bootsharp")]""";
-        var date = MarshalAmbiguous(method.ReturnType.Syntax, true);
+        var date = MarshalAmbiguous(method.ReturnValue.TypeSyntax, true);
         return $"{attr} {date}internal static partial {@return} {method.Name} ({args});";
     }
 
     private string GenerateArg (ArgumentMeta arg)
     {
-        var type = arg.Type.ShouldSerialize
-            ? $"global::System.String{(arg.Type.Nullable ? "?" : "")}"
-            : arg.Type.Syntax;
-        return $"{MarshalAmbiguous(arg.Type.Syntax, false)}{type} {arg.Name}";
+        var type = arg.Value.Serialized
+            ? $"global::System.String{(arg.Value.Nullable ? "?" : "")}"
+            : arg.Value.TypeSyntax;
+        return $"{MarshalAmbiguous(arg.Value.TypeSyntax, false)}{type} {arg.Name}";
     }
 
     private string BuildEndpoint (MethodMeta method, bool import)

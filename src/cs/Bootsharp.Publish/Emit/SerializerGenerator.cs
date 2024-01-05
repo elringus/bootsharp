@@ -31,11 +31,11 @@ internal sealed class SerializerGenerator
 
     private void CollectAttributes (MethodMeta method)
     {
-        if (method.ReturnType.ShouldSerialize)
-            CollectAttributes(method.ReturnType.Syntax, method.ReturnType.Type);
+        if (method.ReturnValue.Serialized)
+            CollectAttributes(method.ReturnValue.TypeSyntax, method.ReturnValue.Type);
         foreach (var arg in method.Arguments)
-            if (arg.Type.ShouldSerialize)
-                CollectAttributes(arg.Type.Syntax, arg.Type.Type);
+            if (arg.Value.Serialized)
+                CollectAttributes(arg.Value.TypeSyntax, arg.Value.Type);
     }
 
     private void CollectAttributes (string syntax, Type type)

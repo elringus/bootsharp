@@ -75,14 +75,14 @@ internal sealed class MethodDeclarationGenerator
 
     private string BuildArgumentDeclaration (ArgumentMeta arg)
     {
-        return $"{arg.JSName}: {arg.Type.JSSyntax}{(arg.Type.Nullable ? " | undefined" : "")}";
+        return $"{arg.JSName}: {arg.Value.JSTypeSyntax}{(arg.Value.Nullable ? " | undefined" : "")}";
     }
 
     private string BuildReturnDeclaration (MethodMeta method)
     {
-        if (!method.ReturnType.Nullable) return method.ReturnType.JSSyntax;
-        if (!method.ReturnType.TaskLike) return $"{method.ReturnType.JSSyntax} | null";
-        var insertIndex = method.ReturnType.JSSyntax.Length - 1;
-        return method.ReturnType.JSSyntax.Insert(insertIndex, " | null");
+        if (!method.ReturnValue.Nullable) return method.ReturnValue.JSTypeSyntax;
+        if (!method.ReturnValue.Async) return $"{method.ReturnValue.JSTypeSyntax} | null";
+        var insertIndex = method.ReturnValue.JSTypeSyntax.Length - 1;
+        return method.ReturnValue.JSTypeSyntax.Insert(insertIndex, " | null");
     }
 }

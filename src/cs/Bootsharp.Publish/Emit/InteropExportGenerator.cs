@@ -35,18 +35,18 @@ internal sealed class InteropExportGenerator
     private string GenerateExport (MethodMeta inv)
     {
         const string attr = "[System.Runtime.InteropServices.JavaScript.JSExport]";
-        var date = MarshalAmbiguous(inv.ReturnType.Syntax, true);
-        var wait = inv.ReturnType.TaskLike && inv.ReturnType.ShouldSerialize;
+        var date = MarshalAmbiguous(inv.ReturnValue.TypeSyntax, true);
+        var wait = inv.ReturnValue.Async && inv.ReturnValue.Serialized;
         return $"{attr} {date}internal static {GenerateSignature(inv, wait)} => {GenerateBody(inv, wait)};";
     }
 
     private string GenerateSignature (MethodMeta inv, bool wait)
     {
         var args = string.Join(", ", inv.Arguments.Select(GenerateSignatureArg));
-        var @return = inv.ReturnType.Void ? "void" : (inv.ReturnType.ShouldSerialize
-            ? $"global::System.String{(inv.ReturnType.Nullable ? "?" : "")}"
-            : inv.ReturnType.Syntax);
-        if (inv.ReturnType.ShouldSerialize && inv.ReturnType.TaskLike)
+        var @return = inv.ReturnValue.Void ? "void" : (inv.ReturnValue.Serialized
+            ? $"global::System.String{(inv.ReturnValue.Nullable ? "?" : "")}"
+            : inv.ReturnValue.TypeSyntax);
+        if (inv.ReturnValue.Serialized && inv.ReturnValue.Async)
             @return = $"global::System.Threading.Tasks.Task<{@return}>";
         var signature = $"{@return} {inv.Name} ({args})";
         if (wait) signature = $"async {signature}";
@@ -58,21 +58,21 @@ internal sealed class InteropExportGenerator
         var args = string.Join(", ", inv.Arguments.Select(GenerateBodyArg));
         var body = $"global::{inv.Space}.{inv.Name}({args})";
         if (wait) body = $"await {body}";
-        if (inv.ReturnType.ShouldSerialize) body = $"Serialize({body})";
+        if (inv.ReturnValue.Serialized) body = $"Serialize({body})";
         return body;
     }
 
     private string GenerateSignatureArg (ArgumentMeta arg)
     {
-        var type = arg.Type.ShouldSerialize
-            ? $"global::System.String{(arg.Type.Nullable ? "?" : "")}"
-            : arg.Type.Syntax;
-        return $"{MarshalAmbiguous(arg.Type.Syntax, false)}{type} {arg.Name}";
+        var type = arg.Value.Serialized
+            ? $"global::System.String{(arg.Value.Nullable ? "?" : "")}"
+            : arg.Value.TypeSyntax;
+        return $"{MarshalAmbiguous(arg.Value.TypeSyntax, false)}{type} {arg.Name}";
     }
 
     private string GenerateBodyArg (ArgumentMeta arg)
     {
-        if (!arg.Type.ShouldSerialize) return arg.Name;
-        return $"Deserialize<{arg.Type.Syntax}>({arg.Name})";
+        if (!arg.Value.Serialized) return arg.Name;
+        return $"Deserialize<{arg.Value.TypeSyntax}>({arg.Name})";
     }
 }

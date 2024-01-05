@@ -14,9 +14,9 @@ public sealed record ArgumentMeta
     /// </summary>
     public required string JSName { get; init; }
     /// <summary>
-    /// Type metadata of the argument.
+    /// Value metadata of the argument.
     /// </summary>
-    public required TypeMeta Type { get; init; }
+    public required ValueMeta Value { get; init; }
 
-    public override string ToString () => $"{Name}: {Type.JSSyntax}";
+    public override string ToString () => $"{Name}: {Value.JSTypeSyntax}";
 }

@@ -35,13 +35,13 @@ public sealed record MethodMeta
     /// </summary>
     public required IReadOnlyList<ArgumentMeta> Arguments { get; init; }
     /// <summary>
-    /// Metadata of the type returned by the method.
+    /// Metadata of the value returned by the method.
     /// </summary>
-    public required TypeMeta ReturnType { get; init; }
+    public required ValueMeta ReturnValue { get; init; }
 
     public override string ToString ()
     {
         var args = string.Join(", ", Arguments.Select(a => a.ToString()));
-        return $"[{Type}] {Assembly}.{Space}.{Name} ({args}) => {ReturnType.JSSyntax}";
+        return $"[{Type}] {Assembly}.{Space}.{Name} ({args}) => {ReturnValue}";
     }
 }
