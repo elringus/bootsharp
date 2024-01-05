@@ -3,7 +3,7 @@
 /// <summary>
 /// Bootsharp-specific metadata of a type referenced in interop method.
 /// </summary>
-public record TypeMeta
+public sealed record TypeMeta
 {
     /// <summary>
     /// Underlying C# type.

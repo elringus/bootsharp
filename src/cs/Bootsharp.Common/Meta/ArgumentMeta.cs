@@ -3,7 +3,7 @@
 /// <summary>
 /// Bootsharp-specific metadata of an interop method argument.
 /// </summary>
-public record ArgumentMeta
+public sealed record ArgumentMeta
 {
     /// <summary>
     /// C# name of the argument, as specified in source code.

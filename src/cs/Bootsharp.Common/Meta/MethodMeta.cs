@@ -3,7 +3,7 @@
 /// <summary>
 /// Bootsharp-specific metadata of an interop method.
 /// </summary>
-public record MethodMeta
+public sealed record MethodMeta
 {
     /// <summary>
     /// Type of interop the method is implementing.

@@ -3,14 +3,12 @@ using System.Reflection;
 
 namespace Bootsharp.Publish;
 
-internal sealed class AssemblyInspection (MetadataLoadContext context,
-    ImmutableArray<AssemblyMeta> assemblies, ImmutableArray<MethodMeta> methods,
-    ImmutableArray<Type> types, ImmutableArray<string> warnings) : ISolutionMeta, IDisposable
+internal record AssemblyInspection (MetadataLoadContext ctx) : IDisposable
 {
-    public IReadOnlyList<AssemblyMeta> Assemblies { get; } = assemblies;
-    public IReadOnlyList<MethodMeta> Methods { get; } = methods;
-    public IReadOnlyList<Type> Types { get; } = types;
-    public IReadOnlyList<string> Warnings { get; } = warnings;
+    public ImmutableArray<AssemblyMeta> Assemblies { get; init; } = [];
+    public ImmutableArray<MethodMeta> Methods { get; init; } = [];
+    public ImmutableArray<Type> Types { get; init; } = [];
+    public ImmutableArray<string> Warnings { get; init; } = [];
 
-    public void Dispose () => context.Dispose();
+    public void Dispose () => ctx.Dispose();
 }

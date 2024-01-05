@@ -12,18 +12,18 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
 
     public AssemblyInspection InspectInDirectory (string directory)
     {
-        var context = CreateLoadContext(directory);
+        var ctx = CreateLoadContext(directory);
         foreach (var assemblyPath in Directory.GetFiles(directory, "*.dll"))
-            try { InspectAssembly(assemblyPath, context); }
+            try { InspectAssembly(assemblyPath, ctx); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
-        return CreateInspection(context);
+        return CreateInspection(ctx);
     }
 
-    private void InspectAssembly (string assemblyPath, MetadataLoadContext context)
+    private void InspectAssembly (string assemblyPath, MetadataLoadContext ctx)
     {
         assemblies.Add(CreateAssembly(assemblyPath));
         if (!ShouldIgnoreAssembly(assemblyPath))
-            InspectMethods(context.LoadFromAssemblyPath(assemblyPath));
+            InspectMethods(ctx.LoadFromAssemblyPath(assemblyPath));
     }
 
     private void AddSkippedAssemblyWarning (string assemblyPath, Exception exception)
@@ -34,16 +34,17 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
         warnings.Add(message);
     }
 
-    private AssemblyInspection CreateInspection (MetadataLoadContext context) =>
-        new(context, assemblies.ToImmutableArray(), methods.ToImmutableArray(),
-            converter.CrawledTypes.ToImmutableArray(), warnings.ToImmutableArray());
+    private AssemblyInspection CreateInspection (MetadataLoadContext ctx) => new(ctx) {
+        Assemblies = assemblies.ToImmutableArray(),
+        Methods = methods.ToImmutableArray(),
+        Types = converter.CrawledTypes.ToImmutableArray(),
+        Warnings = warnings.ToImmutableArray()
+    };
 
-    private AssemblyMeta CreateAssembly (string assemblyPath)
-    {
-        var name = Path.GetFileName(assemblyPath);
-        var bytes = File.ReadAllBytes(assemblyPath);
-        return new(name, bytes);
-    }
+    private AssemblyMeta CreateAssembly (string assemblyPath) => new() {
+        Name = Path.GetFileName(assemblyPath),
+        Bytes = File.ReadAllBytes(assemblyPath)
+    };
 
     private void InspectMethods (Assembly assembly)
     {
