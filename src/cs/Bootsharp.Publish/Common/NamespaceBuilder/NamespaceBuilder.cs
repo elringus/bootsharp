@@ -25,7 +25,7 @@ internal sealed class NamespaceBuilder
         return space;
     }
 
-    private IEnumerable<CustomAttributeData> CollectAttributes (System.Reflection.Assembly assembly)
+    private IEnumerable<CustomAttributeData> CollectAttributes (Assembly assembly)
     {
         return assembly.CustomAttributes.Where(a => a.AttributeType.Name == attributeName);
     }

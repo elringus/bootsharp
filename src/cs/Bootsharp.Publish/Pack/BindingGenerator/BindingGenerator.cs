@@ -69,7 +69,8 @@ internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
 
     private void CloseNamespace ()
     {
-        var target = nextBinding is null ? 0 : nextBinding.Namespace.Count(c => c == '.');
+        var target = (nextBinding is null || GetRoot(nextBinding) != GetRoot(binding)) ? 0
+            : nextBinding.Namespace.Count(c => c == '.');
         for (; level >= target; level--)
             if (level == 0) builder.Append("\n};");
             else builder.Append($"\n{Pad(level)}}}");
@@ -130,6 +131,13 @@ internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
             .Select(v => $"\"{v}\": \"{Enum.GetName(@enum, v)}\"")
             .Concat(values.Select(v => $"\"{Enum.GetName(@enum, v)}\": {v}")));
         builder.Append($"{Comma()}\n{Pad(level + 1)}{@enum.Name}: {{ {fields} }}");
+    }
+
+    private string GetRoot (Binding binding)
+    {
+        var firstDotIdx = binding.Namespace.IndexOf('.');
+        if (firstDotIdx < 0) return binding.Namespace;
+        return binding.Namespace[..firstDotIdx];
     }
 
     private string Pad (int level) => new(' ', level * 4);
