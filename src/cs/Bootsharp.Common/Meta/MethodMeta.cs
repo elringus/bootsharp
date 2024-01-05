@@ -31,7 +31,7 @@ public sealed record MethodMeta
     /// </summary>
     public required string JSName { get; init; }
     /// <summary>
-    /// Arguments of the method.
+    /// Arguments of the method, in declaration order.
     /// </summary>
     public required IReadOnlyList<ArgumentMeta> Arguments { get; init; }
     /// <summary>
