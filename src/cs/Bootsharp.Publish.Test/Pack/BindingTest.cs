@@ -307,4 +307,20 @@ public class BindingTest : PackTest
             };
             """);
     }
+
+    [Fact]
+    public void CustomEnumIndexesArePreservedInJS ()
+    {
+        AddAssembly(
+            WithClass("n", "public enum Foo { A = 1, B = 6 }"),
+            WithClass("n", "[JSInvokable] public static Foo GetFoo () => default;"));
+        Execute();
+        Contains(
+            """
+            export const n = {
+                getFoo: () => deserialize(getExports().n_MockClass.GetFoo()),
+                Foo: { "1": "A", "6": "B", "A": 1, "B": 6 }
+            };
+            """);
+    }
 }
