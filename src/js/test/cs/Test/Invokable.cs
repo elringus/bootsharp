@@ -28,4 +28,7 @@ public static partial class Invokable
 
     [JSInvokable]
     public static string BytesToString (byte[] bytes) => Encoding.UTF8.GetString(bytes);
+
+    [JSInvokable]
+    public static IdxEnum GetIdxEnumOne () => IdxEnum.One;
 }

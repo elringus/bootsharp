@@ -154,4 +154,8 @@ describe("while bootsharp is booted", () => {
         expect(TrackType[TrackType.Rubber]).toStrictEqual("Rubber");
         expect(TrackType[TrackType.Chain]).toStrictEqual("Chain");
     });
+    it("can compare indexed enums", () => {
+        expect(Test.getIdxEnumOne() === Test.IdxEnum.One).toBeTruthy();
+        expect(Test.getIdxEnumOne() === Test.IdxEnum.Two).not.toBeTruthy();
+    });
 });

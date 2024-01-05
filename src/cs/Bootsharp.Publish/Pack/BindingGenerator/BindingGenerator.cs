@@ -125,10 +125,10 @@ internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
 
     private void EmitEnum (Type @enum)
     {
-        var values = Enum.GetNames(@enum);
-        var fields = string.Join(", ",
-            values.Select((v, i) => $"\"{i}\": \"{v}\"")
-                .Concat(values.Select((v, i) => $"\"{v}\": {i}")));
+        var values = Enum.GetValuesAsUnderlyingType(@enum).Cast<object>().ToArray();
+        var fields = string.Join(", ", values
+            .Select(v => $"\"{v}\": \"{Enum.GetName(@enum, v)}\"")
+            .Concat(values.Select(v => $"\"{Enum.GetName(@enum, v)}\": {v}")));
         builder.Append($"{Comma()}\n{Pad(level + 1)}{@enum.Name}: {{ {fields} }}");
     }
 
