@@ -13,7 +13,7 @@
         <PackageReference Include="Bootsharp" Version="*-*"/>
     </ItemGroup>
 
-    <Target Name="CompressBuild" AfterTargets="BootsharpBuild">
+    <Target Name="CompressBuild" AfterTargets="BootsharpPack">
         <RemoveDir Directories="$(BootsharpPublishDirectory)/bro"/>
         <Exec Command="npx gzipper compress bin bro --brotli"
               WorkingDirectory="$(BootsharpPublishDirectory)"/>

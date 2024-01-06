@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup>
-        <Version>0.1.2</Version>
+        <Version>0.1.3</Version>
         <Authors>Elringus</Authors>
         <PackageTags>javascript typescript ts js wasm node deno bun interop codegen</PackageTags>
         <PackageProjectUrl>https://bootsharp.com</PackageProjectUrl>
