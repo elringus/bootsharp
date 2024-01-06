@@ -1,9 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Bootsharp.Publish;
 
-[ExcludeFromCodeCoverage(Justification = "How to merge coverage from multiple OS?")]
 internal sealed class InternalPatcher (string dotnet, string runtime, string native)
 {
     private const string url =
