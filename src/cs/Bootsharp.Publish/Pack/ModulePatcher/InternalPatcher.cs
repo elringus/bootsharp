@@ -6,9 +6,10 @@ namespace Bootsharp.Publish;
 [ExcludeFromCodeCoverage(Justification = "How to merge coverage from multiple OS?")]
 internal sealed class InternalPatcher (string dotnet, string runtime, string native)
 {
-    private readonly string url = Environment.OSVersion.Platform == PlatformID.Win32NT
-        ? "\"file://dotnet.native.wasm\""
-        : "\"file:///dotnet.native.wasm\"";
+    private const string url =
+        """
+        ((typeof window === "object" && "Deno" in window && Deno.build.os === "windows") || (typeof process === "object" && process.platform === "win32")) ? "file://dotnet.native.wasm" : "file:///dotnet.native.wasm"
+        """;
 
     public void Patch ()
     {
