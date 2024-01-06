@@ -1,5 +1,10 @@
 namespace Bootsharp.Publish;
 
+/// <summary>
+/// Generates hints for all the types used in interop to be picked by
+/// DotNet's JSON serializer source generator. Required for the serializer to
+/// work without using reflection (which is required to support trimming).
+/// </summary>
 internal sealed class SerializerGenerator
 {
     private readonly HashSet<string> attributes = [];

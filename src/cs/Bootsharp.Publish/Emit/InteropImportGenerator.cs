@@ -1,5 +1,10 @@
 namespace Bootsharp.Publish;
 
+/// <summary>
+/// For all the <see cref="JSFunctionAttribute"/> and
+/// <see cref="JSEventAttribute"/> methods in the solution,
+/// generates JS -> C# bindings to be picked by DotNet's source generators.
+/// </summary>
 internal sealed class InteropImportGenerator (string entryAssembly)
 {
     public string Generate (AssemblyInspection inspection)
