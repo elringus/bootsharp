@@ -2,5 +2,5 @@
 
 public class ExportTest : EmitTest
 {
-
+    protected override string TestedContent => GeneratedExports;
 }

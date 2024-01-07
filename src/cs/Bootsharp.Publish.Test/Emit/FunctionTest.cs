@@ -1,6 +1,6 @@
 ﻿namespace Bootsharp.Publish.Test;
 
-public class FunctionTest
+public class FunctionTest : EmitTest
 {
-    
+    protected override string TestedContent => GeneratedFunctions;
 }

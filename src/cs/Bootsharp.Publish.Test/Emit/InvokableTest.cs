@@ -1,6 +1,6 @@
 ﻿namespace Bootsharp.Publish.Test;
 
-public class InvokableTest
+public class InvokableTest : EmitTest
 {
-    
+    protected override string TestedContent => GeneratedInvokables;
 }
