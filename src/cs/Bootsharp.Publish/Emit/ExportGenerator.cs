@@ -6,5 +6,5 @@
 /// </summary>
 internal sealed class ExportGenerator
 {
-
+    public string Generate (AssemblyInspection inspection) => "";
 }

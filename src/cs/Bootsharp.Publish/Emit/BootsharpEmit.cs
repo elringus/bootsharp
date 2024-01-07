@@ -48,37 +48,65 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
         return inspection;
     }
 
-    private void GenerateInvokables (AssemblyInspection inspection) { }
+    private void GenerateInvokables (AssemblyInspection inspection)
+    {
+        var generator = new InvokableGenerator();
+        var content = generator.Generate(inspection);
+        WriteGenerated(InvokablesFilePath, content);
+    }
 
-    private void GenerateFunctions (AssemblyInspection inspection) { }
+    private void GenerateFunctions (AssemblyInspection inspection)
+    {
+        var generator = new FunctionGenerator();
+        var content = generator.Generate(inspection);
+        WriteGenerated(FunctionsFilePath, content);
+    }
 
-    private void GenerateEvents (AssemblyInspection inspection) { }
+    private void GenerateEvents (AssemblyInspection inspection)
+    {
+        var generator = new EventGenerator();
+        var content = generator.Generate(inspection);
+        WriteGenerated(EventsFilePath, content);
+    }
 
-    private void GenerateExports (AssemblyInspection inspection) { }
+    private void GenerateExports (AssemblyInspection inspection)
+    {
+        var generator = new ExportGenerator();
+        var content = generator.Generate(inspection);
+        WriteGenerated(ExportsFilePath, content);
+    }
 
-    private void GenerateImports (AssemblyInspection inspection) { }
+    private void GenerateImports (AssemblyInspection inspection)
+    {
+        var generator = new ImportGenerator();
+        var content = generator.Generate(inspection);
+        WriteGenerated(ImportsFilePath, content);
+    }
 
     private void GenerateInteropExports (AssemblyInspection inspection)
     {
         var generator = new InteropExportGenerator();
         var content = generator.Generate(inspection);
-        Directory.CreateDirectory(Path.GetDirectoryName(InteropExportsFilePath)!);
-        File.WriteAllText(InteropExportsFilePath, content);
+        WriteGenerated(InteropExportsFilePath, content);
     }
 
     private void GenerateInteropImports (AssemblyInspection inspection)
     {
         var generator = new InteropImportGenerator(EntryAssemblyName);
         var content = generator.Generate(inspection);
-        Directory.CreateDirectory(Path.GetDirectoryName(InteropImportsFilePath)!);
-        File.WriteAllText(InteropImportsFilePath, content);
+        WriteGenerated(InteropImportsFilePath, content);
     }
 
     private void GenerateSerializer (AssemblyInspection inspection)
     {
         var generator = new SerializerGenerator();
         var content = generator.Generate(inspection);
-        Directory.CreateDirectory(Path.GetDirectoryName(SerializerFilePath)!);
-        File.WriteAllText(SerializerFilePath, content);
+        WriteGenerated(SerializerFilePath, content);
+    }
+
+    private static void WriteGenerated (string path, string content)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllText(path, content);
     }
 }
