@@ -29,9 +29,6 @@
 
     <ItemGroup>
         <ProjectReference Include="../Bootsharp.Common/Bootsharp.Common.csproj"/>
-        <ProjectReference Include="../Bootsharp.Generate/Bootsharp.Generate.csproj"
-                          PrivateAssets="all" ReferenceOutputAssembly="false"
-                          OutputItemType="Analyzer" SetTargetFramework="TargetFramework=netstandard2.0"/>
     </ItemGroup>
 
 </Project>

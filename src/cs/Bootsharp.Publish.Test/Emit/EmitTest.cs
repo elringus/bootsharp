@@ -2,37 +2,31 @@
 
 public class EmitTest : TaskTest
 {
-    protected string GeneratedInvokables => ReadProjectFile(invokablesPath);
-    protected string GeneratedFunctions => ReadProjectFile(functionsPath);
-    protected string GeneratedEvents => ReadProjectFile(eventsPath);
     protected string GeneratedExports => ReadProjectFile(exportsPath);
     protected string GeneratedImports => ReadProjectFile(importsPath);
-    protected string GeneratedInteropExports => ReadProjectFile(interopExportsPath);
-    protected string GeneratedInteropImports => ReadProjectFile(interopImportsPath);
+    protected string GeneratedInterceptors => ReadProjectFile(interceptorsPath);
+    protected string GeneratedDependencies => ReadProjectFile(dependenciesPath);
     protected string GeneratedSerializer => ReadProjectFile(serializerPath);
+    protected string GeneratedInterop => ReadProjectFile(interopPath);
 
-    private string invokablesPath => $"{Project.Root}/Invokables.g.cs";
-    private string functionsPath => $"{Project.Root}/Functions.g.cs";
-    private string eventsPath => $"{Project.Root}/Events.g.cs";
     private string exportsPath => $"{Project.Root}/Exports.g.cs";
     private string importsPath => $"{Project.Root}/Imports.g.cs";
-    private string interopExportsPath => $"{Project.Root}/InteropExports.g.cs";
-    private string interopImportsPath => $"{Project.Root}/InteropImports.g.cs";
+    private string interceptorsPath => $"{Project.Root}/Interceptors.g.cs";
+    private string dependenciesPath => $"{Project.Root}/Dependencies.g.cs";
     private string serializerPath => $"{Project.Root}/SerializerContext.g.cs";
+    private string interopPath => $"{Project.Root}/Interop.g.cs";
 
     public override void Execute () => CreateTask().Execute();
 
     private BootsharpEmit CreateTask () => new() {
         InspectedDirectory = Project.Root,
         EntryAssemblyName = LastAddedAssemblyName ?? "System.Runtime.dll",
-        InvokablesFilePath = invokablesPath,
-        FunctionsFilePath = functionsPath,
-        EventsFilePath = eventsPath,
         ExportsFilePath = exportsPath,
         ImportsFilePath = importsPath,
-        InteropExportsFilePath = interopExportsPath,
-        InteropImportsFilePath = interopImportsPath,
+        InterceptorsFilePath = interceptorsPath,
+        DependenciesFilePath = dependenciesPath,
         SerializerFilePath = serializerPath,
+        InteropFilePath = interceptorsPath,
         BuildEngine = Engine
     };
 }

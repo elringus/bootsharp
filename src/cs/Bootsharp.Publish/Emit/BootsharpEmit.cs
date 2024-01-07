@@ -9,27 +9,23 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
 {
     [Required] public required string InspectedDirectory { get; set; }
     [Required] public required string EntryAssemblyName { get; set; }
-    [Required] public required string InvokablesFilePath { get; set; }
-    [Required] public required string FunctionsFilePath { get; set; }
-    [Required] public required string EventsFilePath { get; set; }
     [Required] public required string ExportsFilePath { get; set; }
     [Required] public required string ImportsFilePath { get; set; }
-    [Required] public required string InteropExportsFilePath { get; set; }
-    [Required] public required string InteropImportsFilePath { get; set; }
+    [Required] public required string InterceptorsFilePath { get; set; }
+    [Required] public required string DependenciesFilePath { get; set; }
     [Required] public required string SerializerFilePath { get; set; }
+    [Required] public required string InteropFilePath { get; set; }
 
     public override bool Execute ()
     {
         var spaceBuilder = CreateNamespaceBuilder();
         using var inspection = InspectAssemblies(spaceBuilder);
-        GenerateInvokables(inspection);
-        GenerateFunctions(inspection);
-        GenerateEvents(inspection);
         GenerateExports(inspection);
         GenerateImports(inspection);
-        GenerateInteropExports(inspection);
-        GenerateInteropImports(inspection);
+        GenerateInterceptors(inspection);
+        GenerateDependencies(inspection);
         GenerateSerializer(inspection);
+        GenerateInterop(inspection);
         return true;
     }
 
@@ -48,27 +44,6 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
         return inspection;
     }
 
-    private void GenerateInvokables (AssemblyInspection inspection)
-    {
-        var generator = new InvokableGenerator();
-        var content = generator.Generate(inspection);
-        WriteGenerated(InvokablesFilePath, content);
-    }
-
-    private void GenerateFunctions (AssemblyInspection inspection)
-    {
-        var generator = new FunctionGenerator();
-        var content = generator.Generate(inspection);
-        WriteGenerated(FunctionsFilePath, content);
-    }
-
-    private void GenerateEvents (AssemblyInspection inspection)
-    {
-        var generator = new EventGenerator();
-        var content = generator.Generate(inspection);
-        WriteGenerated(EventsFilePath, content);
-    }
-
     private void GenerateExports (AssemblyInspection inspection)
     {
         var generator = new ExportGenerator();
@@ -83,18 +58,18 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
         WriteGenerated(ImportsFilePath, content);
     }
 
-    private void GenerateInteropExports (AssemblyInspection inspection)
+    private void GenerateInterceptors (AssemblyInspection inspection)
     {
-        var generator = new InteropExportGenerator();
+        var generator = new InterceptorGenerator();
         var content = generator.Generate(inspection);
-        WriteGenerated(InteropExportsFilePath, content);
+        WriteGenerated(InterceptorsFilePath, content);
     }
 
-    private void GenerateInteropImports (AssemblyInspection inspection)
+    private void GenerateDependencies (AssemblyInspection inspection)
     {
-        var generator = new InteropImportGenerator(EntryAssemblyName);
+        var generator = new DependenciesGenerator();
         var content = generator.Generate(inspection);
-        WriteGenerated(InteropImportsFilePath, content);
+        WriteGenerated(DependenciesFilePath, content);
     }
 
     private void GenerateSerializer (AssemblyInspection inspection)
@@ -102,6 +77,13 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
         var generator = new SerializerGenerator();
         var content = generator.Generate(inspection);
         WriteGenerated(SerializerFilePath, content);
+    }
+
+    private void GenerateInterop (AssemblyInspection inspection)
+    {
+        var generator = new InteropGenerator();
+        var content = generator.Generate(inspection);
+        WriteGenerated(InteropFilePath, content);
     }
 
     private static void WriteGenerated (string path, string content)

@@ -13,13 +13,16 @@ public class BindingTest
     [Fact]
     public void RegistersExports ()
     {
-        Assert.Equal(typeof(IBackend), BindingRegistry.Exports[typeof(global::Backend.JSBackend)].Api);
-        Assert.IsType<Func<object, object>>(BindingRegistry.Exports[typeof(global::Backend.JSBackend)].Factory);
+        var binding = new ExportBinding(typeof(IBackend), default);
+        BindingRegistry.Register(typeof(Backend), binding);
+        Assert.Equal(typeof(IBackend), BindingRegistry.Exports[typeof(Backend)].Api);
     }
 
     [Fact]
     public void RegistersImports ()
     {
-        Assert.IsType<global::Frontend.JSFrontend>(BindingRegistry.Imports[typeof(IFrontend)].Implementation);
+        var binding = new ImportBinding(new Frontend());
+        BindingRegistry.Register(typeof(IFrontend), binding);
+        Assert.IsType<Frontend>(BindingRegistry.Imports[typeof(IFrontend)].Implementation);
     }
 }
