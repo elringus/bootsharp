@@ -86,7 +86,7 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
         WriteGenerated(InteropFilePath, content);
     }
 
-    private static void WriteGenerated (string path, string content)
+    private void WriteGenerated (string path, string content)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllText(path, content);
