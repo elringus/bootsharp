@@ -7,7 +7,7 @@ internal sealed class DeclarationGenerator (NamespaceBuilder spaceBuilder)
 
     public string Generate (AssemblyInspection inspection) => JoinLines(0,
         """import type { Event } from "./event";""",
-        typesGenerator.Generate(inspection.Types),
+        typesGenerator.Generate(inspection.Crawled),
         methodsGenerator.Generate(inspection.Methods)
     ) + "\n";
 }

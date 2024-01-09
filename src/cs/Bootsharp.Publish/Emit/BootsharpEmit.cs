@@ -5,18 +5,12 @@ namespace Bootsharp.Publish;
 /// <summary>
 /// First pass: emits C# sources to be picked by .NET's source generators.
 /// </summary>
-/// <remarks>
-/// This could've been implemented via a source generator, but .NET's generators
-/// are not able to pick output of other generators, hence we're emitting
-/// the code at build time before the .NET's sourcegen stage.
-/// </remarks>
 public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
 {
     [Required] public required string InspectedDirectory { get; set; }
     [Required] public required string EntryAssemblyName { get; set; }
     [Required] public required string ExportsFilePath { get; set; }
     [Required] public required string ImportsFilePath { get; set; }
-    [Required] public required string InterceptorsFilePath { get; set; }
     [Required] public required string DependenciesFilePath { get; set; }
     [Required] public required string SerializerFilePath { get; set; }
     [Required] public required string InteropFilePath { get; set; }
@@ -27,7 +21,6 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
         using var inspection = InspectAssemblies(spaceBuilder);
         GenerateExports(inspection);
         GenerateImports(inspection);
-        GenerateInterceptors(inspection);
         GenerateDependencies(inspection);
         GenerateSerializer(inspection);
         GenerateInterop(inspection);
@@ -63,16 +56,9 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
         WriteGenerated(ImportsFilePath, content);
     }
 
-    private void GenerateInterceptors (AssemblyInspection inspection)
-    {
-        var generator = new InterceptorGenerator();
-        var content = generator.Generate(inspection);
-        WriteGenerated(InterceptorsFilePath, content);
-    }
-
     private void GenerateDependencies (AssemblyInspection inspection)
     {
-        var generator = new DependenciesGenerator();
+        var generator = new DependenciesGenerator(EntryAssemblyName);
         var content = generator.Generate(inspection);
         WriteGenerated(DependenciesFilePath, content);
     }

@@ -7,6 +7,8 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
 {
     private readonly List<AssemblyMeta> assemblies = [];
     private readonly List<MethodMeta> methods = [];
+    private readonly List<Type> exports = [];
+    private readonly List<Type> imports = [];
     private readonly List<string> warnings = [];
     private readonly TypeConverter converter = new(spaceBuilder);
 
@@ -14,16 +16,16 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
     {
         var ctx = CreateLoadContext(directory);
         foreach (var assemblyPath in Directory.GetFiles(directory, "*.dll"))
-            try { InspectAssembly(assemblyPath, ctx); }
+            try { InspectAssemblyFile(assemblyPath, ctx); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
         return CreateInspection(ctx);
     }
 
-    private void InspectAssembly (string assemblyPath, MetadataLoadContext ctx)
+    private void InspectAssemblyFile (string assemblyPath, MetadataLoadContext ctx)
     {
         assemblies.Add(CreateAssembly(assemblyPath));
         if (!ShouldIgnoreAssembly(assemblyPath))
-            InspectMethods(ctx.LoadFromAssemblyPath(assemblyPath));
+            InspectAssembly(ctx.LoadFromAssemblyPath(assemblyPath));
     }
 
     private void AddSkippedAssemblyWarning (string assemblyPath, Exception exception)
@@ -37,7 +39,9 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
     private AssemblyInspection CreateInspection (MetadataLoadContext ctx) => new(ctx) {
         Assemblies = assemblies.ToImmutableArray(),
         Methods = methods.ToImmutableArray(),
-        Types = converter.CrawledTypes.ToImmutableArray(),
+        Crawled = converter.CrawledTypes.ToImmutableArray(),
+        Exports = exports.ToImmutableArray(),
+        Imports = imports.ToImmutableArray(),
         Warnings = warnings.ToImmutableArray()
     };
 
@@ -46,21 +50,34 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
         Bytes = File.ReadAllBytes(assemblyPath)
     };
 
-    private void InspectMethods (Assembly assembly)
+    private void InspectAssembly (Assembly assembly)
     {
-        foreach (var method in GetStaticMethods(assembly))
-        foreach (var attribute in method.CustomAttributes)
-            InspectMethodWithAttribute(method, attribute.AttributeType.Name);
+        foreach (var exported in assembly.GetExportedTypes())
+            InspectExportedType(exported);
+        foreach (var attribute in assembly.CustomAttributes)
+            InspectAssemblyAttribute(attribute);
     }
 
-    private void InspectMethodWithAttribute (MethodInfo method, string attributeName)
+    private void InspectExportedType (Type type)
     {
-        if (attributeName == nameof(JSInvokableAttribute))
-            methods.Add(CreateMethod(method, MethodType.Invokable));
-        else if (attributeName == nameof(JSFunctionAttribute))
-            methods.Add(CreateMethod(method, MethodType.Function));
-        else if (attributeName == nameof(JSEventAttribute))
-            methods.Add(CreateMethod(method, MethodType.Event));
+        foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
+        foreach (var attr in method.CustomAttributes)
+            if (attr.AttributeType.FullName == typeof(JSInvokableAttribute).FullName)
+                methods.Add(CreateMethod(method, MethodType.Invokable));
+            else if (attr.AttributeType.FullName == typeof(JSFunctionAttribute).FullName)
+                methods.Add(CreateMethod(method, MethodType.Function));
+            else if (attr.AttributeType.FullName == typeof(JSEventAttribute).FullName)
+                methods.Add(CreateMethod(method, MethodType.Event));
+    }
+
+    private void InspectAssemblyAttribute (CustomAttributeData attribute)
+    {
+        if (attribute.AttributeType.FullName == typeof(JSExportAttribute).FullName)
+            exports.AddRange(((IEnumerable<CustomAttributeTypedArgument>)attribute
+                .ConstructorArguments[0].Value!).Select(v => (Type)v.Value!));
+        else if (attribute.AttributeType.FullName == typeof(JSImportAttribute).FullName)
+            imports.AddRange(((IEnumerable<CustomAttributeTypedArgument>)attribute
+                .ConstructorArguments[0].Value!).Select(v => (Type)v.Value!));
     }
 
     private MethodMeta CreateMethod (MethodInfo info, MethodType type) => new() {
@@ -95,10 +112,4 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
             Serialized = ShouldSerialize(info.ParameterType)
         }
     };
-
-    private static IEnumerable<MethodInfo> GetStaticMethods (Assembly assembly)
-    {
-        var exported = assembly.GetExportedTypes();
-        return exported.SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Static));
-    }
 }

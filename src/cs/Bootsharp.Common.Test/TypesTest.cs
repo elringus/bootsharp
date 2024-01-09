@@ -31,7 +31,7 @@ public class TypesTest
     public void Records ()
     {
         // TODO: Remove when coverlet bug is resolved: https://github.com/coverlet-coverage/coverlet/issues/1561
-        _ = new SolutionMeta { Assemblies = [], Methods = [], Types = [] } with { Assemblies = default };
+        _ = new SolutionMeta { Assemblies = [], Methods = [], Crawled = [], Exports = [], Imports = [] } with { Assemblies = default };
         _ = new AssemblyMeta { Name = "", Bytes = [] } with { Name = "foo" };
         _ = new MethodMeta { Name = "", JSName = "", Arguments = default, Assembly = "", Type = default, Space = "", JSSpace = "", ReturnValue = default } with { Assembly = "foo" };
         _ = new ArgumentMeta { Name = "", JSName = "", Value = default } with { Name = "foo" };

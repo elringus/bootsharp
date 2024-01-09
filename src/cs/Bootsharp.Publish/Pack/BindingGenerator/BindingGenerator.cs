@@ -17,7 +17,7 @@ internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
     {
         bindings = inspection.Methods
             .Select(m => new Binding(m, null, m.JSSpace))
-            .Concat(inspection.Types.Where(t => t.IsEnum)
+            .Concat(inspection.Crawled.Where(t => t.IsEnum)
                 .Select(t => new Binding(null, t, spaceBuilder.Build(t))))
             .OrderBy(m => m.Namespace).ToArray();
         if (bindings.Length == 0) return "";

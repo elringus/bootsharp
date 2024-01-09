@@ -14,11 +14,13 @@ public class MockCompiler
 
     public void Compile (IEnumerable<MockSource> sources, string assemblyPath)
     {
-        var text = string.Join('\n', defaultUsings.Select(u => $"using {u};")) + '\n' +
-                   string.Join('\n', sources.Select(BuildSource));
-        var compilation = CreateCompilation(assemblyPath, text);
+        var source = string.Join('\n', defaultUsings.Select(u => $"using {u};")) + '\n' +
+                     string.Join('\n', sources.Select(BuildSource));
+        var compilation = CreateCompilation(assemblyPath, source);
         var result = compilation.Emit(assemblyPath);
-        Assert.True(result.Success);
+        if (result.Success) return;
+        var error = $"Invalid test source code: {result.Diagnostics.First().GetMessage()}";
+        Assert.Fail(string.Join('\n', [error, "---", source, "---"]));
     }
 
     private static string BuildSource (MockSource source)

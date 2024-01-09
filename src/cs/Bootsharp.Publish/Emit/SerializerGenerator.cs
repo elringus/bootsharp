@@ -20,7 +20,7 @@ internal sealed class SerializerGenerator
               using System.Text.Json;
               using System.Text.Json.Serialization;
 
-              namespace Bootsharp;
+              namespace Bootsharp.Generated;
 
               {{JoinLines(attributes, 0)}}
               internal partial class SerializerContext : JsonSerializerContext
@@ -57,7 +57,7 @@ internal sealed class SerializerGenerator
     private void CollectDuplicates (AssemblyInspection inspection)
     {
         var names = new HashSet<string>();
-        foreach (var type in inspection.Types.DistinctBy(t => t.FullName))
+        foreach (var type in inspection.Crawled.DistinctBy(t => t.FullName))
             if (!names.Add(type.Name))
                 CollectAttributes(BuildSyntax(type), type);
     }

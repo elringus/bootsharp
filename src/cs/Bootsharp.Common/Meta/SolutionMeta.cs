@@ -18,5 +18,13 @@ public sealed record SolutionMeta
     /// Types referenced in the interop methods signatures, including
     /// types associated with the prior types, crawled recursively.
     /// </summary>
-    public required IReadOnlyCollection<Type> Types { get; init; }
+    public required IReadOnlyCollection<Type> Crawled { get; init; }
+    /// <summary>
+    /// Interface types specified in <see cref="JSExportAttribute"/>.
+    /// </summary>
+    public required IReadOnlyCollection<Type> Exports { get; init; }
+    /// <summary>
+    /// Interface types specified in <see cref="JSImportAttribute"/>.
+    /// </summary>
+    public required IReadOnlyCollection<Type> Imports { get; init; }
 }

@@ -137,9 +137,9 @@ internal static class TypeUtilities
         return new MetadataLoadContext(resolver);
     }
 
-    public static bool ShouldIgnoreAssembly (string assemblyPath)
+    public static bool ShouldIgnoreAssembly (string filePath)
     {
-        var assemblyName = Path.GetFileName(assemblyPath);
+        var assemblyName = Path.GetFileName(filePath);
         return assemblyName.StartsWith("System.") ||
                assemblyName.StartsWith("Microsoft.") ||
                assemblyName.StartsWith("netstandard") ||
