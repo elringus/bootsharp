@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+        <!-- Specify custom name for the generated JavaScript module. -->
+        <BootsharpName>backend</BootsharpName>
+        <!-- Publish module's package.json file under solution folder for accessibility. -->
+        <BootsharpPackageDirectory>$(SolutionDir)</BootsharpPackageDirectory>
+        <!-- Don't embed the C# solution binaries to the JavaScript module. -->
+        <BootsharpEmbedBinaries>false</BootsharpEmbedBinaries>
+        <!-- Publish the binaries to the React public directory for deployment. -->
+        <BootsharpBinariesDirectory>$(SolutionDir)../src/assets/bin</BootsharpBinariesDirectory>
+        <!-- Disable non-essential .NET features (debug, localization, reflection, etc) to reduce build size. -->
+        <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
+        <!-- AOT-compile for better compute performance at the cost of additional build time and size. -->
+        <RunAOTCompilation>true</RunAOTCompilation>
+        <!-- Enable multi-threaded mode to run CPU-intensive tasks on worker threads. -->
+        <WasmEnableThreads>true</WasmEnableThreads>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bootsharp" Version="*-*"/>
+        <PackageReference Include="Bootsharp.Inject" Version="*-*"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../Backend.Prime/Backend.Prime.csproj"/>
+    </ItemGroup>
+
+</Project>
