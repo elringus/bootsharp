@@ -40,6 +40,19 @@ public class DependenciesTest : EmitTest
         Added(All, "Bootsharp.Generated.Imports.Space.IBar");
     }
 
+    [Fact]
+    public void AddsClassesWithInteropMethods ()
+    {
+        AddAssembly("Assembly.dll",
+            With("SpaceA", "public class ClassA { [JSInvokable] public static void Foo () {} }"),
+            With("SpaceB.SpaceC", "public class ClassB { [JSFunction] public static void Foo () {} }"),
+            With("public class ClassC { [JSEvent] public static void Foo () {} }"));
+        Execute();
+        Added(All, "SpaceA.ClassA", "Assembly");
+        Added(All, "SpaceB.SpaceC.ClassB", "Assembly");
+        Added(All, "ClassC", "Assembly");
+    }
+
     private void Added (DynamicallyAccessedMemberTypes types, string name) => Added(types, name, Task.EntryAssemblyName);
 
     private void Added (DynamicallyAccessedMemberTypes types, string name, string assembly)

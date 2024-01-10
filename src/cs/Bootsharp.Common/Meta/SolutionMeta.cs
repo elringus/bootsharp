@@ -10,8 +10,8 @@ public sealed record SolutionMeta
     /// </summary>
     public required IReadOnlyCollection<AssemblyMeta> Assemblies { get; init; }
     /// <summary>
-    /// Interop methods in the solution: either top-level (eg [JSInvokable]) or
-    /// members of the auto-generated interop classes (eg [JSExport]).
+    /// Interop methods in the solution: either top-level (eg, <see cref="JSInvokableAttribute"/>) or
+    /// members of the auto-generated interop classes (eg, <see cref="JSExportAttribute"/>).
     /// </summary>
     public required IReadOnlyCollection<MethodMeta> Methods { get; init; }
     /// <summary>
