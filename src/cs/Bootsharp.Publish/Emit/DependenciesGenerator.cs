@@ -19,13 +19,12 @@ internal sealed class DependenciesGenerator (string entryAssembly)
         return
             $$"""
               using System.Diagnostics.CodeAnalysis;
-              using System.Runtime.CompilerServices;
 
               namespace Bootsharp.Generated;
 
               public static class Dependencies
               {
-                  [ModuleInitializer]
+                  [System.Runtime.CompilerServices.ModuleInitializer]
                   {{JoinLines(added)}}
                   internal static void RegisterDynamicDependencies () { }
               }
