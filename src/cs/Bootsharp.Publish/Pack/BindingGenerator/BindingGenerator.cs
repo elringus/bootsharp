@@ -2,7 +2,7 @@
 
 namespace Bootsharp.Publish;
 
-internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
+internal sealed class BindingGenerator (JSSpaceBuilder spaceBuilder)
 {
     private readonly StringBuilder builder = new();
 
@@ -130,7 +130,7 @@ internal sealed class BindingGenerator (NamespaceBuilder spaceBuilder)
         var fields = string.Join(", ", values
             .Select(v => $"\"{v}\": \"{Enum.GetName(@enum, v)}\"")
             .Concat(values.Select(v => $"\"{Enum.GetName(@enum, v)}\": {v}")));
-        builder.Append($"{Comma()}\n{Pad(level + 1)}{@enum.Name}: {{ {fields} }}");
+        builder.Append($"{Comma()}\n{Pad(level + 1)}{fields}");
     }
 
     private string GetRoot (Binding binding)

@@ -51,7 +51,7 @@ public class SerializerTest : EmitTest
             With("n", "public enum Enum { A, B }"),
             With("n", "public class Foo { public Struct S { get; } public ReadonlyStruct Rs { get; } }"),
             WithClass("n", "public class Bar : Foo { public ReadonlyRecordStruct Rrs { get; } public RecordClass Rc { get; } }"),
-            With("n", "public class Baz { public List<MockClass.Bar?> Bars { get; } public Enum E { get; } }"),
+            With("n", "public class Baz { public List<Class.Bar?> Bars { get; } public Enum E { get; } }"),
             WithClass("n", "[JSInvokable] public static Baz? GetBaz () => default;"));
         Execute();
         Assert.Equal(2, Matches("JsonSerializable").Count);

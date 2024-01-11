@@ -1,6 +1,6 @@
 ﻿namespace Bootsharp.Publish;
 
-internal sealed class DeclarationGenerator (NamespaceBuilder spaceBuilder)
+internal sealed class DeclarationGenerator (JSSpaceBuilder spaceBuilder)
 {
     private readonly MethodDeclarationGenerator methodsGenerator = new();
     private readonly TypeDeclarationGenerator typesGenerator = new(spaceBuilder);

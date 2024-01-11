@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace Bootsharp.Publish;
 
-internal sealed class TypeConverter (NamespaceBuilder spaceBuilder)
+internal sealed class TypeConverter (JSSpaceBuilder spaceBuilder)
 {
     public IReadOnlyCollection<Type> CrawledTypes => crawler.Crawled;
 
@@ -69,13 +69,13 @@ internal sealed class TypeConverter (NamespaceBuilder spaceBuilder)
     {
         EnterNullability(type);
         var args = string.Join(", ", type.GenericTypeArguments.Select(Convert));
-        return $"{spaceBuilder.Build(type)}.{GetGenericNameWithoutArgs(type.Name)}<{args}>";
+        return $"{GetGenericNameWithoutArgs(spaceBuilder.Build(type))}<{args}>";
     }
 
     private string ConvertFinal (Type type)
     {
         if (type.Name == "Void") return "void";
-        if (CrawledTypes.Contains(type)) return $"{spaceBuilder.Build(type)}.{type.Name}";
+        if (CrawledTypes.Contains(type)) return spaceBuilder.Build(type);
         return Type.GetTypeCode(type) switch {
             TypeCode.Byte or TypeCode.SByte or TypeCode.UInt16 or TypeCode.UInt32 or
                 TypeCode.UInt64 or TypeCode.Int16 or TypeCode.Int32 or

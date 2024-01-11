@@ -25,14 +25,14 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
         return true;
     }
 
-    private NamespaceBuilder CreateNamespaceBuilder ()
+    private JSSpaceBuilder CreateNamespaceBuilder ()
     {
-        var builder = new NamespaceBuilder();
+        var builder = new JSSpaceBuilder();
         builder.CollectConverters(InspectedDirectory, EntryAssemblyName);
         return builder;
     }
 
-    private AssemblyInspection InspectAssemblies (NamespaceBuilder spaceBuilder)
+    private AssemblyInspection InspectAssemblies (JSSpaceBuilder spaceBuilder)
     {
         var inspector = new AssemblyInspector(spaceBuilder);
         var inspection = inspector.InspectInDirectory(InspectedDirectory);
@@ -40,14 +40,14 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
         return inspection;
     }
 
-    private void GenerateBindings (AssemblyInspection inspection, NamespaceBuilder spaceBuilder)
+    private void GenerateBindings (AssemblyInspection inspection, JSSpaceBuilder spaceBuilder)
     {
         var generator = new BindingGenerator(spaceBuilder);
         var content = generator.Generate(inspection);
         File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.js"), content);
     }
 
-    private void GenerateDeclarations (AssemblyInspection inspection, NamespaceBuilder spaceBuilder)
+    private void GenerateDeclarations (AssemblyInspection inspection, JSSpaceBuilder spaceBuilder)
     {
         var generator = new DeclarationGenerator(spaceBuilder);
         var content = generator.Generate(inspection);

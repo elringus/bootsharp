@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Bootsharp.Publish;
 
-internal sealed class TypeDeclarationGenerator (NamespaceBuilder spaceBuilder)
+internal sealed class TypeDeclarationGenerator (JSSpaceBuilder spaceBuilder)
 {
     private readonly StringBuilder builder = new();
     private readonly TypeConverter converter = new(spaceBuilder);
@@ -40,7 +40,7 @@ internal sealed class TypeDeclarationGenerator (NamespaceBuilder spaceBuilder)
     private bool ShouldOpenNamespace ()
     {
         if (prevType is null) return true;
-        return spaceBuilder.Build(prevType) != GetNamespace(type);
+        return GetNamespace(prevType) != GetNamespace(type);
     }
 
     private void OpenNamespace ()
@@ -81,7 +81,8 @@ internal sealed class TypeDeclarationGenerator (NamespaceBuilder spaceBuilder)
 
     private string GetNamespace (Type type)
     {
-        return spaceBuilder.Build(type);
+        var space = spaceBuilder.Build(type);
+        return space[..space.LastIndexOf('.')];
     }
 
     private void AppendExtensions ()

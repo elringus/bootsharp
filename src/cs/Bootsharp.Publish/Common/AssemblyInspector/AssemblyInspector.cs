@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Bootsharp.Publish;
 
-internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
+internal sealed class AssemblyInspector (JSSpaceBuilder spaceBuilder)
 {
     private readonly List<AssemblyMeta> assemblies = [];
     private readonly List<MethodMeta> methods = [];

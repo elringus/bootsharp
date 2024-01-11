@@ -87,10 +87,10 @@ internal sealed class InteropGenerator
             : method.ReturnValue.TypeSyntax);
         if (method.ReturnValue.Serialized && method.ReturnValue.Async)
             @return = $"global::System.Threading.Tasks.Task<{@return}>";
-        var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{BuildEndpoint(method, true)}", "Bootsharp")]""";
+        var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{BuildEndpoint(method)}Serialized", "Bootsharp")]""";
         var date = MarshalAmbiguous(method.ReturnValue.TypeSyntax, true);
         methods.Add($"{attr} {date}internal static partial {@return} {method.Name} ({args});");
-        proxies.Add($"""Function.Set("{BuildEndpoint(method, false)}", {method.Name});""");
+        proxies.Add($"""Function.Set("{BuildEndpoint(method)}", {method.Name});""");
 
         string GenerateArg (ArgumentMeta arg)
         {
@@ -100,10 +100,10 @@ internal sealed class InteropGenerator
             return $"{MarshalAmbiguous(arg.Value.TypeSyntax, false)}{type} {arg.Name}";
         }
 
-        string BuildEndpoint (MethodMeta method, bool import)
+        string BuildEndpoint (MethodMeta method)
         {
             var name = char.ToLowerInvariant(method.Name[0]) + method.Name[1..];
-            return $"{method.JSSpace}.{name}{(import ? "Serialized" : "")}";
+            return $"{method.JSSpace}.{name}";
         }
     }
 }

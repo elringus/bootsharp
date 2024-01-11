@@ -26,7 +26,7 @@ public class MockCompiler
     private static string BuildSource (MockSource source)
     {
         var text = source.WrapInClass
-            ? $"public partial class MockClass {{ {source.Code} }}"
+            ? $"public partial class Class {{ {source.Code} }}"
             : source.Code;
         return source.Namespace is null ? text
             : $"namespace {source.Namespace} {{ {text} }}";

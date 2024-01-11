@@ -27,14 +27,14 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
         return true;
     }
 
-    private NamespaceBuilder CreateNamespaceBuilder ()
+    private JSSpaceBuilder CreateNamespaceBuilder ()
     {
-        var builder = new NamespaceBuilder();
+        var builder = new JSSpaceBuilder();
         builder.CollectConverters(InspectedDirectory, EntryAssemblyName);
         return builder;
     }
 
-    private AssemblyInspection InspectAssemblies (NamespaceBuilder spaceBuilder)
+    private AssemblyInspection InspectAssemblies (JSSpaceBuilder spaceBuilder)
     {
         var inspector = new AssemblyInspector(spaceBuilder);
         var inspection = inspector.InspectInDirectory(InspectedDirectory);

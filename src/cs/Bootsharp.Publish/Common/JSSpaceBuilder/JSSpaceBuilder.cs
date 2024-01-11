@@ -2,11 +2,9 @@
 
 namespace Bootsharp.Publish;
 
-internal sealed class NamespaceBuilder
+internal sealed class JSSpaceBuilder
 {
-    private const string defaultSpace = "Global";
-    private const string attributeName = "JSNamespaceAttribute";
-    private readonly List<NamespaceConverter> converters = [];
+    private readonly List<JSSpaceConverter> converters = [];
 
     public void CollectConverters (string outDir, string entryAssembly)
     {
@@ -14,12 +12,13 @@ internal sealed class NamespaceBuilder
         var assemblyPath = Path.Combine(outDir, entryAssembly);
         var assembly = context.LoadFromAssemblyPath(assemblyPath);
         foreach (var attribute in CollectAttributes(assembly))
-            converters.Add(new NamespaceConverter(attribute));
+            converters.Add(new JSSpaceConverter(attribute));
     }
 
     public string Build (Type type)
     {
-        var space = type.Namespace ?? defaultSpace;
+        var space = type.FullName!.Replace("+", ".");
+        if (type.Namespace is null) space = $"Global.{space}";
         foreach (var converter in converters)
             space = converter.Convert(space);
         return space;
@@ -27,6 +26,7 @@ internal sealed class NamespaceBuilder
 
     private IEnumerable<CustomAttributeData> CollectAttributes (Assembly assembly)
     {
-        return assembly.CustomAttributes.Where(a => a.AttributeType.Name == attributeName);
+        return assembly.CustomAttributes.Where(a =>
+            a.AttributeType.FullName == typeof(JSNamespaceAttribute).FullName);
     }
 }
