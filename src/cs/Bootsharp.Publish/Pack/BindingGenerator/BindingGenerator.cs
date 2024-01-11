@@ -52,12 +52,12 @@ internal sealed class BindingGenerator (JSSpaceBuilder spaceBuilder)
 
     private void OpenNamespace ()
     {
-        level = binding.Namespace.Count(c => c == '.');
-        var prevParts = prevBinding?.Namespace.Split('.') ?? Array.Empty<string>();
+        level = 0;
+        var prevParts = prevBinding?.Namespace.Split('.') ?? [];
         var parts = binding.Namespace.Split('.');
-        for (var i = 0; i < parts.Length; i++)
-            if (prevParts.ElementAtOrDefault(i) == parts[i]) continue;
-            else if (i == 0) builder.Append($"\nexport const {parts[i]} = {{");
+        while (prevParts.ElementAtOrDefault(level) == parts[level]) level++;
+        for (var i = level; i < parts.Length; level = i, i++)
+            if (i == 0) builder.Append($"\nexport const {parts[i]} = {{");
             else builder.Append($"{Comma()}\n{Pad(i)}{parts[i]}: {{");
     }
 
@@ -69,11 +69,22 @@ internal sealed class BindingGenerator (JSSpaceBuilder spaceBuilder)
 
     private void CloseNamespace ()
     {
-        var target = (nextBinding is null || GetRoot(nextBinding) != GetRoot(binding)) ? 0
-            : nextBinding.Namespace.Count(c => c == '.');
+        var target = GetCloseLevel();
         for (; level >= target; level--)
             if (level == 0) builder.Append("\n};");
             else builder.Append($"\n{Pad(level)}}}");
+
+        int GetCloseLevel ()
+        {
+            if (nextBinding is null) return 0;
+            var closeLevel = 0;
+            var parts = binding.Namespace.Split('.');
+            var nextParts = nextBinding.Namespace.Split('.');
+            for (var i = 0; i < parts.Length; i++)
+                if (parts[i] == nextParts[i]) closeLevel++;
+                else break;
+            return closeLevel;
+        }
     }
 
     private void EmitMethod (MethodMeta method)
@@ -94,7 +105,7 @@ internal sealed class BindingGenerator (JSSpaceBuilder spaceBuilder)
         var body = $"{(wait ? "await " : "")}{endpoint}({invArgs})";
         if (method.ReturnValue.Serialized) body = $"deserialize({body})";
         var func = $"{(wait ? "async " : "")}({funcArgs}) => {body}";
-        builder.Append($"{Comma()}\n{Pad(level + 1)}{method.JSName}: {func}");
+        builder.Append($"{Break()}{method.JSName}: {func}");
     }
 
     private void EmitFunction (MethodMeta method)
@@ -110,18 +121,18 @@ internal sealed class BindingGenerator (JSSpaceBuilder spaceBuilder)
         var set = $"this.{name}Handler = handler; this.{name}SerializedHandler = {(wait ? "async " : "")}({funcArgs}) => {body};";
         var error = $"throw Error(\"Failed to invoke '{binding.Namespace}.{name}' from C#. Make sure to assign function in JavaScript.\")";
         var serde = $"if (typeof this.{name}Handler !== \"function\") {error}; return this.{name}SerializedHandler;";
-        builder.Append($"{Comma()}\n{Pad(level + 1)}get {name}() {{ return this.{name}Handler; }}");
-        builder.Append($"{Comma()}\n{Pad(level + 1)}set {name}(handler) {{ {set} }}");
-        builder.Append($"{Comma()}\n{Pad(level + 1)}get {name}Serialized() {{ {serde} }}");
+        builder.Append($"{Break()}get {name}() {{ return this.{name}Handler; }}");
+        builder.Append($"{Break()}set {name}(handler) {{ {set} }}");
+        builder.Append($"{Break()}get {name}Serialized() {{ {serde} }}");
     }
 
     private void EmitEvent (MethodMeta method)
     {
         var name = method.JSName;
-        builder.Append($"{Comma()}\n{Pad(level + 1)}{name}: new Event()");
+        builder.Append($"{Break()}{name}: new Event()");
         var funcArgs = string.Join(", ", method.Arguments.Select(a => a.JSName));
         var invArgs = string.Join(", ", method.Arguments.Select(arg => arg.Value.Serialized ? $"deserialize({arg.JSName})" : arg.JSName));
-        builder.Append($"{Comma()}\n{Pad(level + 1)}{name}Serialized: ({funcArgs}) => {method.JSSpace}.{name}.broadcast({invArgs})");
+        builder.Append($"{Break()}{name}Serialized: ({funcArgs}) => {method.JSSpace}.{name}.broadcast({invArgs})");
     }
 
     private void EmitEnum (Type @enum)
@@ -130,19 +141,14 @@ internal sealed class BindingGenerator (JSSpaceBuilder spaceBuilder)
         var fields = string.Join(", ", values
             .Select(v => $"\"{v}\": \"{Enum.GetName(@enum, v)}\"")
             .Concat(values.Select(v => $"\"{Enum.GetName(@enum, v)}\": {v}")));
-        builder.Append($"{Comma()}\n{Pad(level + 1)}{fields}");
+        builder.Append($"{Break()}{fields}");
     }
 
-    private string GetRoot (Binding binding)
-    {
-        var firstDotIdx = binding.Namespace.IndexOf('.');
-        if (firstDotIdx < 0) return binding.Namespace;
-        return binding.Namespace[..firstDotIdx];
-    }
-
-    private string Pad (int level) => new(' ', level * 4);
-    private string Comma () => builder[^1] == '{' ? "" : ",";
     private bool ShouldWait (MethodMeta method) =>
         (method.Arguments.Any(a => a.Value.Serialized) ||
          method.ReturnValue.Serialized) && method.ReturnValue.Async;
+
+    private string Break () => $"{Comma()}\n{Pad(level + 1)}";
+    private string Pad (int level) => new(' ', level * 4);
+    private string Comma () => builder[^1] == '{' ? "" : ",";
 }
