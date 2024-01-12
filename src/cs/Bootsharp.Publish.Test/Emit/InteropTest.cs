@@ -23,7 +23,7 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
-    public void CanGenerateForMethodsInGlobalSpace ()
+    public void GeneratesForMethodsInGlobalSpace ()
     {
         AddAssembly(With(
             """
@@ -43,7 +43,7 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
-    public void CanGenerateForMethodsInCustomSpaces ()
+    public void GeneratesForMethodsInCustomSpaces ()
     {
         AddAssembly(With(
             """
@@ -80,6 +80,26 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
+    public void GeneratesForMethodsInGeneratedClasses ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSExport(typeof(Space.IExport))]
+            [assembly:JSImport(typeof(IImport))]
+
+            namespace Space { public interface IExport { void Inv (); } }
+            public interface IImport { void Fun (); void NotifyEvt(); }
+            """));
+        Execute();
+        // TODO: Proxies.Set sets de-serialized lambda wrapper over the interop method, so that we can Proxies.Get on the other side w/o additional processing.
+        // Contains("""Proxies.Set("Global.Import.fun", Bootsharp_Generated_Imports_IImport_Fun);""");
+        // Contains("""Proxies.Set("Global.Import.onEvt", Bootsharp_Generated_Imports_IImport_OnEvt);""");
+        // Contains("JSExport] internal static void Class_Inv () => global::Class.Inv();");
+        // Contains("""JSImport("Global.Class.funSerialized", "Bootsharp")] internal static partial void Class_Fun ();""");
+        // Contains("""JSImport("Global.Class.evtSerialized", "Bootsharp")] internal static partial void Class_Evt ();""");
+    }
+
+    [Fact]
     public void HandlesVariousArgumentAndReturnTypes ()
     {
         AddAssembly(With(
@@ -101,6 +121,10 @@ public class InteropTest : EmitTest
             }
             """));
         Execute();
+        Contains("""Proxies.Set("Space.Class.fun", Space_Class_Fun);""");
+        Contains("""Proxies.Set("Space.Class.funAsync", Space_Class_FunAsync);""");
+        Contains("""Proxies.Set("Space.Class.funAsyncWithArgs", Space_Class_FunAsyncWithArgs);""");
+        Contains("""Proxies.Set("Space.Class.evtWithArgs", Space_Class_EvtWithArgs);""");
         Contains("JSExport] internal static void Space_Class_InvVoid () => global::Space.Class.InvVoid();");
         Contains("JSExport] internal static global::System.String Space_Class_InvWithArgs (global::System.String a, global::System.Int32[] b) => Serialize(global::Space.Class.InvWithArgs(Deserialize<global::Space.Info>(a), b));");
         Contains("JSExport] internal static global::System.Threading.Tasks.Task Space_Class_InvAsync () => global::Space.Class.InvAsync();");
