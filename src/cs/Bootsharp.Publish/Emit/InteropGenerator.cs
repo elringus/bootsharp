@@ -50,7 +50,7 @@ internal sealed class InteropGenerator
                 : inv.ReturnValue.TypeSyntax);
             if (inv.ReturnValue.Serialized && inv.ReturnValue.Async)
                 @return = $"global::System.Threading.Tasks.Task<{@return}>";
-            var signature = $"{@return} {inv.Name} ({args})";
+            var signature = $"{@return} {BuildMethodName(inv)} ({args})";
             if (wait) signature = $"async {signature}";
             return signature;
         }
@@ -89,8 +89,9 @@ internal sealed class InteropGenerator
             @return = $"global::System.Threading.Tasks.Task<{@return}>";
         var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{BuildEndpoint(method)}Serialized", "Bootsharp")]""";
         var date = MarshalAmbiguous(method.ReturnValue.TypeSyntax, true);
-        methods.Add($"{attr} {date}internal static partial {@return} {method.Name} ({args});");
-        proxies.Add($"""Function.Set("{BuildEndpoint(method)}", {method.Name});""");
+        var name = BuildMethodName(method);
+        methods.Add($"{attr} {date}internal static partial {@return} {name} ({args});");
+        proxies.Add($"""Proxies.Set("{BuildEndpoint(method)}", {name});""");
 
         string GenerateArg (ArgumentMeta arg)
         {
@@ -105,5 +106,10 @@ internal sealed class InteropGenerator
             var name = char.ToLowerInvariant(method.Name[0]) + method.Name[1..];
             return $"{method.JSSpace}.{name}";
         }
+    }
+
+    private string BuildMethodName (MethodMeta method)
+    {
+        return $"{method.Space.Replace('.', '_')}_{method.Name}";
     }
 }
