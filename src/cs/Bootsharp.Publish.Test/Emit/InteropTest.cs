@@ -91,7 +91,6 @@ public class InteropTest : EmitTest
             public interface IImport { void Fun (); void NotifyEvt(); }
             """));
         Execute();
-        // TODO: Proxies.Set sets de-serialized lambda wrapper over the interop method, so that we can Proxies.Get on the other side w/o additional processing.
         // Contains("""Proxies.Set("Global.Import.fun", Bootsharp_Generated_Imports_IImport_Fun);""");
         // Contains("""Proxies.Set("Global.Import.onEvt", Bootsharp_Generated_Imports_IImport_OnEvt);""");
         // Contains("JSExport] internal static void Class_Inv () => global::Class.Inv();");
@@ -144,6 +143,7 @@ public class InteropTest : EmitTest
             }
             """));
         Execute();
+        // TODO: Proxies.Set sets de-serialized lambda wrapper over the interop method, so that we can Proxies.Get on the other side w/o additional processing.
         Contains("""Proxies.Set("Space.Class.funA", Space_Class_FunA);""");
         Contains("""Proxies.Set("Space.Class.funB", Space_Class_FunB);""");
         Contains("JSExport] internal static global::System.String Space_Class_InvA (global::System.String a) => Serialize(global::Space.Class.InvA(Deserialize<global::Space.Record>(a)));");
