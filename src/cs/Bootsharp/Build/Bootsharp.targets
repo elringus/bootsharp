@@ -158,14 +158,11 @@
             <BootsharpPdbs Include="$(BootsharpBuildDirectory)/*.pdb"/>
         </ItemGroup>
         <Copy Condition="'$(BootsharpAggressiveTrimming)' != 'true' And '$(BootsharpEmbedBinaries)' != 'true'"
-              SourceFiles="@(BootsharpMaps)"
-              DestinationFolder="$(BootsharpBinariesDirectory)"/>
+              SourceFiles="@(BootsharpMaps)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy Condition="'$(BootsharpAggressiveTrimming)' != 'true' And '$(BootsharpEmbedBinaries)' != 'true'"
-              SourceFiles="@(BootsharpSymbols)"
-              DestinationFolder="$(BootsharpBinariesDirectory)"/>
+              SourceFiles="@(BootsharpSymbols)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy Condition="'$(BootsharpAggressiveTrimming)' != 'true' And '$(BootsharpEmbedBinaries)' != 'true'"
-              SourceFiles="@(BootsharpPdbs)"
-              DestinationFolder="$(BootsharpBinariesDirectory)"/>
+              SourceFiles="@(BootsharpPdbs)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
 
         <!-- Publish package file. -->
         <ItemGroup>
