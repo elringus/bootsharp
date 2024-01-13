@@ -40,11 +40,11 @@ internal sealed class InteropGenerator
         const string attr = "[System.Runtime.InteropServices.JavaScript.JSExport]";
         var date = MarshalAmbiguous(inv.ReturnValue.TypeSyntax, true);
         var wait = inv.ReturnValue.Async && inv.ReturnValue.Serialized;
-        methods.Add($"{attr} {date}internal static {GenerateSignature(inv, wait)} => {GenerateBody(inv, wait)};");
+        methods.Add($"{attr} {date}internal static {BuildSignature(inv, wait)} => {BuildBody(inv, wait)};");
 
-        string GenerateSignature (MethodMeta inv, bool wait)
+        string BuildSignature (MethodMeta inv, bool wait)
         {
-            var args = string.Join(", ", inv.Arguments.Select(GenerateSignatureArg));
+            var args = string.Join(", ", inv.Arguments.Select(BuildSignatureArg));
             var @return = inv.ReturnValue.Void ? "void" : (inv.ReturnValue.Serialized
                 ? $"global::System.String{(inv.ReturnValue.Nullable ? "?" : "")}"
                 : inv.ReturnValue.TypeSyntax);
@@ -55,16 +55,16 @@ internal sealed class InteropGenerator
             return signature;
         }
 
-        string GenerateBody (MethodMeta inv, bool wait)
+        string BuildBody (MethodMeta inv, bool wait)
         {
-            var args = string.Join(", ", inv.Arguments.Select(GenerateBodyArg));
+            var args = string.Join(", ", inv.Arguments.Select(BuildBodyArg));
             var body = $"global::{inv.Space}.{inv.Name}({args})";
             if (wait) body = $"await {body}";
             if (inv.ReturnValue.Serialized) body = $"Serialize({body})";
             return body;
         }
 
-        string GenerateSignatureArg (ArgumentMeta arg)
+        string BuildSignatureArg (ArgumentMeta arg)
         {
             var type = arg.Value.Serialized
                 ? $"global::System.String{(arg.Value.Nullable ? "?" : "")}"
@@ -72,7 +72,7 @@ internal sealed class InteropGenerator
             return $"{MarshalAmbiguous(arg.Value.TypeSyntax, false)}{type} {arg.Name}";
         }
 
-        string GenerateBodyArg (ArgumentMeta arg)
+        string BuildBodyArg (ArgumentMeta arg)
         {
             if (!arg.Value.Serialized) return arg.Name;
             return $"Deserialize<{arg.Value.TypeSyntax}>({arg.Name})";
@@ -81,30 +81,25 @@ internal sealed class InteropGenerator
 
     private void AddImportMethod (MethodMeta method)
     {
-        var args = string.Join(", ", method.Arguments.Select(GenerateArg));
+        var args = string.Join(", ", method.Arguments.Select(BuildArg));
         var @return = method.ReturnValue.Void ? "void" : (method.ReturnValue.Serialized
             ? $"global::System.String{(method.ReturnValue.Nullable ? "?" : "")}"
             : method.ReturnValue.TypeSyntax);
         if (method.ReturnValue.Serialized && method.ReturnValue.Async)
             @return = $"global::System.Threading.Tasks.Task<{@return}>";
-        var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{BuildEndpoint(method)}Serialized", "Bootsharp")]""";
+        var endpoint = $"{method.JSSpace}.{method.JSName}Serialized";
+        var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{endpoint}", "Bootsharp")]""";
         var date = MarshalAmbiguous(method.ReturnValue.TypeSyntax, true);
         var name = BuildMethodName(method);
         methods.Add($"{attr} {date}internal static partial {@return} {name} ({args});");
-        proxies.Add($"""Proxies.Set("{BuildEndpoint(method)}", {name});""");
+        proxies.Add($"""Proxies.Set("{method.Space}.{method.Name}", {name});""");
 
-        string GenerateArg (ArgumentMeta arg)
+        string BuildArg (ArgumentMeta arg)
         {
             var type = arg.Value.Serialized
                 ? $"global::System.String{(arg.Value.Nullable ? "?" : "")}"
                 : arg.Value.TypeSyntax;
             return $"{MarshalAmbiguous(arg.Value.TypeSyntax, false)}{type} {arg.Name}";
-        }
-
-        string BuildEndpoint (MethodMeta method)
-        {
-            var name = char.ToLowerInvariant(method.Name[0]) + method.Name[1..];
-            return $"{method.JSSpace}.{name}";
         }
     }
 

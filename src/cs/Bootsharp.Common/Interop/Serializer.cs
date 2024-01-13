@@ -5,7 +5,7 @@ using System.Text.Json.Serialization.Metadata;
 namespace Bootsharp;
 
 /// <summary>
-/// Handles serialization of the interop data that can't be passed to and from JavaScript as-is.
+/// Handles serialization of the interop values that can't be passed to and from JavaScript as-is.
 /// </summary>
 public static class Serializer
 {
