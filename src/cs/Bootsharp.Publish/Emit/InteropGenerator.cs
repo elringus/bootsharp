@@ -40,9 +40,9 @@ internal sealed class InteropGenerator
         const string attr = "[System.Runtime.InteropServices.JavaScript.JSExport]";
         var date = MarshalAmbiguous(inv.ReturnValue.TypeSyntax, true);
         var wait = inv.ReturnValue.Async && inv.ReturnValue.Serialized;
-        methods.Add($"{attr} {date}internal static {BuildSignature(inv, wait)} => {BuildBody(inv, wait)};");
+        methods.Add($"{attr} {date}internal static {BuildSignature()} => {BuildBody()};");
 
-        string BuildSignature (MethodMeta inv, bool wait)
+        string BuildSignature ()
         {
             var args = string.Join(", ", inv.Arguments.Select(BuildSignatureArg));
             var @return = inv.ReturnValue.Void ? "void" : (inv.ReturnValue.Serialized
@@ -55,7 +55,7 @@ internal sealed class InteropGenerator
             return signature;
         }
 
-        string BuildBody (MethodMeta inv, bool wait)
+        string BuildBody ()
         {
             var args = string.Join(", ", inv.Arguments.Select(BuildBodyArg));
             var body = $"global::{inv.Space}.{inv.Name}({args})";
@@ -81,7 +81,29 @@ internal sealed class InteropGenerator
 
     private void AddProxy (MethodMeta method)
     {
-        proxies.Add($"""Proxies.Set("{method.Space}.{method.Name}", {BuildMethodName(method)});""");
+        var id = $"{method.Space}.{method.Name}";
+        var args = string.Join(", ", method.Arguments.Select(arg => arg.Name));
+        var wait = method.ReturnValue.Async && method.ReturnValue.Serialized;
+        var async = wait ? "async " : "";
+        proxies.Add($"""Proxies.Set("{id}", {async}({args}) => {BuildBody()});""");
+
+        string BuildBody ()
+        {
+            var args = string.Join(", ", method.Arguments.Select(BuildBodyArg));
+            var body = $"{BuildMethodName(method)}({args})";
+            if (!method.ReturnValue.Serialized) return body;
+            if (wait) body = $"await {body}";
+            var type = method.ReturnValue.Async
+                ? method.ReturnValue.TypeSyntax[36..^1]
+                : method.ReturnValue.TypeSyntax;
+            return $"Deserialize<{type}>({body})";
+        }
+
+        string BuildBodyArg (ArgumentMeta arg)
+        {
+            if (!arg.Value.Serialized) return arg.Name;
+            return $"Serialize({arg.Name})";
+        }
     }
 
     private void AddImportMethod (MethodMeta method)
