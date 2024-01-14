@@ -10,9 +10,9 @@ internal sealed class InteropGenerator
 
     public string Generate (AssemblyInspection inspection)
     {
-        foreach (var method in inspection.Methods)
+        foreach (var method in inspection.Methods) // @formatter:off
             if (method.Type == MethodType.Invokable) AddExportMethod(method);
-            else AddImportMethod(method);
+            else { AddProxy(method); AddImportMethod(method); } // @formatter:on
         return
             $$"""
               #nullable enable
@@ -79,6 +79,11 @@ internal sealed class InteropGenerator
         }
     }
 
+    private void AddProxy (MethodMeta method)
+    {
+        proxies.Add($"""Proxies.Set("{method.Space}.{method.Name}", {BuildMethodName(method)});""");
+    }
+
     private void AddImportMethod (MethodMeta method)
     {
         var args = string.Join(", ", method.Arguments.Select(BuildArg));
@@ -90,9 +95,7 @@ internal sealed class InteropGenerator
         var endpoint = $"{method.JSSpace}.{method.JSName}Serialized";
         var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{endpoint}", "Bootsharp")]""";
         var date = MarshalAmbiguous(method.ReturnValue.TypeSyntax, true);
-        var name = BuildMethodName(method);
-        methods.Add($"{attr} {date}internal static partial {@return} {name} ({args});");
-        proxies.Add($"""Proxies.Set("{method.Space}.{method.Name}", {name});""");
+        methods.Add($"{attr} {date}internal static partial {@return} {BuildMethodName(method)} ({args});");
 
         string BuildArg (ArgumentMeta arg)
         {

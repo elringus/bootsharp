@@ -35,8 +35,8 @@ public class InteropTest : EmitTest
             }
             """));
         Execute();
-        Contains("""Proxies.Set("Class.Fun", Class_Fun);""");
-        Contains("""Proxies.Set("Class.Evt", Class_Evt);""");
+        Contains("""Proxies.Set("Class.Fun", () => Class_Fun());""");
+        Contains("""Proxies.Set("Class.Evt", () => Class_Evt());""");
         Contains("[System.Runtime.InteropServices.JavaScript.JSExport] internal static void Class_Inv () => global::Class.Inv();");
         Contains("""[System.Runtime.InteropServices.JavaScript.JSImport("Global.Class.funSerialized", "Bootsharp")] internal static partial void Class_Fun ();""");
         Contains("""[System.Runtime.InteropServices.JavaScript.JSImport("Global.Class.evtSerialized", "Bootsharp")] internal static partial void Class_Evt ();""");
@@ -67,10 +67,10 @@ public class InteropTest : EmitTest
             }
             """));
         Execute();
-        Contains("""Proxies.Set("SpaceA.Class.Fun", SpaceA_Class_Fun);""");
-        Contains("""Proxies.Set("SpaceA.Class.Evt", SpaceA_Class_Evt);""");
-        Contains("""Proxies.Set("SpaceA.SpaceB.Class.Fun", SpaceA_SpaceB_Class_Fun);""");
-        Contains("""Proxies.Set("SpaceA.SpaceB.Class.Evt", SpaceA_SpaceB_Class_Evt);""");
+        Contains("""Proxies.Set("SpaceA.Class.Fun", () => SpaceA_Class_Fun());""");
+        Contains("""Proxies.Set("SpaceA.Class.Evt", () => SpaceA_Class_Evt());""");
+        Contains("""Proxies.Set("SpaceA.SpaceB.Class.Fun", () => SpaceA_SpaceB_Class_Fun());""");
+        Contains("""Proxies.Set("SpaceA.SpaceB.Class.Evt", () => SpaceA_SpaceB_Class_Evt());""");
         Contains("JSExport] internal static void SpaceA_Class_Inv () => global::SpaceA.Class.Inv();");
         Contains("""JSImport("SpaceA.Class.funSerialized", "Bootsharp")] internal static partial void SpaceA_Class_Fun ();""");
         Contains("""JSImport("SpaceA.Class.evtSerialized", "Bootsharp")] internal static partial void SpaceA_Class_Evt ();""");
@@ -91,8 +91,8 @@ public class InteropTest : EmitTest
             public interface IImport { void Fun (); void NotifyEvt(); }
             """));
         Execute();
-        // Contains("""Proxies.Set("Global.Import.Fun", Bootsharp_Generated_Imports_IImport_Fun);""");
-        // Contains("""Proxies.Set("Global.Import.NotifyEvt", Bootsharp_Generated_Imports_IImport_OnEvt);""");
+        // Contains("""Proxies.Set("Bootsharp.Generated.Imports.IImport.Fun", () => Bootsharp_Generated_Imports_IImport_Fun());""");
+        // Contains("""Proxies.Set("Bootsharp.Generated.Imports.IImport.OnEvt", () => Bootsharp_Generated_Imports_IImport_OnEvt());""");
         // Contains("JSExport] internal static void Class_Inv () => global::Class.Inv();");
         // Contains("""JSImport("Global.Class.funSerialized", "Bootsharp")] internal static partial void Class_Fun ();""");
         // Contains("""JSImport("Global.Class.evtSerialized", "Bootsharp")] internal static partial void Class_Evt ();""");
@@ -114,8 +114,8 @@ public class InteropTest : EmitTest
             }
             """));
         Execute();
-        Contains("""Proxies.Set("Space.Class.Fun", Space_Class_Fun);""");
-        Contains("""Proxies.Set("Space.Class.FunNull", Space_Class_FunNull);""");
+        Contains("""Proxies.Set("Space.Class.Fun", (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16) => Space_Class_Fun(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16));""");
+        Contains("""Proxies.Set("Space.Class.FunNull", (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16) => Space_Class_FunNull(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16));""");
         Contains("JSExport] internal static global::System.Threading.Tasks.Task<global::System.Exception> Space_Class_Inv (global::System.Boolean a1, global::System.Byte a2, global::System.Char a3, global::System.Int16 a4, [JSMarshalAs<JSType.BigInt>] global::System.Int64 a5, global::System.Int32 a6, global::System.Single a7, global::System.Double a8, global::System.IntPtr a9, [JSMarshalAs<JSType.Date>] global::System.DateTime a10, [JSMarshalAs<JSType.Date>] global::System.DateTimeOffset a11, global::System.String a12, global::System.Byte[] a13, global::System.Int32[] a14, global::System.Double[] a15, global::System.String[] a16) => global::Space.Class.Inv(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16);");
         Contains("JSExport] [return: JSMarshalAs<JSType.Promise<JSType.Date>>] internal static global::System.Threading.Tasks.Task<global::System.DateTime> Space_Class_InvNull (global::System.Boolean? a1, global::System.Byte? a2, global::System.Char? a3, global::System.Int16? a4, [JSMarshalAs<JSType.BigInt>] global::System.Int64? a5, global::System.Int32? a6, global::System.Single? a7, global::System.Double? a8, global::System.IntPtr? a9, [JSMarshalAs<JSType.Date>] global::System.DateTime? a10, [JSMarshalAs<JSType.Date>] global::System.DateTimeOffset? a11, global::System.String? a12, global::System.Byte[]? a13, global::System.Int32[]? a14, global::System.Double[]? a15, global::System.String[]? a16) => global::Space.Class.InvNull(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16);");
         Contains("""JSImport("Space.Class.funSerialized", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.Exception> Space_Class_Fun (global::System.Boolean a1, global::System.Byte a2, global::System.Char a3, global::System.Int16 a4, [JSMarshalAs<JSType.BigInt>] global::System.Int64 a5, global::System.Int32 a6, global::System.Single a7, global::System.Double a8, global::System.IntPtr a9, [JSMarshalAs<JSType.Date>] global::System.DateTime a10, [JSMarshalAs<JSType.Date>] global::System.DateTimeOffset a11, global::System.String a12, global::System.Byte[] a13, global::System.Int32[] a14, global::System.Double[] a15, global::System.String[] a16);""");
@@ -143,16 +143,15 @@ public class InteropTest : EmitTest
             }
             """));
         Execute();
-        // TODO: Proxies.Set sets de-serialized lambda wrapper over the interop method, so that we can Proxies.Get on the other side w/o additional processing.
-        Contains("""Proxies.Set("Space.Class.FunA", Space_Class_FunA);""");
-        Contains("""Proxies.Set("Space.Class.FunB", Space_Class_FunB);""");
+        Contains("""Proxies.Set("Space.Class.FunA", (a) => Deserialize<global::Space.Record>(Space_Class_FunA(Serialize(a))));""");
+        Contains("""Proxies.Set("Space.Class.FunB", async (a) => Deserialize<global::Space.Record?[]?>(await Space_Class_FunB(Serialize(a))));""");
         Contains("JSExport] internal static global::System.String Space_Class_InvA (global::System.String a) => Serialize(global::Space.Class.InvA(Deserialize<global::Space.Record>(a)));");
         Contains("JSExport] internal static async global::System.Threading.Tasks.Task<global::System.String?> Space_Class_InvB (global::System.String? a) => Serialize(await global::Space.Class.InvB(Deserialize<global::Space.Record?[]?>(a)));");
         Contains("""JSImport("Space.Class.funASerialized", "Bootsharp")] internal static partial global::System.String Space_Class_FunA (global::System.String a);""");
         Contains("""JSImport("Space.Class.funBSerialized", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.String?> Space_Class_FunB (global::System.String? a);""");
 
         // TODO: Remove when resolved: https://github.com/elringus/bootsharp/issues/138
-        Contains("""Proxies.Set("Space.Class.FunAsyncBytes", Space_Class_FunAsyncBytes);""");
+        Contains("""Proxies.Set("Space.Class.FunAsyncBytes", async () => Deserialize<global::System.Byte[]>(await Space_Class_FunAsyncBytes()));""");
         Contains("JSExport] internal static async global::System.Threading.Tasks.Task<global::System.String> Space_Class_InvAsyncBytes () => Serialize(await global::Space.Class.InvAsyncBytes());");
         Contains("""JSImport("Space.Class.funAsyncBytesSerialized", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.String> Space_Class_FunAsyncBytes ();""");
     }
