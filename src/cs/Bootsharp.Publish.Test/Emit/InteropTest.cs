@@ -30,8 +30,8 @@ public class InteropTest : EmitTest
             public class Class
             {
                 [JSInvokable] public static void Inv () {}
-                [JSFunction] public static void Fun () {}
-                [JSEvent] public static void Evt () {}
+                [JSFunction] public static void Fun () => Proxies.Get<Action>("Class.Fun")();
+                [JSEvent] public static void Evt () => Proxies.Get<Action>("Class.Evt")();
             }
             """));
         Execute();
@@ -52,8 +52,8 @@ public class InteropTest : EmitTest
                 public class Class
                 {
                     [JSInvokable] public static void Inv () {}
-                    [JSFunction] public static void Fun () {}
-                    [JSEvent] public static void Evt () {}
+                    [JSFunction] public static void Fun () => Proxies.Get<Action>("SpaceA.Class.Fun")();
+                    [JSEvent] public static void Evt () => Proxies.Get<Action>("SpaceA.Class.Evt")();
                 }
             }
             namespace SpaceA.SpaceB
@@ -61,8 +61,8 @@ public class InteropTest : EmitTest
                 public class Class
                 {
                     [JSInvokable] public static void Inv () {}
-                    [JSFunction] public static void Fun () {}
-                    [JSEvent] public static void Evt () {}
+                    [JSFunction] public static void Fun () => Proxies.Get<Action>("SpaceA.SpaceB.Class.Fun")();
+                    [JSEvent] public static void Evt () => Proxies.Get<Action>("SpaceA.SpaceB.Class.Evt")();
                 }
             }
             """));
