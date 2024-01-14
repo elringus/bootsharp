@@ -347,18 +347,22 @@ public class DeclarationTest : PackTest
     public void DefinitionIsGeneratedForGenericClass ()
     {
         AddAssembly(
-            With("n", "public class GenericClass<T> { public T Value { get; set; } }"),
-            WithClass("n", "[JSInvokable] public static void Method (GenericClass<string> p) { }"));
+            With("n", "public class Generic<T> where T: notnull { public T Value { get; set; } }"),
+            With("n", "public class GenericNull<T> { public T Value { get; set; } }"),
+            WithClass("n", "[JSInvokable] public static void Method (Generic<string> a, GenericNull<int> b) { }"));
         Execute();
         Contains(
             """
             export namespace n {
-                export interface GenericClass<T> {
+                export interface Generic<T> {
                     value: T;
+                }
+                export interface GenericNull<T> {
+                    value?: T;
                 }
             }
             export namespace n.Class {
-                export function method(p: n.GenericClass<string>): void;
+                export function method(a: n.Generic<string>, b: n.GenericNull<number>): void;
             }
             """);
     }
@@ -370,7 +374,7 @@ public class DeclarationTest : PackTest
             With("n", "public interface GenericInterface<T> { public T Value { get; set; } }"),
             WithClass("n", "[JSInvokable] public static GenericInterface<string> Method () => default;"));
         Execute();
-        Matches(@"export interface GenericInterface<T> {\s*value: T;\s*}");
+        Matches(@"export interface GenericInterface<T> {\s*value\?: T;\s*}");
         Contains("method(): n.GenericInterface<string>");
     }
 
@@ -382,8 +386,8 @@ public class DeclarationTest : PackTest
             With("Bar", "public interface GenericInterface<T> { public T Value { get; set; } }"),
             WithClass("n", "[JSInvokable] public static void Method (Foo.GenericClass<Bar.GenericInterface<string>> p) { }"));
         Execute();
-        Matches(@"export namespace Foo {\s*export interface GenericClass<T> {\s*value: T;\s*}\s*}");
-        Matches(@"export namespace Bar {\s*export interface GenericInterface<T> {\s*value: T;\s*}\s*}");
+        Matches(@"export namespace Foo {\s*export interface GenericClass<T> {\s*value\?: T;\s*}\s*}");
+        Matches(@"export namespace Bar {\s*export interface GenericInterface<T> {\s*value\?: T;\s*}\s*}");
         Contains("method(p: Foo.GenericClass<Bar.GenericInterface<string>>): void");
     }
 
@@ -394,7 +398,7 @@ public class DeclarationTest : PackTest
             WithClass("n", "public class GenericClass<T1, T2> { public T1 Key { get; set; } public T2 Value { get; set; } }"),
             WithClass("n", "[JSInvokable] public static void Method (GenericClass<string, int> p) { }"));
         Execute();
-        Matches(@"export interface GenericClass<T1, T2> {\s*key: T1;\s*value: T2;\s*}");
+        Matches(@"export interface GenericClass<T1, T2> {\s*key\?: T1;\s*value\?: T2;\s*}");
         Contains("method(p: n.Class.GenericClass<string, number>): void");
     }
 

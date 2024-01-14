@@ -31,7 +31,7 @@ public static class Proxies
     private static readonly Dictionary<string, Delegate> map = new();
 
     /// <summary>
-    /// Maps specified interop delegate by the specified ID.
+    /// Maps specified interop delegate to the specified ID.
     /// </summary>
     /// <remarks>
     /// Performed in the generated interop code at module initialization.

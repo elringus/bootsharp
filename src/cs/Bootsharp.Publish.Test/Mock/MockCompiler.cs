@@ -14,8 +14,12 @@ public class MockCompiler
 
     public void Compile (IEnumerable<MockSource> sources, string assemblyPath)
     {
-        var source = string.Join('\n', defaultUsings.Select(u => $"using {u};")) + '\n' +
-                     string.Join('\n', sources.Select(BuildSource));
+        var source =
+            $"""
+             #nullable enable
+             {string.Join('\n', defaultUsings.Select(u => $"using {u};"))}
+             {string.Join('\n', sources.Select(BuildSource))}
+             """;
         var compilation = CreateCompilation(assemblyPath, source);
         var result = compilation.Emit(assemblyPath);
         if (result.Success) return;
