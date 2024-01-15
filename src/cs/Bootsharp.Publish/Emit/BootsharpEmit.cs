@@ -9,8 +9,7 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
 {
     [Required] public required string InspectedDirectory { get; set; }
     [Required] public required string EntryAssemblyName { get; set; }
-    [Required] public required string ExportsFilePath { get; set; }
-    [Required] public required string ImportsFilePath { get; set; }
+    [Required] public required string ImplementationsFilePath { get; set; }
     [Required] public required string DependenciesFilePath { get; set; }
     [Required] public required string SerializerFilePath { get; set; }
     [Required] public required string InteropFilePath { get; set; }
@@ -19,8 +18,7 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
     {
         var spaceBuilder = CreateNamespaceBuilder();
         using var inspection = InspectAssemblies(spaceBuilder);
-        GenerateExports(inspection);
-        GenerateImports(inspection);
+        GenerateImplementations(inspection);
         GenerateDependencies(inspection);
         GenerateSerializer(inspection);
         GenerateInterop(inspection);
@@ -42,18 +40,11 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
         return inspection;
     }
 
-    private void GenerateExports (AssemblyInspection inspection)
+    private void GenerateImplementations (AssemblyInspection inspection)
     {
-        var generator = new ExportGenerator();
+        var generator = new ImplementationGenerator();
         var content = generator.Generate(inspection);
-        WriteGenerated(ExportsFilePath, content);
-    }
-
-    private void GenerateImports (AssemblyInspection inspection)
-    {
-        var generator = new ImportGenerator();
-        var content = generator.Generate(inspection);
-        WriteGenerated(ImportsFilePath, content);
+        WriteGenerated(ImplementationsFilePath, content);
     }
 
     private void GenerateDependencies (AssemblyInspection inspection)
