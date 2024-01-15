@@ -49,7 +49,7 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
 
     private void GenerateDependencies (AssemblyInspection inspection)
     {
-        var generator = new DependenciesGenerator(EntryAssemblyName);
+        var generator = new DependencyGenerator(EntryAssemblyName);
         var content = generator.Generate(inspection);
         WriteGenerated(DependenciesFilePath, content);
     }

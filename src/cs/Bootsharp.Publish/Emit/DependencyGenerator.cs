@@ -7,7 +7,7 @@ namespace Bootsharp.Publish;
 /// Generates hints for DotNet to not trim specified dynamic dependencies, ie
 /// members that are not explicitly accessed in the user source code.
 /// </summary>
-internal sealed class DependenciesGenerator (string entryAssembly)
+internal sealed class DependencyGenerator (string entryAssembly)
 {
     private readonly HashSet<string> added = [];
 
