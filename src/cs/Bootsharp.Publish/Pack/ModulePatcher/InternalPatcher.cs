@@ -13,7 +13,7 @@ internal sealed class InternalPatcher (string dotnet, string runtime, string nat
     {
         // Remove unnecessary environment-specific calls in .NET's internals,
         // that are offending bundlers and breaking usage in restricted environments,
-        // such as VS Code web extensions. (https://github.com/dotnet/runtime/issues/91558)
+        // such as VS Code web extensions. (https://github.com/elringus/bootsharp/issues/139)
 
         File.WriteAllText(dotnet, File.ReadAllText(dotnet, Encoding.UTF8)
             .Replace("import.meta.url", url)
