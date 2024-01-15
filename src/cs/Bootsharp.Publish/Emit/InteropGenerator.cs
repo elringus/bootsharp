@@ -1,7 +1,7 @@
 ﻿namespace Bootsharp.Publish;
 
 /// <summary>
-/// Generates bindings to be picked by DotNet's interop source generator.
+/// Generates bindings to be picked by .NET's interop source generator.
 /// </summary>
 internal sealed class InteropGenerator
 {
