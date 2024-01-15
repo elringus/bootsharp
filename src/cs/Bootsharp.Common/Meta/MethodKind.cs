@@ -3,7 +3,7 @@
 /// <summary>
 /// Type of interop method.
 /// </summary>
-public enum MethodType
+public enum MethodKind
 {
     /// <summary>
     /// The method is implemented in C# and invoked from JavaScript;

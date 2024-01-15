@@ -11,7 +11,7 @@ internal sealed class InteropGenerator
     public string Generate (AssemblyInspection inspection)
     {
         foreach (var method in inspection.Methods) // @formatter:off
-            if (method.Type == MethodType.Invokable) AddExportMethod(method);
+            if (method.Kind == MethodKind.Invokable) AddExportMethod(method);
             else { AddProxy(method); AddImportMethod(method); } // @formatter:on
         return
             $$"""

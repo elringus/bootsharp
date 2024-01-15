@@ -89,8 +89,8 @@ internal sealed class BindingGenerator (JSSpaceBuilder spaceBuilder)
 
     private void EmitMethod (MethodMeta method)
     {
-        if (method.Type == MethodType.Invokable) EmitInvokable(method);
-        else if (method.Type == MethodType.Function) EmitFunction(method);
+        if (method.Kind == MethodKind.Invokable) EmitInvokable(method);
+        else if (method.Kind == MethodKind.Function) EmitFunction(method);
         else EmitEvent(method);
     }
 

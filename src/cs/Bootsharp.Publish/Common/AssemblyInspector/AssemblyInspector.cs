@@ -6,9 +6,8 @@ namespace Bootsharp.Publish;
 internal sealed class AssemblyInspector (JSSpaceBuilder spaceBuilder)
 {
     private readonly List<AssemblyMeta> assemblies = [];
+    private readonly List<InterfaceMeta> interfaces = [];
     private readonly List<MethodMeta> methods = [];
-    private readonly List<Type> exports = [];
-    private readonly List<Type> imports = [];
     private readonly List<string> warnings = [];
     private readonly TypeConverter converter = new(spaceBuilder);
 
@@ -38,10 +37,9 @@ internal sealed class AssemblyInspector (JSSpaceBuilder spaceBuilder)
 
     private AssemblyInspection CreateInspection (MetadataLoadContext ctx) => new(ctx) {
         Assemblies = assemblies.ToImmutableArray(),
+        Interfaces = interfaces.ToImmutableArray(),
         Methods = methods.ToImmutableArray(),
         Crawled = converter.CrawledTypes.ToImmutableArray(),
-        Exports = exports.ToImmutableArray(),
-        Imports = imports.ToImmutableArray(),
         Warnings = warnings.ToImmutableArray()
     };
 
@@ -63,25 +61,26 @@ internal sealed class AssemblyInspector (JSSpaceBuilder spaceBuilder)
         foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
         foreach (var attr in method.CustomAttributes)
             if (attr.AttributeType.FullName == typeof(JSInvokableAttribute).FullName)
-                methods.Add(CreateMethod(method, MethodType.Invokable));
+                methods.Add(CreateMethod(method, MethodKind.Invokable));
             else if (attr.AttributeType.FullName == typeof(JSFunctionAttribute).FullName)
-                methods.Add(CreateMethod(method, MethodType.Function));
+                methods.Add(CreateMethod(method, MethodKind.Function));
             else if (attr.AttributeType.FullName == typeof(JSEventAttribute).FullName)
-                methods.Add(CreateMethod(method, MethodType.Event));
+                methods.Add(CreateMethod(method, MethodKind.Event));
     }
 
     private void InspectAssemblyAttribute (CustomAttributeData attribute)
     {
-        if (attribute.AttributeType.FullName == typeof(JSExportAttribute).FullName)
-            exports.AddRange(((IEnumerable<CustomAttributeTypedArgument>)attribute
-                .ConstructorArguments[0].Value!).Select(v => (Type)v.Value!));
-        else if (attribute.AttributeType.FullName == typeof(JSImportAttribute).FullName)
-            imports.AddRange(((IEnumerable<CustomAttributeTypedArgument>)attribute
-                .ConstructorArguments[0].Value!).Select(v => (Type)v.Value!));
+        var name = attribute.AttributeType.FullName;
+        var kind = name == typeof(JSExportAttribute).FullName ? InterfaceKind.Export
+            : name == typeof(JSImportAttribute).FullName ? InterfaceKind.Import
+            : (InterfaceKind?)null;
+        if (!kind.HasValue) return;
+        var values = (IEnumerable<CustomAttributeTypedArgument>)attribute.ConstructorArguments[0].Value!;
+        interfaces.AddRange(values.Select(v => new InterfaceMeta { Kind = kind.Value, Type = (Type)v.Value! }));
     }
 
-    private MethodMeta CreateMethod (MethodInfo info, MethodType type) => new() {
-        Type = type,
+    private MethodMeta CreateMethod (MethodInfo info, MethodKind kind) => new() {
+        Kind = kind,
         Assembly = info.DeclaringType!.Assembly.GetName().Name!,
         Space = info.DeclaringType.FullName!,
         Name = info.Name,

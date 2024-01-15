@@ -14,7 +14,7 @@ internal sealed class DependencyGenerator (string entryAssembly)
     public string Generate (AssemblyInspection inspection)
     {
         AddGeneratedCommon();
-        AddGeneratedExportImport(inspection);
+        AddGeneratedImplementations(inspection);
         AddClassesWithInteropMethods(inspection);
         return
             $$"""
@@ -38,12 +38,13 @@ internal sealed class DependencyGenerator (string entryAssembly)
         Add(All, "Bootsharp.Generated.Interop", entryAssembly);
     }
 
-    private void AddGeneratedExportImport (AssemblyInspection inspection)
+    private void AddGeneratedImplementations (AssemblyInspection inspection)
     {
-        foreach (var export in inspection.Exports)
-            Add(All, $"Bootsharp.Generated.Exports.{export.FullName}", entryAssembly);
-        foreach (var import in inspection.Imports)
-            Add(All, $"Bootsharp.Generated.Imports.{import.FullName}", entryAssembly);
+        foreach (var export in inspection.Interfaces)
+        {
+            var space = export.Kind == InterfaceKind.Export ? "Exports" : "Imports";
+            Add(All, $"Bootsharp.Generated.{space}.{export.Type.FullName}", entryAssembly);
+        }
     }
 
     private void AddClassesWithInteropMethods (AssemblyInspection inspection)

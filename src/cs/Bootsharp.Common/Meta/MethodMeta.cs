@@ -8,7 +8,7 @@ public sealed record MethodMeta
     /// <summary>
     /// Type of interop the method is implementing.
     /// </summary>
-    public required MethodType Type { get; init; }
+    public required MethodKind Kind { get; init; }
     /// <summary>
     /// C# assembly name (DLL file name, w/o the extension), under which the method is declared.
     /// </summary>
@@ -42,6 +42,6 @@ public sealed record MethodMeta
     public override string ToString ()
     {
         var args = string.Join(", ", Arguments.Select(a => a.ToString()));
-        return $"[{Type}] {Assembly}.{Space}.{Name} ({args}) => {ReturnValue}";
+        return $"[{Kind}] {Assembly}.{Space}.{Name} ({args}) => {ReturnValue}";
     }
 }
