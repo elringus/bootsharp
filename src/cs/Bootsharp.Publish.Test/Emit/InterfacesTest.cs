@@ -53,7 +53,7 @@ public class InterfacesTest : EmitTest
                     [System.Runtime.CompilerServices.ModuleInitializer]
                     internal static void RegisterInterfaces ()
                     {
-                        Interfaces.Register(typeof(JSExported), new ExportInterface(typeof(global::IExported), handler => new JSExported(handler)));
+                        Interfaces.Register(typeof(Bootsharp.Generated.Exports.JSExported), new ExportInterface(typeof(global::IExported), handler => new Bootsharp.Generated.Exports.JSExported(handler)));
                     }
                 }
             }
@@ -108,12 +108,93 @@ public class InterfacesTest : EmitTest
                     [System.Runtime.CompilerServices.ModuleInitializer]
                     internal static void RegisterInterfaces ()
                     {
-                        Interfaces.Register(typeof(global::IImported), new ImportInterface(new JSImported()));
+                        Interfaces.Register(typeof(global::IImported), new ImportInterface(new Bootsharp.Generated.Imports.JSImported()));
                     }
                 }
             }
             """);
     }
 
-    // TODO: Events
+    [Fact]
+    public void RespectsInterfaceNamespace ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSExport(typeof(Space.IExported))]
+            [assembly:JSImport(typeof(Space.IImported))]
+
+            namespace Space;
+
+            public record Record;
+
+            public interface IExported { void Inv (Record a); }
+            public interface IImported { void Fun (Record a); }
+            """));
+        Execute();
+        Contains(
+            """
+            namespace Bootsharp.Generated.Exports.Space
+            {
+                public class JSExported
+                {
+                    private static global::Space.IExported handler = null!;
+
+                    public JSExported (global::Space.IExported handler)
+                    {
+                        JSExported.handler = handler;
+                    }
+
+                    [JSInvokable] public static void Inv (global::Space.Record a) => handler.Inv(a);
+                }
+            }
+            namespace Bootsharp.Generated.Imports.Space
+            {
+                public class JSImported : global::Space.IImported
+                {
+                    [JSFunction] public static void Fun (global::Space.Record a) => Proxies.Get<Action<global::Space.Record>>("Bootsharp.Generated.Imports.Space.JSImported.Fun")(a);
+
+                    void global::Space.IImported.Fun (global::Space.Record a) => Fun(a);
+                }
+            }
+            """);
+        Contains(
+            """
+            namespace Bootsharp.Generated
+            {
+                internal static class InterfaceRegistrations
+                {
+                    [System.Runtime.CompilerServices.ModuleInitializer]
+                    internal static void RegisterInterfaces ()
+                    {
+                        Interfaces.Register(typeof(Bootsharp.Generated.Exports.Space.JSExported), new ExportInterface(typeof(global::Space.IExported), handler => new Bootsharp.Generated.Exports.Space.JSExported(handler)));
+                        Interfaces.Register(typeof(global::Space.IImported), new ImportInterface(new Bootsharp.Generated.Imports.Space.JSImported()));
+                    }
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public void WhenImportedMethodStartsWithNotifyEmitsEvent ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSImport(typeof(IImported))]
+
+            public interface IImported { void NotifyFoo (); }
+            """));
+        Execute();
+        Contains(
+            """
+            namespace Bootsharp.Generated.Imports
+            {
+                public class JSImported : global::IImported
+                {
+                    [JSEvent] public static void OnFoo () => Proxies.Get<Action>("Bootsharp.Generated.Imports.JSImported.OnFoo")();
+
+                    void global::IImported.NotifyFoo () => OnFoo();
+                }
+            }
+            """);
+    }
 }

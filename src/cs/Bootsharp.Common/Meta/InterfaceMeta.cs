@@ -26,4 +26,8 @@ public sealed record InterfaceMeta
     /// Full type name of the generated interop class implementation.
     /// </summary>
     public string FullName => $"{Namespace}.{Name}";
+    /// <summary>
+    /// Methods declared on the interface and associated interop counterparts.
+    /// </summary>
+    public required IReadOnlyCollection<InterfaceMethodMeta> Methods { get; init; }
 }

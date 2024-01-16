@@ -76,26 +76,15 @@ internal sealed class AssemblyInspector (JSSpaceBuilder spaceBuilder, string ent
             : (InterfaceKind?)null;
         if (!kind.HasValue) return;
         foreach (var arg in (IEnumerable<CustomAttributeTypedArgument>)attribute.ConstructorArguments[0].Value!)
-            InspectInterface((Type)arg.Value!, kind.Value);
+            AddInterface((Type)arg.Value!, kind.Value);
     }
 
-    private void InspectInterface (Type @interface, InterfaceKind kind)
+    private void AddInterface (Type iType, InterfaceKind kind)
     {
-        var meta = CreateInterface(@interface, kind);
+        var meta = CreateInterface(iType, kind);
         interfaces.Add(meta);
-        foreach (var method in @interface.GetMethods())
-            InspectInterfaceMethod(method, meta);
-    }
-
-    private void InspectInterfaceMethod (MethodInfo info, InterfaceMeta meta)
-    {
-        var kind = meta.Kind == InterfaceKind.Export ? MethodKind.Invokable
-            : info.Name.StartsWith("Notify", StringComparison.Ordinal) ? MethodKind.Event
-            : MethodKind.Function;
-        methods.Add(CreateMethod(info, kind) with {
-            Assembly = entryAssemblyName,
-            Space = meta.FullName
-        });
+        foreach (var method in meta.Methods)
+            methods.Add(method.Generated);
     }
 
     private MethodMeta CreateMethod (MethodInfo info, MethodKind kind) => new() {
@@ -131,15 +120,35 @@ internal sealed class AssemblyInspector (JSSpaceBuilder spaceBuilder, string ent
         }
     };
 
-    private InterfaceMeta CreateInterface (Type @interface, InterfaceKind kind)
+    private InterfaceMeta CreateInterface (Type iType, InterfaceKind kind)
     {
-        var space = kind == InterfaceKind.Export ? "Exports" : "Imports";
-        if (@interface.Namespace != null) space += $".{@interface.Namespace}";
+        var space = "Bootsharp.Generated." + (kind == InterfaceKind.Export ? "Exports" : "Imports");
+        if (iType.Namespace != null) space += $".{iType.Namespace}";
+        var name = "JS" + iType.Name[1..];
+        var mSpace = $"{space}.{name}";
         return new InterfaceMeta {
             Kind = kind,
-            TypeSyntax = BuildSyntax(@interface),
-            Namespace = $"Bootsharp.Generated.{space}",
-            Name = "JS" + @interface.Name[1..]
+            TypeSyntax = BuildSyntax(iType),
+            Namespace = space,
+            Name = name,
+            Methods = iType.GetMethods().Select(m => CreateInterfaceMethod(m, kind, mSpace)).ToArray()
+        };
+    }
+
+    private InterfaceMethodMeta CreateInterfaceMethod (MethodInfo info, InterfaceKind iKind, string space)
+    {
+        var mKind = iKind == InterfaceKind.Export ? MethodKind.Invokable
+            : info.Name.StartsWith("Notify", StringComparison.Ordinal) ? MethodKind.Event
+            : MethodKind.Function;
+        var name = mKind == MethodKind.Event ? $"On{info.Name[6..]}" : info.Name;
+        return new() {
+            Name = info.Name,
+            Generated = CreateMethod(info, mKind) with {
+                Assembly = entryAssemblyName,
+                Space = space,
+                Name = name,
+                JSName = ToFirstLower(name)
+            }
         };
     }
 }
