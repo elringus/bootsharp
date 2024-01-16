@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Bootsharp.Publish;
 
@@ -36,11 +35,11 @@ internal sealed class AssemblyInspector (JSSpaceBuilder spaceBuilder, string ent
     }
 
     private AssemblyInspection CreateInspection (MetadataLoadContext ctx) => new(ctx) {
-        Assemblies = assemblies.ToImmutableArray(),
-        Interfaces = interfaces.ToImmutableArray(),
-        Methods = methods.ToImmutableArray(),
-        Crawled = converter.CrawledTypes.ToImmutableArray(),
-        Warnings = warnings.ToImmutableArray()
+        Assemblies = [..assemblies],
+        Interfaces = [..interfaces],
+        Methods = [..methods],
+        Crawled = [..converter.CrawledTypes],
+        Warnings = [..warnings]
     };
 
     private AssemblyMeta CreateAssembly (string assemblyPath) => new() {
