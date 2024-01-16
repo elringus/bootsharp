@@ -4,6 +4,8 @@ namespace Bootsharp.Publish;
 
 internal sealed class BindingGenerator (JSSpaceBuilder spaceBuilder)
 {
+    private record Binding (MethodMeta? Method, Type? Enum, string Namespace);
+
     private readonly StringBuilder builder = new();
 
     private Binding binding => bindings[index];

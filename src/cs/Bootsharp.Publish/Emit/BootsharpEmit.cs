@@ -9,7 +9,7 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
 {
     [Required] public required string InspectedDirectory { get; set; }
     [Required] public required string EntryAssemblyName { get; set; }
-    [Required] public required string ImplementationsFilePath { get; set; }
+    [Required] public required string InterfacesFilePath { get; set; }
     [Required] public required string DependenciesFilePath { get; set; }
     [Required] public required string SerializerFilePath { get; set; }
     [Required] public required string InteropFilePath { get; set; }
@@ -18,7 +18,7 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
     {
         var spaceBuilder = CreateNamespaceBuilder();
         using var inspection = InspectAssemblies(spaceBuilder);
-        GenerateImplementations(inspection);
+        GenerateInterfaces(inspection);
         GenerateDependencies(inspection);
         GenerateSerializer(inspection);
         GenerateInterop(inspection);
@@ -40,11 +40,11 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
         return inspection;
     }
 
-    private void GenerateImplementations (AssemblyInspection inspection)
+    private void GenerateInterfaces (AssemblyInspection inspection)
     {
-        var generator = new ImplementationGenerator();
+        var generator = new InterfaceGenerator();
         var content = generator.Generate(inspection);
-        WriteGenerated(ImplementationsFilePath, content);
+        WriteGenerated(InterfacesFilePath, content);
     }
 
     private void GenerateDependencies (AssemblyInspection inspection)
