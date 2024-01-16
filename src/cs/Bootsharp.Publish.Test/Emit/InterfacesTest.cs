@@ -5,7 +5,7 @@ public class InterfacesTest : EmitTest
     protected override string TestedContent => GeneratedInterfaces;
 
     [Fact]
-    public void GeneratesImplementationForExportedInterface ()
+    public void GeneratesInteropClassForExportedInterface ()
     {
         AddAssembly(With(
             """
@@ -59,4 +59,61 @@ public class InterfacesTest : EmitTest
             }
             """);
     }
+
+    [Fact]
+    public void GeneratesImplementationForImportedInterface ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSImport(typeof(IImported))]
+
+            public record Record;
+
+            public interface IImported
+            {
+                void Inv (string? a);
+                Task InvAsync ();
+                Record? InvRecord ();
+                Task<string> InvAsyncResult ();
+                string[] InvArray (int[] a);
+            }
+            """));
+        Execute();
+        Contains(
+            """
+            namespace Bootsharp.Generated.Imports
+            {
+                public class JSImported : global::IImported
+                {
+                    [JSFunction] public static void Inv (global::System.String? a) => Proxies.Get<Action<global::System.String?>>("Bootsharp.Generated.Imports.JSImported.Inv")(a);
+                    [JSFunction] public static global::System.Threading.Tasks.Task InvAsync () => Proxies.Get<Func<global::System.Threading.Tasks.Task>>("Bootsharp.Generated.Imports.JSImported.InvAsync")();
+                    [JSFunction] public static global::Record? InvRecord () => Proxies.Get<Func<global::Record?>>("Bootsharp.Generated.Imports.JSImported.InvRecord")();
+                    [JSFunction] public static global::System.Threading.Tasks.Task<global::System.String> InvAsyncResult () => Proxies.Get<Func<global::System.Threading.Tasks.Task<global::System.String>>>("Bootsharp.Generated.Imports.JSImported.InvAsyncResult")();
+                    [JSFunction] public static global::System.String[] InvArray (global::System.Int32[] a) => Proxies.Get<Func<global::System.Int32[], global::System.String[]>>("Bootsharp.Generated.Imports.JSImported.InvArray")(a);
+
+                    void global::IImported.Inv (global::System.String? a) => Inv(a);
+                    global::System.Threading.Tasks.Task global::IImported.InvAsync () => InvAsync();
+                    global::Record? global::IImported.InvRecord () => InvRecord();
+                    global::System.Threading.Tasks.Task<global::System.String> global::IImported.InvAsyncResult () => InvAsyncResult();
+                    global::System.String[] global::IImported.InvArray (global::System.Int32[] a) => InvArray(a);
+                }
+            }
+            """);
+        Contains(
+            """
+            namespace Bootsharp.Generated
+            {
+                internal static class InterfaceRegistrations
+                {
+                    [System.Runtime.CompilerServices.ModuleInitializer]
+                    internal static void RegisterInterfaces ()
+                    {
+                        Interfaces.Register(typeof(global::IImported), new ImportInterface(new JSImported()));
+                    }
+                }
+            }
+            """);
+    }
+
+    // TODO: Events
 }

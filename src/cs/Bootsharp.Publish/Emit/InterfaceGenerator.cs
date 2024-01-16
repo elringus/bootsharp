@@ -12,7 +12,7 @@ internal sealed class InterfaceGenerator
     public string Generate (AssemblyInspection inspection)
     {
         foreach (var inter in inspection.Interfaces)
-            AddInterface(inter, inspection.Methods.Where(m => m.Space == inter.FullName));
+            AddInterface(inter, inspection);
         return
             $$"""
               #nullable enable
@@ -34,15 +34,15 @@ internal sealed class InterfaceGenerator
               """;
     }
 
-    private void AddInterface (InterfaceMeta inter, IEnumerable<MethodMeta> methods)
+    private void AddInterface (InterfaceMeta inter, AssemblyInspection inspection)
     {
-        if (inter.Kind == InterfaceKind.Export)
-            classes.Add(EmitExportClass(inter, methods));
+        var methods = inspection.Methods.Where(m => m.Space == inter.FullName).ToArray();
+        if (inter.Kind == InterfaceKind.Export) classes.Add(EmitExportClass(inter, methods));
         else classes.Add(EmitImportClass(inter, methods));
         registrations.Add(EmitRegistration(inter));
     }
 
-    private string EmitExportClass (InterfaceMeta inter, IEnumerable<MethodMeta> methods) =>
+    private string EmitExportClass (InterfaceMeta inter, MethodMeta[] methods) =>
         $$"""
           namespace {{inter.Namespace}}
           {
@@ -60,13 +60,15 @@ internal sealed class InterfaceGenerator
           }
           """;
 
-    private string EmitImportClass (InterfaceMeta inter, IEnumerable<MethodMeta> methods) =>
+    private string EmitImportClass (InterfaceMeta inter, MethodMeta[] methods) =>
         $$"""
           namespace {{inter.Namespace}}
           {
-              public class {{inter.Name}}
+              public class {{inter.Name}} : {{inter.TypeSyntax}}
               {
                   {{JoinLines(methods.Select(EmitImportMethod), 2)}}
+
+                  {{JoinLines(methods.Select(m => EmitImportMethodImplementation(inter, m)), 2)}}
               }
           }
           """;
@@ -86,6 +88,27 @@ internal sealed class InterfaceGenerator
     private string EmitImportMethod (MethodMeta method)
     {
         var attr = method.Kind == MethodKind.Function ? "JSFunction" : "JSEvent";
-        return $"[{attr}]";
+        var sigArgs = string.Join(", ", method.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
+        var sig = $"public static {method.ReturnValue.TypeSyntax} {method.Name} ({sigArgs})";
+        var getter = EmitProxyGetter(method);
+        var id = $"{method.Space}.{method.Name}";
+        var args = string.Join(", ", method.Arguments.Select(a => a.Name));
+        return $"[{attr}] {sig} => {getter}(\"{id}\")({args});";
+    }
+
+    private string EmitImportMethodImplementation (InterfaceMeta inter, MethodMeta method)
+    {
+        var sigArgs = string.Join(", ", method.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
+        var args = string.Join(", ", method.Arguments.Select(a => a.Name));
+        return $"{method.ReturnValue.TypeSyntax} {inter.TypeSyntax}.{method.Name} ({sigArgs}) => {method.Name}({args});";
+    }
+
+    private string EmitProxyGetter (MethodMeta method)
+    {
+        var func = method.ReturnValue.Void ? "Action" : "Func";
+        var syntax = method.Arguments.Select(a => a.Value.TypeSyntax).ToList();
+        if (!method.ReturnValue.Void) syntax.Add(method.ReturnValue.TypeSyntax);
+        if (syntax.Count > 0) func = $"{func}<{string.Join(", ", syntax)}>";
+        return $"Proxies.Get<{func}>";
     }
 }

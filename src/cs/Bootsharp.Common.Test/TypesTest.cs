@@ -15,9 +15,7 @@ using Bootsharp.Common.Test;
     NamePattern = "ImportNamePattern",
     NameReplacement = "ImportNameReplacement",
     InvokePattern = "ImportInvokePattern",
-    InvokeReplacement = "ImportInvokeReplacement",
-    EventPattern = "ImportEventPattern",
-    EventReplacement = "ImportEventReplacement"
+    InvokeReplacement = "ImportInvokeReplacement"
 )]
 
 namespace Bootsharp.Common.Test;
@@ -60,14 +58,6 @@ public class TypesTest
     }
 
     [Fact]
-    public void EventParametersAreNullByDefault () // (defaults are in generator)
-    {
-        var attribute = new JSImportAttribute(typeof(IBackend));
-        Assert.Null(attribute.EventPattern);
-        Assert.Null(attribute.EventReplacement);
-    }
-
-    [Fact]
     public void ExportParametersEqualArguments ()
     {
         Assert.Equal([typeof(IBackend)],
@@ -87,8 +77,6 @@ public class TypesTest
         Assert.Equal("ImportNameReplacement", GetNamedValue(import.NamedArguments, nameof(JSTypeAttribute.NameReplacement)));
         Assert.Equal("ImportInvokePattern", GetNamedValue(import.NamedArguments, nameof(JSTypeAttribute.InvokePattern)));
         Assert.Equal("ImportInvokeReplacement", GetNamedValue(import.NamedArguments, nameof(JSTypeAttribute.InvokeReplacement)));
-        Assert.Equal("ImportEventPattern", GetNamedValue(import.NamedArguments, nameof(JSImportAttribute.EventPattern)));
-        Assert.Equal("ImportEventReplacement", GetNamedValue(import.NamedArguments, nameof(JSImportAttribute.EventReplacement)));
     }
 
     private static object GetNamedValue (IList<CustomAttributeNamedArgument> args, string key) =>
