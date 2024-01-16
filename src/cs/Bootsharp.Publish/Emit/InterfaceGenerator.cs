@@ -34,25 +34,25 @@ internal sealed class InterfaceGenerator
               """;
     }
 
-    private void AddInterface (InterfaceMeta inter, AssemblyInspection inspection)
+    private void AddInterface (InterfaceMeta i, AssemblyInspection inspection)
     {
-        var methods = inspection.Methods.Where(m => m.Space == inter.FullName).ToArray();
-        if (inter.Kind == InterfaceKind.Export) classes.Add(EmitExportClass(inter, methods));
-        else classes.Add(EmitImportClass(inter, methods));
-        registrations.Add(EmitRegistration(inter));
+        var methods = inspection.Methods.Where(m => m.Space == i.FullName).ToArray();
+        if (i.Kind == InterfaceKind.Export) classes.Add(EmitExportClass(i, methods));
+        else classes.Add(EmitImportClass(i, methods));
+        registrations.Add(EmitRegistration(i));
     }
 
-    private string EmitExportClass (InterfaceMeta inter, MethodMeta[] methods) =>
+    private string EmitExportClass (InterfaceMeta i, MethodMeta[] methods) =>
         $$"""
-          namespace {{inter.Namespace}}
+          namespace {{i.Namespace}}
           {
-              public class {{inter.Name}}
+              public class {{i.Name}}
               {
-                  private static {{inter.TypeSyntax}} handler = null!;
+                  private static {{i.TypeSyntax}} handler = null!;
 
-                  public {{inter.Name}} ({{inter.TypeSyntax}} handler)
+                  public {{i.Name}} ({{i.TypeSyntax}} handler)
                   {
-                      {{inter.Name}}.handler = handler;
+                      {{i.Name}}.handler = handler;
                   }
 
                   {{JoinLines(methods.Select(EmitExportMethod), 2)}}
@@ -60,22 +60,22 @@ internal sealed class InterfaceGenerator
           }
           """;
 
-    private string EmitImportClass (InterfaceMeta inter, MethodMeta[] methods) =>
+    private string EmitImportClass (InterfaceMeta i, MethodMeta[] methods) =>
         $$"""
-          namespace {{inter.Namespace}}
+          namespace {{i.Namespace}}
           {
-              public class {{inter.Name}} : {{inter.TypeSyntax}}
+              public class {{i.Name}} : {{i.TypeSyntax}}
               {
                   {{JoinLines(methods.Select(EmitImportMethod), 2)}}
 
-                  {{JoinLines(methods.Select(m => EmitImportMethodImplementation(inter, m)), 2)}}
+                  {{JoinLines(methods.Select(m => EmitImportMethodImplementation(i, m)), 2)}}
               }
           }
           """;
 
-    private string EmitRegistration (InterfaceMeta inter) => inter.Kind == InterfaceKind.Import ?
-        $"Interfaces.Register(typeof({inter.TypeSyntax}), new ImportInterface(new {inter.Name}()));" :
-        $"Interfaces.Register(typeof({inter.Name}), new ExportInterface(typeof({inter.TypeSyntax}), handler => new {inter.Name}(handler)));";
+    private string EmitRegistration (InterfaceMeta i) => i.Kind == InterfaceKind.Import ?
+        $"Interfaces.Register(typeof({i.TypeSyntax}), new ImportInterface(new {i.Name}()));" :
+        $"Interfaces.Register(typeof({i.Name}), new ExportInterface(typeof({i.TypeSyntax}), handler => new {i.Name}(handler)));";
 
     private string EmitExportMethod (MethodMeta method)
     {
@@ -96,11 +96,11 @@ internal sealed class InterfaceGenerator
         return $"[{attr}] {sig} => {getter}(\"{id}\")({args});";
     }
 
-    private string EmitImportMethodImplementation (InterfaceMeta inter, MethodMeta method)
+    private string EmitImportMethodImplementation (InterfaceMeta i, MethodMeta method)
     {
         var sigArgs = string.Join(", ", method.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         var args = string.Join(", ", method.Arguments.Select(a => a.Name));
-        return $"{method.ReturnValue.TypeSyntax} {inter.TypeSyntax}.{method.Name} ({sigArgs}) => {method.Name}({args});";
+        return $"{method.ReturnValue.TypeSyntax} {i.TypeSyntax}.{method.Name} ({sigArgs}) => {method.Name}({args});";
     }
 
     private string EmitProxyGetter (MethodMeta method)
