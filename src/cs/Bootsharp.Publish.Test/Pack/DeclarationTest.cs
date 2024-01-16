@@ -97,6 +97,7 @@ public class DeclarationTest : PackTest
                 export interface Foo {
                 }
             }
+
             export namespace Space.Class {
                 export function getFoo(bar: Space.Bar): Space.Foo;
             }
@@ -121,6 +122,7 @@ public class DeclarationTest : PackTest
                 export interface Bar {
                 }
             }
+
             export namespace Global.Class {
                 export function getFoo(bar: SpaceB.Bar): SpaceA.Foo;
             }
@@ -361,6 +363,7 @@ public class DeclarationTest : PackTest
                     value?: T;
                 }
             }
+
             export namespace n.Class {
                 export function method(a: n.Generic<string>, b: n.GenericNull<number>): void;
             }
@@ -451,6 +454,7 @@ public class DeclarationTest : PackTest
                     B
                 }
             }
+
             export namespace Space.Class {
                 export function getBaz(): Space.Baz;
             }
@@ -522,6 +526,7 @@ public class DeclarationTest : PackTest
                 export interface Foo {
                 }
             }
+
             export namespace Global.Class {
                 export let fun: (bar: Array<number | null> | undefined, nya: Array<Array<Global.Foo> | null> | undefined, far: Array<Array<Global.Foo | null> | null> | undefined) => Array<Global.Foo | null> | null;
             }
@@ -558,6 +563,7 @@ public class DeclarationTest : PackTest
                     bool?: boolean;
                 }
             }
+
             export namespace n.Class {
                 export function fooBar(bar: n.Bar): n.Foo;
             }
@@ -583,6 +589,7 @@ public class DeclarationTest : PackTest
                     B
                 }
             }
+
             export namespace n.Class {
                 export function getBar(): n.Bar;
             }

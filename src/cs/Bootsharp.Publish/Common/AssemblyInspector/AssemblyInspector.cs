@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Bootsharp.Publish;
 
-internal sealed class AssemblyInspector (JSSpaceBuilder spaceBuilder)
+internal sealed class AssemblyInspector (JSSpaceBuilder spaceBuilder, string entryAssemblyName)
 {
     private readonly List<AssemblyMeta> assemblies = [];
     private readonly List<InterfaceMeta> interfaces = [];
@@ -75,8 +75,27 @@ internal sealed class AssemblyInspector (JSSpaceBuilder spaceBuilder)
             : name == typeof(JSImportAttribute).FullName ? InterfaceKind.Import
             : (InterfaceKind?)null;
         if (!kind.HasValue) return;
-        var values = (IEnumerable<CustomAttributeTypedArgument>)attribute.ConstructorArguments[0].Value!;
-        interfaces.AddRange(values.Select(v => new InterfaceMeta { Kind = kind.Value, Type = (Type)v.Value! }));
+        foreach (var arg in (IEnumerable<CustomAttributeTypedArgument>)attribute.ConstructorArguments[0].Value!)
+            InspectInterface((Type)arg.Value!, kind.Value);
+    }
+
+    private void InspectInterface (Type @interface, InterfaceKind kind)
+    {
+        var meta = CreateInterface(@interface, kind);
+        interfaces.Add(meta);
+        foreach (var method in @interface.GetMethods())
+            InspectInterfaceMethod(method, meta);
+    }
+
+    private void InspectInterfaceMethod (MethodInfo info, InterfaceMeta meta)
+    {
+        var kind = meta.Kind == InterfaceKind.Export ? MethodKind.Invokable
+            : info.Name.StartsWith("Notify", StringComparison.Ordinal) ? MethodKind.Event
+            : MethodKind.Function;
+        methods.Add(CreateMethod(info, kind) with {
+            Assembly = entryAssemblyName,
+            Space = meta.FullName
+        });
     }
 
     private MethodMeta CreateMethod (MethodInfo info, MethodKind kind) => new() {
@@ -95,7 +114,7 @@ internal sealed class AssemblyInspector (JSSpaceBuilder spaceBuilder)
             Serialized = ShouldSerialize(info.ReturnType)
         },
         JSSpace = spaceBuilder.Build(info.DeclaringType),
-        JSName = ToFirstLower(info.Name),
+        JSName = ToFirstLower(info.Name)
     };
 
     private ArgumentMeta CreateArgument (ParameterInfo info) => new() {
@@ -111,4 +130,16 @@ internal sealed class AssemblyInspector (JSSpaceBuilder spaceBuilder)
             Serialized = ShouldSerialize(info.ParameterType)
         }
     };
+
+    private InterfaceMeta CreateInterface (Type @interface, InterfaceKind kind)
+    {
+        var space = kind == InterfaceKind.Export ? "Exports" : "Imports";
+        if (@interface.Namespace != null) space += $".{@interface.Namespace}";
+        return new InterfaceMeta {
+            Kind = kind,
+            TypeSyntax = BuildSyntax(@interface),
+            Namespace = $"Bootsharp.Generated.{space}",
+            Name = "JS" + @interface.Name[1..]
+        };
+    }
 }

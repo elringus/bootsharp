@@ -24,8 +24,8 @@ public class DependenciesTest : EmitTest
             With("public interface IFoo {}"),
             With("Space", "public interface IBar {}"));
         Execute();
-        Added(All, "Bootsharp.Generated.Exports.IFoo");
-        Added(All, "Bootsharp.Generated.Exports.Space.IBar");
+        Added(All, "Bootsharp.Generated.Exports.JSFoo");
+        Added(All, "Bootsharp.Generated.Exports.Space.JSBar");
     }
 
     [Fact]
@@ -36,8 +36,8 @@ public class DependenciesTest : EmitTest
             With("public interface IFoo {}"),
             With("Space", "public interface IBar {}"));
         Execute();
-        Added(All, "Bootsharp.Generated.Imports.IFoo");
-        Added(All, "Bootsharp.Generated.Imports.Space.IBar");
+        Added(All, "Bootsharp.Generated.Imports.JSFoo");
+        Added(All, "Bootsharp.Generated.Imports.Space.JSBar");
     }
 
     [Fact]

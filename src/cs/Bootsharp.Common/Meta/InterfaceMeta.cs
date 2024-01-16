@@ -11,7 +11,19 @@ public sealed record InterfaceMeta
     /// </summary>
     public required InterfaceKind Kind { get; init; }
     /// <summary>
-    /// Associated C# type of the interface.
+    /// C# syntax of the interface type, as specified in source code.
     /// </summary>
-    public required Type Type { get; init; }
+    public required string TypeSyntax { get; init; }
+    /// <summary>
+    /// Namespace of the generated interop class implementation.
+    /// </summary>
+    public required string Namespace { get; init; }
+    /// <summary>
+    /// Name of the generated interop class implementation.
+    /// </summary>
+    public required string Name { get; init; }
+    /// <summary>
+    /// Full type name of the generated interop class implementation.
+    /// </summary>
+    public string FullName => $"{Namespace}.{Name}";
 }

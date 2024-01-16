@@ -15,14 +15,16 @@ internal sealed class JSSpaceBuilder
             converters.Add(new JSSpaceConverter(attribute));
     }
 
-    public string Build (Type type)
+    public string Build (string fullname, bool global)
     {
-        var space = type.FullName!.Replace("+", ".");
-        if (type.Namespace is null) space = $"Global.{space}";
+        var prefix = global ? "Global." : "";
+        var space = $"{prefix}{fullname.Replace("+", ".")}";
         foreach (var converter in converters)
             space = converter.Convert(space);
         return space;
     }
+
+    public string Build (Type type) => Build(type.FullName!, type.Namespace is null);
 
     private IEnumerable<CustomAttributeData> CollectAttributes (Assembly assembly)
     {

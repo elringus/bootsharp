@@ -34,7 +34,7 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
 
     private AssemblyInspection InspectAssemblies (JSSpaceBuilder spaceBuilder)
     {
-        var inspector = new AssemblyInspector(spaceBuilder);
+        var inspector = new AssemblyInspector(spaceBuilder, EntryAssemblyName);
         var inspection = inspector.InspectInDirectory(InspectedDirectory);
         new InspectionReporter(Log).Report(inspection);
         return inspection;
