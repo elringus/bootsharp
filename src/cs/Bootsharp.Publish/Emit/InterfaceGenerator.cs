@@ -31,10 +31,10 @@ internal sealed class InterfaceGenerator
               {
                   internal static class InterfaceRegistrations
                   {
-                      [ModuleInitializer]
+                      [System.Runtime.CompilerServices.ModuleInitializer]
                       internal static void RegisterInterfaces ()
                       {
-                          {{JoinLines(registrations, 2)}}
+                          {{JoinLines(registrations, 3)}}
                       }
                   }
               }

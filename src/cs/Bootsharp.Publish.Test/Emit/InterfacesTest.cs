@@ -36,17 +36,25 @@ public class InterfacesTest : EmitTest
                         JSExported.handler = handler;
                     }
 
-                    [ModuleInitializer]
-                    internal static void RegisterImplementation ()
-                    {
-                        Interfaces.Register(typeof(JSExported), new ExportInterface(typeof(global::IExported), handler => new JSExported(handler)));
-                    }
-
                     [JSInvokable] public static void Inv (global::System.String? a) => handler.Inv(a);
                     [JSInvokable] public static global::System.Threading.Tasks.Task InvAsync () => handler.InvAsync();
                     [JSInvokable] public static global::Record? InvRecord () => handler.InvRecord();
-                    [JSInvokable] public static global::System.Threading.Tasks.Task<global::System.String> Nya () => handler.Nya();
-                    [JSInvokable] public static global::System.String[] Far (global::System.Int32[] far) => handler.Far(far);
+                    [JSInvokable] public static global::System.Threading.Tasks.Task<global::System.String> InvAsyncResult () => handler.InvAsyncResult();
+                    [JSInvokable] public static global::System.String[] InvArray (global::System.Int32[] a) => handler.InvArray(a);
+                }
+            }
+            """);
+        Contains(
+            """
+            namespace Bootsharp.Generated
+            {
+                internal static class InterfaceRegistrations
+                {
+                    [System.Runtime.CompilerServices.ModuleInitializer]
+                    internal static void RegisterInterfaces ()
+                    {
+                        Interfaces.Register(typeof(JSExported), new ExportInterface(typeof(global::IExported), handler => new JSExported(handler)));
+                    }
                 }
             }
             """);
