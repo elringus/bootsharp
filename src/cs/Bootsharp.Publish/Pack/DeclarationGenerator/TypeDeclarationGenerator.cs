@@ -130,8 +130,10 @@ internal sealed class TypeDeclarationGenerator (JSSpaceBuilder spaceBuilder)
 
     private string BuildTypeName (Type type)
     {
-        if (!type.IsGenericType) return type.Name;
-        var args = string.Join(", ", type.GetGenericArguments().Select(a => a.Name));
-        return $"{GetGenericNameWithoutArgs(type.Name)}<{args}>";
+        var space = spaceBuilder.Build(type);
+        var name = space[(space.LastIndexOf('.') + 1)..];
+        if (!type.IsGenericType) return name;
+        var args = string.Join(", ", type.GetGenericArguments().Select(BuildTypeName));
+        return $"{name}<{args}>";
     }
 }

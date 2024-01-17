@@ -140,12 +140,15 @@ internal sealed class AssemblyInspector (JSSpaceBuilder spaceBuilder, string ent
             : info.Name.StartsWith("Notify", StringComparison.Ordinal) ? MethodKind.Event
             : MethodKind.Function;
         var name = mKind == MethodKind.Event ? $"On{info.Name[6..]}" : info.Name;
+        var jsSpace = spaceBuilder.Build(info.DeclaringType!);
+        jsSpace = jsSpace[..(jsSpace.LastIndexOf('.') + 1)] + jsSpace[(jsSpace.LastIndexOf('.') + 2)..];
         return new() {
             Name = info.Name,
             Generated = CreateMethod(info, mKind) with {
                 Assembly = entryAssemblyName,
                 Space = space,
                 Name = name,
+                JSSpace = jsSpace,
                 JSName = ToFirstLower(name)
             }
         };

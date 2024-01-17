@@ -69,7 +69,7 @@ internal sealed class TypeConverter (JSSpaceBuilder spaceBuilder)
     {
         EnterNullability(type);
         var args = string.Join(", ", type.GenericTypeArguments.Select(Convert));
-        return $"{GetGenericNameWithoutArgs(spaceBuilder.Build(type))}<{args}>";
+        return $"{spaceBuilder.Build(type)}<{args}>";
     }
 
     private string ConvertFinal (Type type)
