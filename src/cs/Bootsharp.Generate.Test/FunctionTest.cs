@@ -27,7 +27,7 @@ public static class FunctionTest
 
             public static partial class Foo
             {
-                [JSFunction] private static partial Task BarAsync (string a, int b);
+                [JSFunction] private static partial Task BarAsync (string[] a, int? b);
             }
             """,
             """
@@ -37,7 +37,7 @@ public static class FunctionTest
 
             public static partial class Foo
             {
-                private static partial global::System.Threading.Tasks.Task BarAsync (global::System.String a, global::System.Int32 b) => global::Bootsharp.Proxies.Get<global::System.Func<global::System.String, global::System.Int32, global::System.Threading.Tasks.Task>>("File.Scoped.Foo.BarAsync")(a, b);
+                private static partial global::System.Threading.Tasks.Task BarAsync (global::System.String[] a, global::System.Int32? b) => global::Bootsharp.Proxies.Get<global::System.Func<global::System.String[], global::System.Int32?, global::System.Threading.Tasks.Task>>("File.Scoped.Foo.BarAsync")(a, b);
             }
             """
         ],
@@ -61,6 +61,23 @@ public static class FunctionTest
             public static partial class Foo
             {
                 private static partial global::System.Threading.Tasks.Task<global::System.String?> BarAsync () => global::Bootsharp.Proxies.Get<global::System.Func<global::System.Threading.Tasks.Task<global::System.String?>>>("File.Scoped.Foo.BarAsync")();
+            }
+            """
+        ],
+        // Can generate custom types.
+        [
+            """
+            public record Record;
+
+            partial class Foo
+            {
+                [JSFunction] partial void Bar (Record a);
+            }
+            """,
+            """
+            partial class Foo
+            {
+                partial void Bar (global::Record a) => global::Bootsharp.Proxies.Get<global::System.Action<global::Record>>("Foo.Bar")(a);
             }
             """
         ],

@@ -34,7 +34,6 @@ internal sealed class PartialClass (
 
     private string EmitMethods ()
     {
-        if (methods.Count == 0) return "";
         var sources = methods.Select(m => "    " + m.EmitSource(compilation));
         return "\n" + string.Join("\n", sources);
     }
