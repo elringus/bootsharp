@@ -155,7 +155,14 @@ public class DeclarationTest : PackTest
     public void PrefsAllowsOverridingSpaceNames ()
     {
         AddAssembly(
-            With("""[assembly:JSNamespace(@"Foo\.Bar\.(\S+)", "$1")]"""),
+            With(
+                """
+                [assembly:JSConfiguration<Prefs>]
+                public class Prefs : Bootsharp.Preferences
+                {
+                    public override string BuildSpace (Type type, string @default) => @default.Replace("Foo.Bar.", "");
+                }
+                """),
             With("Foo.Bar.Nya", "public class Nya { }"),
             WithClass("Foo.Bar.Fun", "[JSFunction] public static void OnFun (Nya.Nya nya) { }"));
         Execute();
