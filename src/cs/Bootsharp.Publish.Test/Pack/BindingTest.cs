@@ -283,7 +283,6 @@ public class BindingTest : PackTest
     public void PrefsAllowsOverridingObjectNames ()
     {
         AddAssembly(
-            // With("""[assembly:JSNamespace(@"Foo\.Bar\.(\S+)", "$1")]"""),
             With(
                 """
                 [assembly:JSConfiguration<Prefs>]
