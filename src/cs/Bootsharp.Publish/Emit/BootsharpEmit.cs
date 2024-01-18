@@ -16,8 +16,8 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
 
     public override bool Execute ()
     {
-        var spaceBuilder = CreateNamespaceBuilder();
-        using var inspection = InspectAssemblies(spaceBuilder);
+        var prefs = ResolvePreferences();
+        using var inspection = InspectAssemblies(prefs);
         GenerateInterfaces(inspection);
         GenerateDependencies(inspection);
         GenerateSerializer(inspection);
@@ -25,16 +25,15 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
         return true;
     }
 
-    private JSSpaceBuilder CreateNamespaceBuilder ()
+    private Preferences ResolvePreferences ()
     {
-        var builder = new JSSpaceBuilder();
-        builder.CollectConverters(InspectedDirectory, EntryAssemblyName);
-        return builder;
+        var resolver = new PreferencesResolver(EntryAssemblyName);
+        return resolver.Resolve(InspectedDirectory);
     }
 
-    private AssemblyInspection InspectAssemblies (JSSpaceBuilder spaceBuilder)
+    private AssemblyInspection InspectAssemblies (Preferences prefs)
     {
-        var inspector = new AssemblyInspector(spaceBuilder, EntryAssemblyName);
+        var inspector = new AssemblyInspector(prefs, EntryAssemblyName);
         var inspection = inspector.InspectInDirectory(InspectedDirectory);
         new InspectionReporter(Log).Report(inspection);
         return inspection;

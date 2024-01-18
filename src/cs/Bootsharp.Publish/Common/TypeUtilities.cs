@@ -166,6 +166,15 @@ internal static class TypeUtilities
         return !native.Contains(type.FullName!);
     }
 
+    public static string BuildJSSpace (Type type)
+    {
+        var space = type.FullName ?? type.Name;
+        if (type.Namespace is null) space = $"Global.{space}";
+        if (type.IsGenericType) space = GetGenericNameWithoutArgs(space);
+        if (space.Contains('+')) space = space.Replace("+", ".");
+        return space;
+    }
+
     public static string BuildSyntax (Type type) => BuildSyntax(type, null, false);
 
     public static string BuildSyntax (Type type, ParameterInfo info) => BuildSyntax(type, GetNullability(info));

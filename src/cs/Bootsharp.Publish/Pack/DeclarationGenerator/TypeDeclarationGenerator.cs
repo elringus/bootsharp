@@ -3,10 +3,10 @@ using System.Text;
 
 namespace Bootsharp.Publish;
 
-internal sealed class TypeDeclarationGenerator (JSSpaceBuilder spaceBuilder)
+internal sealed class TypeDeclarationGenerator (Preferences prefs)
 {
     private readonly StringBuilder builder = new();
-    private readonly TypeConverter converter = new(spaceBuilder);
+    private readonly TypeConverter converter = new(prefs);
 
     private Type type => GetTypeAt(index);
     private Type? prevType => index == 0 ? null : GetTypeAt(index - 1);
@@ -81,7 +81,7 @@ internal sealed class TypeDeclarationGenerator (JSSpaceBuilder spaceBuilder)
 
     private string GetNamespace (Type type)
     {
-        var space = spaceBuilder.Build(type);
+        var space = prefs.BuildSpace(type, BuildJSSpace(type));
         return space[..space.LastIndexOf('.')];
     }
 
@@ -130,7 +130,7 @@ internal sealed class TypeDeclarationGenerator (JSSpaceBuilder spaceBuilder)
 
     private string BuildTypeName (Type type)
     {
-        var space = spaceBuilder.Build(type);
+        var space = prefs.BuildSpace(type, BuildJSSpace(type));
         var name = space[(space.LastIndexOf('.') + 1)..];
         if (!type.IsGenericType) return name;
         var args = string.Join(", ", type.GetGenericArguments().Select(BuildTypeName));

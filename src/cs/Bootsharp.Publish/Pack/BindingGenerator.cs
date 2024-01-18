@@ -2,7 +2,7 @@
 
 namespace Bootsharp.Publish;
 
-internal sealed class BindingGenerator (JSSpaceBuilder spaceBuilder)
+internal sealed class BindingGenerator (Preferences prefs)
 {
     private record Binding (MethodMeta? Method, Type? Enum, string Namespace);
 
@@ -20,7 +20,7 @@ internal sealed class BindingGenerator (JSSpaceBuilder spaceBuilder)
         bindings = inspection.Methods
             .Select(m => new Binding(m, null, m.JSSpace))
             .Concat(inspection.Crawled.Where(t => t.IsEnum)
-                .Select(t => new Binding(null, t, spaceBuilder.Build(t))))
+                .Select(t => new Binding(null, t, prefs.BuildSpace(t, BuildJSSpace(t)))))
             .OrderBy(m => m.Namespace).ToArray();
         if (bindings.Length == 0) return "";
         EmitImports();

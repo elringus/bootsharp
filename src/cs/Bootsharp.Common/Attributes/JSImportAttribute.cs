@@ -22,9 +22,16 @@
 /// </code>
 /// </example>
 [AttributeUsage(AttributeTargets.Assembly)]
-public sealed class JSImportAttribute : JSTypeAttribute
+public sealed class JSImportAttribute : Attribute
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// The interface types to generated import bindings for.
+    /// </summary>
+    public Type[] Types { get; }
+
+    /// <param name="types">The interface types to generate import bindings for.</param>
     public JSImportAttribute (params Type[] types)
-        : base(types) { }
+    {
+        Types = types;
+    }
 }

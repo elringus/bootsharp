@@ -2,13 +2,13 @@
 
 namespace Bootsharp.Publish;
 
-internal sealed class AssemblyInspector (JSSpaceBuilder spaceBuilder, string entryAssemblyName)
+internal sealed class AssemblyInspector (Preferences prefs, string entryAssemblyName)
 {
     private readonly List<AssemblyMeta> assemblies = [];
     private readonly List<InterfaceMeta> interfaces = [];
     private readonly List<MethodMeta> methods = [];
     private readonly List<string> warnings = [];
-    private readonly TypeConverter converter = new(spaceBuilder);
+    private readonly TypeConverter converter = new(prefs);
 
     public AssemblyInspection InspectInDirectory (string directory)
     {
@@ -101,7 +101,7 @@ internal sealed class AssemblyInspector (JSSpaceBuilder spaceBuilder, string ent
             Void = IsVoid(info.ReturnType),
             Serialized = ShouldSerialize(info.ReturnType)
         },
-        JSSpace = spaceBuilder.Build(info.DeclaringType),
+        JSSpace = prefs.BuildSpace(info.DeclaringType, BuildJSSpace(info.DeclaringType)),
         JSName = ToFirstLower(info.Name)
     };
 
@@ -140,7 +140,7 @@ internal sealed class AssemblyInspector (JSSpaceBuilder spaceBuilder, string ent
             : info.Name.StartsWith("Notify", StringComparison.Ordinal) ? MethodKind.Event
             : MethodKind.Function;
         var name = mKind == MethodKind.Event ? $"On{info.Name[6..]}" : info.Name;
-        var jsSpace = spaceBuilder.Build(info.DeclaringType!);
+        var jsSpace = prefs.BuildSpace(info.DeclaringType!, BuildJSSpace(info.DeclaringType!));
         jsSpace = jsSpace[..(jsSpace.LastIndexOf('.') + 1)] + jsSpace[(jsSpace.LastIndexOf('.') + 2)..];
         return new() {
             Name = info.Name,

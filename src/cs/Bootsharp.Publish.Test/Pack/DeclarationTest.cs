@@ -152,7 +152,7 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void NamespaceAttributeOverrideSpaceNames ()
+    public void PrefsAllowsOverridingSpaceNames ()
     {
         AddAssembly(
             With("""[assembly:JSNamespace(@"Foo\.Bar\.(\S+)", "$1")]"""),

@@ -16,40 +16,39 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
 
     public override bool Execute ()
     {
-        var spaceBuilder = CreateNamespaceBuilder();
-        using var inspection = InspectAssemblies(spaceBuilder);
-        GenerateBindings(inspection, spaceBuilder);
-        GenerateDeclarations(inspection, spaceBuilder);
+        var prefs = ResolvePreferences();
+        using var inspection = InspectAssemblies(prefs);
+        GenerateBindings(prefs, inspection);
+        GenerateDeclarations(prefs, inspection);
         GenerateResources(inspection);
         PatchModules();
         return true;
     }
 
-    private JSSpaceBuilder CreateNamespaceBuilder ()
+    private Preferences ResolvePreferences ()
     {
-        var builder = new JSSpaceBuilder();
-        builder.CollectConverters(InspectedDirectory, EntryAssemblyName);
-        return builder;
+        var resolver = new PreferencesResolver(EntryAssemblyName);
+        return resolver.Resolve(InspectedDirectory);
     }
 
-    private AssemblyInspection InspectAssemblies (JSSpaceBuilder spaceBuilder)
+    private AssemblyInspection InspectAssemblies (Preferences prefs)
     {
-        var inspector = new AssemblyInspector(spaceBuilder, EntryAssemblyName);
+        var inspector = new AssemblyInspector(prefs, EntryAssemblyName);
         var inspection = inspector.InspectInDirectory(InspectedDirectory);
         new InspectionReporter(Log).Report(inspection);
         return inspection;
     }
 
-    private void GenerateBindings (AssemblyInspection inspection, JSSpaceBuilder spaceBuilder)
+    private void GenerateBindings (Preferences prefs, AssemblyInspection inspection)
     {
-        var generator = new BindingGenerator(spaceBuilder);
+        var generator = new BindingGenerator(prefs);
         var content = generator.Generate(inspection);
         File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.js"), content);
     }
 
-    private void GenerateDeclarations (AssemblyInspection inspection, JSSpaceBuilder spaceBuilder)
+    private void GenerateDeclarations (Preferences prefs, AssemblyInspection inspection)
     {
-        var generator = new DeclarationGenerator(spaceBuilder);
+        var generator = new DeclarationGenerator(prefs);
         var content = generator.Generate(inspection);
         File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.d.ts"), content);
     }

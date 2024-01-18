@@ -21,9 +21,16 @@
 /// </code>
 /// </example>
 [AttributeUsage(AttributeTargets.Assembly)]
-public sealed class JSExportAttribute : JSTypeAttribute
+public sealed class JSExportAttribute : Attribute
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// The interface types to generated export bindings for.
+    /// </summary>
+    public Type[] Types { get; }
+
+    /// <param name="types">The interface types to generate export bindings for.</param>
     public JSExportAttribute (params Type[] types)
-        : base(types) { }
+    {
+        Types = types;
+    }
 }
