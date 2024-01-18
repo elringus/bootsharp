@@ -155,4 +155,43 @@ public class InteropTest : EmitTest
         Contains("JSExport] internal static async global::System.Threading.Tasks.Task<global::System.String> Space_Class_InvAsyncBytes () => Serialize(await global::Space.Class.InvAsyncBytes());");
         Contains("""JSImport("Space.Class.funAsyncBytesSerialized", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.String> Space_Class_FunAsyncBytes ();""");
     }
+
+    [Fact]
+    public void RespectsSpacePrefs ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSConfiguration<Space.Prefs>]
+            [assembly:JSExport(typeof(Space.IExported))]
+            [assembly:JSImport(typeof(Space.IImported))]
+
+            namespace Space;
+
+            public class Prefs : Bootsharp.Preferences
+            {
+                public override string BuildSpace (Type type, string @default) => @default.Replace("Space", "Foo");
+            }
+
+            public interface IExported { void Inv (); }
+            public interface IImported { void Fun (); void NotifyEvt(); }
+
+            public class Class
+            {
+                [JSInvokable] public static void Inv () {}
+                [JSFunction] public static void Fun () => Proxies.Get<Action>("Class.Fun")();
+                [JSEvent] public static void Evt () => Proxies.Get<Action>("Class.Evt")();
+            }
+            """));
+        Execute();
+        Contains("""Proxies.Set("Bootsharp.Generated.Imports.Space.JSImported.Fun", () => Bootsharp_Generated_Imports_Space_JSImported_Fun());""");
+        Contains("""Proxies.Set("Bootsharp.Generated.Imports.Space.JSImported.OnEvt", () => Bootsharp_Generated_Imports_Space_JSImported_OnEvt());""");
+        Contains("""Proxies.Set("Space.Class.Fun", () => Space_Class_Fun());""");
+        Contains("""Proxies.Set("Space.Class.Evt", () => Space_Class_Evt());""");
+        Contains("JSExport] internal static void Space_Class_Inv () => global::Space.Class.Inv();");
+        Contains("""JSImport("Foo.Class.funSerialized", "Bootsharp")] internal static partial void Space_Class_Fun ();""");
+        Contains("""JSImport("Foo.Class.evtSerialized", "Bootsharp")] internal static partial void Space_Class_Evt ();""");
+        Contains("JSExport] internal static void Bootsharp_Generated_Exports_Space_JSExported_Inv () => global::Bootsharp.Generated.Exports.Space.JSExported.Inv();");
+        Contains("""JSImport("Foo.Imported.funSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_Space_JSImported_Fun ();""");
+        Contains("""JSImport("Foo.Imported.onEvtSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_Space_JSImported_OnEvt ();""");
+    }
 }

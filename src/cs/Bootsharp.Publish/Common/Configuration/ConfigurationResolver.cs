@@ -26,16 +26,11 @@ internal sealed class ConfigurationResolver (string entryAssemblyName)
 
     private CustomAttributeData? FindConfigurationAttribute (Assembly assembly)
     {
+        var cfgAttr = typeof(JSConfigurationAttribute<>).FullName!;
         foreach (var attr in assembly.CustomAttributes)
-            if (IsConfigurationAttribute(attr.AttributeType))
+            if (attr.AttributeType.FullName!.StartsWith(cfgAttr, StringComparison.Ordinal))
                 return attr;
         return null;
-    }
-
-    private bool IsConfigurationAttribute (Type attr)
-    {
-        if (attr.FullName is null) return false;
-        return attr.FullName.StartsWith(typeof(JSConfigurationAttribute<>).FullName!, StringComparison.Ordinal);
     }
 
     private Preferences InstantiateCustomPrefs (Assembly assembly, Type attributeType)
