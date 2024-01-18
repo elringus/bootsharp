@@ -1,5 +1,3 @@
-using Microsoft.Build.Framework;
-
 namespace Bootsharp.Publish;
 
 /// <summary>
@@ -7,12 +5,12 @@ namespace Bootsharp.Publish;
 /// </summary>
 public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
 {
-    [Required] public required string BuildDirectory { get; set; }
-    [Required] public required string InspectedDirectory { get; set; }
-    [Required] public required string EntryAssemblyName { get; set; }
-    [Required] public required bool TrimmingEnabled { get; set; }
-    [Required] public required bool EmbedBinaries { get; set; }
-    [Required] public required bool Threading { get; set; }
+    public required string BuildDirectory { get; set; }
+    public required string InspectedDirectory { get; set; }
+    public required string EntryAssemblyName { get; set; }
+    public required bool TrimmingEnabled { get; set; }
+    public required bool EmbedBinaries { get; set; }
+    public required bool Threading { get; set; }
 
     public override bool Execute ()
     {

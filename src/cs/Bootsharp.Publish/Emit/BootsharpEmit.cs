@@ -1,18 +1,16 @@
-﻿using Microsoft.Build.Framework;
-
-namespace Bootsharp.Publish;
+﻿namespace Bootsharp.Publish;
 
 /// <summary>
 /// First pass: emits C# sources to be picked by .NET's source generators.
 /// </summary>
 public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
 {
-    [Required] public required string InspectedDirectory { get; set; }
-    [Required] public required string EntryAssemblyName { get; set; }
-    [Required] public required string InterfacesFilePath { get; set; }
-    [Required] public required string DependenciesFilePath { get; set; }
-    [Required] public required string SerializerFilePath { get; set; }
-    [Required] public required string InteropFilePath { get; set; }
+    public required string InspectedDirectory { get; set; }
+    public required string EntryAssemblyName { get; set; }
+    public required string InterfacesFilePath { get; set; }
+    public required string DependenciesFilePath { get; set; }
+    public required string SerializerFilePath { get; set; }
+    public required string InteropFilePath { get; set; }
 
     public override bool Execute ()
     {
