@@ -7,7 +7,7 @@ namespace Bootsharp.Generate;
 
 internal sealed class PartialMethod (MethodDeclarationSyntax syntax)
 {
-    private IMethodSymbol method;
+    private IMethodSymbol method = null!;
 
     public string EmitSource (Compilation compilation)
     {
