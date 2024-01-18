@@ -12,7 +12,7 @@ internal sealed class PartialMethod (MethodDeclarationSyntax syntax)
     public string EmitSource (Compilation compilation)
     {
         method = compilation.GetSemanticModel(syntax.SyntaxTree).GetDeclaredSymbol(syntax)!;
-        return $"{syntax.Modifiers} {EmitSignature()} => {EmitBody()};".Replace("partial async", "async partial");
+        return $"{syntax.Modifiers} {EmitSignature()} => {EmitBody()};";
     }
 
     private string EmitSignature ()
