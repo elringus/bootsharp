@@ -16,18 +16,18 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
 
     public override bool Execute ()
     {
-        var prefs = ResolvePreferences();
-        using var inspection = InspectAssemblies(prefs);
-        GenerateBindings(prefs, inspection);
-        GenerateDeclarations(prefs, inspection);
+        using var cfg = ResolveConfiguration();
+        using var inspection = InspectAssemblies(cfg.Preferences);
+        GenerateBindings(cfg.Preferences, inspection);
+        GenerateDeclarations(cfg.Preferences, inspection);
         GenerateResources(inspection);
         PatchModules();
         return true;
     }
 
-    private Preferences ResolvePreferences ()
+    private Configuration ResolveConfiguration ()
     {
-        var resolver = new PreferencesResolver(EntryAssemblyName);
+        var resolver = new ConfigurationResolver(EntryAssemblyName);
         return resolver.Resolve(InspectedDirectory);
     }
 

@@ -16,8 +16,8 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
 
     public override bool Execute ()
     {
-        var prefs = ResolvePreferences();
-        using var inspection = InspectAssemblies(prefs);
+        using var cfg = ResolveConfiguration();
+        using var inspection = InspectAssemblies(cfg.Preferences);
         GenerateInterfaces(inspection);
         GenerateDependencies(inspection);
         GenerateSerializer(inspection);
@@ -25,9 +25,9 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
         return true;
     }
 
-    private Preferences ResolvePreferences ()
+    private Configuration ResolveConfiguration ()
     {
-        var resolver = new PreferencesResolver(EntryAssemblyName);
+        var resolver = new ConfigurationResolver(EntryAssemblyName);
         return resolver.Resolve(InspectedDirectory);
     }
 

@@ -14,7 +14,16 @@ public sealed class MockProject : IDisposable
         CreateBuildResources();
     }
 
-    public void Dispose () => Directory.Delete(Root, true);
+    public void Dispose ()
+    {
+        try { Directory.Delete(Root, true); }
+        catch
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            Dispose();
+        }
+    }
 
     public void AddAssembly (MockAssembly assembly)
     {
@@ -38,7 +47,8 @@ public sealed class MockProject : IDisposable
     {
         var testAssembly = System.Reflection.Assembly.GetExecutingAssembly().Location;
         var assemblyDir = Path.Combine(Path.GetDirectoryName(testAssembly));
-        return Directory.CreateDirectory(Path.Combine(assemblyDir, $"temp{Guid.NewGuid():N}")).FullName;
+        var dir = $"bootsharp-temp-{Guid.NewGuid():N}";
+        return Directory.CreateDirectory(Path.Combine(assemblyDir, dir)).FullName;
     }
 
     private void CreateBuildResources ()

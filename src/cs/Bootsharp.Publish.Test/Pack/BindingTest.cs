@@ -283,7 +283,15 @@ public class BindingTest : PackTest
     public void PrefsAllowsOverridingObjectNames ()
     {
         AddAssembly(
-            With("""[assembly:JSNamespace(@"Foo\.Bar\.(\S+)", "$1")]"""),
+            // With("""[assembly:JSNamespace(@"Foo\.Bar\.(\S+)", "$1")]"""),
+            With(
+                """
+                [assembly:JSConfiguration<Prefs>]
+                public class Prefs : Bootsharp.Preferences
+                {
+                    public override string BuildSpace (Type type, string @default) => @default.Replace("Foo.Bar.", "");
+                }
+                """),
             WithClass("Foo.Bar.Nya", "[JSInvokable] public static Task GetNya () => Task.CompletedTask;"),
             WithClass("Foo.Bar.Fun", "[JSFunction] public static void OnFun () {}"));
         Execute();

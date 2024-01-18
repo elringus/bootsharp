@@ -1,9 +1,13 @@
-﻿namespace Bootsharp;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bootsharp;
 
 /// <summary>
 /// User preferences for Bootsharp behaviour. Inherit, override required methods and
 /// supply inherited class to <see cref="JSConfigurationAttribute{T}"/>.
 /// </summary>
+[SuppressMessage("ReSharper", "UnusedParameter.Global",
+    Justification = "Accessed in Bootsharp.Publish.Test via generated code.")]
 public class Preferences
 {
     /// <summary>
