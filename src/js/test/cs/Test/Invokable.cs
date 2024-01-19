@@ -5,7 +5,7 @@ using Bootsharp;
 
 namespace Test;
 
-public static partial class Invokable
+public static class Invokable
 {
     [JSInvokable]
     public static void InvokeVoid () { }

@@ -14,7 +14,7 @@ internal sealed class ConfigurationResolver (string entryAssemblyName)
 
     private Assembly LoadMainAssembly (AssemblyLoadContext ctx, string outDir)
     {
-        var path = Path.Combine(outDir, entryAssemblyName);
+        var path = Path.GetFullPath(Path.Combine(outDir, entryAssemblyName));
         return ctx.LoadFromAssemblyPath(path);
     }
 
