@@ -280,38 +280,6 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void PrefsAllowsOverridingObjectNames ()
-    {
-        AddAssembly(
-            With(
-                """
-                [assembly:JSConfiguration<Prefs>]
-                public class Prefs : Bootsharp.Preferences
-                {
-                    public override string BuildSpace (Type type, string @default) => @default.Replace("Foo.Bar.", "");
-                }
-                """),
-            WithClass("Foo.Bar.Nya", "[JSInvokable] public static Task GetNya () => Task.CompletedTask;"),
-            WithClass("Foo.Bar.Fun", "[JSFunction] public static void OnFun () {}"));
-        Execute();
-        Contains(
-            """
-            export const Fun = {
-                Class: {
-                    get onFun() { return this.onFunHandler; },
-                    set onFun(handler) { this.onFunHandler = handler; this.onFunSerializedHandler = () => this.onFunHandler(); },
-                    get onFunSerialized() { if (typeof this.onFunHandler !== "function") throw Error("Failed to invoke 'Fun.Class.onFun' from C#. Make sure to assign function in JavaScript."); return this.onFunSerializedHandler; }
-                }
-            };
-            export const Nya = {
-                Class: {
-                    getNya: () => getExports().Foo_Bar_Nya_Class.GetNya()
-                }
-            };
-            """);
-    }
-
-    [Fact]
     public void VariablesConflictingWithJSTypesAreRenamed ()
     {
         AddAssembly(WithClass("[JSInvokable] public static void Fun (string function) {}"));
@@ -415,6 +383,38 @@ public class BindingTest : PackTest
                     Foo: {
                         "1": "A", "6": "B", "A": 1, "B": 6
                     }
+                }
+            };
+            """);
+    }
+
+    [Fact]
+    public void RespectsResolveSpacePref ()
+    {
+        AddAssembly(
+            With(
+                """
+                [assembly:JSConfiguration<Prefs>]
+                public class Prefs : Bootsharp.Preferences
+                {
+                    public override string ResolveSpace (Type type, string @default) => @default.Replace("Foo.Bar.", "");
+                }
+                """),
+            WithClass("Foo.Bar.Nya", "[JSInvokable] public static Task GetNya () => Task.CompletedTask;"),
+            WithClass("Foo.Bar.Fun", "[JSFunction] public static void OnFun () {}"));
+        Execute();
+        Contains(
+            """
+            export const Fun = {
+                Class: {
+                    get onFun() { return this.onFunHandler; },
+                    set onFun(handler) { this.onFunHandler = handler; this.onFunSerializedHandler = () => this.onFunHandler(); },
+                    get onFunSerialized() { if (typeof this.onFunHandler !== "function") throw Error("Failed to invoke 'Fun.Class.onFun' from C#. Make sure to assign function in JavaScript."); return this.onFunSerializedHandler; }
+                }
+            };
+            export const Nya = {
+                Class: {
+                    getNya: () => getExports().Foo_Bar_Nya_Class.GetNya()
                 }
             };
             """);

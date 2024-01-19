@@ -152,25 +152,6 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void PrefsAllowsOverridingSpaceNames ()
-    {
-        AddAssembly(
-            With(
-                """
-                [assembly:JSConfiguration<Prefs>]
-                public class Prefs : Bootsharp.Preferences
-                {
-                    public override string BuildSpace (Type type, string @default) => @default.Replace("Foo.Bar.", "");
-                }
-                """),
-            With("Foo.Bar.Nya", "public class Nya { }"),
-            WithClass("Foo.Bar.Fun", "[JSFunction] public static void OnFun (Nya.Nya nya) { }"));
-        Execute();
-        Contains("export namespace Nya {\n    export interface Nya {\n    }\n}");
-        Contains("export namespace Fun.Class {\n    export let onFun: (nya: Nya.Nya) => void;\n}");
-    }
-
-    [Fact]
     public void NumericsTranslatedToNumber ()
     {
         var types = new[] { "byte", "sbyte", "ushort", "uint", "ulong", "short", "int", "decimal", "double", "float" };
@@ -617,5 +598,43 @@ public class DeclarationTest : PackTest
         Assert.Single(Matches("export interface Foo"));
         Assert.Single(Matches("export interface Bar"));
         Assert.Single(Matches("export interface Far"));
+    }
+
+    [Fact]
+    public void RespectsResolveSpacePref ()
+    {
+        AddAssembly(
+            With(
+                """
+                [assembly:JSConfiguration<Prefs>]
+                public class Prefs : Bootsharp.Preferences
+                {
+                    public override string ResolveSpace (Type type, string @default) => @default.Replace("Foo.Bar.", "");
+                }
+                """),
+            With("Foo.Bar.Nya", "public class Nya { }"),
+            WithClass("Foo.Bar.Fun", "[JSFunction] public static void OnFun (Nya.Nya nya) { }"));
+        Execute();
+        Contains("export namespace Nya {\n    export interface Nya {\n    }\n}");
+        Contains("export namespace Fun.Class {\n    export let onFun: (nya: Nya.Nya) => void;\n}");
+    }
+
+    [Fact]
+    public void RespectsResolveTypePref ()
+    {
+        AddAssembly(
+            With(
+                """
+                using System.Reflection;
+                [assembly:JSConfiguration<Prefs>]
+                public class Prefs : Bootsharp.Preferences
+                {
+                    public override string ResolveType (Type _, NullabilityInfo? __, string @default) => @default.Replace("Record", "Foo");
+                }
+                """),
+            With("public record Record;"),
+            WithClass("[JSInvokable] public static void Inv (Record r) {}"));
+        Execute();
+        Contains("inv(r: Global.Foo): void");
     }
 }

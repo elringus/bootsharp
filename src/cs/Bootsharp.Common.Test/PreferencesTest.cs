@@ -6,6 +6,6 @@ public class PreferencesTest
     public void ReturnDefaultsByDefault ()
     {
         var prefs = new Preferences();
-        Assert.Equal("foo", prefs.BuildSpace(default, "foo"));
+        Assert.Equal("foo", prefs.ResolveSpace(default, "foo"));
     }
 }

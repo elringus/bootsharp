@@ -101,7 +101,7 @@ internal sealed class AssemblyInspector (Preferences prefs, string entryAssembly
             Void = IsVoid(info.ReturnType),
             Serialized = ShouldSerialize(info.ReturnType)
         },
-        JSSpace = prefs.BuildSpace(info.DeclaringType, BuildJSSpace(info.DeclaringType)),
+        JSSpace = prefs.ResolveSpace(info.DeclaringType, BuildJSSpace(info.DeclaringType)),
         JSName = ToFirstLower(info.Name)
     };
 
@@ -140,7 +140,7 @@ internal sealed class AssemblyInspector (Preferences prefs, string entryAssembly
             : info.Name.StartsWith("Notify", StringComparison.Ordinal) ? MethodKind.Event
             : MethodKind.Function;
         var name = mKind == MethodKind.Event ? $"On{info.Name[6..]}" : info.Name;
-        var jsSpace = prefs.BuildSpace(info.DeclaringType!, BuildJSSpace(info.DeclaringType!));
+        var jsSpace = prefs.ResolveSpace(info.DeclaringType!, BuildJSSpace(info.DeclaringType!));
         jsSpace = jsSpace[..(jsSpace.LastIndexOf('.') + 1)] + jsSpace[(jsSpace.LastIndexOf('.') + 2)..];
         return new() {
             Name = info.Name,

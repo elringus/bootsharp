@@ -15,7 +15,7 @@
 ///
 /// public class MyPrefs : Preferences
 /// {
-///      public override string BuildSpace (Type type, string @default)
+///      public override string ResolveSpace (Type type, string @default)
 ///      {
 ///           var lastDotIdx = @default.LastIndexOf('.');
 ///           if (lastDotIdx >= 0) return @default[lastDotIdx..];

@@ -157,7 +157,7 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
-    public void RespectsSpacePrefs ()
+    public void RespectsResolveSpacePref ()
     {
         AddAssembly(With(
             """
@@ -169,7 +169,7 @@ public class InteropTest : EmitTest
 
             public class Prefs : Bootsharp.Preferences
             {
-                public override string BuildSpace (Type type, string @default) => @default.Replace("Space", "Foo");
+                public override string ResolveSpace (Type type, string @default) => @default.Replace("Space", "Foo");
             }
 
             public interface IExported { void Inv (); }

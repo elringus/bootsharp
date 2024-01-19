@@ -9,14 +9,12 @@ internal sealed class TypeConverter (Preferences prefs)
     private readonly TypeCrawler crawler = new();
     private NullabilityInfo? nullability;
 
-    public string ToTypeScript (Type type) => ToTypeScript(type, null);
-
     public string ToTypeScript (Type type, NullabilityInfo? nullability)
     {
         this.nullability = nullability;
         // nullability of topmost type declarations is evaluated outside (method/property info)
         if (IsNullable(type)) type = GetNullableUnderlyingType(type);
-        return Convert(type);
+        return prefs.ResolveType(type, nullability, Convert(type));
     }
 
     private string Convert (Type type)
@@ -69,13 +67,13 @@ internal sealed class TypeConverter (Preferences prefs)
     {
         EnterNullability(type);
         var args = string.Join(", ", type.GenericTypeArguments.Select(Convert));
-        return $"{prefs.BuildSpace(type, BuildJSSpace(type))}<{args}>";
+        return $"{prefs.ResolveSpace(type, BuildJSSpace(type))}<{args}>";
     }
 
     private string ConvertFinal (Type type)
     {
         if (type.Name == "Void") return "void";
-        if (CrawledTypes.Contains(type)) return prefs.BuildSpace(type, BuildJSSpace(type));
+        if (CrawledTypes.Contains(type)) return prefs.ResolveSpace(type, BuildJSSpace(type));
         return Type.GetTypeCode(type) switch {
             TypeCode.Byte or TypeCode.SByte or TypeCode.UInt16 or TypeCode.UInt32 or
                 TypeCode.UInt64 or TypeCode.Int16 or TypeCode.Int32 or

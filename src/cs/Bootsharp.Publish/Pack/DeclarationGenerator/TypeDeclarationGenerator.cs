@@ -81,7 +81,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private string GetNamespace (Type type)
     {
-        var space = prefs.BuildSpace(type, BuildJSSpace(type));
+        var space = prefs.ResolveSpace(type, BuildJSSpace(type));
         return space[..space.LastIndexOf('.')];
     }
 
@@ -91,7 +91,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         if (type.BaseType is { } baseType && types.Contains(baseType))
             extTypes.Insert(0, baseType);
         if (extTypes.Count > 0)
-            builder.Append(" extends ").AppendJoin(", ", extTypes.Select(converter.ToTypeScript));
+            builder.Append(" extends ").AppendJoin(", ", extTypes.Select(t => prefs.ResolveSpace(t, BuildJSSpace(t))));
     }
 
     private void AppendProperties ()
@@ -130,7 +130,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private string BuildTypeName (Type type)
     {
-        var space = prefs.BuildSpace(type, BuildJSSpace(type));
+        var space = prefs.ResolveSpace(type, BuildJSSpace(type));
         var name = space[(space.LastIndexOf('.') + 1)..];
         if (!type.IsGenericType) return name;
         var args = string.Join(", ", type.GetGenericArguments().Select(BuildTypeName));

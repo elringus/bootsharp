@@ -20,7 +20,7 @@ internal sealed class BindingGenerator (Preferences prefs)
         bindings = inspection.Methods
             .Select(m => new Binding(m, null, m.JSSpace))
             .Concat(inspection.Crawled.Where(t => t.IsEnum)
-                .Select(t => new Binding(null, t, prefs.BuildSpace(t, BuildJSSpace(t)))))
+                .Select(t => new Binding(null, t, prefs.ResolveSpace(t, BuildJSSpace(t)))))
             .OrderBy(m => m.Namespace).ToArray();
         if (bindings.Length == 0) return "";
         EmitImports();
