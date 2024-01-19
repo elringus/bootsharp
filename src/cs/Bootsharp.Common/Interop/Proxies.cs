@@ -20,8 +20,8 @@
 /// <code>
 /// Proxies.Set("Space.Class.Foo", (arg) => Bootsharp.Generated.Interop.Space_Class_Foo(arg));
 /// </code><br/>
-/// Registered proxy is accessed as follows
-/// (emitted by source generator to implement original partial "Foo" method):<br/>
+/// Registered proxy is accessed as follows (emitted by source generator to
+/// implement original partial "Foo" method):<br/>
 /// <code>
 /// public static int Foo (string arg) => <![CDATA[Proxies.Get<Func<string, int>>("Space.Class.Foo")(arg);]]>
 /// </code><br/>

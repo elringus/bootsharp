@@ -82,7 +82,7 @@ internal sealed class InteropGenerator
     private void AddProxy (MethodMeta method)
     {
         var id = $"{method.Space}.{method.Name}";
-        var args = string.Join(", ", method.Arguments.Select(arg => arg.Name));
+        var args = string.Join(", ", method.Arguments.Select(arg => $"{arg.Value.TypeSyntax} {arg.Name}"));
         var wait = method.ReturnValue.Async && method.ReturnValue.Serialized;
         var async = wait ? "async " : "";
         proxies.Add($"""Proxies.Set("{id}", {async}({args}) => {BuildBody()});""");
