@@ -197,4 +197,55 @@ public class InterfacesTest : EmitTest
             }
             """);
     }
+
+    [Fact]
+    public void RespectsResolveInterfacePref ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSConfiguration<Prefs>]
+            [assembly:JSImport(typeof(IImported))]
+
+            public class Prefs : Bootsharp.Preferences
+            {
+                public override InterfaceMeta ResolveInterface (Type _, InterfaceKind __, InterfaceMeta @default)
+                {
+                    var method = ((IReadOnlyList<Bootsharp.InterfaceMethodMeta>)@default.Methods)[0];
+                    return @default with {
+                        Name = "Foo",
+                        Methods = [method with { Generated = method.Generated with { Space = "Bootsharp.Generated.Imports.Foo" } }]
+                    };
+                }
+            }
+
+            public interface IImported { void NotifyEvt (); }
+            """));
+        Execute();
+        Contains(
+            """
+            namespace Bootsharp.Generated.Imports
+            {
+                public class Foo : global::IImported
+                {
+                    [JSEvent] public static void OnEvt () => Proxies.Get<Action>("Bootsharp.Generated.Imports.Foo.OnEvt")();
+
+                    void global::IImported.NotifyEvt () => OnEvt();
+                }
+            }
+            """);
+        Contains(
+            """
+            namespace Bootsharp.Generated
+            {
+                internal static class InterfaceRegistrations
+                {
+                    [System.Runtime.CompilerServices.ModuleInitializer]
+                    internal static void RegisterInterfaces ()
+                    {
+                        Interfaces.Register(typeof(global::IImported), new ImportInterface(new Bootsharp.Generated.Imports.Foo()));
+                    }
+                }
+            }
+            """);
+    }
 }

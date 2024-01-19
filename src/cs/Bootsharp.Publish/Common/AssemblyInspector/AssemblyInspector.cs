@@ -86,7 +86,7 @@ internal sealed class AssemblyInspector (Preferences prefs, string entryAssembly
             methods.Add(method.Generated);
     }
 
-    private MethodMeta CreateMethod (MethodInfo info, MethodKind kind) => new() {
+    private MethodMeta CreateMethod (MethodInfo info, MethodKind kind) => prefs.ResolveMethod(info, kind, new() {
         Kind = kind,
         Assembly = info.DeclaringType!.Assembly.GetName().Name!,
         Space = info.DeclaringType.FullName!,
@@ -103,7 +103,7 @@ internal sealed class AssemblyInspector (Preferences prefs, string entryAssembly
         },
         JSSpace = prefs.ResolveSpace(info.DeclaringType, BuildJSSpace(info.DeclaringType)),
         JSName = ToFirstLower(info.Name)
-    };
+    });
 
     private ArgumentMeta CreateArgument (ParameterInfo info) => new() {
         Name = info.Name!,
@@ -125,13 +125,13 @@ internal sealed class AssemblyInspector (Preferences prefs, string entryAssembly
         if (iType.Namespace != null) space += $".{iType.Namespace}";
         var name = "JS" + iType.Name[1..];
         var mSpace = $"{space}.{name}";
-        return new InterfaceMeta {
+        return prefs.ResolveInterface(iType, kind, new InterfaceMeta {
             Kind = kind,
             TypeSyntax = BuildSyntax(iType),
             Namespace = space,
             Name = name,
             Methods = iType.GetMethods().Select(m => CreateInterfaceMethod(m, kind, mSpace)).ToArray()
-        };
+        });
     }
 
     private InterfaceMethodMeta CreateInterfaceMethod (MethodInfo info, InterfaceKind iKind, string space)

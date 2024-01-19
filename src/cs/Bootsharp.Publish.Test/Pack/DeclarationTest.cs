@@ -629,7 +629,7 @@ public class DeclarationTest : PackTest
                 [assembly:JSConfiguration<Prefs>]
                 public class Prefs : Bootsharp.Preferences
                 {
-                    public override string ResolveType (Type _, NullabilityInfo? __, string @default) => @default.Replace("Record", "Foo");
+                    public override string ResolveType (Type _, NullabilityInfo __, string @default) => @default.Replace("Record", "Foo");
                 }
                 """),
             With("public record Record;"),

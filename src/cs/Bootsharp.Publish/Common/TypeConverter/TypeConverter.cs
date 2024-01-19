@@ -7,9 +7,9 @@ internal sealed class TypeConverter (Preferences prefs)
     public IReadOnlyCollection<Type> CrawledTypes => crawler.Crawled;
 
     private readonly TypeCrawler crawler = new();
-    private NullabilityInfo? nullability;
+    private NullabilityInfo nullability = null!;
 
-    public string ToTypeScript (Type type, NullabilityInfo? nullability)
+    public string ToTypeScript (Type type, NullabilityInfo nullability)
     {
         this.nullability = nullability;
         // nullability of topmost type declarations is evaluated outside (method/property info)
@@ -36,7 +36,7 @@ internal sealed class TypeConverter (Preferences prefs)
     private string ConvertList (Type type)
     {
         var elementType = GetListElementType(type);
-        if (EnterNullability(type)) return $"Array<{Convert(elementType)} | null>";
+        if (EnterNullability()) return $"Array<{Convert(elementType)} | null>";
         return Type.GetTypeCode(elementType) switch {
             TypeCode.Byte => "Uint8Array",
             TypeCode.SByte => "Int8Array",
@@ -58,14 +58,14 @@ internal sealed class TypeConverter (Preferences prefs)
 
     private string ConvertAwaitable (Type type)
     {
-        EnterNullability(type);
+        EnterNullability();
         if (type.GenericTypeArguments.Length == 0) return "Promise<void>";
         return $"Promise<{Convert(type.GenericTypeArguments[0])}>";
     }
 
     private string ConvertGeneric (Type type)
     {
-        EnterNullability(type);
+        EnterNullability();
         var args = string.Join(", ", type.GenericTypeArguments.Select(Convert));
         return $"{prefs.ResolveSpace(type, BuildJSSpace(type))}<{args}>";
     }
@@ -86,13 +86,11 @@ internal sealed class TypeConverter (Preferences prefs)
         };
     }
 
-    private bool EnterNullability (Type type)
+    private bool EnterNullability ()
     {
-        if (nullability is null) return false;
-        var nullable = nullability.ElementType?.ReadState == NullabilityState.Nullable ||
-                       nullability.GenericTypeArguments.FirstOrDefault()?.ReadState == NullabilityState.Nullable;
-        if (type.IsArray) nullability = nullability.ElementType;
-        else nullability = nullability.GenericTypeArguments.FirstOrDefault();
-        return nullable;
+        if (nullability.GenericTypeArguments.Length > 0) nullability = nullability.GenericTypeArguments[0];
+        else if (nullability.ElementType != null) nullability = nullability.ElementType;
+        else return false;
+        return nullability.ReadState == NullabilityState.Nullable;
     }
 }

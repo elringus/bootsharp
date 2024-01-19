@@ -419,4 +419,31 @@ public class BindingTest : PackTest
             };
             """);
     }
+
+    [Fact]
+    public void RespectsResolveMethodPref ()
+    {
+        AddAssembly(
+            With(
+                """
+                [assembly:JSConfiguration<Prefs>]
+
+                public class Prefs : Bootsharp.Preferences
+                {
+                    public override MethodMeta ResolveMethod (System.Reflection.MethodInfo _, MethodKind __, MethodMeta @default) =>
+                        @default with { JSName = "foo" };
+                }
+                """),
+            WithClass("Space", "[JSInvokable] public static void Inv () {}")
+        );
+        Execute();
+        Contains(
+            """
+            export const Space = {
+                Class: {
+                    foo: () => getExports().Space_Class.Inv()
+                }
+            };
+            """);
+    }
 }

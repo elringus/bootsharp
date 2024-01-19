@@ -27,9 +27,9 @@ public class Preferences
     /// Resolves TypeScript type syntax of a function member or object property from associated C# type.
     /// </summary>
     /// <param name="type">C# type to resolve TypeScript syntax from.</param>
-    /// <param name="nullability">C# nullability info, ie whether associated member is nullable.</param>
+    /// <param name="nullability">C# nullability status, ie whether associated member is nullable/optional.</param>
     /// <param name="default">Result when resolved w/o the override.</param>
-    public virtual string ResolveType (Type type, NullabilityInfo? nullability, string @default) => @default;
+    public virtual string ResolveType (Type type, NullabilityInfo nullability, string @default) => @default;
     /// <summary>
     /// Resolves interop-specific metadata for an interop interface specified under
     /// <see cref="JSExportAttribute"/> or <see cref="JSImportAttribute"/>.
