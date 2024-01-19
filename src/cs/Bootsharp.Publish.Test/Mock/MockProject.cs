@@ -14,16 +14,7 @@ public sealed class MockProject : IDisposable
         CreateBuildResources();
     }
 
-    public void Dispose ()
-    {
-        try { Directory.Delete(Root, true); }
-        catch
-        {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            Dispose();
-        }
-    }
+    public void Dispose () => Directory.Delete(Root, true);
 
     public void AddAssembly (MockAssembly assembly)
     {

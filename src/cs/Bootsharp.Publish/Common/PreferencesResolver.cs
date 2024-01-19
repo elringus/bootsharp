@@ -3,25 +3,21 @@ using System.Runtime.Loader;
 
 namespace Bootsharp.Publish;
 
-internal sealed class ConfigurationResolver (string entryAssemblyName)
+internal sealed class PreferencesResolver (string entryAssemblyName)
 {
-    public Configuration Resolve (string outDir)
+    public Preferences Resolve (string outDir)
     {
         var ctx = new AssemblyLoadContext(entryAssemblyName, true);
         var assembly = LoadMainAssembly(ctx, outDir);
-        return new(GetPreferences(assembly), ctx);
+        if (FindConfigurationAttribute(assembly) is not { } attr) return new();
+        return InstantiateCustomPrefs(assembly, attr.AttributeType);
     }
 
     private Assembly LoadMainAssembly (AssemblyLoadContext ctx, string outDir)
     {
         var path = Path.GetFullPath(Path.Combine(outDir, entryAssemblyName));
-        return ctx.LoadFromAssemblyPath(path);
-    }
-
-    private Preferences GetPreferences (Assembly assembly)
-    {
-        if (FindConfigurationAttribute(assembly) is not { } attr) return new();
-        return InstantiateCustomPrefs(assembly, attr.AttributeType);
+        using var stream = File.OpenRead(path);
+        return ctx.LoadFromStream(stream);
     }
 
     private CustomAttributeData? FindConfigurationAttribute (Assembly assembly)
