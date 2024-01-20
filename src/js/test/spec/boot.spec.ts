@@ -58,38 +58,38 @@ describe("boot", () => {
     it("can boot with bins content pre-assigned", async () => {
         const { bootsharp, Test, root, bins, any } = await setup();
         const resources = { ...bootsharp.resources };
-        any<unknown>(resources.wasm).content = bins.wasm;
+        any(resources.wasm).content = bins.wasm;
         for (const asm of resources.assemblies)
-            any<unknown>(asm).content = bins.assemblies.find(a => a.name === asm.name)!.content;
+            any(asm).content = bins.assemblies.find(a => a.name === asm.name)!.content;
         await bootsharp.boot({ resources, root });
         expect(Test.Program.onMainInvoked).toHaveBeenCalledOnce();
     });
     it("can boot with base64 content", async () => {
         const { bootsharp, Test, root, bins, any } = await setup();
         const resources = { ...bootsharp.resources };
-        any<unknown>(resources.wasm).content = bins.wasm.toString("base64");
+        any(resources.wasm).content = bins.wasm.toString("base64");
         for (const asm of resources.assemblies)
-            any<unknown>(asm).content = bins.assemblies.find(a => a.name === asm.name)!.content.toString("base64");
+            any(asm).content = bins.assemblies.find(a => a.name === asm.name)!.content.toString("base64");
         await bootsharp.boot({ resources, root });
         expect(Test.Program.onMainInvoked).toHaveBeenCalledOnce();
     });
     it("can boot with base64 content w/o native encoder available", async () => {
         const { bootsharp, Test, root, bins, any } = await setup();
-        any<unknown>(global).Buffer = undefined;
+        any(global).Buffer = undefined;
         const resources = { ...bootsharp.resources };
-        any<unknown>(resources.wasm).content = bins.wasm.toString("base64");
+        any(resources.wasm).content = bins.wasm.toString("base64");
         for (const asm of resources.assemblies)
-            any<unknown>(asm).content = bins.assemblies.find(a => a.name === asm.name)!.content.toString("base64");
+            any(asm).content = bins.assemblies.find(a => a.name === asm.name)!.content.toString("base64");
         await bootsharp.boot({ resources, root });
         expect(Test.Program.onMainInvoked).toHaveBeenCalledOnce();
     });
     it("attempts to use atob when window is defined in global", async () => {
         const { bootsharp, root, bins, any } = await setup();
-        any<unknown>(global).window = { atob: vi.fn() };
+        any(global).window = { atob: vi.fn() };
         const resources = { ...bootsharp.resources };
-        any<unknown>(resources.wasm).content = bins.wasm.toString("base64");
+        any(resources.wasm).content = bins.wasm.toString("base64");
         for (const asm of resources.assemblies)
-            any<unknown>(asm).content = bins.assemblies.find(a => a.name === asm.name)!.content.toString("base64");
+            any(asm).content = bins.assemblies.find(a => a.name === asm.name)!.content.toString("base64");
         try { await bootsharp.boot({ resources, root }); }
         catch {}
         expect(global.window.atob).toHaveBeenCalledOnce();

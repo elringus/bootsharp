@@ -39,7 +39,11 @@ export function getDeclarations() {
 }
 
 // Just casting to <any> triggers codefactor.
-export function any<T>(obj: unknown): Record<string, T> {
+export function any(obj: unknown): Record<string, unknown> {
+    return <Record<string, unknown>><unknown>obj;
+}
+
+export function to<T>(obj: unknown): Record<string, T> {
     return <Record<string, T>><unknown>obj;
 }
 

@@ -1,5 +1,5 @@
 import { describe, it, beforeAll, expect } from "vitest";
-import { Test, bootSideload, any } from "../cs";
+import { Test, bootSideload, any, to } from "../cs";
 
 const TrackType = Test.Types.TrackType;
 
@@ -13,7 +13,7 @@ describe("while bootsharp is booted", () => {
     beforeAll(bootSideload);
     it("throws when invoking un-assigned JS function from C#", () => {
         const error = /Failed to invoke '.+' from C#. Make sure to assign function in JavaScript/;
-        any<unknown>(Test.Program).onMainInvoked = undefined;
+        any(Test.Program).onMainInvoked = undefined;
         expect(Test.Functions.getBytes).toBeUndefined();
         expect(Test.Functions.getString).toBeUndefined();
         expect(Test.Functions.getStringAsync).toBeUndefined();
@@ -22,14 +22,14 @@ describe("while bootsharp is booted", () => {
         expect(Test.Types.Registry.getRegistry).toBeUndefined();
         expect(Test.Types.Registry.getRegistries).toBeUndefined();
         expect(Test.Types.Registry.getRegistryMap).toBeUndefined();
-        expect(() => any<() => void>(Test.Functions).getStringSerialized()).throw(error);
-        expect(() => any<() => void>(Test.Functions).getStringAsyncSerialized()).throw(error);
-        expect(() => any<() => void>(Test.Functions).getBytesSerialized()).throw(error);
-        expect(() => any<() => void>(Test.Platform).throwJSSerialized()).throw(error);
-        expect(() => any<() => void>(Test.Program).onMainInvokedSerialized()).throw(error);
-        expect(() => any<() => void>(Test.Types.Registry).getRegistrySerialized()).throw(error);
-        expect(() => any<() => void>(Test.Types.Registry).getRegistriesSerialized()).throw(error);
-        expect(() => any<() => void>(Test.Types.Registry).getRegistryMapSerialized()).throw(error);
+        expect(() => to<() => void>(Test.Functions).getStringSerialized()).throw(error);
+        expect(() => to<() => void>(Test.Functions).getStringAsyncSerialized()).throw(error);
+        expect(() => to<() => void>(Test.Functions).getBytesSerialized()).throw(error);
+        expect(() => to<() => void>(Test.Platform).throwJSSerialized()).throw(error);
+        expect(() => to<() => void>(Test.Program).onMainInvokedSerialized()).throw(error);
+        expect(() => to<() => void>(Test.Types.Registry).getRegistrySerialized()).throw(error);
+        expect(() => to<() => void>(Test.Types.Registry).getRegistriesSerialized()).throw(error);
+        expect(() => to<() => void>(Test.Types.Registry).getRegistryMapSerialized()).throw(error);
     });
     it("can invoke C# method", async () => {
         expect(Test.Invokable.joinStrings("foo", "bar")).toStrictEqual("foobar");
