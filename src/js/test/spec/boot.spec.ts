@@ -144,7 +144,6 @@ describe("boot", () => {
             create: vi.fn(async () => {
                 const bootsharp = (await import("../cs/Test/bin/sideload")).default;
                 const dotnet = (await bootsharp.dotnet.getMain(root)).dotnet;
-                console.log(dotnet);
                 return await dotnet.withConfig(<never>customs.config).create();
             }),
             import: vi.fn(),
@@ -161,10 +160,8 @@ describe("boot", () => {
         const { bootsharp, root } = await setup();
         const options: BootOptions = {
             create: vi.fn(async () => {
-                const bootsharp = (await import("../cs/Test/bin/sideload")).default;
-                const dotnet = (await bootsharp.dotnet.getMain(root)).dotnet;
-                console.log(dotnet);
                 const cfg = await bootsharp.dotnet.buildConfig(bootsharp.resources, root);
+                const dotnet = (await bootsharp.dotnet.getMain(root)).dotnet;
                 const runtime = await dotnet.withConfig(cfg).create();
                 runtime.getAssemblyExports = () => Promise.resolve({});
                 return runtime;
