@@ -35,7 +35,6 @@ internal sealed class DependencyGenerator (string entryAssembly)
     {
         var asm = Path.GetFileNameWithoutExtension(entryAssembly);
         Add(All, "Bootsharp.Generated.Dependencies", asm);
-        Add(All, "Bootsharp.Generated.SerializerContext", asm);
         Add(All, "Bootsharp.Generated.Interop", asm);
     }
 

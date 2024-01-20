@@ -8,12 +8,23 @@ public class DependenciesTest : EmitTest
     protected override string TestedContent => GeneratedDependencies;
 
     [Fact]
-    public void AddsCommonGeneratedTypesByDefault ()
+    public void WhenNothingInspectedIncludesCommonDependencies ()
     {
         Execute();
-        Added(All, "Bootsharp.Generated.Dependencies");
-        Added(All, "Bootsharp.Generated.SerializerContext");
-        Added(All, "Bootsharp.Generated.Interop");
+        Contains(
+            """
+            using System.Diagnostics.CodeAnalysis;
+
+            namespace Bootsharp.Generated;
+
+            public static class Dependencies
+            {
+                [System.Runtime.CompilerServices.ModuleInitializer]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.Generated.Dependencies", "System.Runtime")]
+                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.Generated.Interop", "System.Runtime")]
+                internal static void RegisterDynamicDependencies () { }
+            }
+            """);
     }
 
     [Fact]
