@@ -3,9 +3,10 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+        <ImplicitUsings>enable</ImplicitUsings>
         <!-- Specify custom name for the generated JavaScript module. -->
         <BootsharpName>backend</BootsharpName>
-        <!-- Publish module's package.json file under solution folder for accessibility. -->
+        <!-- Publish module's package.json file under solution folder. -->
         <BootsharpPackageDirectory>$(SolutionDir)</BootsharpPackageDirectory>
         <!-- Don't embed the C# solution binaries to the JavaScript module. -->
         <BootsharpEmbedBinaries>false</BootsharpEmbedBinaries>

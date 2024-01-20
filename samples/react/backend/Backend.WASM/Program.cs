@@ -1,5 +1,3 @@
-using Backend;
-using Backend.Prime;
 using Bootsharp;
 using Bootsharp.Inject;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,15 +8,15 @@ using Microsoft.Extensions.DependencyInjection;
 // and can be shared with other build targets (console, MAUI, etc).
 
 // Generate C# -> JavaScript interop handlers for specified contracts.
-[assembly: JSExport(typeof(IComputer))]
+[assembly: JSExport(typeof(Backend.IComputer))]
 // Generate JavaScript -> C# interop handlers for specified contracts.
-[assembly: JSImport(typeof(IPrimeUI))]
-// Group all generated JavaScript artifacts under 'Computer' namespace.
-[assembly: JSNamespace("^.*$", "Computer")]
+[assembly: JSImport(typeof(Backend.Prime.IPrimeUI))]
+// Customize Bootsharp behaviour at build time.
+[assembly: JSConfiguration<Preferences>]
 
 // Perform dependency injection.
 new ServiceCollection()
-    .AddSingleton<IComputer, Prime>() // use prime computer
+    .AddSingleton<Backend.IComputer, Backend.Prime.Prime>() // use prime computer
     .AddBootsharp() // inject generated interop handlers
     .BuildServiceProvider()
     .RunBootsharp(); // initialize interop services

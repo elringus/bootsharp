@@ -53,7 +53,7 @@ public class InterfacesTest : EmitTest
                     [System.Runtime.CompilerServices.ModuleInitializer]
                     internal static void RegisterInterfaces ()
                     {
-                        Interfaces.Register(typeof(Bootsharp.Generated.Exports.JSExported), new ExportInterface(typeof(global::IExported), handler => new Bootsharp.Generated.Exports.JSExported(handler)));
+                        Interfaces.Register(typeof(Bootsharp.Generated.Exports.JSExported), new ExportInterface(typeof(global::IExported), handler => new Bootsharp.Generated.Exports.JSExported((global::IExported)handler)));
                     }
                 }
             }
@@ -166,7 +166,7 @@ public class InterfacesTest : EmitTest
                     [System.Runtime.CompilerServices.ModuleInitializer]
                     internal static void RegisterInterfaces ()
                     {
-                        Interfaces.Register(typeof(Bootsharp.Generated.Exports.Space.JSExported), new ExportInterface(typeof(global::Space.IExported), handler => new Bootsharp.Generated.Exports.Space.JSExported(handler)));
+                        Interfaces.Register(typeof(Bootsharp.Generated.Exports.Space.JSExported), new ExportInterface(typeof(global::Space.IExported), handler => new Bootsharp.Generated.Exports.Space.JSExported((global::Space.IExported)handler)));
                         Interfaces.Register(typeof(global::Space.IImported), new ImportInterface(new Bootsharp.Generated.Imports.Space.JSImported()));
                     }
                 }

@@ -74,7 +74,7 @@ internal sealed class InterfaceGenerator
 
     private string EmitRegistration (InterfaceMeta i) => i.Kind == InterfaceKind.Import ?
         $"Interfaces.Register(typeof({i.TypeSyntax}), new ImportInterface(new {i.FullName}()));" :
-        $"Interfaces.Register(typeof({i.FullName}), new ExportInterface(typeof({i.TypeSyntax}), handler => new {i.FullName}(handler)));";
+        $"Interfaces.Register(typeof({i.FullName}), new ExportInterface(typeof({i.TypeSyntax}), handler => new {i.FullName}(({i.TypeSyntax})handler)));";
 
     private string EmitExportMethod (MethodMeta method)
     {

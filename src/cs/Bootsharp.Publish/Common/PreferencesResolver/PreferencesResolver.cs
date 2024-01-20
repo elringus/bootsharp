@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using System.Runtime.Loader;
+using System.Runtime.CompilerServices;
 
 namespace Bootsharp.Publish;
 
@@ -7,17 +7,10 @@ internal sealed class PreferencesResolver (string entryAssemblyName)
 {
     public Preferences Resolve (string outDir)
     {
-        var ctx = new AssemblyLoadContext(entryAssemblyName, true);
-        var assembly = LoadMainAssembly(ctx, outDir);
+        var ctx = new PreferencesContext(outDir);
+        var assembly = ctx.LoadAssembly(entryAssemblyName);
         if (FindConfigurationAttribute(assembly) is not { } attr) return new();
         return InstantiateCustomPrefs(assembly, attr.AttributeType);
-    }
-
-    private Assembly LoadMainAssembly (AssemblyLoadContext ctx, string outDir)
-    {
-        var path = Path.GetFullPath(Path.Combine(outDir, entryAssemblyName));
-        using var stream = File.OpenRead(path);
-        return ctx.LoadFromStream(stream);
     }
 
     private CustomAttributeData? FindConfigurationAttribute (Assembly assembly)
@@ -32,6 +25,6 @@ internal sealed class PreferencesResolver (string entryAssemblyName)
     private Preferences InstantiateCustomPrefs (Assembly assembly, Type attributeType)
     {
         var prefsType = attributeType.GenericTypeArguments[0];
-        return (Preferences)assembly.CreateInstance(prefsType.FullName!)!;
+        return Unsafe.As<Preferences>(assembly.CreateInstance(prefsType.FullName!)!);
     }
 }

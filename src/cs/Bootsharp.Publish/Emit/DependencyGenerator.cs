@@ -33,16 +33,14 @@ internal sealed class DependencyGenerator (string entryAssembly)
 
     private void AddGeneratedCommon ()
     {
-        var asm = Path.GetFileNameWithoutExtension(entryAssembly);
-        Add(All, "Bootsharp.Generated.Dependencies", asm);
-        Add(All, "Bootsharp.Generated.Interop", asm);
+        Add(All, "Bootsharp.Generated.Dependencies", entryAssembly);
+        Add(All, "Bootsharp.Generated.Interop", entryAssembly);
     }
 
     private void AddGeneratedInteropClasses (AssemblyInspection inspection)
     {
-        var asm = Path.GetFileNameWithoutExtension(entryAssembly);
         foreach (var inter in inspection.Interfaces)
-            Add(All, inter.FullName, asm);
+            Add(All, inter.FullName, entryAssembly);
     }
 
     private void AddClassesWithInteropMethods (AssemblyInspection inspection)
@@ -53,6 +51,7 @@ internal sealed class DependencyGenerator (string entryAssembly)
 
     private void Add (DynamicallyAccessedMemberTypes types, string name, string assembly)
     {
-        added.Add($"""[DynamicDependency(DynamicallyAccessedMemberTypes.{types}, "{name}", "{assembly}")]""");
+        var asm = assembly.EndsWith(".dll", StringComparison.Ordinal) ? assembly[..^4] : assembly;
+        added.Add($"""[DynamicDependency(DynamicallyAccessedMemberTypes.{types}, "{name}", "{asm}")]""");
     }
 }
