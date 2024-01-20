@@ -166,7 +166,7 @@ describe("boot", () => {
                 console.log(dotnet);
                 const cfg = await bootsharp.dotnet.buildConfig(bootsharp.resources, root);
                 const runtime = await dotnet.withConfig(cfg).create();
-                runtime.getAssemblyExports = _ => Promise.resolve({});
+                runtime.getAssemblyExports = () => Promise.resolve({});
                 return runtime;
             })
         };
