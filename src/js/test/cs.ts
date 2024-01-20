@@ -50,14 +50,14 @@ function loadWasmBinary() {
 }
 
 function loadAssemblies() {
-    let assemblies = [];
+    const assemblies = [];
     for (const assemblyPath of findAssemblies())
         assemblies.push(loadAssembly(assemblyPath));
     return assemblies;
 }
 
 function findAssemblies() {
-    let assemblyPaths = [];
+    const assemblyPaths = [];
     const dirPath = resolve("test/cs/Test/bin/sideload/bin");
     assertPathExists(dirPath);
     for (const fileName of readdirSync(dirPath))

@@ -119,6 +119,7 @@ describe("while bootsharp is booted", () => {
             multipleArg3 = a3;
         });
         Test.Event.broadcastEvent("foo");
+        expect(eventArg1).toStrictEqual("foo");
         Test.Event.broadcastEventMultiple(1, { id: "foo", maxSpeed: 50 }, TrackType.Rubber);
         expect(multipleArg1).toStrictEqual(1);
         expect(multipleArg2).toStrictEqual({ id: "foo", maxSpeed: 50 });
