@@ -38,6 +38,29 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
+    public void WhenNoNamespaceDeclaresUnderRoot ()
+    {
+        AddAssembly(
+            With("public record Record;"),
+            With("public enum Enum { A, B }"),
+            WithClass("[JSInvokable] public static Enum Inv (Record r) => default;"));
+        Execute();
+        Contains(
+            """
+            export enum Enum {
+                A,
+                B
+            }
+            export interface Record {
+            }
+
+            export namespace Class {
+                export function inv(r: Record): Enum;
+            }
+            """);
+    }
+
+    [Fact]
     public void FunctionDeclarationIsExportedForInvokableMethod ()
     {
         AddAssembly(WithClass("Foo", "[JSInvokable] public static void Foo () { }"));
@@ -123,7 +146,7 @@ public class DeclarationTest : PackTest
                 }
             }
 
-            export namespace Global.Class {
+            export namespace Class {
                 export function getFoo(bar: SpaceB.Bar): SpaceA.Foo;
             }
             """);
@@ -141,14 +164,21 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void WhenNoSpaceTypesAreDeclaredUnderGlobalSpace ()
+    public void WhenNoNamespaceTypesAreDeclaredUnderRoot ()
     {
         AddAssembly(
             With("public class Foo { }"),
             WithClass("[JSFunction] public static void OnFoo (Foo foo) { }"));
         Execute();
-        Contains("export namespace Global {\n    export interface Foo {\n    }\n}");
-        Contains("export namespace Global.Class {\n    export let onFoo: (foo: Global.Foo) => void;\n}");
+        Contains(
+            """
+            export interface Foo {
+            }
+
+            export namespace Class {
+                export let onFoo: (foo: Foo) => void;
+            }
+            """);
     }
 
     [Fact]
@@ -377,9 +407,23 @@ public class DeclarationTest : PackTest
             With("Bar", "public interface GenericInterface<T> { public T Value { get; set; } }"),
             WithClass("n", "[JSInvokable] public static void Method (Foo.GenericClass<Bar.GenericInterface<string>> p) { }"));
         Execute();
-        Matches(@"export namespace Foo {\s*export interface GenericClass<T> {\s*value\?: T;\s*}\s*}");
-        Matches(@"export namespace Bar {\s*export interface GenericInterface<T> {\s*value\?: T;\s*}\s*}");
-        Contains("method(p: Foo.GenericClass<Bar.GenericInterface<string>>): void");
+        Contains(
+            """
+            export namespace Bar {
+                export interface GenericInterface<T> {
+                    value?: T;
+                }
+            }
+            export namespace Foo {
+                export interface GenericClass<T> {
+                    value?: T;
+                }
+            }
+
+            export namespace n.Class {
+                export function method(p: Foo.GenericClass<Bar.GenericInterface<string>>): void;
+            }
+            """);
     }
 
     [Fact]
@@ -510,13 +554,11 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
-            export namespace Global {
-                export interface Foo {
-                }
+            export interface Foo {
             }
 
-            export namespace Global.Class {
-                export let fun: (bar: Array<number | null> | undefined, nya: Array<Array<Global.Foo> | null> | undefined, far: Array<Array<Global.Foo | null> | null> | undefined) => Array<Global.Foo | null> | null;
+            export namespace Class {
+                export let fun: (bar: Array<number | null> | undefined, nya: Array<Array<Foo> | null> | undefined, far: Array<Array<Foo | null> | null> | undefined) => Array<Foo | null> | null;
             }
             """);
     }
@@ -529,8 +571,8 @@ public class DeclarationTest : PackTest
             With("public record Foo (List<List<IFoo<string>?>?>? Bar, IFoo<int>?[]?[]? Nya) : IFoo<bool>;"),
             WithClass("[JSFunction] public static IFoo<bool> Fun (Foo foo) => default;"));
         Execute();
-        Contains("bar?: Array<Array<Global.IFoo<string> | null> | null>;");
-        Contains("nya?: Array<Array<Global.IFoo<number> | null> | null>;");
+        Contains("bar?: Array<Array<IFoo<string> | null> | null>;");
+        Contains("nya?: Array<Array<IFoo<number> | null> | null>;");
     }
 
     [Fact]
@@ -635,6 +677,6 @@ public class DeclarationTest : PackTest
             With("public record Record;"),
             WithClass("[JSInvokable] public static void Inv (Record r) {}"));
         Execute();
-        Contains("inv(r: Global.Foo): void");
+        Contains("inv(r: Foo): void");
     }
 }

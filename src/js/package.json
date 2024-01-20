@@ -3,7 +3,6 @@
         "compile": "sh scripts/compile-test.sh",
         "test": "vitest run --silent --pool=vmThreads",
         "cover": "npm test -- --coverage.enabled --coverage.100 --coverage.include=**/sideload/*.mjs --coverage.exclude=**/dotnet.* --coverage.allowExternal",
-        "serve": "serve coverage",
         "build": "sh scripts/build.sh"
     },
     "devDependencies": {

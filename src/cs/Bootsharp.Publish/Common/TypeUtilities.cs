@@ -169,7 +169,6 @@ internal static class TypeUtilities
     public static string BuildJSSpace (Type type)
     {
         var space = type.FullName ?? type.Name;
-        if (type.Namespace is null) space = $"Global.{space}";
         if (type.IsGenericType) space = GetGenericNameWithoutArgs(space);
         if (space.Contains('+')) space = space.Replace("+", ".");
         return space;

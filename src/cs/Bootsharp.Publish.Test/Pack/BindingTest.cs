@@ -72,15 +72,13 @@ public class BindingTest : PackTest
         Execute();
         Contains(
             """
-            export const Global = {
-                Class: {
-                    onFoo: new Event(),
-                    onFooSerialized: () => Global.Class.onFoo.broadcast(),
-                    onBar: new Event(),
-                    onBarSerialized: (a) => Global.Class.onBar.broadcast(a),
-                    onBaz: new Event(),
-                    onBazSerialized: (a, b) => Global.Class.onBaz.broadcast(a, b)
-                }
+            export const Class = {
+                onFoo: new Event(),
+                onFooSerialized: () => Class.onFoo.broadcast(),
+                onBar: new Event(),
+                onBarSerialized: (a) => Class.onBar.broadcast(a),
+                onBaz: new Event(),
+                onBazSerialized: (a, b) => Class.onBaz.broadcast(a, b)
             };
             """);
     }
@@ -246,21 +244,19 @@ public class BindingTest : PackTest
         Execute();
         Contains(
             """
-            export const Global = {
-                ClassA: {
-                    inv: () => getExports().ClassA_Inv()
-                },
-                ClassB: {
-                    get fun() { return this.funHandler; },
-                    set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                    get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Global.ClassB.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
-                }
+            export const ClassA = {
+                inv: () => getExports().ClassA_Inv()
+            };
+            export const ClassB = {
+                get fun() { return this.funHandler; },
+                set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
+                get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'ClassB.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
             };
             """);
     }
 
     [Fact]
-    public void WhenNoSpaceBindingsAreAssignedToGlobalObject ()
+    public void WhenNoSpaceBindingsAreAssignedToClassObject ()
     {
         AddAssembly(
             WithClass("[JSInvokable] public static Task<int> Nya () => Task.FromResult(0);"),
@@ -268,13 +264,11 @@ public class BindingTest : PackTest
         Execute();
         Contains(
             """
-            export const Global = {
-                Class: {
-                    nya: () => getExports().Class_Nya(),
-                    get fun() { return this.funHandler; },
-                    set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                    get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Global.Class.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
-                }
+            export const Class = {
+                nya: () => getExports().Class_Nya(),
+                get fun() { return this.funHandler; },
+                set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
+                get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Class.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
             };
             """);
     }
@@ -286,10 +280,8 @@ public class BindingTest : PackTest
         Execute();
         Contains(
             """
-            export const Global = {
-                Class: {
-                    fun: (fn) => getExports().Class_Fun(fn)
-                }
+            export const Class = {
+                fun: (fn) => getExports().Class_Fun(fn)
             };
             """);
     }
@@ -306,17 +298,15 @@ public class BindingTest : PackTest
         Execute();
         Contains(
             """
-            export const Global = {
-                Class: {
-                    foo: (i) => deserialize(getExports().Class_Foo(serialize(i))),
-                    get bar() { return this.barHandler; },
-                    set bar(handler) { this.barHandler = handler; this.barSerializedHandler = (i) => serialize(this.barHandler(deserialize(i))); },
-                    get barSerialized() { if (typeof this.barHandler !== "function") throw Error("Failed to invoke 'Global.Class.bar' from C#. Make sure to assign function in JavaScript."); return this.barSerializedHandler; },
-                    baz: new Event(),
-                    bazSerialized: (i) => Global.Class.baz.broadcast(deserialize(i)),
-                    yaz: new Event(),
-                    yazSerialized: (a, i) => Global.Class.yaz.broadcast(a, deserialize(i))
-                }
+            export const Class = {
+                foo: (i) => deserialize(getExports().Class_Foo(serialize(i))),
+                get bar() { return this.barHandler; },
+                set bar(handler) { this.barHandler = handler; this.barSerializedHandler = (i) => serialize(this.barHandler(deserialize(i))); },
+                get barSerialized() { if (typeof this.barHandler !== "function") throw Error("Failed to invoke 'Class.bar' from C#. Make sure to assign function in JavaScript."); return this.barSerializedHandler; },
+                baz: new Event(),
+                bazSerialized: (i) => Class.baz.broadcast(deserialize(i)),
+                yaz: new Event(),
+                yazSerialized: (a, i) => Class.yaz.broadcast(a, deserialize(i))
             };
             """);
     }
@@ -333,17 +323,15 @@ public class BindingTest : PackTest
         Execute();
         Contains(
             """
-            export const Global = {
-                Class: {
-                    foo: async (i) => deserialize(await getExports().Class_Foo(serialize(i))),
-                    get bar() { return this.barHandler; },
-                    set bar(handler) { this.barHandler = handler; this.barSerializedHandler = async (i) => serialize(await this.barHandler(deserialize(i))); },
-                    get barSerialized() { if (typeof this.barHandler !== "function") throw Error("Failed to invoke 'Global.Class.bar' from C#. Make sure to assign function in JavaScript."); return this.barSerializedHandler; },
-                    baz: async () => deserialize(await getExports().Class_Baz()),
-                    get yaz() { return this.yazHandler; },
-                    set yaz(handler) { this.yazHandler = handler; this.yazSerializedHandler = async () => serialize(await this.yazHandler()); },
-                    get yazSerialized() { if (typeof this.yazHandler !== "function") throw Error("Failed to invoke 'Global.Class.yaz' from C#. Make sure to assign function in JavaScript."); return this.yazSerializedHandler; }
-                }
+            export const Class = {
+                foo: async (i) => deserialize(await getExports().Class_Foo(serialize(i))),
+                get bar() { return this.barHandler; },
+                set bar(handler) { this.barHandler = handler; this.barSerializedHandler = async (i) => serialize(await this.barHandler(deserialize(i))); },
+                get barSerialized() { if (typeof this.barHandler !== "function") throw Error("Failed to invoke 'Class.bar' from C#. Make sure to assign function in JavaScript."); return this.barSerializedHandler; },
+                baz: async () => deserialize(await getExports().Class_Baz()),
+                get yaz() { return this.yazHandler; },
+                set yaz(handler) { this.yazHandler = handler; this.yazSerializedHandler = async () => serialize(await this.yazHandler()); },
+                get yazSerialized() { if (typeof this.yazHandler !== "function") throw Error("Failed to invoke 'Class.yaz' from C#. Make sure to assign function in JavaScript."); return this.yazSerializedHandler; }
             };
             """);
     }

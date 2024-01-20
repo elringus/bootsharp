@@ -157,6 +157,21 @@ describe("boot", () => {
         expect(customs.run).toHaveBeenCalledOnce();
         expect(customs.export).toHaveBeenCalledOnce();
     });
+    it("can boot when program has no exports", async () => {
+        const { bootsharp, root } = await setup();
+        const options: BootOptions = {
+            create: vi.fn(async () => {
+                const bootsharp = (await import("../cs/Test/bin/sideload")).default;
+                const dotnet = (await bootsharp.dotnet.getMain(root)).dotnet;
+                console.log(dotnet);
+                const cfg = await bootsharp.dotnet.buildConfig(bootsharp.resources, root);
+                const runtime = await dotnet.withConfig(cfg).create();
+                runtime.getAssemblyExports = _ => Promise.resolve({});
+                return runtime;
+            })
+        };
+        await bootsharp.boot(options);
+    });
 });
 
 describe("boot status", () => {

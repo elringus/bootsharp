@@ -1,4 +1,4 @@
-import bootsharp, { Global } from "./cs/bin/bootsharp/bootsharp.mjs";
+import bootsharp, { Program } from "./cs/bin/bootsharp/index.mjs";
 import zlib from "node:zlib";
 import util from "node:util";
 import fs from "node:fs/promises";
@@ -12,7 +12,7 @@ await Promise.all([
     ...resources.assemblies.map(fetchBro)
 ]);
 
-Global.log = console.log;
+Program.log = console.log;
 await bootsharp.boot({ root: "./bin", resources });
 
 async function measure(dir) {

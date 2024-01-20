@@ -23,7 +23,7 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
-    public void GeneratesForMethodsInGlobalSpace ()
+    public void GeneratesForMethodsWithoutNamespace ()
     {
         AddAssembly(With(
             """
@@ -38,8 +38,8 @@ public class InteropTest : EmitTest
         Contains("""Proxies.Set("Class.Fun", () => Class_Fun());""");
         Contains("""Proxies.Set("Class.Evt", () => Class_Evt());""");
         Contains("[System.Runtime.InteropServices.JavaScript.JSExport] internal static void Class_Inv () => global::Class.Inv();");
-        Contains("""[System.Runtime.InteropServices.JavaScript.JSImport("Global.Class.funSerialized", "Bootsharp")] internal static partial void Class_Fun ();""");
-        Contains("""[System.Runtime.InteropServices.JavaScript.JSImport("Global.Class.evtSerialized", "Bootsharp")] internal static partial void Class_Evt ();""");
+        Contains("""[System.Runtime.InteropServices.JavaScript.JSImport("Class.funSerialized", "Bootsharp")] internal static partial void Class_Fun ();""");
+        Contains("""[System.Runtime.InteropServices.JavaScript.JSImport("Class.evtSerialized", "Bootsharp")] internal static partial void Class_Evt ();""");
     }
 
     [Fact]
@@ -94,8 +94,8 @@ public class InteropTest : EmitTest
         Contains("""Proxies.Set("Bootsharp.Generated.Imports.JSImported.Fun", () => Bootsharp_Generated_Imports_JSImported_Fun());""");
         Contains("""Proxies.Set("Bootsharp.Generated.Imports.JSImported.OnEvt", () => Bootsharp_Generated_Imports_JSImported_OnEvt());""");
         Contains("JSExport] internal static void Bootsharp_Generated_Exports_Space_JSExported_Inv () => global::Bootsharp.Generated.Exports.Space.JSExported.Inv();");
-        Contains("""JSImport("Global.Imported.funSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_JSImported_Fun ();""");
-        Contains("""JSImport("Global.Imported.onEvtSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_JSImported_OnEvt ();""");
+        Contains("""JSImport("Imported.funSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_JSImported_Fun ();""");
+        Contains("""JSImport("Imported.onEvtSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_JSImported_OnEvt ();""");
     }
 
     [Fact]

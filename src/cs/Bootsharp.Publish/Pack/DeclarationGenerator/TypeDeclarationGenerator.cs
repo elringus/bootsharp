@@ -39,7 +39,8 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private bool ShouldOpenNamespace ()
     {
-        if (prevType is null) return true;
+        if (type.Namespace == null) return false;
+        if (prevType == null) return true;
         return GetNamespace(prevType) != GetNamespace(type);
     }
 
@@ -51,6 +52,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private bool ShouldCloseNamespace ()
     {
+        if (type.Namespace == null) return false;
         if (nextType is null) return true;
         return GetNamespace(nextType) != GetNamespace(type);
     }
@@ -62,27 +64,30 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private void DeclareInterface ()
     {
-        AppendLine($"export interface {BuildTypeName(type)}", 1);
+        var indent = type.Namespace != null ? 1 : 0;
+        AppendLine($"export interface {BuildTypeName(type)}", indent);
         AppendExtensions();
         builder.Append(" {");
         AppendProperties();
-        AppendLine("}", 1);
+        AppendLine("}", indent);
     }
 
     private void DeclareEnum ()
     {
-        AppendLine($"export enum {type.Name} {{", 1);
+        var indent = type.Namespace != null ? 1 : 0;
+        AppendLine($"export enum {type.Name} {{", indent);
         var names = Enum.GetNames(type);
         for (int i = 0; i < names.Length; i++)
-            if (i == names.Length - 1) AppendLine(names[i], 2);
-            else AppendLine($"{names[i]},", 2);
-        AppendLine("}", 1);
+            if (i == names.Length - 1) AppendLine(names[i], indent + 1);
+            else AppendLine($"{names[i]},", indent + 1);
+        AppendLine("}", indent);
     }
 
     private string GetNamespace (Type type)
     {
         var space = prefs.ResolveSpace(type, BuildJSSpace(type));
-        return space[..space.LastIndexOf('.')];
+        var lastDotIdx = space.LastIndexOf('.');
+        return lastDotIdx >= 0 ? space[..lastDotIdx] : space;
     }
 
     private void AppendExtensions ()
@@ -104,7 +109,8 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private void AppendProperty (PropertyInfo property)
     {
-        AppendLine(ToFirstLower(property.Name), 2);
+        var indent = type.Namespace != null ? 1 : 0;
+        AppendLine(ToFirstLower(property.Name), indent + 1);
         if (IsNullable(property)) builder.Append('?');
         builder.Append($": {BuildType()};");
 
