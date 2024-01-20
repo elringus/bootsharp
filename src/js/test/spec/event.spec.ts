@@ -1,23 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { Event } from "../cs.mjs";
+import { Event } from "../cs";
 
 describe("event", () => {
     it("can broadcast without subscribers", () => {
         new Event().broadcast();
     });
     it("doesn't mind unsubscribing null handler", () => {
-        new Event().unsubscribe(null);
+        new Event().unsubscribe(<never>null);
     });
     it("warns when unsubscribing handler which is not subscribed", () => {
         let warning;
-        new Event({ warn: msg => warning = msg }).unsubscribe(it);
+        new Event({ warn: msg => warning = msg }).unsubscribe(<never>it);
         expect(warning).include("handler is not subscribed");
     });
     it("warns when subscribing handler which is already subscribed", () => {
         let warning;
         const event = new Event({ warn: msg => warning = msg });
-        event.subscribe(it);
-        event.subscribe(it);
+        event.subscribe(<never>it);
+        event.subscribe(<never>it);
         expect(warning).include("handler is already subscribed");
     });
     it("invokes subscribed handlers in order", () => {
@@ -31,7 +31,7 @@ describe("event", () => {
     it("doesn't invoke un-subscribed handler", () => {
         let result = false;
         const event = new Event();
-        const handler = v => result = v;
+        const handler = (v: unknown) => result = <never>v;
         event.subscribe(handler);
         event.broadcast(true);
         event.unsubscribe(handler);
@@ -41,7 +41,7 @@ describe("event", () => {
     it("delivers broadcast argument to the handlers", () => {
         let result = "";
         const event = new Event();
-        event.subscribe(v => result = v);
+        event.subscribe(v => result = <never>v);
         event.broadcast("foo");
         expect(result).toStrictEqual("foo");
     });

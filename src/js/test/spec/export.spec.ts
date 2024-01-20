@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { embedded, getDeclarations } from "../cs.mjs";
+import { embedded, getDeclarations } from "../cs";
 
 describe("export", () => {
     it("exports bootsharp api", () => {

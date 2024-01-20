@@ -1,5 +1,5 @@
 import { describe, it, beforeAll, expect } from "vitest";
-import { bootSideload, Test } from "../cs.mjs";
+import { Test, bootSideload, any } from "../cs";
 
 const TrackType = Test.Types.TrackType;
 
@@ -13,7 +13,7 @@ describe("while bootsharp is booted", () => {
     beforeAll(bootSideload);
     it("throws when invoking un-assigned JS function from C#", () => {
         const error = /Failed to invoke '.+' from C#. Make sure to assign function in JavaScript/;
-        Test.Program.onMainInvoked = undefined;
+        any<unknown>(Test.Program).onMainInvoked = undefined;
         expect(Test.Functions.getBytes).toBeUndefined();
         expect(Test.Functions.getString).toBeUndefined();
         expect(Test.Functions.getStringAsync).toBeUndefined();
@@ -22,14 +22,14 @@ describe("while bootsharp is booted", () => {
         expect(Test.Types.Registry.getRegistry).toBeUndefined();
         expect(Test.Types.Registry.getRegistries).toBeUndefined();
         expect(Test.Types.Registry.getRegistryMap).toBeUndefined();
-        expect(() => Test.Functions.getStringSerialized()).throw(error);
-        expect(() => Test.Functions.getStringAsyncSerialized()).throw(error);
-        expect(() => Test.Functions.getBytesSerialized()).throw(error);
-        expect(() => Test.Platform.throwJSSerialized()).throw(error);
-        expect(() => Test.Program.onMainInvokedSerialized()).throw(error);
-        expect(() => Test.Types.Registry.getRegistrySerialized()).throw(error);
-        expect(() => Test.Types.Registry.getRegistriesSerialized()).throw(error);
-        expect(() => Test.Types.Registry.getRegistryMapSerialized()).throw(error);
+        expect(() => any<() => void>(Test.Functions).getStringSerialized()).throw(error);
+        expect(() => any<() => void>(Test.Functions).getStringAsyncSerialized()).throw(error);
+        expect(() => any<() => void>(Test.Functions).getBytesSerialized()).throw(error);
+        expect(() => any<() => void>(Test.Platform).throwJSSerialized()).throw(error);
+        expect(() => any<() => void>(Test.Program).onMainInvokedSerialized()).throw(error);
+        expect(() => any<() => void>(Test.Types.Registry).getRegistrySerialized()).throw(error);
+        expect(() => any<() => void>(Test.Types.Registry).getRegistriesSerialized()).throw(error);
+        expect(() => any<() => void>(Test.Types.Registry).getRegistryMapSerialized()).throw(error);
     });
     it("can invoke C# method", async () => {
         expect(Test.Invokable.joinStrings("foo", "bar")).toStrictEqual("foobar");
@@ -76,8 +76,8 @@ describe("while bootsharp is booted", () => {
         expect(actual).toStrictEqual(expected);
     });
     it("can transfer lists as arrays", async () => {
-        Test.Types.Registry.getRegistries = () => [{ wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] }];
-        const result = await Test.Types.Registry.concatRegistriesAsync([
+        Test.Types.Registry.getRegistries = () => [<never>{ wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] }];
+        const result = await Test.Types.Registry.concatRegistriesAsync(<never>[
             { wheeled: [{ id: "bar", maxSpeed: 1, wheelCount: 9 }] },
             { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }] }
         ]);
@@ -90,11 +90,11 @@ describe("while bootsharp is booted", () => {
     it("can transfer dictionaries as maps", async () => {
         // ES6 Map doesn't natively support JSON serialization, so using plain objects.
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
-        Test.Types.Registry.getRegistryMap = () => ({
+        Test.Types.Registry.getRegistryMap = () => (<never>{
             foo: { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] },
             bar: { wheeled: [{ id: "bar", maxSpeed: 15, wheelCount: 5 }] }
         });
-        const result = await Test.Types.Registry.mapRegistriesAsync({
+        const result = await Test.Types.Registry.mapRegistriesAsync(<never>{
             baz: { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }] }
         });
         expect(result).toStrictEqual({
@@ -104,7 +104,10 @@ describe("while bootsharp is booted", () => {
         });
     });
     it("can invoke assigned JS functions in C#", () => {
-        Test.Types.Registry.getRegistry = () => ({ wheeled: [{ maxSpeed: 1 }], tracked: [{ maxSpeed: 2 }] });
+        Test.Types.Registry.getRegistry = () => ({
+            wheeled: [{ id: "", maxSpeed: 1, wheelCount: 0 }],
+            tracked: [{ id: "", maxSpeed: 2, trackType: TrackType.Chain }]
+        });
         expect(Test.Types.Registry.countTotalSpeed()).toStrictEqual(3);
     });
     it("can subscribe to events", () => {
@@ -120,14 +123,14 @@ describe("while bootsharp is booted", () => {
         expect(multipleArg1).toStrictEqual(1);
         expect(multipleArg2).toStrictEqual({ id: "foo", maxSpeed: 50 });
         expect(multipleArg3).toStrictEqual(TrackType.Rubber);
-        Test.Event.broadcastEventMultiple(255, undefined, TrackType.Chain);
+        Test.Event.broadcastEventMultiple(255, <never>undefined, TrackType.Chain);
         expect(multipleArg1).toStrictEqual(255);
         expect(multipleArg2).toBeUndefined();
         expect(multipleArg3).toStrictEqual(TrackType.Chain);
     });
     it("can un-subscribe from events", () => {
         let result = "";
-        const assigner = v => result = v;
+        const assigner = (v: string) => result = v;
         Test.Event.onEvent.subscribe(assigner);
         Test.Event.broadcastEvent("foo");
         Test.Event.onEvent.unsubscribe(assigner);

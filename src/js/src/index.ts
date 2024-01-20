@@ -1,6 +1,7 @@
 import { boot, exit, getStatus, BootStatus } from "./boot";
 import { getMain, getNative, getRuntime } from "./modules";
 import { resources } from "./resources";
+import { buildConfig } from "./config";
 
 export default {
     boot,
@@ -8,7 +9,8 @@ export default {
     getStatus,
     BootStatus,
     resources,
-    dotnet: { getMain, getNative, getRuntime }
+    /** .NET internal modules and associated utilities. */
+    dotnet: { getMain, getNative, getRuntime, buildConfig }
 };
 
 export * from "./event";

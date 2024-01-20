@@ -7,7 +7,7 @@
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>
         <TrimmerSingleWarn>false</TrimmerSingleWarn>
-        <BootsharpBundleCommand>npx rollup bootsharp.js -d ./ -f es -g process,module --output.preserveModules --entryFileNames [name].mjs</BootsharpBundleCommand>
+        <BootsharpBundleCommand>npx rollup index.js -d ./ -f es -g process,module --output.preserveModules --entryFileNames [name].mjs</BootsharpBundleCommand>
         <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
         <RunAOTCompilation>true</RunAOTCompilation>
     </PropertyGroup>

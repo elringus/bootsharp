@@ -94,7 +94,7 @@
             <BootsharpTypesDirectory Condition="'$(BootsharpTypesDirectory)' == ''">$(BootsharpPublishDirectory)/types</BootsharpTypesDirectory>
             <BootsharpBinariesDirectory Condition="'$(BootsharpBinariesDirectory)' == ''">$(BootsharpPublishDirectory)/bin</BootsharpBinariesDirectory>
             <BootsharpPackageDirectory Condition="'$(BootsharpPackageDirectory)' == ''">$(BootsharpPublishDirectory)</BootsharpPackageDirectory>
-            <BootsharpBundleCommand Condition="'$(BootsharpBundleCommand)' == ''">npx rollup bootsharp.js -o $(BootsharpName).mjs -f es -g process,module --output.inlineDynamicImports</BootsharpBundleCommand>
+            <BootsharpBundleCommand Condition="'$(BootsharpBundleCommand)' == ''">npx rollup index.js -o index.mjs -f es -g process,module --output.inlineDynamicImports</BootsharpBundleCommand>
             <BootsharpThreading Condition="'$(WasmEnableThreads)' == 'true'">true</BootsharpThreading>
             <BootsharpThreading Condition="'$(WasmEnableThreads)' != 'true'">false</BootsharpThreading>
             <BootsharpEmbedBinaries Condition="$(BootsharpThreading)">false</BootsharpEmbedBinaries>
@@ -105,8 +105,8 @@
             <BootsharpSourceFiles Include="$(BootsharpSourceDirectory)/*.*"/>
         </ItemGroup>
         <Copy SourceFiles="@(BootsharpSourceFiles)" DestinationFolder="$(BootsharpBuildDirectory)"/>
-        <Move SourceFiles="$(BootsharpBuildDirectory)/bootsharp.d.ts"
-              DestinationFiles="$(BootsharpBuildDirectory)/$(BootsharpName).d.ts"/>
+        <Move SourceFiles="$(BootsharpBuildDirectory)/index.d.ts"
+              DestinationFiles="$(BootsharpBuildDirectory)/index.d.ts"/>
 
         <!-- Generate bindings, type declarations and (optionally) embed binaries. -->
         <BootsharpPack BuildDirectory="$(BootsharpBuildDirectory)"

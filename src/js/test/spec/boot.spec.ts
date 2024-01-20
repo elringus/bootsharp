@@ -1,12 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import { resolve } from "node:path";
+import type { BootOptions } from "../cs/Test/bin/sideload";
 
 async function setup() {
     // dotnet merges with the host node process, so it's not possible
     // to exit w/o killing the test process (which is bound to test file);
     // this is a workaround to simulate clean environment in each test
     vi.resetModules();
-    const cs = await import("../cs.mjs");
+    const cs = await import("../cs");
     cs.SideloadTest.Program.onMainInvoked = vi.fn();
     return { ...cs, bootsharp: cs.sideload, Test: cs.SideloadTest };
 }
@@ -26,25 +27,25 @@ describe("boot", () => {
     });
     it("defines module exports when root is not specified", async () => {
         const { bootsharp } = await setup();
-        const module = await import("../cs/Test/bin/sideload/config");
-        const config = await module.buildConfig(bootsharp.resources);
-        expect(config.assets[0].moduleExports).toBeDefined();
-        expect(config.assets[1].moduleExports).toBeDefined();
-        expect(config.assets[2].moduleExports).toBeDefined();
+        const module = await import("../cs/Test/bin/sideload");
+        const config = await module.default.dotnet.buildConfig(bootsharp.resources);
+        expect(config.assets![0].moduleExports).toBeDefined();
+        expect(config.assets![1].moduleExports).toBeDefined();
+        expect(config.assets![2].moduleExports).toBeDefined();
     });
     it("overrides name to url in multithreading mode", async () => {
         const { bootsharp, root } = await setup();
         vi.doMock("../cs/Test/bin/sideload/dotnet.g", () => ({ mt: true }));
-        const module = await import("../cs/Test/bin/sideload/config");
-        const config = await module.buildConfig(bootsharp.resources, root);
-        expect(config.assets[0].name.endsWith("/bin/dotnet.js")).toBeTruthy();
-        expect(config.assets[1].name.endsWith("/bin/dotnet.native.js")).toBeTruthy();
-        expect(config.assets[2].name.endsWith("/bin/dotnet.runtime.js")).toBeTruthy();
+        const module = await import("../cs/Test/bin/sideload");
+        const config = await module.default.dotnet.buildConfig(bootsharp.resources, root);
+        expect(config.assets![0].name.endsWith("/bin/dotnet.js")).toBeTruthy();
+        expect(config.assets![1].name.endsWith("/bin/dotnet.native.js")).toBeTruthy();
+        expect(config.assets![2].name.endsWith("/bin/dotnet.runtime.js")).toBeTruthy();
         vi.doUnmock("../cs/Test/bin/sideload/dotnet.g");
     });
     it("can boot in embedded mode", async () => {
         vi.resetModules();
-        const cs = await import("../cs.mjs");
+        const cs = await import("../cs");
         cs.EmbeddedTest.Program.onMainInvoked = vi.fn();
         await cs.embedded.boot({});
         expect(cs.EmbeddedTest.Program.onMainInvoked).toHaveBeenCalledOnce();
@@ -55,41 +56,40 @@ describe("boot", () => {
         expect(Test.Program.onMainInvoked).toHaveBeenCalledOnce();
     });
     it("can boot with bins content pre-assigned", async () => {
-        const { bootsharp, Test, root, bins } = await setup();
+        const { bootsharp, Test, root, bins, any } = await setup();
         const resources = { ...bootsharp.resources };
-        resources.wasm.content = bins.wasm;
+        any<unknown>(resources.wasm).content = bins.wasm;
         for (const asm of resources.assemblies)
-            asm.content = bins.assemblies.find(a => a.name === asm.name).content;
+            any<unknown>(asm).content = bins.assemblies.find(a => a.name === asm.name)!.content;
         await bootsharp.boot({ resources, root });
         expect(Test.Program.onMainInvoked).toHaveBeenCalledOnce();
     });
     it("can boot with base64 content", async () => {
-        const { bootsharp, Test, root, bins } = await setup();
+        const { bootsharp, Test, root, bins, any } = await setup();
         const resources = { ...bootsharp.resources };
-        resources.wasm.content = bins.wasm.toString("base64");
+        any<unknown>(resources.wasm).content = bins.wasm.toString("base64");
         for (const asm of resources.assemblies)
-            asm.content = bins.assemblies.find(a => a.name === asm.name).content.toString("base64");
+            any<unknown>(asm).content = bins.assemblies.find(a => a.name === asm.name)!.content.toString("base64");
         await bootsharp.boot({ resources, root });
         expect(Test.Program.onMainInvoked).toHaveBeenCalledOnce();
     });
     it("can boot with base64 content w/o native encoder available", async () => {
-        const { bootsharp, Test, root, bins } = await setup();
-        global.Buffer = undefined;
+        const { bootsharp, Test, root, bins, any } = await setup();
+        any<unknown>(global).Buffer = undefined;
         const resources = { ...bootsharp.resources };
-        resources.wasm.content = bins.wasm.toString("base64");
+        any<unknown>(resources.wasm).content = bins.wasm.toString("base64");
         for (const asm of resources.assemblies)
-            asm.content = bins.assemblies.find(a => a.name === asm.name).content.toString("base64");
+            any<unknown>(asm).content = bins.assemblies.find(a => a.name === asm.name)!.content.toString("base64");
         await bootsharp.boot({ resources, root });
         expect(Test.Program.onMainInvoked).toHaveBeenCalledOnce();
     });
     it("attempts to use atob when window is defined in global", async () => {
-        const { bootsharp, root, bins } = await setup();
-        // noinspection JSValidateTypes
-        global.window = { atob: vi.fn() };
+        const { bootsharp, root, bins, any } = await setup();
+        any<unknown>(global).window = { atob: vi.fn() };
         const resources = { ...bootsharp.resources };
-        resources.wasm.content = bins.wasm.toString("base64");
+        any<unknown>(resources.wasm).content = bins.wasm.toString("base64");
         for (const asm of resources.assemblies)
-            asm.content = bins.assemblies.find(a => a.name === asm.name).content.toString("base64");
+            any<unknown>(asm).content = bins.assemblies.find(a => a.name === asm.name)!.content.toString("base64");
         try { await bootsharp.boot({ resources, root }); }
         catch {}
         expect(global.window.atob).toHaveBeenCalledOnce();
@@ -116,8 +116,8 @@ describe("boot", () => {
         expect(bootsharp.getStatus()).toStrictEqual(0);
     });
     it("respects boot customs", async () => {
-        const { bootsharp, bins } = await setup();
-        const customs = {
+        const { bootsharp, bins, root } = await setup();
+        const customs: BootOptions = {
             config: {
                 mainAssemblyName: bins.entryAssemblyName,
                 assets: [
@@ -138,10 +138,15 @@ describe("boot", () => {
                         buffer: bins.wasm,
                         behavior: "dotnetwasm"
                     },
-                    ...bins.assemblies.map(a => ({ name: a.name, buffer: a.content, behavior: "assembly" }))
+                    ...bins.assemblies.map(a => (<never>{ name: a.name, buffer: a.content, behavior: "assembly" }))
                 ]
             },
-            create: vi.fn(async () => (await import("../cs/Test/bin/sideload/bin/dotnet.js")).dotnet.withConfig(customs.config).create()),
+            create: vi.fn(async () => {
+                const bootsharp = (await import("../cs/Test/bin/sideload")).default;
+                const dotnet = (await bootsharp.dotnet.getMain(root)).dotnet;
+                console.log(dotnet);
+                return await dotnet.withConfig(<never>customs.config).create();
+            }),
             import: vi.fn(),
             run: vi.fn(),
             export: vi.fn()

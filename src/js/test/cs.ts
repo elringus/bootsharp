@@ -1,5 +1,5 @@
-import emb, { Test as EmbTest } from "./cs/Test/bin/embedded/bootsharp.mjs";
-import sid, { Test as SidTest } from "./cs/Test/bin/sideload/bootsharp.mjs";
+import emb, { Test as EmbTest } from "./cs/Test/bin/embedded";
+import sid, { Test as SidTest } from "./cs/Test/bin/sideload";
 import assert from "node:assert";
 import { resolve, parse, basename } from "node:path";
 import { readdirSync, readFileSync, existsSync } from "node:fs";
@@ -11,10 +11,10 @@ export const EmbeddedTest = EmbTest;
 export const SideloadTest = SidTest;
 export const root = pathToFileURL("./test/cs/Test/bin/sideload/bin").toString();
 
-export * from "./cs/Test/bin/sideload/bootsharp.mjs";
+export * from "./cs/Test/bin/sideload";
 
-assertPathExists("test/cs/Test/bin/embedded/bootsharp.mjs");
-assertPathExists("test/cs/Test/bin/sideload/bootsharp.mjs");
+assertPathExists("test/cs/Test/bin/embedded/index.mjs");
+assertPathExists("test/cs/Test/bin/sideload/index.mjs");
 
 export const bins = {
     wasm: loadWasmBinary(),
@@ -36,6 +36,11 @@ export function getDeclarations() {
     const file = resolve("test/cs/Test/bin/embedded/types/bindings.g.d.ts");
     assertPathExists(file);
     return readFileSync(file).toString();
+}
+
+// Just casting to <any> triggers codefactor.
+export function any<T>(obj: unknown): Record<string, T> {
+    return <Record<string, T>><unknown>obj;
 }
 
 function loadWasmBinary() {
@@ -61,14 +66,14 @@ function findAssemblies() {
     return assemblyPaths;
 }
 
-function loadAssembly(assemblyPath) {
+function loadAssembly(assemblyPath: string) {
     return {
         name: parse(assemblyPath).base,
         content: readFileSync(assemblyPath)
     };
 }
 
-function assertPathExists(pathToCheck) {
+function assertPathExists(pathToCheck: string) {
     const name = basename(pathToCheck);
     assert(existsSync(pathToCheck), `Missing test project artifact: '${name}'. Run 'scripts/compile-test.sh'.`);
 }
