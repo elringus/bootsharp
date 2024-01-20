@@ -33,15 +33,17 @@ internal sealed class DependencyGenerator (string entryAssembly)
 
     private void AddGeneratedCommon ()
     {
-        Add(All, "Bootsharp.Generated.Dependencies", entryAssembly);
-        Add(All, "Bootsharp.Generated.SerializerContext", entryAssembly);
-        Add(All, "Bootsharp.Generated.Interop", entryAssembly);
+        var asm = Path.GetFileNameWithoutExtension(entryAssembly);
+        Add(All, "Bootsharp.Generated.Dependencies", asm);
+        Add(All, "Bootsharp.Generated.SerializerContext", asm);
+        Add(All, "Bootsharp.Generated.Interop", asm);
     }
 
     private void AddGeneratedInteropClasses (AssemblyInspection inspection)
     {
+        var asm = Path.GetFileNameWithoutExtension(entryAssembly);
         foreach (var inter in inspection.Interfaces)
-            Add(All, inter.FullName, entryAssembly);
+            Add(All, inter.FullName, asm);
     }
 
     private void AddClassesWithInteropMethods (AssemblyInspection inspection)

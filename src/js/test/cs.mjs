@@ -23,12 +23,12 @@ export const bins = {
 };
 
 export async function bootEmbedded() {
-    EmbeddedTest.onMainInvoked = () => {};
+    EmbeddedTest.Program.onMainInvoked = () => {};
     await embedded.boot({});
 }
 
 export async function bootSideload() {
-    SideloadTest.onMainInvoked = () => {};
+    SideloadTest.Program.onMainInvoked = () => {};
     await sideload.boot({ root });
 }
 

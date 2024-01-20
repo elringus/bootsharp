@@ -36,7 +36,7 @@ public class BindingTest : PackTest
             export const Foo = {
                 Bar: {
                     Class: {
-                        nya: () => getExports().Foo_Bar_Class.Nya()
+                        nya: () => getExports().Foo_Bar_Class_Nya()
                     }
                 }
             };
@@ -94,7 +94,7 @@ public class BindingTest : PackTest
             """
             export const Foo = {
                 Class: {
-                    bar: () => getExports().Foo_Class.Bar()
+                    bar: () => getExports().Foo_Class_Bar()
                 }
             };
             """);
@@ -111,7 +111,7 @@ public class BindingTest : PackTest
                 Bar: {
                     Nya: {
                         Class: {
-                            bar: () => getExports().Foo_Bar_Nya_Class.Bar()
+                            bar: () => getExports().Foo_Bar_Nya_Class_Bar()
                         }
                     }
                 }
@@ -139,7 +139,7 @@ public class BindingTest : PackTest
             };
             export const Foo = {
                 Class: {
-                    foo: () => getExports().Foo_Class.Foo()
+                    foo: () => getExports().Foo_Class_Foo()
                 }
             };
             """);
@@ -152,7 +152,7 @@ public class BindingTest : PackTest
         AddAssembly(WithClass("Foo", "[JSFunction] public static void Fun () {}"));
         Execute();
         Assert.Single(Matches("export const Foo"));
-        Contains("bar: () => getExports().Foo_Class.Bar()");
+        Contains("bar: () => getExports().Foo_Class_Bar()");
         Contains(
             """
                     get fun() { return this.funHandler; },
@@ -180,7 +180,7 @@ public class BindingTest : PackTest
                 },
                 Foo: {
                     Class: {
-                        foo: () => getExports().Nya_Foo_Class.Foo()
+                        foo: () => getExports().Nya_Foo_Class_Foo()
                     }
                 }
             };
@@ -199,13 +199,13 @@ public class BindingTest : PackTest
             """
             export const Foo = {
                 Class: {
-                    method: () => getExports().Foo_Class.Method()
+                    method: () => getExports().Foo_Class_Method()
                 }
             };
             export const FooBar = {
                 Baz: {
                     Class: {
-                        method: () => getExports().FooBar_Baz_Class.Method()
+                        method: () => getExports().FooBar_Baz_Class_Method()
                     }
                 }
             };
@@ -231,7 +231,7 @@ public class BindingTest : PackTest
             };
             export const Foo = {
                 Class: {
-                    foo: () => getExports().Foo_Class.Foo()
+                    foo: () => getExports().Foo_Class_Foo()
                 }
             };
             """);
@@ -248,7 +248,7 @@ public class BindingTest : PackTest
             """
             export const Global = {
                 ClassA: {
-                    inv: () => getExports().ClassA.Inv()
+                    inv: () => getExports().ClassA_Inv()
                 },
                 ClassB: {
                     get fun() { return this.funHandler; },
@@ -270,7 +270,7 @@ public class BindingTest : PackTest
             """
             export const Global = {
                 Class: {
-                    nya: () => getExports().Class.Nya(),
+                    nya: () => getExports().Class_Nya(),
                     get fun() { return this.funHandler; },
                     set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
                     get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Global.Class.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
@@ -288,7 +288,7 @@ public class BindingTest : PackTest
             """
             export const Global = {
                 Class: {
-                    fun: (fn) => getExports().Class.Fun(fn)
+                    fun: (fn) => getExports().Class_Fun(fn)
                 }
             };
             """);
@@ -308,7 +308,7 @@ public class BindingTest : PackTest
             """
             export const Global = {
                 Class: {
-                    foo: (i) => deserialize(getExports().Class.Foo(serialize(i))),
+                    foo: (i) => deserialize(getExports().Class_Foo(serialize(i))),
                     get bar() { return this.barHandler; },
                     set bar(handler) { this.barHandler = handler; this.barSerializedHandler = (i) => serialize(this.barHandler(deserialize(i))); },
                     get barSerialized() { if (typeof this.barHandler !== "function") throw Error("Failed to invoke 'Global.Class.bar' from C#. Make sure to assign function in JavaScript."); return this.barSerializedHandler; },
@@ -335,11 +335,11 @@ public class BindingTest : PackTest
             """
             export const Global = {
                 Class: {
-                    foo: async (i) => deserialize(await getExports().Class.Foo(serialize(i))),
+                    foo: async (i) => deserialize(await getExports().Class_Foo(serialize(i))),
                     get bar() { return this.barHandler; },
                     set bar(handler) { this.barHandler = handler; this.barSerializedHandler = async (i) => serialize(await this.barHandler(deserialize(i))); },
                     get barSerialized() { if (typeof this.barHandler !== "function") throw Error("Failed to invoke 'Global.Class.bar' from C#. Make sure to assign function in JavaScript."); return this.barSerializedHandler; },
-                    baz: async () => deserialize(await getExports().Class.Baz()),
+                    baz: async () => deserialize(await getExports().Class_Baz()),
                     get yaz() { return this.yazHandler; },
                     set yaz(handler) { this.yazHandler = handler; this.yazSerializedHandler = async () => serialize(await this.yazHandler()); },
                     get yazSerialized() { if (typeof this.yazHandler !== "function") throw Error("Failed to invoke 'Global.Class.yaz' from C#. Make sure to assign function in JavaScript."); return this.yazSerializedHandler; }
@@ -359,7 +359,7 @@ public class BindingTest : PackTest
             """
             export const n = {
                 Class: {
-                    getFoo: () => deserialize(getExports().n_Class.GetFoo()),
+                    getFoo: () => deserialize(getExports().n_Class_GetFoo()),
                     Foo: {
                         "0": "A", "1": "B", "A": 0, "B": 1
                     }
@@ -379,7 +379,7 @@ public class BindingTest : PackTest
             """
             export const n = {
                 Class: {
-                    getFoo: () => deserialize(getExports().n_Class.GetFoo()),
+                    getFoo: () => deserialize(getExports().n_Class_GetFoo()),
                     Foo: {
                         "1": "A", "6": "B", "A": 1, "B": 6
                     }
@@ -414,7 +414,7 @@ public class BindingTest : PackTest
             };
             export const Nya = {
                 Class: {
-                    getNya: () => getExports().Foo_Bar_Nya_Class.GetNya()
+                    getNya: () => getExports().Foo_Bar_Nya_Class_GetNya()
                 }
             };
             """);
@@ -441,7 +441,7 @@ public class BindingTest : PackTest
             """
             export const Space = {
                 Class: {
-                    foo: () => getExports().Space_Class.Inv()
+                    foo: () => getExports().Space_Class_Inv()
                 }
             };
             """);

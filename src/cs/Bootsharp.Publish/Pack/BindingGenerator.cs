@@ -99,7 +99,7 @@ internal sealed class BindingGenerator (Preferences prefs)
     private void EmitInvokable (MethodMeta method)
     {
         var wait = ShouldWait(method);
-        var endpoint = $"getExports().{method.Space.Replace('.', '_')}.{method.Name}";
+        var endpoint = $"getExports().{method.Space.Replace('.', '_')}_{method.Name}";
         var funcArgs = string.Join(", ", method.Arguments.Select(a => a.JSName));
         var invArgs = string.Join(", ", method.Arguments.Select(arg =>
             arg.Value.Serialized ? $"serialize({arg.JSName})" : arg.JSName

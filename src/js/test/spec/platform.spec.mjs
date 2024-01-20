@@ -5,8 +5,8 @@ import { WebSocket, WebSocketServer } from "ws";
 describe("platform", () => {
     beforeAll(bootSideload);
     it("can provide unique guid", () => {
-        const guid1 = Test.getGuid();
-        const guid2 = Test.getGuid();
+        const guid1 = Test.Platform.getGuid();
+        const guid2 = Test.Platform.getGuid();
         expect(guid1.length).toStrictEqual(36);
         expect(guid2.length).toStrictEqual(36);
         expect(guid1).not.toStrictEqual(guid2);
@@ -17,7 +17,7 @@ describe("platform", () => {
         global.WebSocket = WebSocket;
         const wss = new WebSocketServer({ port: 8877 });
         wss.on("connection", socket => socket.on("message", socket.send));
-        expect(await Test.echoWebSocket("ws://localhost:8877", "foo", 3000)).toStrictEqual("foo");
+        expect(await Test.Platform.echoWebSocket("ws://localhost:8877", "foo", 3000)).toStrictEqual("foo");
         wss.close();
     });
 });

@@ -43,17 +43,18 @@ public class DependenciesTest : EmitTest
     [Fact]
     public void AddsClassesWithInteropMethods ()
     {
-        AddAssembly("Assembly.dll",
+        AddAssembly("Assembly.With.Dots.dll",
             With("SpaceA", "public class ClassA { [JSInvokable] public static void Foo () {} }"),
             With("SpaceB.SpaceC", "public class ClassB { [JSFunction] public static void Foo () {} }"),
             With("public class ClassC { [JSEvent] public static void Foo () {} }"));
         Execute();
-        Added(All, "SpaceA.ClassA", "Assembly");
-        Added(All, "SpaceB.SpaceC.ClassB", "Assembly");
-        Added(All, "ClassC", "Assembly");
+        Added(All, "SpaceA.ClassA", "Assembly.With.Dots");
+        Added(All, "SpaceB.SpaceC.ClassB", "Assembly.With.Dots");
+        Added(All, "ClassC", "Assembly.With.Dots");
     }
 
-    private void Added (DynamicallyAccessedMemberTypes types, string name) => Added(types, name, Task.EntryAssemblyName);
+    private void Added (DynamicallyAccessedMemberTypes types, string name) =>
+        Added(types, name, Path.GetFileNameWithoutExtension(Task.EntryAssemblyName));
 
     private void Added (DynamicallyAccessedMemberTypes types, string name, string assembly)
     {
