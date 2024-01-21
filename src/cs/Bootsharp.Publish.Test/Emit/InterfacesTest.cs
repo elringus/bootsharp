@@ -199,37 +199,31 @@ public class InterfacesTest : EmitTest
     }
 
     [Fact]
-    public void RespectsResolveInterfacePref ()
+    public void RespectsEventPreference ()
     {
         AddAssembly(With(
             """
-            [assembly:JSConfiguration<Prefs>]
+            [assembly:JSPreferences(Event = [@"^Broadcast(\S+)", "On$1"])]
             [assembly:JSImport(typeof(IImported))]
 
-            public class Prefs : Bootsharp.Preferences
+            public interface IImported
             {
-                public override InterfaceMeta ResolveInterface (Type _, InterfaceKind __, InterfaceMeta @default)
-                {
-                    var method = ((IReadOnlyList<Bootsharp.InterfaceMethodMeta>)@default.Methods)[0];
-                    return @default with {
-                        Name = "Foo",
-                        Methods = [method with { Generated = method.Generated with { Space = "Bootsharp.Generated.Imports.Foo" } }]
-                    };
-                }
+                void NotifyFoo ();
+                void BroadcastBar ();
             }
-
-            public interface IImported { void NotifyEvt (); }
             """));
         Execute();
         Contains(
             """
             namespace Bootsharp.Generated.Imports
             {
-                public class Foo : global::IImported
+                public class JSImported : global::IImported
                 {
-                    [JSEvent] public static void OnEvt () => Proxies.Get<Action>("Bootsharp.Generated.Imports.Foo.OnEvt")();
+                    [JSFunction] public static void NotifyFoo () => Proxies.Get<Action>("Bootsharp.Generated.Imports.JSImported.NotifyFoo")();
+                    [JSEvent] public static void OnBar () => Proxies.Get<Action>("Bootsharp.Generated.Imports.JSImported.OnBar")();
 
-                    void global::IImported.NotifyEvt () => OnEvt();
+                    void global::IImported.NotifyFoo () => NotifyFoo();
+                    void global::IImported.BroadcastBar () => OnBar();
                 }
             }
             """);
@@ -242,7 +236,7 @@ public class InterfacesTest : EmitTest
                     [System.Runtime.CompilerServices.ModuleInitializer]
                     internal static void RegisterInterfaces ()
                     {
-                        Interfaces.Register(typeof(global::IImported), new ImportInterface(new Bootsharp.Generated.Imports.Foo()));
+                        Interfaces.Register(typeof(global::IImported), new ImportInterface(new Bootsharp.Generated.Imports.JSImported()));
                     }
                 }
             }

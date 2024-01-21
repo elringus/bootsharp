@@ -14,7 +14,7 @@ internal sealed class TypeConverter (Preferences prefs)
         this.nullability = nullability;
         // nullability of topmost type declarations is evaluated outside (method/property info)
         if (IsNullable(type)) type = GetNullableUnderlyingType(type);
-        return prefs.ResolveType(type, nullability, Convert(type));
+        return Convert(type);
     }
 
     private string Convert (Type type)
@@ -25,7 +25,7 @@ internal sealed class TypeConverter (Preferences prefs)
         if (IsDictionary(type)) return ConvertDictionary(type);
         if (IsTaskLike(type)) return ConvertAwaitable(type);
         if (type.IsGenericType && CrawledTypes.Contains(type)) return ConvertGeneric(type);
-        return ConvertFinal(type);
+        return WithPrefs(prefs.Type, type.FullName!, ConvertFinal(type));
     }
 
     private string ConvertNullable (Type type)
@@ -67,13 +67,14 @@ internal sealed class TypeConverter (Preferences prefs)
     {
         EnterNullability();
         var args = string.Join(", ", type.GenericTypeArguments.Select(Convert));
-        return $"{prefs.ResolveSpace(type, BuildJSSpace(type))}<{args}>";
+        var name = WithPrefs(prefs.Space, type.FullName!, BuildJSSpace(type));
+        return $"{name}<{args}>";
     }
 
     private string ConvertFinal (Type type)
     {
         if (type.Name == "Void") return "void";
-        if (CrawledTypes.Contains(type)) return prefs.ResolveSpace(type, BuildJSSpace(type));
+        if (CrawledTypes.Contains(type)) return WithPrefs(prefs.Space, type.FullName!, BuildJSSpace(type));
         return Type.GetTypeCode(type) switch {
             TypeCode.Byte or TypeCode.SByte or TypeCode.UInt16 or TypeCode.UInt32 or
                 TypeCode.UInt64 or TypeCode.Int16 or TypeCode.Int32 or

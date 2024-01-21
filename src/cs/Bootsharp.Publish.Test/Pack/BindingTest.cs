@@ -377,16 +377,14 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void RespectsResolveSpacePref ()
+    public void RespectsSpacePreference ()
     {
         AddAssembly(
             With(
                 """
-                [assembly:JSConfiguration<Prefs>]
-                public class Prefs : Bootsharp.Preferences
-                {
-                    public override string ResolveSpace (Type type, string @default) => @default.Replace("Foo.Bar.", "");
-                }
+                [assembly: Bootsharp.JSPreferences(
+                    Space = [@"^Foo\.Bar\.(\S+)", "$1"]
+                )]
                 """),
             WithClass("Foo.Bar.Nya", "[JSInvokable] public static Task GetNya () => Task.CompletedTask;"),
             WithClass("Foo.Bar.Fun", "[JSFunction] public static void OnFun () {}"));
@@ -409,19 +407,10 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void RespectsResolveMethodPref ()
+    public void RespectsFunctionPreference ()
     {
         AddAssembly(
-            With(
-                """
-                [assembly:JSConfiguration<Prefs>]
-
-                public class Prefs : Bootsharp.Preferences
-                {
-                    public override MethodMeta ResolveMethod (System.Reflection.MethodInfo _, MethodKind __, MethodMeta @default) =>
-                        @default with { JSName = "foo" };
-                }
-                """),
+            With("""[assembly:JSPreferences(Function = [@".+", "foo"])]"""),
             WithClass("Space", "[JSInvokable] public static void Inv () {}")
         );
         Execute();

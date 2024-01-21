@@ -157,20 +157,15 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
-    public void RespectsResolveSpacePref ()
+    public void RespectsSpacePreference ()
     {
         AddAssembly(With(
             """
-            [assembly:JSConfiguration<Space.Prefs>]
+            [assembly:JSPreferences(Space = [@"Space", "Foo"])]
             [assembly:JSExport(typeof(Space.IExported))]
             [assembly:JSImport(typeof(Space.IImported))]
 
             namespace Space;
-
-            public class Prefs : Bootsharp.Preferences
-            {
-                public override string ResolveSpace (Type type, string @default) => @default.Replace("Space", "Foo");
-            }
 
             public interface IExported { void Inv (); }
             public interface IImported { void Fun (); void NotifyEvt(); }

@@ -643,16 +643,14 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void RespectsResolveSpacePref ()
+    public void RespectsSpacePreference ()
     {
         AddAssembly(
             With(
                 """
-                [assembly:JSConfiguration<Prefs>]
-                public class Prefs : Bootsharp.Preferences
-                {
-                    public override string ResolveSpace (Type type, string @default) => @default.Replace("Foo.Bar.", "");
-                }
+                [assembly: Bootsharp.JSPreferences(
+                    Space = [@"^Foo\.Bar\.(\S+)", "$1"]
+                )]
                 """),
             With("Foo.Bar.Nya", "public class Nya { }"),
             WithClass("Foo.Bar.Fun", "[JSFunction] public static void OnFun (Nya.Nya nya) { }"));
@@ -662,17 +660,14 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void RespectsResolveTypePref ()
+    public void RespectsTypePreference ()
     {
         AddAssembly(
             With(
                 """
-                using System.Reflection;
-                [assembly:JSConfiguration<Prefs>]
-                public class Prefs : Bootsharp.Preferences
-                {
-                    public override string ResolveType (Type _, NullabilityInfo __, string @default) => @default.Replace("Record", "Foo");
-                }
+                [assembly: Bootsharp.JSPreferences(
+                    Type = [@"Record", "Foo"]
+                )]
                 """),
             With("public record Record;"),
             WithClass("[JSInvokable] public static void Inv (Record r) {}"));

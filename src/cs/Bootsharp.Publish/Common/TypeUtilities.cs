@@ -3,6 +3,7 @@ using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace Bootsharp.Publish;
 
@@ -172,6 +173,14 @@ internal static class TypeUtilities
         if (type.IsGenericType) space = GetGenericNameWithoutArgs(space);
         if (space.Contains('+')) space = space.Replace("+", ".");
         return space;
+    }
+
+    public static string WithPrefs (IReadOnlyCollection<Preference> prefs, string input, string @default)
+    {
+        foreach (var pref in prefs)
+            if (Regex.IsMatch(input, pref.Pattern))
+                return Regex.Replace(input, pref.Pattern, pref.Replacement);
+        return @default;
     }
 
     public static string BuildSyntax (Type type) => BuildSyntax(type, null, false);

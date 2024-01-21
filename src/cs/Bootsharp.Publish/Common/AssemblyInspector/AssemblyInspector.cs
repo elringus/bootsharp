@@ -86,7 +86,7 @@ internal sealed class AssemblyInspector (Preferences prefs, string entryAssembly
             methods.Add(method.Generated);
     }
 
-    private MethodMeta CreateMethod (MethodInfo info, MethodKind kind) => prefs.ResolveMethod(info, kind, new() {
+    private MethodMeta CreateMethod (MethodInfo info, MethodKind kind) => new() {
         Kind = kind,
         Assembly = info.DeclaringType!.Assembly.GetName().Name!,
         Space = info.DeclaringType.FullName!,
@@ -101,9 +101,9 @@ internal sealed class AssemblyInspector (Preferences prefs, string entryAssembly
             Void = IsVoid(info.ReturnType),
             Serialized = ShouldSerialize(info.ReturnType)
         },
-        JSSpace = prefs.ResolveSpace(info.DeclaringType, BuildJSSpace(info.DeclaringType)),
-        JSName = ToFirstLower(info.Name)
-    });
+        JSSpace = WithPrefs(prefs.Space, info.DeclaringType!.FullName!, BuildJSSpace(info.DeclaringType!)),
+        JSName = WithPrefs(prefs.Function, info.Name, ToFirstLower(info.Name))
+    };
 
     private ArgumentMeta CreateArgument (ParameterInfo info) => new() {
         Name = info.Name!,
@@ -125,22 +125,21 @@ internal sealed class AssemblyInspector (Preferences prefs, string entryAssembly
         if (iType.Namespace != null) space += $".{iType.Namespace}";
         var name = "JS" + iType.Name[1..];
         var mSpace = $"{space}.{name}";
-        return prefs.ResolveInterface(iType, kind, new InterfaceMeta {
+        return new InterfaceMeta {
             Kind = kind,
             TypeSyntax = BuildSyntax(iType),
             Namespace = space,
             Name = name,
             Methods = iType.GetMethods().Select(m => CreateInterfaceMethod(m, kind, mSpace)).ToArray()
-        });
+        };
     }
 
     private InterfaceMethodMeta CreateInterfaceMethod (MethodInfo info, InterfaceKind iKind, string space)
     {
+        var name = WithPrefs(prefs.Event, info.Name, info.Name);
         var mKind = iKind == InterfaceKind.Export ? MethodKind.Invokable
-            : info.Name.StartsWith("Notify", StringComparison.Ordinal) ? MethodKind.Event
-            : MethodKind.Function;
-        var name = mKind == MethodKind.Event ? $"On{info.Name[6..]}" : info.Name;
-        var jsSpace = prefs.ResolveSpace(info.DeclaringType!, BuildJSSpace(info.DeclaringType!));
+            : name != info.Name ? MethodKind.Event : MethodKind.Function;
+        var jsSpace = WithPrefs(prefs.Space, info.DeclaringType!.FullName!, BuildJSSpace(info.DeclaringType!));
         jsSpace = jsSpace[..(jsSpace.LastIndexOf('.') + 1)] + jsSpace[(jsSpace.LastIndexOf('.') + 2)..];
         return new() {
             Name = info.Name,

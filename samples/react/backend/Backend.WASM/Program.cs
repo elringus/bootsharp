@@ -11,8 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 [assembly: JSExport(typeof(Backend.IComputer))]
 // Generate JavaScript -> C# interop handlers for specified contracts.
 [assembly: JSImport(typeof(Backend.Prime.IPrimeUI))]
-// Customize Bootsharp behaviour at build time.
-[assembly: JSConfiguration<Preferences>]
+// Group all generated JavaScript APIs under "Computer" namespace.
+[assembly: JSPreferences(Space = [".+", "Computer"])]
 
 // Perform dependency injection.
 new ServiceCollection()
