@@ -18,7 +18,6 @@ internal sealed class BindingGenerator (Preferences prefs)
     public string Generate (AssemblyInspection inspection)
     {
         bindings = inspection.Methods
-            .Where(m => !m.Space.StartsWith("Bootsharp.Generated", StringComparison.Ordinal))
             .Select(m => new Binding(m, null, m.JSSpace))
             .Concat(inspection.Crawled.Where(t => t.IsEnum)
                 .Select(t => new Binding(null, t, BuildJSSpace(t, prefs))))

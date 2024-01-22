@@ -57,6 +57,7 @@ internal sealed class AssemblyInspector (Preferences prefs, string entryAssembly
 
     private void InspectExportedType (Type type)
     {
+        if (type.Namespace?.StartsWith("Bootsharp.Generated") ?? false) return;
         foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
         foreach (var attr in method.CustomAttributes)
             if (attr.AttributeType.FullName == typeof(JSInvokableAttribute).FullName)

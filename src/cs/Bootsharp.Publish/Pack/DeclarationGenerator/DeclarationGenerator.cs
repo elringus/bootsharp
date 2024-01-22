@@ -7,17 +7,7 @@ internal sealed class DeclarationGenerator (Preferences prefs)
 
     public string Generate (AssemblyInspection inspection) => JoinLines(0,
         """import type { Event } from "./event";""",
-        typesGenerator.Generate(GetTypesToGenerateDeclarationsFor(inspection)),
-        methodsGenerator.Generate(GetMethodsToGenerateDeclarationsFor(inspection))
+        typesGenerator.Generate(inspection.Crawled),
+        methodsGenerator.Generate(inspection.Methods)
     ) + "\n";
-
-    private IEnumerable<Type> GetTypesToGenerateDeclarationsFor (AssemblyInspection inspection)
-    {
-        return inspection.Crawled.Where(t => !t.Namespace?.StartsWith("Bootsharp.Generated") ?? true);
-    }
-
-    private IEnumerable<MethodMeta> GetMethodsToGenerateDeclarationsFor (AssemblyInspection inspection)
-    {
-        return inspection.Methods.Where(m => !m.Space.StartsWith("Bootsharp.Generated"));
-    }
 }
