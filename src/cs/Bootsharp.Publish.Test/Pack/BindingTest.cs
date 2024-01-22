@@ -419,4 +419,17 @@ public class BindingTest : PackTest
             };
             """);
     }
+
+    [Fact]
+    public void IgnoresBindingsInGeneratedNamespace ()
+    {
+        AddAssembly(With("Bootsharp.Generated",
+            """
+            public static class Exports { [JSInvokable] public static void Inv () {} }
+            public static class Imports { [JSFunction] public static void Fun () {} }
+            """));
+        Execute();
+        Assert.DoesNotContain("inv: () =>", TestedContent);
+        Assert.DoesNotContain("get fun()", TestedContent);
+    }
 }

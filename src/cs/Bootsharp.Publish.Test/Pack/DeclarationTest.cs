@@ -726,4 +726,19 @@ public class DeclarationTest : PackTest
             }
             """);
     }
+
+    [Fact]
+    public void IgnoresBindingsInGeneratedNamespace ()
+    {
+        AddAssembly(With("Bootsharp.Generated",
+            """
+            public record Record;
+            public static class Exports { [JSInvokable] public static void Inv (Record r) {} }
+            public static class Imports { [JSFunction] public static void Fun () {} }
+            """));
+        Execute();
+        Assert.DoesNotContain("Record", TestedContent);
+        Assert.DoesNotContain("export function inv", TestedContent);
+        Assert.DoesNotContain("export let fun", TestedContent);
+    }
 }
