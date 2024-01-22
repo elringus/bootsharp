@@ -7,7 +7,7 @@
 /// <example>
 /// <code>
 /// [JSEvent]
-/// public static partial string OnSomethingHappened (string payload);
+/// public static partial void OnSomethingHappened (string payload);
 /// Namespace.onSomethingHappened.subscribe(payload => ...);
 /// </code>
 /// </example>
