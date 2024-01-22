@@ -167,12 +167,27 @@ internal static class TypeUtilities
         return !native.Contains(type.FullName!);
     }
 
-    public static string BuildJSSpace (Type type)
+    public static string BuildJSSpace (Type type, Preferences prefs)
     {
-        var space = type.FullName ?? type.Name;
-        if (type.IsGenericType) space = GetGenericNameWithoutArgs(space);
-        if (space.Contains('+')) space = space.Replace("+", ".");
-        return space;
+        var space = type.Namespace ?? "";
+        if (type.IsNested)
+        {
+            if (!string.IsNullOrEmpty(space)) space += ".";
+            space += type.DeclaringType!.Name;
+        }
+        return WithPrefs(prefs.Space, space, space);
+    }
+
+    public static string BuildJSSpaceName (Type type)
+    {
+        return type.IsGenericType ? GetGenericNameWithoutArgs(type.Name) : type.Name;
+    }
+
+    public static string BuildJSSpaceFullName (Type type, Preferences prefs)
+    {
+        var space = BuildJSSpace(type, prefs);
+        var name = BuildJSSpaceName(type);
+        return string.IsNullOrEmpty(space) ? name : $"{space}.{name}";
     }
 
     public static string WithPrefs (IReadOnlyCollection<Preference> prefs, string input, string @default)

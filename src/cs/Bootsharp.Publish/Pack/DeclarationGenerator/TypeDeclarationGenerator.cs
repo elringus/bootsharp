@@ -39,7 +39,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private bool ShouldOpenNamespace ()
     {
-        if (type.Namespace == null) return false;
+        if (string.IsNullOrEmpty(GetNamespace(type))) return false;
         if (prevType == null) return true;
         return GetNamespace(prevType) != GetNamespace(type);
     }
@@ -52,7 +52,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private bool ShouldCloseNamespace ()
     {
-        if (type.Namespace == null) return false;
+        if (string.IsNullOrEmpty(GetNamespace(type))) return false;
         if (nextType is null) return true;
         return GetNamespace(nextType) != GetNamespace(type);
     }
@@ -64,7 +64,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private void DeclareInterface ()
     {
-        var indent = type.Namespace != null ? 1 : 0;
+        var indent = !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
         AppendLine($"export interface {BuildTypeName(type)}", indent);
         AppendExtensions();
         builder.Append(" {");
@@ -74,7 +74,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private void DeclareEnum ()
     {
-        var indent = type.Namespace != null ? 1 : 0;
+        var indent = !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
         AppendLine($"export enum {type.Name} {{", indent);
         var names = Enum.GetNames(type);
         for (int i = 0; i < names.Length; i++)
@@ -85,9 +85,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private string GetNamespace (Type type)
     {
-        var space = WithPrefs(prefs.Space, type.FullName!, BuildJSSpace(type));
-        var lastDotIdx = space.LastIndexOf('.');
-        return lastDotIdx >= 0 ? space[..lastDotIdx] : space;
+        return BuildJSSpace(type, prefs);
     }
 
     private void AppendExtensions ()
@@ -96,7 +94,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         if (type.BaseType is { } baseType && types.Contains(baseType))
             extTypes.Insert(0, baseType);
         if (extTypes.Count > 0)
-            builder.Append(" extends ").AppendJoin(", ", extTypes.Select(t => WithPrefs(prefs.Space, t.FullName!, BuildJSSpace(t))));
+            builder.Append(" extends ").AppendJoin(", ", extTypes.Select(t => converter.ToTypeScript(t, null)));
     }
 
     private void AppendProperties ()
@@ -109,7 +107,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private void AppendProperty (PropertyInfo property)
     {
-        var indent = type.Namespace != null ? 1 : 0;
+        var indent = !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
         AppendLine(ToFirstLower(property.Name), indent + 1);
         if (IsNullable(property)) builder.Append('?');
         builder.Append($": {BuildType()};");
@@ -136,8 +134,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private string BuildTypeName (Type type)
     {
-        var space = WithPrefs(prefs.Space, type.FullName!, BuildJSSpace(type));
-        var name = space[(space.LastIndexOf('.') + 1)..];
+        var name = BuildJSSpaceName(type);
         if (!type.IsGenericType) return name;
         var args = string.Join(", ", type.GetGenericArguments().Select(BuildTypeName));
         return $"{name}<{args}>";

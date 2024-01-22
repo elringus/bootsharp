@@ -348,9 +348,7 @@ public class BindingTest : PackTest
             export const n = {
                 Class: {
                     getFoo: () => deserialize(getExports().n_Class_GetFoo()),
-                    Foo: {
-                        "0": "A", "1": "B", "A": 0, "B": 1
-                    }
+                    Foo: { "0": "A", "1": "B", "A": 0, "B": 1 }
                 }
             };
             """);
@@ -360,17 +358,15 @@ public class BindingTest : PackTest
     public void CustomEnumIndexesArePreservedInJS ()
     {
         AddAssembly(
-            WithClass("n", "public enum Foo { A = 1, B = 6 }"),
+            With("n", "public enum Foo { A = 1, B = 6 }"),
             WithClass("n", "[JSInvokable] public static Foo GetFoo () => default;"));
         Execute();
         Contains(
             """
             export const n = {
+                Foo: { "1": "A", "6": "B", "A": 1, "B": 6 },
                 Class: {
-                    getFoo: () => deserialize(getExports().n_Class_GetFoo()),
-                    Foo: {
-                        "1": "A", "6": "B", "A": 1, "B": 6
-                    }
+                    getFoo: () => deserialize(getExports().n_Class_GetFoo())
                 }
             };
             """);

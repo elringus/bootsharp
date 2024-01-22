@@ -9,7 +9,7 @@
 /// is tested in order; on first match the result replaces the default.
 /// </remarks>
 /// <example>
-/// Make all bindings declared under "Foo.Bar" C# namespace have "Baz" namespace in JavaScript:
+/// Make all spaces starting with "Foo.Bar" replaced with "Baz":
 /// <code>
 /// [assembly: Bootsharp.JSPreferences(
 ///     Space = ["^Foo\.Bar\.(\S+)", "Baz.$1"]
@@ -23,9 +23,13 @@ public sealed class JSPreferencesAttribute : Attribute
     /// Customize generated JavaScript object names and TypeScript namespaces.
     /// </summary>
     /// <remarks>
-    /// The patterns are matched against full names of the declaring C# types,
-    /// affecting both objects generated to host bindings and type names
-    /// of the values referenced in the bindings.
+    /// The patterns are matched against full type name (namespace.typename) of
+    /// declaring C# type when generating JavaScript objects for interop methods
+    /// and against namespace when generating TypeScript syntax for C# types.
+    /// Matched type names have following modifications:<br/>
+    ///  - interfaces have first character removed<br/>
+    ///  - generics have parameter spec removed<br/>
+    ///  - nested have "+" replaced with "."<br/>
     /// </remarks>
     public string[] Space { get; init; } = [];
     /// <summary>

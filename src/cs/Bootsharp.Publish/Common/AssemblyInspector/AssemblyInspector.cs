@@ -101,7 +101,7 @@ internal sealed class AssemblyInspector (Preferences prefs, string entryAssembly
             Void = IsVoid(info.ReturnType),
             Serialized = ShouldSerialize(info.ReturnType)
         },
-        JSSpace = WithPrefs(prefs.Space, info.DeclaringType!.FullName!, BuildJSSpace(info.DeclaringType!)),
+        JSSpace = BuildMethodSpace(info),
         JSName = WithPrefs(prefs.Function, info.Name, ToFirstLower(info.Name))
     };
 
@@ -124,13 +124,12 @@ internal sealed class AssemblyInspector (Preferences prefs, string entryAssembly
         var space = "Bootsharp.Generated." + (kind == InterfaceKind.Export ? "Exports" : "Imports");
         if (iType.Namespace != null) space += $".{iType.Namespace}";
         var name = "JS" + iType.Name[1..];
-        var mSpace = $"{space}.{name}";
         return new InterfaceMeta {
             Kind = kind,
             TypeSyntax = BuildSyntax(iType),
             Namespace = space,
             Name = name,
-            Methods = iType.GetMethods().Select(m => CreateInterfaceMethod(m, kind, mSpace)).ToArray()
+            Methods = iType.GetMethods().Select(m => CreateInterfaceMethod(m, kind, $"{space}.{name}")).ToArray()
         };
     }
 
@@ -139,17 +138,23 @@ internal sealed class AssemblyInspector (Preferences prefs, string entryAssembly
         var name = WithPrefs(prefs.Event, info.Name, info.Name);
         var mKind = iKind == InterfaceKind.Export ? MethodKind.Invokable
             : name != info.Name ? MethodKind.Event : MethodKind.Function;
-        var jsSpace = WithPrefs(prefs.Space, info.DeclaringType!.FullName!, BuildJSSpace(info.DeclaringType!));
-        jsSpace = jsSpace[..(jsSpace.LastIndexOf('.') + 1)] + jsSpace[(jsSpace.LastIndexOf('.') + 2)..];
         return new() {
             Name = info.Name,
             Generated = CreateMethod(info, mKind) with {
                 Assembly = entryAssemblyName,
                 Space = space,
                 Name = name,
-                JSSpace = jsSpace,
                 JSName = ToFirstLower(name)
             }
         };
+    }
+
+    private string BuildMethodSpace (MethodInfo info)
+    {
+        var space = info.DeclaringType!.Namespace ?? "";
+        var name = BuildJSSpaceName(info.DeclaringType);
+        if (info.DeclaringType.IsInterface) name = name[1..];
+        var fullname = string.IsNullOrEmpty(space) ? name : $"{space}.{name}";
+        return WithPrefs(prefs.Space, fullname, fullname);
     }
 }

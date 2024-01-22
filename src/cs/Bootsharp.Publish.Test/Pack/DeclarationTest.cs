@@ -47,15 +47,35 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
+            export interface Record {
+            }
             export enum Enum {
                 A,
                 B
             }
-            export interface Record {
-            }
 
             export namespace Class {
                 export function inv(r: Record): Enum;
+            }
+            """);
+    }
+
+    [Fact]
+    public void NestedTypesAreDeclaredUnderClassSpace ()
+    {
+        AddAssembly(
+            With("public class Foo { public record Bar; }"),
+            WithClass("[JSInvokable] public static void Inv (Foo.Bar r) {}"));
+        Execute();
+        Contains(
+            """
+            export namespace Foo {
+                export interface Bar {
+                }
+            }
+
+            export namespace Class {
+                export function inv(r: Foo.Bar): void;
             }
             """);
     }
@@ -392,11 +412,21 @@ public class DeclarationTest : PackTest
     public void DefinitionIsGeneratedForGenericInterface ()
     {
         AddAssembly(
-            With("n", "public interface GenericInterface<T> { public T Value { get; set; } }"),
-            WithClass("n", "[JSInvokable] public static GenericInterface<string> Method () => default;"));
+            With("n", "public interface IGenericInterface<T> { public T Value { get; set; } }"),
+            WithClass("n", "[JSInvokable] public static IGenericInterface<string> Method () => default;"));
         Execute();
-        Matches(@"export interface GenericInterface<T> {\s*value\?: T;\s*}");
-        Contains("method(): n.GenericInterface<string>");
+        Contains(
+            """
+            export namespace n {
+                export interface IGenericInterface<T> {
+                    value?: T;
+                }
+            }
+
+            export namespace n.Class {
+                export function method(): n.IGenericInterface<string>;
+            }
+            """);
     }
 
     [Fact]
@@ -430,11 +460,22 @@ public class DeclarationTest : PackTest
     public void DefinitionIsGeneratedForGenericClassWithMultipleTypeArguments ()
     {
         AddAssembly(
-            WithClass("n", "public class GenericClass<T1, T2> { public T1 Key { get; set; } public T2 Value { get; set; } }"),
+            With("n", "public class GenericClass<T1, T2> { public T1 Key { get; set; } public T2 Value { get; set; } }"),
             WithClass("n", "[JSInvokable] public static void Method (GenericClass<string, int> p) { }"));
         Execute();
-        Matches(@"export interface GenericClass<T1, T2> {\s*key\?: T1;\s*value\?: T2;\s*}");
-        Contains("method(p: n.Class.GenericClass<string, number>): void");
+        Contains(
+            """
+            export namespace n {
+                export interface GenericClass<T1, T2> {
+                    key?: T1;
+                    value?: T2;
+                }
+            }
+
+            export namespace n.Class {
+                export function method(p: n.GenericClass<string, number>): void;
+            }
+            """);
     }
 
     [Fact]
@@ -666,12 +707,23 @@ public class DeclarationTest : PackTest
             With(
                 """
                 [assembly: Bootsharp.JSPreferences(
-                    Type = [@"Record", "Foo"]
+                    Type = [@"Record", "Foo", @".+`.+", "Bar"]
                 )]
                 """),
             With("public record Record;"),
-            WithClass("[JSInvokable] public static void Inv (Record r) {}"));
+            With("public record Generic<T>;"),
+            WithClass("[JSInvokable] public static void Inv (Record r, Generic<string> g) {}"));
         Execute();
-        Contains("inv(r: Foo): void");
+        Contains(
+            """
+            export interface Record {
+            }
+            export interface Generic<T> {
+            }
+
+            export namespace Class {
+                export function inv(r: Foo, g: Bar): void;
+            }
+            """);
     }
 }
