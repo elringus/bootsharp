@@ -1,4 +1,4 @@
-name: close stale issues
+name: stale
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
     - cron: '45 3 * * *'
 
 jobs:
-  stale:
+  scan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/stale@v4
