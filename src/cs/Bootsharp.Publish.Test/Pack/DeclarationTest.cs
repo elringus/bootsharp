@@ -741,4 +741,73 @@ public class DeclarationTest : PackTest
         Assert.DoesNotContain("export function inv", TestedContent);
         Assert.DoesNotContain("export let fun", TestedContent);
     }
+
+    [Fact]
+    public void GeneratesForExportImportInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSExport(typeof(Space.IExported))]
+            [assembly:JSImport(typeof(Space.IImported))]
+
+            namespace Space;
+
+            public enum Enum { A, B }
+
+            public interface IExported { void Inv (string s, Enum e); }
+            public interface IImported { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }
+            """));
+        Execute();
+        Contains(
+            """
+            export namespace Space {
+                export enum Enum {
+                    A,
+                    B
+                }
+            }
+
+            export namespace Space.Exported {
+                export function inv(s: string, e: Space.Enum): void;
+            }
+            export namespace Space.Imported {
+                export let fun: (s: string, e: Space.Enum) => void;
+                export const onEvt: Event<[s: string, e: Space.Enum]>;
+            }
+            """);
+    }
+
+    [Fact]
+    public void GeneratesForExportImportInterfacesWithSpacePref ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSPreferences(Space = [@".+", "Foo"])]
+            [assembly:JSExport(typeof(Space.IExported))]
+            [assembly:JSImport(typeof(Space.IImported))]
+
+            namespace Space;
+
+            public enum Enum { A, B }
+
+            public interface IExported { void Inv (string s, Enum e); }
+            public interface IImported { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }
+            """));
+        Execute();
+        Contains(
+            """
+            export namespace Foo {
+                export enum Enum {
+                    A,
+                    B
+                }
+            }
+
+            export namespace Foo {
+                export function inv(s: string, e: Foo.Enum): void;
+                export let fun: (s: string, e: Foo.Enum) => void;
+                export const onEvt: Event<[s: string, e: Foo.Enum]>;
+            }
+            """);
+    }
 }

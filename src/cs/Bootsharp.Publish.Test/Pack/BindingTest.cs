@@ -432,4 +432,69 @@ public class BindingTest : PackTest
         Assert.DoesNotContain("inv: () =>", TestedContent);
         Assert.DoesNotContain("get fun()", TestedContent);
     }
+
+    [Fact]
+    public void GeneratesForExportImportInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSExport(typeof(Space.IExported))]
+            [assembly:JSImport(typeof(Space.IImported))]
+
+            namespace Space;
+
+            public enum Enum { A, B }
+
+            public interface IExported { void Inv (string s, Enum e); }
+            public interface IImported { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }
+            """));
+        Execute();
+        Contains(
+            """
+            export const Space = {
+                Enum: { "0": "A", "1": "B", "A": 0, "B": 1 },
+                Exported: {
+                    inv: (s, e) => getExports().Bootsharp_Generated_Exports_Space_JSExported_Inv(s, serialize(e))
+                },
+                Imported: {
+                    get fun() { return this.funHandler; },
+                    set fun(handler) { this.funHandler = handler; this.funSerializedHandler = (s, e) => this.funHandler(s, deserialize(e)); },
+                    get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Space.Imported.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; },
+                    onEvt: new Event(),
+                    onEvtSerialized: (s, e) => Space.Imported.onEvt.broadcast(s, deserialize(e))
+                }
+            };
+            """);
+    }
+
+    [Fact]
+    public void GeneratesForExportImportInterfacesWithSpacePref ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSPreferences(Space = [@".+", "Foo"])]
+            [assembly:JSExport(typeof(Space.IExported))]
+            [assembly:JSImport(typeof(Space.IImported))]
+
+            namespace Space;
+
+            public enum Enum { A, B }
+
+            public interface IExported { void Inv (string s, Enum e); }
+            public interface IImported { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }
+            """));
+        Execute();
+        Contains(
+            """
+            export const Foo = {
+                inv: (s, e) => getExports().Bootsharp_Generated_Exports_Space_JSExported_Inv(s, serialize(e)),
+                get fun() { return this.funHandler; },
+                set fun(handler) { this.funHandler = handler; this.funSerializedHandler = (s, e) => this.funHandler(s, deserialize(e)); },
+                get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Foo.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; },
+                onEvt: new Event(),
+                onEvtSerialized: (s, e) => Foo.onEvt.broadcast(s, deserialize(e)),
+                Enum: { "0": "A", "1": "B", "A": 0, "B": 1 }
+            };
+            """);
+    }
 }
