@@ -1,64 +1,74 @@
-﻿using Microsoft.Build.Framework;
-
-namespace Bootsharp.Publish;
+﻿namespace Bootsharp.Publish;
 
 /// <summary>
-/// First pass: emits code to be picked by .NET's source generators.
+/// First pass: emits C# sources to be picked by .NET's source generators.
 /// </summary>
 public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
 {
-    [Required] public required string InspectedDirectory { get; set; }
-    [Required] public required string EntryAssemblyName { get; set; }
-    [Required] public required string ExportsFilePath { get; set; }
-    [Required] public required string ImportsFilePath { get; set; }
-    [Required] public required string SerializerFilePath { get; set; }
+    public required string InspectedDirectory { get; set; }
+    public required string EntryAssemblyName { get; set; }
+    public required string InterfacesFilePath { get; set; }
+    public required string DependenciesFilePath { get; set; }
+    public required string SerializerFilePath { get; set; }
+    public required string InteropFilePath { get; set; }
 
     public override bool Execute ()
     {
-        var spaceBuilder = CreateNamespaceBuilder();
-        using var inspection = InspectAssemblies(spaceBuilder);
-        GenerateExports(inspection);
-        GenerateImports(inspection);
+        var prefs = ResolvePreferences();
+        using var inspection = InspectAssemblies(prefs);
+        GenerateInterfaces(inspection);
+        GenerateDependencies(inspection);
         GenerateSerializer(inspection);
+        GenerateInterop(inspection);
         return true;
     }
 
-    private NamespaceBuilder CreateNamespaceBuilder ()
+    private Preferences ResolvePreferences ()
     {
-        var builder = new NamespaceBuilder();
-        builder.CollectConverters(InspectedDirectory, EntryAssemblyName);
-        return builder;
+        var resolver = new PreferencesResolver(EntryAssemblyName);
+        return resolver.Resolve(InspectedDirectory);
     }
 
-    private AssemblyInspection InspectAssemblies (NamespaceBuilder spaceBuilder)
+    private AssemblyInspection InspectAssemblies (Preferences prefs)
     {
-        var inspector = new AssemblyInspector(spaceBuilder);
-        var inspection = inspector.InspectInDirectory(InspectedDirectory);
+        var inspector = new AssemblyInspector(prefs, EntryAssemblyName);
+        var inspected = Directory.GetFiles(InspectedDirectory, "*.dll");
+        var inspection = inspector.InspectInDirectory(InspectedDirectory, inspected);
         new InspectionReporter(Log).Report(inspection);
         return inspection;
     }
 
-    private void GenerateExports (AssemblyInspection inspection)
+    private void GenerateInterfaces (AssemblyInspection inspection)
     {
-        var generator = new InteropExportGenerator();
+        var generator = new InterfaceGenerator();
         var content = generator.Generate(inspection);
-        Directory.CreateDirectory(Path.GetDirectoryName(ExportsFilePath)!);
-        File.WriteAllText(ExportsFilePath, content);
+        WriteGenerated(InterfacesFilePath, content);
     }
 
-    private void GenerateImports (AssemblyInspection inspection)
+    private void GenerateDependencies (AssemblyInspection inspection)
     {
-        var generator = new InteropImportGenerator(EntryAssemblyName);
+        var generator = new DependencyGenerator(EntryAssemblyName);
         var content = generator.Generate(inspection);
-        Directory.CreateDirectory(Path.GetDirectoryName(ImportsFilePath)!);
-        File.WriteAllText(ImportsFilePath, content);
+        WriteGenerated(DependenciesFilePath, content);
     }
 
     private void GenerateSerializer (AssemblyInspection inspection)
     {
         var generator = new SerializerGenerator();
         var content = generator.Generate(inspection);
-        Directory.CreateDirectory(Path.GetDirectoryName(SerializerFilePath)!);
-        File.WriteAllText(SerializerFilePath, content);
+        WriteGenerated(SerializerFilePath, content);
+    }
+
+    private void GenerateInterop (AssemblyInspection inspection)
+    {
+        var generator = new InteropGenerator();
+        var content = generator.Generate(inspection);
+        WriteGenerated(InteropFilePath, content);
+    }
+
+    private void WriteGenerated (string path, string content)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllText(path, content);
     }
 }

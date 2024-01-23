@@ -1,5 +1,3 @@
-using Microsoft.Build.Framework;
-
 namespace Bootsharp.Publish;
 
 /// <summary>
@@ -7,57 +5,60 @@ namespace Bootsharp.Publish;
 /// </summary>
 public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
 {
-    [Required] public required string BuildDirectory { get; set; }
-    [Required] public required string InspectedDirectory { get; set; }
-    [Required] public required string EntryAssemblyName { get; set; }
-    [Required] public required bool TrimmingEnabled { get; set; }
-    [Required] public required bool EmbedBinaries { get; set; }
-    [Required] public required bool Threading { get; set; }
+    public required string BuildDirectory { get; set; }
+    public required string InspectedDirectory { get; set; }
+    public required string EntryAssemblyName { get; set; }
+    public required bool TrimmingEnabled { get; set; }
+    public required bool EmbedBinaries { get; set; }
+    public required bool Threading { get; set; }
 
     public override bool Execute ()
     {
-        var spaceBuilder = CreateNamespaceBuilder();
-        using var inspection = InspectAssemblies(spaceBuilder);
-        GenerateBindings(inspection, spaceBuilder);
-        GenerateDeclarations(inspection, spaceBuilder);
+        var prefs = ResolvePreferences();
+        using var inspection = InspectAssemblies(prefs);
+        GenerateBindings(prefs, inspection);
+        GenerateDeclarations(prefs, inspection);
         GenerateResources(inspection);
         PatchModules();
         return true;
     }
 
-    private NamespaceBuilder CreateNamespaceBuilder ()
+    private Preferences ResolvePreferences ()
     {
-        var builder = new NamespaceBuilder();
-        builder.CollectConverters(InspectedDirectory, EntryAssemblyName);
-        return builder;
+        var resolver = new PreferencesResolver(EntryAssemblyName);
+        return resolver.Resolve(InspectedDirectory);
     }
 
-    private AssemblyInspection InspectAssemblies (NamespaceBuilder spaceBuilder)
+    private AssemblyInspection InspectAssemblies (Preferences prefs)
     {
-        var inspector = new AssemblyInspector(spaceBuilder);
-        var inspection = inspector.InspectInDirectory(InspectedDirectory);
+        var inspector = new AssemblyInspector(prefs, EntryAssemblyName);
+        // Assemblies in publish dir are trimmed and don't contain some data (eg, method arg names).
+        // While the inspected dir contains extra assemblies we don't need in build. Hence the filtering.
+        var included = Directory.GetFiles(BuildDirectory, "*.wasm").Select(Path.GetFileNameWithoutExtension).ToHashSet();
+        var inspected = Directory.GetFiles(InspectedDirectory, "*.dll").Where(p => included.Contains(Path.GetFileNameWithoutExtension(p)));
+        var inspection = inspector.InspectInDirectory(InspectedDirectory, inspected);
         new InspectionReporter(Log).Report(inspection);
         return inspection;
     }
 
-    private void GenerateBindings (AssemblyInspection inspection, NamespaceBuilder spaceBuilder)
+    private void GenerateBindings (Preferences prefs, AssemblyInspection inspection)
     {
-        var generator = new BindingGenerator(spaceBuilder);
+        var generator = new BindingGenerator(prefs);
         var content = generator.Generate(inspection);
         File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.js"), content);
     }
 
-    private void GenerateDeclarations (AssemblyInspection inspection, NamespaceBuilder spaceBuilder)
+    private void GenerateDeclarations (Preferences prefs, AssemblyInspection inspection)
     {
-        var generator = new DeclarationGenerator(spaceBuilder);
+        var generator = new DeclarationGenerator(prefs);
         var content = generator.Generate(inspection);
         File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.d.ts"), content);
     }
 
     private void GenerateResources (AssemblyInspection inspection)
     {
-        var generator = new ResourceGenerator(EntryAssemblyName, BuildDirectory, EmbedBinaries);
-        var content = generator.Generate(inspection);
+        var generator = new ResourceGenerator(EntryAssemblyName, EmbedBinaries);
+        var content = generator.Generate(BuildDirectory);
         File.WriteAllText(Path.Combine(BuildDirectory, "resources.g.js"), content);
     }
 

@@ -16,7 +16,12 @@ public class DeclarationTest : PackTest
     {
         AddAssembly(WithClass("Foo", "[JSInvokable] public static void Bar () { }"));
         Execute();
-        Contains("export namespace Foo {");
+        Contains(
+            """
+            export namespace Foo.Class {
+                export function bar(): void;
+            }
+            """);
     }
 
     [Fact]
@@ -24,7 +29,55 @@ public class DeclarationTest : PackTest
     {
         AddAssembly(WithClass("Foo.Bar.Nya", "[JSInvokable] public static void Bar () { }"));
         Execute();
-        Contains("export namespace Foo.Bar.Nya {");
+        Contains(
+            """
+            export namespace Foo.Bar.Nya.Class {
+                export function bar(): void;
+            }
+            """);
+    }
+
+    [Fact]
+    public void WhenNoNamespaceDeclaresUnderRoot ()
+    {
+        AddAssembly(
+            With("public record Record;"),
+            With("public enum Enum { A, B }"),
+            WithClass("[JSInvokable] public static Enum Inv (Record r) => default;"));
+        Execute();
+        Contains(
+            """
+            export interface Record {
+            }
+            export enum Enum {
+                A,
+                B
+            }
+
+            export namespace Class {
+                export function inv(r: Record): Enum;
+            }
+            """);
+    }
+
+    [Fact]
+    public void NestedTypesAreDeclaredUnderClassSpace ()
+    {
+        AddAssembly(
+            With("public class Foo { public record Bar; }"),
+            WithClass("[JSInvokable] public static void Inv (Foo.Bar r) {}"));
+        Execute();
+        Contains(
+            """
+            export namespace Foo {
+                export interface Bar {
+                }
+            }
+
+            export namespace Class {
+                export function inv(r: Foo.Bar): void;
+            }
+            """);
     }
 
     [Fact]
@@ -32,7 +85,12 @@ public class DeclarationTest : PackTest
     {
         AddAssembly(WithClass("Foo", "[JSInvokable] public static void Foo () { }"));
         Execute();
-        Contains("export namespace Foo {\n    export function foo(): void;\n}");
+        Contains(
+            """
+            export namespace Foo.Class {
+                export function foo(): void;
+            }
+            """);
     }
 
     [Fact]
@@ -40,7 +98,12 @@ public class DeclarationTest : PackTest
     {
         AddAssembly(WithClass("Foo", "[JSFunction] public static void OnFoo () { }"));
         Execute();
-        Contains("export namespace Foo {\n    export let onFoo: () => void;\n}");
+        Contains(
+            """
+            export namespace Foo.Class {
+                export let onFoo: () => void;
+            }
+            """);
     }
 
     [Fact]
@@ -53,7 +116,7 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
-            export namespace Foo {
+            export namespace Foo.Class {
                 export const onFoo: Event<[]>;
                 export const onBar: Event<[baz: string]>;
                 export const onFar: Event<[yaz: number, nya: boolean | undefined]>;
@@ -65,32 +128,48 @@ public class DeclarationTest : PackTest
     public void MembersFromSameSpaceAreDeclaredUnderSameSpace ()
     {
         AddAssembly(
-            WithClass("Foo", "public class Foo { }"),
-            WithClass("Foo", "[JSInvokable] public static Foo GetFoo () => default;"));
+            With("Space", "public class Foo { }"),
+            With("Space", "public class Bar { }"),
+            WithClass("Space", "[JSInvokable] public static Foo GetFoo (Bar bar) => default;"));
         Execute();
-        Contains("export namespace Foo {\n    export interface Foo {\n    }\n}");
-        Contains("export namespace Foo {\n    export function getFoo(): Foo.Foo;\n}");
+        Contains(
+            """
+            export namespace Space {
+                export interface Bar {
+                }
+                export interface Foo {
+                }
+            }
+
+            export namespace Space.Class {
+                export function getFoo(bar: Space.Bar): Space.Foo;
+            }
+            """);
     }
 
     [Fact]
     public void MembersFromDifferentSpacesAreDeclaredUnderRespectiveSpaces ()
     {
         AddAssembly(
-            With("Foo", "public class Foo { }"),
-            WithClass("Bar", "[JSInvokable] public static Foo.Foo GetFoo () => default;"));
+            With("SpaceA", "public class Foo { }"),
+            With("SpaceB", "public class Bar { }"),
+            WithClass("[JSInvokable] public static SpaceA.Foo GetFoo (SpaceB.Bar bar) => default;"));
         Execute();
-        Contains("export namespace Foo {\n    export interface Foo {\n    }\n}");
-        Contains("export namespace Bar {\n    export function getFoo(): Foo.Foo;\n}");
-    }
+        Contains(
+            """
+            export namespace SpaceA {
+                export interface Foo {
+                }
+            }
+            export namespace SpaceB {
+                export interface Bar {
+                }
+            }
 
-    [Fact]
-    public void MultipleSpacesAreDeclaredFromNewLine ()
-    {
-        AddAssembly(
-            WithClass("a", "[JSInvokable] public static void Foo () { }"),
-            WithClass("b", "[JSInvokable] public static void Bar () { }"));
-        Execute();
-        Contains("\nexport namespace b");
+            export namespace Class {
+                export function getFoo(bar: SpaceB.Bar): SpaceA.Foo;
+            }
+            """);
     }
 
     [Fact]
@@ -100,31 +179,26 @@ public class DeclarationTest : PackTest
             WithClass("Nya.Bar", "[JSInvokable] public static void Fun () { }"),
             WithClass("Nya.Foo", "[JSInvokable] public static void Foo () { }"));
         Execute();
-        Contains("export namespace Nya.Bar {\n    export function fun(): void;\n}");
-        Contains("export namespace Nya.Foo {\n    export function foo(): void;\n}");
+        Contains("export namespace Nya.Bar.Class {\n    export function fun(): void;\n}");
+        Contains("export namespace Nya.Foo.Class {\n    export function foo(): void;\n}");
     }
 
     [Fact]
-    public void WhenNoSpaceTypesAreDeclaredUnderGlobalSpace ()
+    public void WhenNoNamespaceTypesAreDeclaredUnderRoot ()
     {
         AddAssembly(
             With("public class Foo { }"),
             WithClass("[JSFunction] public static void OnFoo (Foo foo) { }"));
         Execute();
-        Contains("export namespace Global {\n    export interface Foo {\n    }\n}");
-        Contains("export namespace Global {\n    export let onFoo: (foo: Global.Foo) => void;\n}");
-    }
+        Contains(
+            """
+            export interface Foo {
+            }
 
-    [Fact]
-    public void NamespaceAttributeOverrideSpaceNames ()
-    {
-        AddAssembly(
-            With("""[assembly:JSNamespace(@"Foo\.Bar\.(\S+)", "$1")]"""),
-            With("Foo.Bar.Nya", "public class Nya { }"),
-            WithClass("Foo.Bar.Fun", "[JSFunction] public static void OnFun (Nya.Nya nya) { }"));
-        Execute();
-        Contains("export namespace Nya {\n    export interface Nya {\n    }\n}");
-        Contains("export namespace Fun {\n    export let onFun: (nya: Nya.Nya) => void;\n}");
+            export namespace Class {
+                export let onFoo: (foo: Foo) => void;
+            }
+            """);
     }
 
     [Fact]
@@ -207,8 +281,7 @@ public class DeclarationTest : PackTest
             WithClass("[JSInvokable] public static void Int16 (short[] foo) {}"),
             WithClass("[JSInvokable] public static void Uint32 (uint[] foo) {}"),
             WithClass("[JSInvokable] public static void Int32 (int[] foo) {}"),
-            WithClass("[JSInvokable] public static void BigInt64 (long[] foo) {}")
-        );
+            WithClass("[JSInvokable] public static void BigInt64 (long[] foo) {}"));
         Execute();
         Contains("uint8(foo: Uint8Array): void");
         Contains("int8(foo: Int8Array): void");
@@ -223,7 +296,7 @@ public class DeclarationTest : PackTest
     public void DefinitionIsGeneratedForObjectType ()
     {
         AddAssembly(
-            WithClass("n", "public class Foo { public string S { get; set; } public int I { get; set; } }"),
+            With("n", "public class Foo { public string S { get; set; } public int I { get; set; } }"),
             WithClass("n", "[JSInvokable] public static Foo Method (Foo t) => default;"));
         Execute();
         Matches(@"export interface Foo {\s*s: string;\s*i: number;\s*}");
@@ -234,9 +307,9 @@ public class DeclarationTest : PackTest
     public void DefinitionIsGeneratedForInterfaceAndImplementation ()
     {
         AddAssembly(
-            WithClass("n", "public interface Interface { Interface Foo { get; } void Bar (Interface b); }"),
-            WithClass("n", "public class Base { }"),
-            WithClass("n", "public class Derived : Base, Interface { public Interface Foo { get; } public void Bar (Interface b) {} }"),
+            With("n", "public interface Interface { Interface Foo { get; } void Bar (Interface b); }"),
+            With("n", "public class Base { }"),
+            With("n", "public class Derived : Base, Interface { public Interface Foo { get; } public void Bar (Interface b) {} }"),
             WithClass("n", "[JSInvokable] public static Derived Method (Interface b) => default;"));
         Execute();
         Matches(@"export interface Interface {\s*foo: n.Interface;\s*}");
@@ -249,8 +322,8 @@ public class DeclarationTest : PackTest
     public void DefinitionIsGeneratedForTypeWithListProperty ()
     {
         AddAssembly(
-            WithClass("n", "public interface Item { }"),
-            WithClass("n", "public class Container { public List<Item> Items { get; } }"),
+            With("n", "public interface Item { }"),
+            With("n", "public class Container { public List<Item> Items { get; } }"),
             WithClass("n", "[JSInvokable] public static Container Combine (List<Item> items) => default;"));
         Execute();
         Matches(@"export interface Item {\s*}");
@@ -262,8 +335,8 @@ public class DeclarationTest : PackTest
     public void DefinitionIsGeneratedForTypeWithJaggedArrayProperty ()
     {
         AddAssembly(
-            WithClass("n", "public interface Item { }"),
-            WithClass("n", "public class Container { public Item[][] Items { get; } }"),
+            With("n", "public interface Item { }"),
+            With("n", "public class Container { public Item[][] Items { get; } }"),
             WithClass("n", "[JSInvokable] public static Container Get () => default;"));
         Execute();
         Matches(@"export interface Item {\s*}");
@@ -275,8 +348,8 @@ public class DeclarationTest : PackTest
     public void DefinitionIsGeneratedForTypeWithReadOnlyListProperty ()
     {
         AddAssembly(
-            WithClass("n", "public interface Item { }"),
-            WithClass("n", "public class Container { public IReadOnlyList<Item> Items { get; } }"),
+            With("n", "public interface Item { }"),
+            With("n", "public class Container { public IReadOnlyList<Item> Items { get; } }"),
             WithClass("n", "[JSInvokable] public static Container Combine (IReadOnlyList<Item> items) => default;"));
         Execute();
         Matches(@"export interface Item {\s*}");
@@ -288,8 +361,8 @@ public class DeclarationTest : PackTest
     public void DefinitionIsGeneratedForTypeWithDictionaryProperty ()
     {
         AddAssembly(
-            WithClass("n", "public interface Item { }"),
-            WithClass("n", "public class Container { public Dictionary<string, Item> Items { get; } }"),
+            With("n", "public interface Item { }"),
+            With("n", "public class Container { public Dictionary<string, Item> Items { get; } }"),
             WithClass("n", "[JSInvokable] public static Container Combine (Dictionary<string, Item> items) => default;"));
         Execute();
         Matches(@"export interface Item {\s*}");
@@ -301,8 +374,8 @@ public class DeclarationTest : PackTest
     public void DefinitionIsGeneratedForTypeWithReadOnlyDictionaryProperty ()
     {
         AddAssembly(
-            WithClass("n", "public interface Item { }"),
-            WithClass("n", "public class Container { public IReadOnlyDictionary<string, Item> Items { get; } }"),
+            With("n", "public interface Item { }"),
+            With("n", "public class Container { public IReadOnlyDictionary<string, Item> Items { get; } }"),
             WithClass("n", "[JSInvokable] public static Container Combine (IReadOnlyDictionary<string, Item> items) => default;"));
         Execute();
         Matches(@"export interface Item {\s*}");
@@ -314,22 +387,46 @@ public class DeclarationTest : PackTest
     public void DefinitionIsGeneratedForGenericClass ()
     {
         AddAssembly(
-            WithClass("n", "public class GenericClass<T> { public T Value { get; set; } }"),
-            WithClass("n", "[JSInvokable] public static void Method (GenericClass<string> p) { }"));
+            With("n", "public class Generic<T> where T: notnull { public T Value { get; set; } }"),
+            With("n", "public class GenericNull<T> { public T Value { get; set; } }"),
+            WithClass("n", "[JSInvokable] public static void Method (Generic<string> a, GenericNull<int> b) { }"));
         Execute();
-        Matches(@"export interface GenericClass<T> {\s*value: T;\s*}");
-        Contains("method(p: n.GenericClass<string>): void");
+        Contains(
+            """
+            export namespace n {
+                export interface Generic<T> {
+                    value: T;
+                }
+                export interface GenericNull<T> {
+                    value?: T;
+                }
+            }
+
+            export namespace n.Class {
+                export function method(a: n.Generic<string>, b: n.GenericNull<number>): void;
+            }
+            """);
     }
 
     [Fact]
     public void DefinitionIsGeneratedForGenericInterface ()
     {
         AddAssembly(
-            WithClass("n", "public interface GenericInterface<T> { public T Value { get; set; } }"),
-            WithClass("n", "[JSInvokable] public static GenericInterface<string> Method () => default;"));
+            With("n", "public interface IGenericInterface<T> { public T Value { get; set; } }"),
+            WithClass("n", "[JSInvokable] public static IGenericInterface<string> Method () => default;"));
         Execute();
-        Matches(@"export interface GenericInterface<T> {\s*value: T;\s*}");
-        Contains("method(): n.GenericInterface<string>");
+        Contains(
+            """
+            export namespace n {
+                export interface IGenericInterface<T> {
+                    value?: T;
+                }
+            }
+
+            export namespace n.Class {
+                export function method(): n.IGenericInterface<string>;
+            }
+            """);
     }
 
     [Fact]
@@ -340,44 +437,101 @@ public class DeclarationTest : PackTest
             With("Bar", "public interface GenericInterface<T> { public T Value { get; set; } }"),
             WithClass("n", "[JSInvokable] public static void Method (Foo.GenericClass<Bar.GenericInterface<string>> p) { }"));
         Execute();
-        Matches(@"export namespace Foo {\s*export interface GenericClass<T> {\s*value: T;\s*}\s*}");
-        Matches(@"export namespace Bar {\s*export interface GenericInterface<T> {\s*value: T;\s*}\s*}");
-        Contains("method(p: Foo.GenericClass<Bar.GenericInterface<string>>): void");
+        Contains(
+            """
+            export namespace Bar {
+                export interface GenericInterface<T> {
+                    value?: T;
+                }
+            }
+            export namespace Foo {
+                export interface GenericClass<T> {
+                    value?: T;
+                }
+            }
+
+            export namespace n.Class {
+                export function method(p: Foo.GenericClass<Bar.GenericInterface<string>>): void;
+            }
+            """);
     }
 
     [Fact]
     public void DefinitionIsGeneratedForGenericClassWithMultipleTypeArguments ()
     {
         AddAssembly(
-            WithClass("n", "public class GenericClass<T1, T2> { public T1 Key { get; set; } public T2 Value { get; set; } }"),
+            With("n", "public class GenericClass<T1, T2> { public T1 Key { get; set; } public T2 Value { get; set; } }"),
             WithClass("n", "[JSInvokable] public static void Method (GenericClass<string, int> p) { }"));
         Execute();
-        Matches(@"export interface GenericClass<T1, T2> {\s*key: T1;\s*value: T2;\s*}");
-        Contains("method(p: n.GenericClass<string, number>): void");
+        Contains(
+            """
+            export namespace n {
+                export interface GenericClass<T1, T2> {
+                    key?: T1;
+                    value?: T2;
+                }
+            }
+
+            export namespace n.Class {
+                export function method(p: n.GenericClass<string, number>): void;
+            }
+            """);
     }
 
     [Fact]
     public void CanCrawlCustomTypes ()
     {
         AddAssembly(
-            WithClass("n", "public struct Struct { public double A { get; set; } }"),
-            WithClass("n", "public readonly struct ReadonlyStruct { public double A { get; init; } }"),
-            WithClass("n", "public readonly record struct ReadonlyRecordStruct(double A);"),
-            WithClass("n", "public record class RecordClass(double A);"),
-            WithClass("n", "public enum Enum { A, B }"),
-            WithClass("n", "public class Foo { public Struct S { get; } public ReadonlyStruct Rs { get; } }"),
-            WithClass("n", "public class Bar : Foo { public ReadonlyRecordStruct Rrs { get; } public RecordClass Rc { get; } }"),
-            WithClass("n", "public class Baz { public List<Bar> Bars { get; } public Enum E { get; } }"),
-            WithClass("n", "[JSInvokable] public static Baz GetBaz () => default;"));
+            With("Space",
+                """
+                public struct Struct { public double A { get; set; } }
+                public readonly struct ReadonlyStruct { public double A { get; init; } }
+                public readonly record struct ReadonlyRecordStruct(double A);
+                public record class RecordClass(double A);
+                public enum Enum { A, B }
+                public class Foo { public Struct S { get; } public ReadonlyStruct Rs { get; } }
+                public class Bar : Foo { public ReadonlyRecordStruct Rrs { get; } public RecordClass Rc { get; } }
+                public class Baz { public List<Bar> Bars { get; } public Enum E { get; } }
+                public class Class { [JSInvokable] public static Baz GetBaz () => default; }
+                """));
         Execute();
-        Matches(@"export interface Struct {\s*a: number;\s*}");
-        Matches(@"export interface ReadonlyStruct {\s*a: number;\s*}");
-        Matches(@"export interface ReadonlyRecordStruct {\s*a: number;\s*}");
-        Matches(@"export interface RecordClass {\s*a: number;\s*}");
-        Matches(@"export enum Enum {\s*A,\s*B\s*}");
-        Matches(@"export interface Foo {\s*s: n.Struct;\s*rs: n.ReadonlyStruct;\s*}");
-        Matches(@"export interface Bar extends n.Foo {\s*rrs: n.ReadonlyRecordStruct;\s*rc: n.RecordClass;\s*}");
-        Matches(@"export interface Baz {\s*bars: Array<n.Bar>;\s*e: n.Enum;\s*}");
+        Contains(
+            """
+            export namespace Space {
+                export interface Baz {
+                    bars: Array<Space.Bar>;
+                    e: Space.Enum;
+                }
+                export interface Bar extends Space.Foo {
+                    rrs: Space.ReadonlyRecordStruct;
+                    rc: Space.RecordClass;
+                }
+                export interface ReadonlyRecordStruct {
+                    a: number;
+                }
+                export interface RecordClass {
+                    a: number;
+                }
+                export interface Struct {
+                    a: number;
+                }
+                export interface ReadonlyStruct {
+                    a: number;
+                }
+                export interface Foo {
+                    s: Space.Struct;
+                    rs: Space.ReadonlyStruct;
+                }
+                export enum Enum {
+                    A,
+                    B
+                }
+            }
+
+            export namespace Space.Class {
+                export function getBaz(): Space.Baz;
+            }
+            """);
     }
 
     [Fact]
@@ -413,8 +567,7 @@ public class DeclarationTest : PackTest
     {
         AddAssembly(
             WithClass("[JSInvokable] public static void Foo (string? bar) { }"),
-            WithClass("[JSFunction] public static void Fun (int? nya) { }")
-        );
+            WithClass("[JSFunction] public static void Fun (int? nya) { }"));
         Execute();
         Contains("export function foo(bar: string | undefined): void;");
         Contains("export let fun: (nya: number | undefined) => void;");
@@ -426,8 +579,7 @@ public class DeclarationTest : PackTest
         AddAssembly(
             WithClass("[JSInvokable] public static string? Foo () => default;"),
             WithClass("[JSInvokable] public static Task<byte[]?> Bar () => default;"),
-            WithClass("[JSFunction] public static ValueTask<List<string>?> Nya () => default;")
-        );
+            WithClass("[JSFunction] public static ValueTask<List<string>?> Nya () => default;"));
         Execute();
         Contains("export function foo(): string | null;");
         Contains("export function bar(): Promise<Uint8Array | null>;");
@@ -438,60 +590,90 @@ public class DeclarationTest : PackTest
     public void NullableCollectionElementTypesUnionWithNull ()
     {
         AddAssembly(
-            WithClass("public class Foo { }"),
-            WithClass("[JSFunction] public static List<Foo?>? Fun (int?[]? bar, Foo[]?[]? nya, Foo?[]?[]? far) => default;")
-        );
+            With("public class Foo { }"),
+            WithClass("[JSFunction] public static List<Foo?>? Fun (int?[]? bar, Foo[]?[]? nya, Foo?[]?[]? far) => default;"));
         Execute();
-        Contains("export let fun: (bar: Array<number | null> | undefined," +
-                 " nya: Array<Array<Global.Foo> | null> | undefined," +
-                 " far: Array<Array<Global.Foo | null> | null> | undefined) =>" +
-                 " Array<Global.Foo | null> | null;");
+        Contains(
+            """
+            export interface Foo {
+            }
+
+            export namespace Class {
+                export let fun: (bar: Array<number | null> | undefined, nya: Array<Array<Foo> | null> | undefined, far: Array<Array<Foo | null> | null> | undefined) => Array<Foo | null> | null;
+            }
+            """);
     }
 
     [Fact]
     public void NullableCollectionElementTypesOfCustomTypeUnionWithNull ()
     {
         AddAssembly(
-            WithClass("public interface IFoo<T> { }"),
-            WithClass("public record Foo (List<List<IFoo<string>?>?>? Bar, IFoo<int>?[]?[]? Nya) : IFoo<bool>;"),
-            WithClass("[JSFunction] public static IFoo<bool> Fun (Foo foo) => default;")
-        );
+            With("public interface IFoo<T> { }"),
+            With("public record Foo (List<List<IFoo<string>?>?>? Bar, IFoo<int>?[]?[]? Nya) : IFoo<bool>;"),
+            WithClass("[JSFunction] public static IFoo<bool> Fun (Foo foo) => default;"));
         Execute();
-        Contains(@"bar?: Array<Array<Global.IFoo<string> | null> | null>;");
-        Contains(@"nya?: Array<Array<Global.IFoo<number> | null> | null>;");
+        Contains("bar?: Array<Array<IFoo<string> | null> | null>;");
+        Contains("nya?: Array<Array<IFoo<number> | null> | null>;");
     }
 
     [Fact]
     public void NullablePropertiesHaveOptionalModificator ()
     {
         AddAssembly(
-            WithClass("n", "public class Foo { public bool? Bool { get; } }"),
-            WithClass("n", "public class Bar { public Foo? Foo { get; } }"),
+            With("n", "public class Foo { public bool? Bool { get; } }"),
+            With("n", "public class Bar { public Foo? Foo { get; } }"),
             WithClass("n", "[JSInvokable] public static Foo FooBar (Bar bar) => default;"));
         Execute();
-        Matches(@"export interface Foo {\s*bool\?: boolean;\s*}");
-        Matches(@"export interface Bar {\s*foo\?: n.Foo;\s*}");
+        Contains(
+            """
+            export namespace n {
+                export interface Bar {
+                    foo?: n.Foo;
+                }
+                export interface Foo {
+                    bool?: boolean;
+                }
+            }
+
+            export namespace n.Class {
+                export function fooBar(bar: n.Bar): n.Foo;
+            }
+            """);
     }
 
     [Fact]
     public void NullableEnumsAreCrawled ()
     {
         AddAssembly(
-            WithClass("n", "public enum Foo { A, B }"),
-            WithClass("n", "public class Bar { public Foo? Foo { get; } }"),
+            With("n", "public enum Foo { A, B }"),
+            With("n", "public class Bar { public Foo? Foo { get; } }"),
             WithClass("n", "[JSInvokable] public static Bar GetBar () => default;"));
         Execute();
-        Matches(@"export enum Foo {\s*A,\s*B\s*}");
-        Matches(@"export interface Bar {\s*foo\?: n.Foo;\s*}");
+        Contains(
+            """
+            export namespace n {
+                export interface Bar {
+                    foo?: n.Foo;
+                }
+                export enum Foo {
+                    A,
+                    B
+                }
+            }
+
+            export namespace n.Class {
+                export function getBar(): n.Bar;
+            }
+            """);
     }
 
     [Fact]
     public void WhenTypeReferencedMultipleTimesItsDeclaredOnlyOnce ()
     {
         AddAssembly(
-            WithClass("public interface Foo { }"),
-            WithClass("public class Bar : Foo { public Foo Foo { get; } }"),
-            WithClass("public class Far : Bar { public Bar Bar { get; } }"),
+            With("public interface Foo { }"),
+            With("public class Bar : Foo { public Foo Foo { get; } }"),
+            With("public class Far : Bar { public Bar Bar { get; } }"),
             WithClass("[JSInvokable] public static Bar TakeFooGiveBar (Foo f) => default;"),
             WithClass("[JSInvokable] public static Foo TakeBarGiveFoo (Bar b) => default;"),
             WithClass("[JSInvokable] public static Far TakeAllGiveFar (Foo f, Bar b, Far ff) => default;"));
@@ -499,5 +681,133 @@ public class DeclarationTest : PackTest
         Assert.Single(Matches("export interface Foo"));
         Assert.Single(Matches("export interface Bar"));
         Assert.Single(Matches("export interface Far"));
+    }
+
+    [Fact]
+    public void RespectsSpacePreference ()
+    {
+        AddAssembly(
+            With(
+                """
+                [assembly: Bootsharp.JSPreferences(
+                    Space = [@"^Foo\.Bar\.(\S+)", "$1"]
+                )]
+                """),
+            With("Foo.Bar.Nya", "public class Nya { }"),
+            WithClass("Foo.Bar.Fun", "[JSFunction] public static void OnFun (Nya.Nya nya) { }"));
+        Execute();
+        Contains("export namespace Nya {\n    export interface Nya {\n    }\n}");
+        Contains("export namespace Fun.Class {\n    export let onFun: (nya: Nya.Nya) => void;\n}");
+    }
+
+    [Fact]
+    public void RespectsTypePreference ()
+    {
+        AddAssembly(
+            With(
+                """
+                [assembly: Bootsharp.JSPreferences(
+                    Type = [@"Record", "Foo", @".+`.+", "Bar"]
+                )]
+                """),
+            With("public record Record;"),
+            With("public record Generic<T>;"),
+            WithClass("[JSInvokable] public static void Inv (Record r, Generic<string> g) {}"));
+        Execute();
+        Contains(
+            """
+            export interface Record {
+            }
+            export interface Generic<T> {
+            }
+
+            export namespace Class {
+                export function inv(r: Foo, g: Bar): void;
+            }
+            """);
+    }
+
+    [Fact]
+    public void IgnoresBindingsInGeneratedNamespace ()
+    {
+        AddAssembly(With("Bootsharp.Generated",
+            """
+            public record Record;
+            public static class Exports { [JSInvokable] public static void Inv (Record r) {} }
+            public static class Imports { [JSFunction] public static void Fun () {} }
+            """));
+        Execute();
+        Assert.DoesNotContain("Record", TestedContent);
+        Assert.DoesNotContain("export function inv", TestedContent);
+        Assert.DoesNotContain("export let fun", TestedContent);
+    }
+
+    [Fact]
+    public void GeneratesForExportImportInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSExport(typeof(Space.IExported))]
+            [assembly:JSImport(typeof(Space.IImported))]
+
+            namespace Space;
+
+            public enum Enum { A, B }
+
+            public interface IExported { void Inv (string s, Enum e); }
+            public interface IImported { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }
+            """));
+        Execute();
+        Contains(
+            """
+            export namespace Space {
+                export enum Enum {
+                    A,
+                    B
+                }
+            }
+
+            export namespace Space.Exported {
+                export function inv(s: string, e: Space.Enum): void;
+            }
+            export namespace Space.Imported {
+                export let fun: (s: string, e: Space.Enum) => void;
+                export const onEvt: Event<[s: string, e: Space.Enum]>;
+            }
+            """);
+    }
+
+    [Fact]
+    public void GeneratesForExportImportInterfacesWithSpacePref ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSPreferences(Space = [@".+", "Foo"])]
+            [assembly:JSExport(typeof(Space.IExported))]
+            [assembly:JSImport(typeof(Space.IImported))]
+
+            namespace Space;
+
+            public enum Enum { A, B }
+
+            public interface IExported { void Inv (string s, Enum e); }
+            public interface IImported { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }
+            """));
+        Execute();
+        Contains(
+            """
+            export namespace Foo {
+                export enum Enum {
+                    A,
+                    B
+                }
+            }
+
+            export namespace Foo {
+                export function inv(s: string, e: Foo.Enum): void;
+                export let fun: (s: string, e: Foo.Enum) => void;
+                export const onEvt: Event<[s: string, e: Foo.Enum]>;
+            }
+            """);
     }
 }

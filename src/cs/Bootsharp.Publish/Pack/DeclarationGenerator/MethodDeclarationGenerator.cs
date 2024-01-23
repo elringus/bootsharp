@@ -24,8 +24,8 @@ internal sealed class MethodDeclarationGenerator
     private void DeclareMethod ()
     {
         if (ShouldOpenNamespace()) OpenNamespace();
-        if (method.Type == MethodType.Invokable) DeclareInvokable();
-        else if (method.Type == MethodType.Function) DeclareFunction();
+        if (method.Kind == MethodKind.Invokable) DeclareInvokable();
+        else if (method.Kind == MethodKind.Function) DeclareFunction();
         else DeclareEvent();
         if (ShouldCloseNamespace()) CloseNamespace();
     }

@@ -3,10 +3,10 @@ using System.Text;
 
 namespace Bootsharp.Publish;
 
-internal sealed class TypeDeclarationGenerator (NamespaceBuilder spaceBuilder)
+internal sealed class TypeDeclarationGenerator (Preferences prefs)
 {
     private readonly StringBuilder builder = new();
-    private readonly TypeConverter converter = new(spaceBuilder);
+    private readonly TypeConverter converter = new(prefs);
 
     private Type type => GetTypeAt(index);
     private Type? prevType => index == 0 ? null : GetTypeAt(index - 1);
@@ -39,8 +39,9 @@ internal sealed class TypeDeclarationGenerator (NamespaceBuilder spaceBuilder)
 
     private bool ShouldOpenNamespace ()
     {
-        if (prevType is null) return true;
-        return spaceBuilder.Build(prevType) != GetNamespace(type);
+        if (string.IsNullOrEmpty(GetNamespace(type))) return false;
+        if (prevType == null) return true;
+        return GetNamespace(prevType) != GetNamespace(type);
     }
 
     private void OpenNamespace ()
@@ -51,6 +52,7 @@ internal sealed class TypeDeclarationGenerator (NamespaceBuilder spaceBuilder)
 
     private bool ShouldCloseNamespace ()
     {
+        if (string.IsNullOrEmpty(GetNamespace(type))) return false;
         if (nextType is null) return true;
         return GetNamespace(nextType) != GetNamespace(type);
     }
@@ -62,26 +64,28 @@ internal sealed class TypeDeclarationGenerator (NamespaceBuilder spaceBuilder)
 
     private void DeclareInterface ()
     {
-        AppendLine($"export interface {BuildTypeName(type)}", 1);
+        var indent = !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
+        AppendLine($"export interface {BuildTypeName(type)}", indent);
         AppendExtensions();
         builder.Append(" {");
         AppendProperties();
-        AppendLine("}", 1);
+        AppendLine("}", indent);
     }
 
     private void DeclareEnum ()
     {
-        AppendLine($"export enum {type.Name} {{", 1);
+        var indent = !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
+        AppendLine($"export enum {type.Name} {{", indent);
         var names = Enum.GetNames(type);
         for (int i = 0; i < names.Length; i++)
-            if (i == names.Length - 1) AppendLine(names[i], 2);
-            else AppendLine($"{names[i]},", 2);
-        AppendLine("}", 1);
+            if (i == names.Length - 1) AppendLine(names[i], indent + 1);
+            else AppendLine($"{names[i]},", indent + 1);
+        AppendLine("}", indent);
     }
 
     private string GetNamespace (Type type)
     {
-        return spaceBuilder.Build(type);
+        return BuildJSSpace(type, prefs);
     }
 
     private void AppendExtensions ()
@@ -90,7 +94,7 @@ internal sealed class TypeDeclarationGenerator (NamespaceBuilder spaceBuilder)
         if (type.BaseType is { } baseType && types.Contains(baseType))
             extTypes.Insert(0, baseType);
         if (extTypes.Count > 0)
-            builder.Append(" extends ").AppendJoin(", ", extTypes.Select(converter.ToTypeScript));
+            builder.Append(" extends ").AppendJoin(", ", extTypes.Select(t => converter.ToTypeScript(t, null)));
     }
 
     private void AppendProperties ()
@@ -103,7 +107,8 @@ internal sealed class TypeDeclarationGenerator (NamespaceBuilder spaceBuilder)
 
     private void AppendProperty (PropertyInfo property)
     {
-        AppendLine(ToFirstLower(property.Name), 2);
+        var indent = !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
+        AppendLine(ToFirstLower(property.Name), indent + 1);
         if (IsNullable(property)) builder.Append('?');
         builder.Append($": {BuildType()};");
 
@@ -129,8 +134,9 @@ internal sealed class TypeDeclarationGenerator (NamespaceBuilder spaceBuilder)
 
     private string BuildTypeName (Type type)
     {
-        if (!type.IsGenericType) return type.Name;
-        var args = string.Join(", ", type.GetGenericArguments().Select(a => a.Name));
-        return $"{GetGenericNameWithoutArgs(type.Name)}<{args}>";
+        var name = BuildJSSpaceName(type);
+        if (!type.IsGenericType) return name;
+        var args = string.Join(", ", type.GetGenericArguments().Select(BuildTypeName));
+        return $"{name}<{args}>";
     }
 }

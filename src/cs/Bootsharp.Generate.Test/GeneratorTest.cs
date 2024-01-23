@@ -26,8 +26,8 @@ public class GeneratorTest
     {
         await Verify(
             """
-            [assembly:JSNamespace(@"Foo", "Bar")]
-            public class JSNamespaceAttribute : System.Attribute { public JSNamespaceAttribute (string _, string __) { } }
+            [assembly:JSImport([])]
+            public class JSImportAttribute : System.Attribute { public JSImportAttribute (Type[] _) { } }
             """);
     }
 
@@ -58,7 +58,7 @@ public class GeneratorTest
     [Fact]
     public async Task DoesntAnalyzeGeneratedFiles ()
     {
-        // otherwise it'd pick files we generate in prepare build task
+        // otherwise it'll pick files emitted in publish task
         verifier.TestState.Sources.Add(("foo.g.cs",
             """
             public static partial class Foo
@@ -71,25 +71,13 @@ public class GeneratorTest
         await Verify("");
     }
 
-    [Theory, MemberData(nameof(InvokableTest.Data), MemberType = typeof(InvokableTest))]
-    public Task PartialInvokableAreImplemented (string source, string expected)
-        => Verify(source, ("FooInvokable.g.cs", expected));
-
     [Theory, MemberData(nameof(FunctionTest.Data), MemberType = typeof(FunctionTest))]
-    public Task PartialFunctionsAreImplemented (string source, string expected)
+    public Task PartialFunctionsImplemented (string source, string expected)
         => Verify(source, ("FooFunctions.g.cs", expected));
 
     [Theory, MemberData(nameof(EventTest.Data), MemberType = typeof(EventTest))]
-    public Task PartialEventsAreImplemented (string source, string expected)
+    public Task PartialEventsImplemented (string source, string expected)
         => Verify(source, ("FooEvents.g.cs", expected));
-
-    [Theory, MemberData(nameof(ExportTest.Data), MemberType = typeof(ExportTest))]
-    public Task ExportTypesAreGenerated (string source, string expected)
-        => Verify(source, ("IFooExport.g.cs", expected));
-
-    [Theory, MemberData(nameof(ImportTest.Data), MemberType = typeof(ImportTest))]
-    public Task ImportTypesAreGenerated (string source, string expected)
-        => Verify(source, ("IFooImport.g.cs", expected));
 
     private async Task Verify (string source, params (string file, string content)[] expected)
     {
@@ -112,27 +100,10 @@ public class GeneratorTest
                 sources.Add(source);
             return;
         }
-        var root = $"{Environment.CurrentDirectory}/../../../../Bootsharp.Common";
-        foreach (var path in Directory.EnumerateFiles($"{root}/Attributes", "*.cs"))
-            sourceCache.Add((Path.GetFileName(path), File.ReadAllText(path)));
-        foreach (var path in Directory.EnumerateFiles($"{root}/Binding", "*.cs"))
-            sourceCache.Add((Path.GetFileName(path), File.ReadAllText(path)));
-        foreach (var path in Directory.EnumerateFiles($"{root}/Interop", "*.cs"))
-            sourceCache.Add((Path.GetFileName(path), File.ReadAllText(path)));
-        sourceCache.Add(("Error.cs", File.ReadAllText($"{root}/Error.cs")));
-        sourceCache.Add(("DependencyInjection.cs",
-            """
-            namespace Microsoft.Extensions.DependencyInjection;
-            public interface IServiceCollection
-            {
-                void AddSingleton(Type t, Func<IServiceProvider, object> f);
-                void AddSingleton(Type t, object i);
-            }
-            public static class Extensions
-            {
-                public static object GetRequiredService(this IServiceProvider p, Type t) => default;
-            }
-            """));
+        var root = Path.GetFullPath($"{Environment.CurrentDirectory}/../../../../Bootsharp.Common");
+        foreach (var path in Directory.EnumerateFiles(root, "*.cs", SearchOption.AllDirectories))
+            if (!path.Replace("\\", "/").Contains("/obj/"))
+                sourceCache.Add((Path.GetFileName(path), File.ReadAllText(path)));
         sourceCache.Add(("GlobalUsings.cs",
             """
             global using System;
@@ -145,17 +116,10 @@ public class GeneratorTest
         IncludeBootsharpSources(sources);
     }
 
-    private void IncludeCommonExpected (ref string expected) => expected =
-        $"""
-         #nullable enable
-         #pragma warning disable
-         using Bootsharp;
-         using static Bootsharp.Function;
-         using static Bootsharp.Serializer;
-         using System.Diagnostics.CodeAnalysis;
-         using System.Runtime.CompilerServices;
-         {expected}
-         #pragma warning restore
-         #nullable restore
-         """;
+    private void IncludeCommonExpected (ref string expected) =>
+        expected = $"""
+                    #nullable enable
+                    #pragma warning disable
+                    {expected}
+                    """;
 }

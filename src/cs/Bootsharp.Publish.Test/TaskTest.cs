@@ -10,15 +10,15 @@ public abstract class TaskTest : IDisposable
     protected string LastAddedAssemblyName { get; private set; }
     protected virtual string TestedContent { get; } = "";
 
-    public virtual void Dispose ()
+    public abstract void Execute ();
+
+    public void Dispose ()
     {
         Project.Dispose();
         GC.SuppressFinalize(this);
     }
 
-    public abstract void Execute ();
-
-    protected void AddAssembly (string assemblyName, params MockSource[] sources)
+    protected virtual void AddAssembly (string assemblyName, params MockSource[] sources)
     {
         LastAddedAssemblyName = assemblyName;
         Project.AddAssembly(new(assemblyName, sources));

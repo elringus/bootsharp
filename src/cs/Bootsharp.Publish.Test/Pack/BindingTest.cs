@@ -14,7 +14,7 @@ public class BindingTest : PackTest
     [Fact]
     public void InteropFunctionsImported ()
     {
-        AddAssembly(WithClass("Foo", "[JSInvokable] public static void Bar () { }"));
+        AddAssembly(WithClass("Foo", "[JSInvokable] public static void Bar () {}"));
         Execute();
         Contains(
             """
@@ -29,13 +29,15 @@ public class BindingTest : PackTest
     [Fact]
     public void BindingForInvokableMethodIsGenerated ()
     {
-        AddAssembly(WithClass("Foo.Bar", "[JSInvokable] public static void Nya () { }"));
+        AddAssembly(WithClass("Foo.Bar", "[JSInvokable] public static void Nya () {}"));
         Execute();
         Contains(
             """
             export const Foo = {
                 Bar: {
-                    nya: () => getExports().Foo_Bar_MockClass.Nya()
+                    Class: {
+                        nya: () => getExports().Foo_Bar_Class_Nya()
+                    }
                 }
             };
             """);
@@ -44,15 +46,17 @@ public class BindingTest : PackTest
     [Fact]
     public void BindingForFunctionMethodIsGenerated ()
     {
-        AddAssembly(WithClass("Foo.Bar", "[JSFunction] public static void Fun () { }"));
+        AddAssembly(WithClass("Foo.Bar", "[JSFunction] public static void Fun () {}"));
         Execute();
         Contains(
             """
             export const Foo = {
                 Bar: {
-                    get fun() { return this.funHandler; },
-                    set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                    get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Foo.Bar.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
+                    Class: {
+                        get fun() { return this.funHandler; },
+                        set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
+                        get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Foo.Bar.Class.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
+                    }
                 }
             };
             """);
@@ -62,19 +66,19 @@ public class BindingTest : PackTest
     public void BindingForEventMethodIsGenerated ()
     {
         AddAssembly(
-            WithClass("[JSEvent] public static void OnFoo () { }"),
-            WithClass("[JSEvent] public static void OnBar (string a) { }"),
-            WithClass("[JSEvent] public static void OnBaz (int a, bool b) { }"));
+            WithClass("[JSEvent] public static void OnFoo () {}"),
+            WithClass("[JSEvent] public static void OnBar (string a) {}"),
+            WithClass("[JSEvent] public static void OnBaz (int a, bool b) {}"));
         Execute();
         Contains(
             """
-            export const Global = {
+            export const Class = {
                 onFoo: new Event(),
-                onFooSerialized: () => Global.onFoo.broadcast(),
+                onFooSerialized: () => Class.onFoo.broadcast(),
                 onBar: new Event(),
-                onBarSerialized: (a) => Global.onBar.broadcast(a),
+                onBarSerialized: (a) => Class.onBar.broadcast(a),
                 onBaz: new Event(),
-                onBazSerialized: (a, b) => Global.onBaz.broadcast(a, b)
+                onBazSerialized: (a, b) => Class.onBaz.broadcast(a, b)
             };
             """);
     }
@@ -82,12 +86,14 @@ public class BindingTest : PackTest
     [Fact]
     public void LibraryExportsNamespaceObject ()
     {
-        AddAssembly(WithClass("Foo", "[JSInvokable] public static void Bar () { }"));
+        AddAssembly(WithClass("Foo", "[JSInvokable] public static void Bar () {}"));
         Execute();
         Contains(
             """
             export const Foo = {
-                bar: () => getExports().Foo_MockClass.Bar()
+                Class: {
+                    bar: () => getExports().Foo_Class_Bar()
+                }
             };
             """);
     }
@@ -95,14 +101,16 @@ public class BindingTest : PackTest
     [Fact]
     public void WhenSpaceContainDotsObjectCreatedForEachPart ()
     {
-        AddAssembly(WithClass("Foo.Bar.Nya", "[JSInvokable] public static void Bar () { }"));
+        AddAssembly(WithClass("Foo.Bar.Nya", "[JSInvokable] public static void Bar () {}"));
         Execute();
         Contains(
             """
             export const Foo = {
                 Bar: {
                     Nya: {
-                        bar: () => getExports().Foo_Bar_Nya_MockClass.Bar()
+                        Class: {
+                            bar: () => getExports().Foo_Bar_Nya_Class_Bar()
+                        }
                     }
                 }
             };
@@ -113,20 +121,24 @@ public class BindingTest : PackTest
     public void WhenMultipleSpacesEachGetItsOwnObject ()
     {
         AddAssembly(
-            WithClass("Foo", "[JSInvokable] public static void Foo () { }"),
-            WithClass("Bar.Nya", "[JSFunction] public static void Fun () { }"));
+            WithClass("Foo", "[JSInvokable] public static void Foo () {}"),
+            WithClass("Bar.Nya", "[JSFunction] public static void Fun () {}"));
         Execute();
         Contains(
             """
             export const Bar = {
                 Nya: {
-                    get fun() { return this.funHandler; },
-                    set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                    get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Bar.Nya.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
+                    Class: {
+                        get fun() { return this.funHandler; },
+                        set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
+                        get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Bar.Nya.Class.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
+                    }
                 }
             };
             export const Foo = {
-                foo: () => getExports().Foo_MockClass.Foo()
+                Class: {
+                    foo: () => getExports().Foo_Class_Foo()
+                }
             };
             """);
     }
@@ -134,16 +146,16 @@ public class BindingTest : PackTest
     [Fact]
     public void WhenMultipleAssembliesWithEqualSpaceObjectDeclaredOnlyOnce ()
     {
-        AddAssembly(WithClass("Foo", "[JSInvokable] public static void Bar () { }"));
-        AddAssembly(WithClass("Foo", "[JSFunction] public static void Fun () { }"));
+        AddAssembly(WithClass("Foo", "[JSInvokable] public static void Bar () {}"));
+        AddAssembly(WithClass("Foo", "[JSFunction] public static void Fun () {}"));
         Execute();
         Assert.Single(Matches("export const Foo"));
-        Contains("bar: () => getExports().Foo_MockClass.Bar()");
+        Contains("bar: () => getExports().Foo_Class_Bar()");
         Contains(
             """
-                get fun() { return this.funHandler; },
-                set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Foo.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
+                    get fun() { return this.funHandler; },
+                    set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
+                    get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Foo.Class.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
             """);
     }
 
@@ -151,19 +163,23 @@ public class BindingTest : PackTest
     public void DifferentSpacesWithSameRootAssignedUnderSameObject ()
     {
         AddAssembly(
-            WithClass("Nya.Foo", "[JSInvokable] public static void Foo () { }"),
-            WithClass("Nya.Bar", "[JSFunction] public static void Fun () { }"));
+            WithClass("Nya.Foo", "[JSInvokable] public static void Foo () {}"),
+            WithClass("Nya.Bar", "[JSFunction] public static void Fun () {}"));
         Execute();
         Contains(
             """
             export const Nya = {
                 Bar: {
-                    get fun() { return this.funHandler; },
-                    set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                    get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Nya.Bar.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
+                    Class: {
+                        get fun() { return this.funHandler; },
+                        set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
+                        get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Nya.Bar.Class.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
+                    }
                 },
                 Foo: {
-                    foo: () => getExports().Nya_Foo_MockClass.Foo()
+                    Class: {
+                        foo: () => getExports().Nya_Foo_Class_Foo()
+                    }
                 }
             };
             """);
@@ -173,18 +189,22 @@ public class BindingTest : PackTest
     public void DifferentSpacesStartingEquallyAreNotAssignedToSameObject ()
     {
         AddAssembly(
-            WithClass("Foo", "[JSInvokable] public static void Method () { }"),
-            WithClass("FooBar.Baz", "[JSInvokable] public static void Method () { }")
+            WithClass("Foo", "[JSInvokable] public static void Method () {}"),
+            WithClass("FooBar.Baz", "[JSInvokable] public static void Method () {}")
         );
         Execute();
         Contains(
             """
             export const Foo = {
-                method: () => getExports().Foo_MockClass.Method()
+                Class: {
+                    method: () => getExports().Foo_Class_Method()
+                }
             };
             export const FooBar = {
                 Baz: {
-                    method: () => getExports().FooBar_Baz_MockClass.Method()
+                    Class: {
+                        method: () => getExports().FooBar_Baz_Class_Method()
+                    }
                 }
             };
             """);
@@ -194,58 +214,61 @@ public class BindingTest : PackTest
     public void BindingsFromMultipleSpacesAssignedToRespectiveObjects ()
     {
         AddAssembly(WithClass("Foo", "[JSInvokable] public static int Foo () => 0;"));
-        AddAssembly(WithClass("Bar.Nya", "[JSFunction] public static void Fun () { }"));
+        AddAssembly(WithClass("Bar.Nya", "[JSFunction] public static void Fun () {}"));
         Execute();
         Contains(
             """
             export const Bar = {
                 Nya: {
-                    get fun() { return this.funHandler; },
-                    set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                    get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Bar.Nya.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
+                    Class: {
+                        get fun() { return this.funHandler; },
+                        set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
+                        get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Bar.Nya.Class.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
+                    }
                 }
             };
             export const Foo = {
-                foo: () => getExports().Foo_MockClass.Foo()
+                Class: {
+                    foo: () => getExports().Foo_Class_Foo()
+                }
             };
             """);
     }
 
     [Fact]
-    public void WhenNoSpaceBindingsAreAssignedToGlobalObject ()
+    public void BindingsFromMultipleClassesAssignedToRespectiveObjects ()
+    {
+        AddAssembly(
+            With("public class ClassA { [JSInvokable] public static void Inv () {} }"),
+            With("public class ClassB { [JSFunction] public static void Fun () {} }"));
+        Execute();
+        Contains(
+            """
+            export const ClassA = {
+                inv: () => getExports().ClassA_Inv()
+            };
+            export const ClassB = {
+                get fun() { return this.funHandler; },
+                set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
+                get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'ClassB.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
+            };
+            """);
+    }
+
+    [Fact]
+    public void WhenNoSpaceBindingsAreAssignedToClassObject ()
     {
         AddAssembly(
             WithClass("[JSInvokable] public static Task<int> Nya () => Task.FromResult(0);"),
-            WithClass("[JSFunction] public static void Fun () { }"));
+            WithClass("[JSFunction] public static void Fun () {}"));
         Execute();
         Contains(
             """
-            export const Global = {
-                nya: () => getExports().MockClass.Nya(),
+            export const Class = {
+                nya: () => getExports().Class_Nya(),
                 get fun() { return this.funHandler; },
                 set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Global.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
-            };
-            """);
-    }
-
-    [Fact]
-    public void NamespaceAttributeOverrideObjectNames ()
-    {
-        AddAssembly(
-            With("""[assembly:JSNamespace(@"Foo\.Bar\.(\S+)", "$1")]"""),
-            WithClass("Foo.Bar.Nya", "[JSInvokable] public static Task GetNya () => Task.CompletedTask;"),
-            WithClass("Foo.Bar.Fun", "[JSFunction] public static void OnFun () { }"));
-        Execute();
-        Contains(
-            """
-            export const Fun = {
-                get onFun() { return this.onFunHandler; },
-                set onFun(handler) { this.onFunHandler = handler; this.onFunSerializedHandler = () => this.onFunHandler(); },
-                get onFunSerialized() { if (typeof this.onFunHandler !== "function") throw Error("Failed to invoke 'Fun.onFun' from C#. Make sure to assign function in JavaScript."); return this.onFunSerializedHandler; }
-            };
-            export const Nya = {
-                getNya: () => getExports().Foo_Bar_Nya_MockClass.GetNya()
+                get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Class.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
             };
             """);
     }
@@ -253,12 +276,12 @@ public class BindingTest : PackTest
     [Fact]
     public void VariablesConflictingWithJSTypesAreRenamed ()
     {
-        AddAssembly(WithClass("[JSInvokable] public static void Fun (string function) { }"));
+        AddAssembly(WithClass("[JSInvokable] public static void Fun (string function) {}"));
         Execute();
         Contains(
             """
-            export const Global = {
-                fun: (fn) => getExports().MockClass.Fun(fn)
+            export const Class = {
+                fun: (fn) => getExports().Class_Fun(fn)
             };
             """);
     }
@@ -270,20 +293,20 @@ public class BindingTest : PackTest
             With("public record Info;"),
             WithClass("[JSInvokable] public static Info Foo (Info i) => default;"),
             WithClass("[JSFunction] public static Info? Bar (Info? i) => default;"),
-            WithClass("[JSEvent] public static void Baz (Info?[] i) { }"),
-            WithClass("[JSEvent] public static void Yaz (int a, Info i) { }"));
+            WithClass("[JSEvent] public static void Baz (Info?[] i) {}"),
+            WithClass("[JSEvent] public static void Yaz (int a, Info i) {}"));
         Execute();
         Contains(
             """
-            export const Global = {
-                foo: (i) => deserialize(getExports().MockClass.Foo(serialize(i))),
+            export const Class = {
+                foo: (i) => deserialize(getExports().Class_Foo(serialize(i))),
                 get bar() { return this.barHandler; },
                 set bar(handler) { this.barHandler = handler; this.barSerializedHandler = (i) => serialize(this.barHandler(deserialize(i))); },
-                get barSerialized() { if (typeof this.barHandler !== "function") throw Error("Failed to invoke 'Global.bar' from C#. Make sure to assign function in JavaScript."); return this.barSerializedHandler; },
+                get barSerialized() { if (typeof this.barHandler !== "function") throw Error("Failed to invoke 'Class.bar' from C#. Make sure to assign function in JavaScript."); return this.barSerializedHandler; },
                 baz: new Event(),
-                bazSerialized: (i) => Global.baz.broadcast(deserialize(i)),
+                bazSerialized: (i) => Class.baz.broadcast(deserialize(i)),
                 yaz: new Event(),
-                yazSerialized: (a, i) => Global.yaz.broadcast(a, deserialize(i))
+                yazSerialized: (a, i) => Class.yaz.broadcast(a, deserialize(i))
             };
             """);
     }
@@ -300,15 +323,15 @@ public class BindingTest : PackTest
         Execute();
         Contains(
             """
-            export const Global = {
-                foo: async (i) => deserialize(await getExports().MockClass.Foo(serialize(i))),
+            export const Class = {
+                foo: async (i) => deserialize(await getExports().Class_Foo(serialize(i))),
                 get bar() { return this.barHandler; },
                 set bar(handler) { this.barHandler = handler; this.barSerializedHandler = async (i) => serialize(await this.barHandler(deserialize(i))); },
-                get barSerialized() { if (typeof this.barHandler !== "function") throw Error("Failed to invoke 'Global.bar' from C#. Make sure to assign function in JavaScript."); return this.barSerializedHandler; },
-                baz: async () => deserialize(await getExports().MockClass.Baz()),
+                get barSerialized() { if (typeof this.barHandler !== "function") throw Error("Failed to invoke 'Class.bar' from C#. Make sure to assign function in JavaScript."); return this.barSerializedHandler; },
+                baz: async () => deserialize(await getExports().Class_Baz()),
                 get yaz() { return this.yazHandler; },
                 set yaz(handler) { this.yazHandler = handler; this.yazSerializedHandler = async () => serialize(await this.yazHandler()); },
-                get yazSerialized() { if (typeof this.yazHandler !== "function") throw Error("Failed to invoke 'Global.yaz' from C#. Make sure to assign function in JavaScript."); return this.yazSerializedHandler; }
+                get yazSerialized() { if (typeof this.yazHandler !== "function") throw Error("Failed to invoke 'Class.yaz' from C#. Make sure to assign function in JavaScript."); return this.yazSerializedHandler; }
             };
             """);
     }
@@ -323,8 +346,10 @@ public class BindingTest : PackTest
         Contains(
             """
             export const n = {
-                getFoo: () => deserialize(getExports().n_MockClass.GetFoo()),
-                Foo: { "0": "A", "1": "B", "A": 0, "B": 1 }
+                Class: {
+                    getFoo: () => deserialize(getExports().n_Class_GetFoo()),
+                    Foo: { "0": "A", "1": "B", "A": 0, "B": 1 }
+                }
             };
             """);
     }
@@ -333,14 +358,142 @@ public class BindingTest : PackTest
     public void CustomEnumIndexesArePreservedInJS ()
     {
         AddAssembly(
-            WithClass("n", "public enum Foo { A = 1, B = 6 }"),
+            With("n", "public enum Foo { A = 1, B = 6 }"),
             WithClass("n", "[JSInvokable] public static Foo GetFoo () => default;"));
         Execute();
         Contains(
             """
             export const n = {
-                getFoo: () => deserialize(getExports().n_MockClass.GetFoo()),
-                Foo: { "1": "A", "6": "B", "A": 1, "B": 6 }
+                Foo: { "1": "A", "6": "B", "A": 1, "B": 6 },
+                Class: {
+                    getFoo: () => deserialize(getExports().n_Class_GetFoo())
+                }
+            };
+            """);
+    }
+
+    [Fact]
+    public void RespectsSpacePreference ()
+    {
+        AddAssembly(
+            With(
+                """
+                [assembly: Bootsharp.JSPreferences(
+                    Space = [@"^Foo\.Bar\.(\S+)", "$1"]
+                )]
+                """),
+            WithClass("Foo.Bar.Nya", "[JSInvokable] public static Task GetNya () => Task.CompletedTask;"),
+            WithClass("Foo.Bar.Fun", "[JSFunction] public static void OnFun () {}"));
+        Execute();
+        Contains(
+            """
+            export const Fun = {
+                Class: {
+                    get onFun() { return this.onFunHandler; },
+                    set onFun(handler) { this.onFunHandler = handler; this.onFunSerializedHandler = () => this.onFunHandler(); },
+                    get onFunSerialized() { if (typeof this.onFunHandler !== "function") throw Error("Failed to invoke 'Fun.Class.onFun' from C#. Make sure to assign function in JavaScript."); return this.onFunSerializedHandler; }
+                }
+            };
+            export const Nya = {
+                Class: {
+                    getNya: () => getExports().Foo_Bar_Nya_Class_GetNya()
+                }
+            };
+            """);
+    }
+
+    [Fact]
+    public void RespectsFunctionPreference ()
+    {
+        AddAssembly(
+            With("""[assembly:JSPreferences(Function = [@".+", "foo"])]"""),
+            WithClass("Space", "[JSInvokable] public static void Inv () {}")
+        );
+        Execute();
+        Contains(
+            """
+            export const Space = {
+                Class: {
+                    foo: () => getExports().Space_Class_Inv()
+                }
+            };
+            """);
+    }
+
+    [Fact]
+    public void IgnoresBindingsInGeneratedNamespace ()
+    {
+        AddAssembly(With("Bootsharp.Generated",
+            """
+            public static class Exports { [JSInvokable] public static void Inv () {} }
+            public static class Imports { [JSFunction] public static void Fun () {} }
+            """));
+        Execute();
+        Assert.DoesNotContain("inv: () =>", TestedContent);
+        Assert.DoesNotContain("get fun()", TestedContent);
+    }
+
+    [Fact]
+    public void GeneratesForExportImportInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSExport(typeof(Space.IExported))]
+            [assembly:JSImport(typeof(Space.IImported))]
+
+            namespace Space;
+
+            public enum Enum { A, B }
+
+            public interface IExported { void Inv (string s, Enum e); }
+            public interface IImported { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }
+            """));
+        Execute();
+        Contains(
+            """
+            export const Space = {
+                Enum: { "0": "A", "1": "B", "A": 0, "B": 1 },
+                Exported: {
+                    inv: (s, e) => getExports().Bootsharp_Generated_Exports_Space_JSExported_Inv(s, serialize(e))
+                },
+                Imported: {
+                    get fun() { return this.funHandler; },
+                    set fun(handler) { this.funHandler = handler; this.funSerializedHandler = (s, e) => this.funHandler(s, deserialize(e)); },
+                    get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Space.Imported.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; },
+                    onEvt: new Event(),
+                    onEvtSerialized: (s, e) => Space.Imported.onEvt.broadcast(s, deserialize(e))
+                }
+            };
+            """);
+    }
+
+    [Fact]
+    public void GeneratesForExportImportInterfacesWithSpacePref ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSPreferences(Space = [@".+", "Foo"])]
+            [assembly:JSExport(typeof(Space.IExported))]
+            [assembly:JSImport(typeof(Space.IImported))]
+
+            namespace Space;
+
+            public enum Enum { A, B }
+
+            public interface IExported { void Inv (string s, Enum e); }
+            public interface IImported { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }
+            """));
+        Execute();
+        Contains(
+            """
+            export const Foo = {
+                inv: (s, e) => getExports().Bootsharp_Generated_Exports_Space_JSExported_Inv(s, serialize(e)),
+                get fun() { return this.funHandler; },
+                set fun(handler) { this.funHandler = handler; this.funSerializedHandler = (s, e) => this.funHandler(s, deserialize(e)); },
+                get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Foo.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; },
+                onEvt: new Event(),
+                onEvtSerialized: (s, e) => Foo.onEvt.broadcast(s, deserialize(e)),
+                Enum: { "0": "A", "1": "B", "A": 0, "B": 1 }
             };
             """);
     }

@@ -19,24 +19,7 @@ public class SerializerTest : EmitTest
             WithClass("[JSInvokable] public static byte[] Bar (int[] a, double[] b, string[] c) => default;")
         );
         Execute();
-        Assert.Empty(TestedContent);
-    }
-
-    [Fact]
-    public void AssignsTypeInfoResolver ()
-    {
-        AddAssembly(
-            With("n", "public record Info;"),
-            WithClass("n", "[JSInvokable] public static void Foo (Info i) {}"));
-        Execute();
-        Contains(
-            """
-                [System.Runtime.CompilerServices.ModuleInitializer]
-                internal static void InjectTypeInfoResolver ()
-                {
-                    Serializer.Options.TypeInfoResolverChain.Add(SerializerContext.Default);
-                }
-            """);
+        Assert.DoesNotContain("JsonSerializable", TestedContent);
     }
 
     [Fact] // .NET's generator indexes types by short names (w/o namespace) and fails on duplicates.
@@ -51,7 +34,7 @@ public class SerializerTest : EmitTest
             With("n", "public enum Enum { A, B }"),
             With("n", "public class Foo { public Struct S { get; } public ReadonlyStruct Rs { get; } }"),
             WithClass("n", "public class Bar : Foo { public ReadonlyRecordStruct Rrs { get; } public RecordClass Rc { get; } }"),
-            With("n", "public class Baz { public List<MockClass.Bar?> Bars { get; } public Enum E { get; } }"),
+            With("n", "public class Baz { public List<Class.Bar?> Bars { get; } public Enum E { get; } }"),
             WithClass("n", "[JSInvokable] public static Baz? GetBaz () => default;"));
         Execute();
         Assert.Equal(2, Matches("JsonSerializable").Count);
@@ -102,7 +85,7 @@ public class SerializerTest : EmitTest
     {
         AddAssembly(WithClass("[JSInvokable] public static Task Foo (Task bar) => default;"));
         Execute();
-        Assert.Empty(TestedContent);
+        Assert.DoesNotContain("JsonSerializable", TestedContent);
     }
 
     [Fact]

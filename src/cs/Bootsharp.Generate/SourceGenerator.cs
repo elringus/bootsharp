@@ -10,23 +10,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
     private static void Compile (SourceProductionContext context, Compilation compilation)
     {
-        CompileGlobal(context, compilation);
-        CompilePartial(context, compilation);
-    }
-
-    private static void CompileGlobal (SourceProductionContext context, Compilation compilation)
-    {
-        foreach (var type in ExportType.Resolve(compilation))
-            context.AddSource($"{type.Name}Export.g", type.EmitSource());
-        foreach (var type in ImportType.Resolve(compilation))
-            context.AddSource($"{type.Name}Import.g", type.EmitSource());
-    }
-
-    private static void CompilePartial (SourceProductionContext context, Compilation compilation)
-    {
         var receiver = VisitNodes(compilation);
-        foreach (var @class in receiver.InvokableClasses)
-            context.AddSource($"{@class.Name}Invokable.g", @class.EmitSource());
         foreach (var @class in receiver.FunctionClasses)
             context.AddSource($"{@class.Name}Functions.g", @class.EmitSource());
         foreach (var @class in receiver.EventClasses)

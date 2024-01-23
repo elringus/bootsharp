@@ -2,6 +2,9 @@ import { RuntimeConfig, AssetEntry, AssetBehaviors, getRuntime, getNative, getMa
 import { BinaryResource, BootResources } from "./resources";
 import { decodeBase64 } from "./decoder";
 
+/** Builds .NET runtime configuration.
+ *  @param resources Resources required for runtime initialization.
+ *  @param root When specified, assumes boot resources are side-loaded from the specified root. */
 export async function buildConfig(resources: BootResources, root?: string): Promise<RuntimeConfig> {
     const embed = root == null;
     const main = embed ? await getMain() : undefined;

@@ -9,8 +9,8 @@
 /// For example, given "IFrontend" interface is imported, "JSFrontend" class will be generated,
 /// which has to be implemented in JavaScript.<br/>
 /// When an interface method starts with "Notify", an event bindings will ge generated (instead of function);
-/// JavaScript name of the event will start with "on" instead of "Notify". This behaviour can be configured
-/// with <see cref="EventPattern"/> and <see cref="EventReplacement"/> parameters.
+/// JavaScript name of the event will start with "on" instead of "Notify".
+/// This behaviour can be configured via preferences.
 /// </remarks>
 /// <example>
 /// Generate JavaScript APIs based on "IFrontendAPI" and "IOtherFrontendAPI" interfaces:
@@ -22,18 +22,16 @@
 /// </code>
 /// </example>
 [AttributeUsage(AttributeTargets.Assembly)]
-public sealed class JSImportAttribute : JSTypeAttribute
+public sealed class JSImportAttribute : Attribute
 {
     /// <summary>
-    /// Regex pattern to match method names indicating an event binding should generated (instead of function).
+    /// The interface types to generated import bindings for.
     /// </summary>
-    public string? EventPattern { get; init; }
-    /// <summary>
-    /// Replacement for the event pattern matches.
-    /// </summary>
-    public string? EventReplacement { get; init; }
+    public Type[] Types { get; }
 
-    /// <inheritdoc/>
+    /// <param name="types">The interface types to generate import bindings for.</param>
     public JSImportAttribute (params Type[] types)
-        : base(types) { }
+    {
+        Types = types;
+    }
 }

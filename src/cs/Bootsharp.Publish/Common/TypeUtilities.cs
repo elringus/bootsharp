@@ -3,6 +3,7 @@ using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace Bootsharp.Publish;
 
@@ -137,9 +138,9 @@ internal static class TypeUtilities
         return new MetadataLoadContext(resolver);
     }
 
-    public static bool ShouldIgnoreAssembly (string assemblyPath)
+    public static bool ShouldIgnoreAssembly (string filePath)
     {
-        var assemblyName = Path.GetFileName(assemblyPath);
+        var assemblyName = Path.GetFileName(filePath);
         return assemblyName.StartsWith("System.") ||
                assemblyName.StartsWith("Microsoft.") ||
                assemblyName.StartsWith("netstandard") ||
@@ -157,13 +158,44 @@ internal static class TypeUtilities
     {
         if (IsVoid(type)) return false;
         if (IsTaskWithResult(type, out var result))
-            // TODO: Remove IsList (eg, serialization of Task<byte[]>) when https://github.com/dotnet/runtime/issues/81348 is resolved.
+            // TODO: Remove 'IsList(result)' when resolved: https://github.com/elringus/bootsharp/issues/138
             return IsList(result) || ShouldSerialize(result);
         var array = type.IsArray;
         if (array) type = type.GetElementType()!;
         if (IsNullable(type)) type = GetNullableUnderlyingType(type);
         if (array) return !arrayNative.Contains(type.FullName!);
         return !native.Contains(type.FullName!);
+    }
+
+    public static string BuildJSSpace (Type type, Preferences prefs)
+    {
+        var space = type.Namespace ?? "";
+        if (type.IsNested)
+        {
+            if (!string.IsNullOrEmpty(space)) space += ".";
+            space += type.DeclaringType!.Name;
+        }
+        return WithPrefs(prefs.Space, space, space);
+    }
+
+    public static string BuildJSSpaceName (Type type)
+    {
+        return type.IsGenericType ? GetGenericNameWithoutArgs(type.Name) : type.Name;
+    }
+
+    public static string BuildJSSpaceFullName (Type type, Preferences prefs)
+    {
+        var space = BuildJSSpace(type, prefs);
+        var name = BuildJSSpaceName(type);
+        return string.IsNullOrEmpty(space) ? name : $"{space}.{name}";
+    }
+
+    public static string WithPrefs (IReadOnlyCollection<Preference> prefs, string input, string @default)
+    {
+        foreach (var pref in prefs)
+            if (Regex.IsMatch(input, pref.Pattern))
+                return Regex.Replace(input, pref.Pattern, pref.Replacement);
+        return @default;
     }
 
     public static string BuildSyntax (Type type) => BuildSyntax(type, null, false);

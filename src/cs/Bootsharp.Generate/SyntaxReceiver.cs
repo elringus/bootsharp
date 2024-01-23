@@ -5,7 +5,6 @@ namespace Bootsharp.Generate;
 
 internal sealed class SyntaxReceiver
 {
-    public List<PartialClass> InvokableClasses { get; } = [];
     public List<PartialClass> FunctionClasses { get; } = [];
     public List<PartialClass> EventClasses { get; } = [];
 
@@ -17,12 +16,10 @@ internal sealed class SyntaxReceiver
 
     private void VisitClass (ClassDeclarationSyntax syntax, Compilation compilation)
     {
-        var invokable = GetMethodsWithAttribute(syntax, InvokableAttribute);
-        if (invokable.Count > 0) InvokableClasses.Add(new(compilation, syntax, Array.Empty<PartialMethod>(), true));
-        var functions = GetMethodsWithAttribute(syntax, FunctionAttribute);
-        if (functions.Count > 0) FunctionClasses.Add(new(compilation, syntax, functions, invokable.Count == 0));
-        var events = GetMethodsWithAttribute(syntax, EventAttribute);
-        if (events.Count > 0) EventClasses.Add(new(compilation, syntax, events, invokable.Count + functions.Count == 0));
+        var functions = GetMethodsWithAttribute(syntax, "JSFunction");
+        if (functions.Count > 0) FunctionClasses.Add(new(compilation, syntax, functions));
+        var events = GetMethodsWithAttribute(syntax, "JSEvent");
+        if (events.Count > 0) EventClasses.Add(new(compilation, syntax, events));
     }
 
     private List<PartialMethod> GetMethodsWithAttribute (ClassDeclarationSyntax syntax, string attribute)

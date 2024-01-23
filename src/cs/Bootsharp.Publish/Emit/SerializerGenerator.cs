@@ -1,5 +1,10 @@
 namespace Bootsharp.Publish;
 
+/// <summary>
+/// Generates hints for all the types used in interop to be picked by
+/// .NET's JSON serializer source generator. Required for the serializer to
+/// work without using reflection (which is required to support trimming).
+/// </summary>
 internal sealed class SerializerGenerator
 {
     private readonly HashSet<string> attributes = [];
@@ -15,7 +20,7 @@ internal sealed class SerializerGenerator
               using System.Text.Json;
               using System.Text.Json.Serialization;
 
-              namespace Bootsharp;
+              namespace Bootsharp.Generated;
 
               {{JoinLines(attributes, 0)}}
               internal partial class SerializerContext : JsonSerializerContext
@@ -52,7 +57,7 @@ internal sealed class SerializerGenerator
     private void CollectDuplicates (AssemblyInspection inspection)
     {
         var names = new HashSet<string>();
-        foreach (var type in inspection.Types.DistinctBy(t => t.FullName))
+        foreach (var type in inspection.Crawled.DistinctBy(t => t.FullName))
             if (!names.Add(type.Name))
                 CollectAttributes(BuildSyntax(type), type);
     }

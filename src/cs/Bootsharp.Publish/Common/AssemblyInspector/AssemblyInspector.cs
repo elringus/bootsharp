@@ -1,29 +1,27 @@
-﻿using System.Collections.Immutable;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Bootsharp.Publish;
 
-internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
+internal sealed class AssemblyInspector (Preferences prefs, string entryAssemblyName)
 {
-    private readonly List<AssemblyMeta> assemblies = [];
+    private readonly List<InterfaceMeta> interfaces = [];
     private readonly List<MethodMeta> methods = [];
     private readonly List<string> warnings = [];
-    private readonly TypeConverter converter = new(spaceBuilder);
+    private readonly TypeConverter converter = new(prefs);
 
-    public AssemblyInspection InspectInDirectory (string directory)
+    public AssemblyInspection InspectInDirectory (string directory, IEnumerable<string> paths)
     {
         var ctx = CreateLoadContext(directory);
-        foreach (var assemblyPath in Directory.GetFiles(directory, "*.dll"))
-            try { InspectAssembly(assemblyPath, ctx); }
+        foreach (var assemblyPath in paths)
+            try { InspectAssemblyFile(assemblyPath, ctx); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
         return CreateInspection(ctx);
     }
 
-    private void InspectAssembly (string assemblyPath, MetadataLoadContext ctx)
+    private void InspectAssemblyFile (string assemblyPath, MetadataLoadContext ctx)
     {
-        assemblies.Add(CreateAssembly(assemblyPath));
         if (!ShouldIgnoreAssembly(assemblyPath))
-            InspectMethods(ctx.LoadFromAssemblyPath(assemblyPath));
+            InspectAssembly(ctx.LoadFromAssemblyPath(assemblyPath));
     }
 
     private void AddSkippedAssemblyWarning (string assemblyPath, Exception exception)
@@ -35,36 +33,54 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
     }
 
     private AssemblyInspection CreateInspection (MetadataLoadContext ctx) => new(ctx) {
-        Assemblies = assemblies.ToImmutableArray(),
-        Methods = methods.ToImmutableArray(),
-        Types = converter.CrawledTypes.ToImmutableArray(),
-        Warnings = warnings.ToImmutableArray()
+        Interfaces = [..interfaces],
+        Methods = [..methods],
+        Crawled = [..converter.CrawledTypes],
+        Warnings = [..warnings]
     };
 
-    private AssemblyMeta CreateAssembly (string assemblyPath) => new() {
-        Name = Path.GetFileNameWithoutExtension(assemblyPath),
-        Bytes = File.ReadAllBytes(assemblyPath)
-    };
-
-    private void InspectMethods (Assembly assembly)
+    private void InspectAssembly (Assembly assembly)
     {
-        foreach (var method in GetStaticMethods(assembly))
-        foreach (var attribute in method.CustomAttributes)
-            InspectMethodWithAttribute(method, attribute.AttributeType.Name);
+        foreach (var exported in assembly.GetExportedTypes())
+            InspectExportedType(exported);
+        foreach (var attribute in assembly.CustomAttributes)
+            InspectAssemblyAttribute(attribute);
     }
 
-    private void InspectMethodWithAttribute (MethodInfo method, string attributeName)
+    private void InspectExportedType (Type type)
     {
-        if (attributeName == nameof(JSInvokableAttribute))
-            methods.Add(CreateMethod(method, MethodType.Invokable));
-        else if (attributeName == nameof(JSFunctionAttribute))
-            methods.Add(CreateMethod(method, MethodType.Function));
-        else if (attributeName == nameof(JSEventAttribute))
-            methods.Add(CreateMethod(method, MethodType.Event));
+        if (type.Namespace?.StartsWith("Bootsharp.Generated") ?? false) return;
+        foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
+        foreach (var attr in method.CustomAttributes)
+            if (attr.AttributeType.FullName == typeof(JSInvokableAttribute).FullName)
+                methods.Add(CreateMethod(method, MethodKind.Invokable));
+            else if (attr.AttributeType.FullName == typeof(JSFunctionAttribute).FullName)
+                methods.Add(CreateMethod(method, MethodKind.Function));
+            else if (attr.AttributeType.FullName == typeof(JSEventAttribute).FullName)
+                methods.Add(CreateMethod(method, MethodKind.Event));
     }
 
-    private MethodMeta CreateMethod (MethodInfo info, MethodType type) => new() {
-        Type = type,
+    private void InspectAssemblyAttribute (CustomAttributeData attribute)
+    {
+        var name = attribute.AttributeType.FullName;
+        var kind = name == typeof(JSExportAttribute).FullName ? InterfaceKind.Export
+            : name == typeof(JSImportAttribute).FullName ? InterfaceKind.Import
+            : (InterfaceKind?)null;
+        if (!kind.HasValue) return;
+        foreach (var arg in (IEnumerable<CustomAttributeTypedArgument>)attribute.ConstructorArguments[0].Value!)
+            AddInterface((Type)arg.Value!, kind.Value);
+    }
+
+    private void AddInterface (Type iType, InterfaceKind kind)
+    {
+        var meta = CreateInterface(iType, kind);
+        interfaces.Add(meta);
+        foreach (var method in meta.Methods)
+            methods.Add(method.Generated);
+    }
+
+    private MethodMeta CreateMethod (MethodInfo info, MethodKind kind) => new() {
+        Kind = kind,
         Assembly = info.DeclaringType!.Assembly.GetName().Name!,
         Space = info.DeclaringType.FullName!,
         Name = info.Name,
@@ -78,8 +94,8 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
             Void = IsVoid(info.ReturnType),
             Serialized = ShouldSerialize(info.ReturnType)
         },
-        JSSpace = spaceBuilder.Build(info.DeclaringType),
-        JSName = ToFirstLower(info.Name),
+        JSSpace = BuildMethodSpace(info),
+        JSName = WithPrefs(prefs.Function, info.Name, ToFirstLower(info.Name))
     };
 
     private ArgumentMeta CreateArgument (ParameterInfo info) => new() {
@@ -96,9 +112,42 @@ internal sealed class AssemblyInspector (NamespaceBuilder spaceBuilder)
         }
     };
 
-    private static IEnumerable<MethodInfo> GetStaticMethods (Assembly assembly)
+    private InterfaceMeta CreateInterface (Type iType, InterfaceKind kind)
     {
-        var exported = assembly.GetExportedTypes();
-        return exported.SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Static));
+        var space = "Bootsharp.Generated." + (kind == InterfaceKind.Export ? "Exports" : "Imports");
+        if (iType.Namespace != null) space += $".{iType.Namespace}";
+        var name = "JS" + iType.Name[1..];
+        return new InterfaceMeta {
+            Kind = kind,
+            TypeSyntax = BuildSyntax(iType),
+            Namespace = space,
+            Name = name,
+            Methods = iType.GetMethods().Select(m => CreateInterfaceMethod(m, kind, $"{space}.{name}")).ToArray()
+        };
+    }
+
+    private InterfaceMethodMeta CreateInterfaceMethod (MethodInfo info, InterfaceKind iKind, string space)
+    {
+        var name = WithPrefs(prefs.Event, info.Name, info.Name);
+        var mKind = iKind == InterfaceKind.Export ? MethodKind.Invokable
+            : name != info.Name ? MethodKind.Event : MethodKind.Function;
+        return new() {
+            Name = info.Name,
+            Generated = CreateMethod(info, mKind) with {
+                Assembly = entryAssemblyName,
+                Space = space,
+                Name = name,
+                JSName = ToFirstLower(name)
+            }
+        };
+    }
+
+    private string BuildMethodSpace (MethodInfo info)
+    {
+        var space = info.DeclaringType!.Namespace ?? "";
+        var name = BuildJSSpaceName(info.DeclaringType);
+        if (info.DeclaringType.IsInterface) name = name[1..];
+        var fullname = string.IsNullOrEmpty(space) ? name : $"{space}.{name}";
+        return WithPrefs(prefs.Space, fullname, fullname);
     }
 }

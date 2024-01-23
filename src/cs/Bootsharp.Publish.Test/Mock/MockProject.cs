@@ -38,7 +38,8 @@ public sealed class MockProject : IDisposable
     {
         var testAssembly = System.Reflection.Assembly.GetExecutingAssembly().Location;
         var assemblyDir = Path.Combine(Path.GetDirectoryName(testAssembly));
-        return Directory.CreateDirectory(Path.Combine(assemblyDir, $"temp{Guid.NewGuid():N}")).FullName;
+        var dir = $"bootsharp-temp-{Guid.NewGuid():N}";
+        return Directory.CreateDirectory(Path.Combine(assemblyDir, dir)).FullName;
     }
 
     private void CreateBuildResources ()
@@ -53,8 +54,7 @@ public sealed class MockProject : IDisposable
         return [
             MetadataReference.CreateFromFile(Path.Combine(coreDir, "System.Runtime.dll")).FilePath,
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location).FilePath,
-            MetadataReference.CreateFromFile(typeof(JSFunctionAttribute).Assembly.Location).FilePath,
-            MetadataReference.CreateFromFile(typeof(JSInvokableAttribute).Assembly.Location).FilePath
+            MetadataReference.CreateFromFile(typeof(JSExportAttribute).Assembly.Location).FilePath
         ];
     }
 }
