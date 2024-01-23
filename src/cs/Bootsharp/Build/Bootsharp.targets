@@ -110,7 +110,7 @@
 
         <!-- Generate bindings, type declarations and (optionally) embed binaries. -->
         <BootsharpPack BuildDirectory="$(BootsharpBuildDirectory)"
-                       InspectedDirectory="$(PublishDir)"
+                       InspectedDirectory="$(OutputPath)"
                        EntryAssemblyName="$(BootsharpEntryAssemblyName)"
                        TrimmingEnabled="$(BootsharpAggressiveTrimming)"
                        EmbedBinaries="$(BootsharpEmbedBinaries)"
