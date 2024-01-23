@@ -20,9 +20,6 @@ public class ResourceTest : PackTest
         Execute();
         Contains($$"""wasm: { name: "dotnet.native.wasm", content: "{{Convert.ToBase64String(MockWasmBinary)}}" },""");
         Contains("{ name: \"Foo.wasm\", content: \"");
-        Contains("{ name: \"Bootsharp.Common.wasm\", content: \"");
-        Contains("{ name: \"System.Runtime.wasm\", content: \"");
-        Contains("{ name: \"System.Private.CoreLib.wasm\", content: \"");
     }
 
     [Fact]
@@ -33,8 +30,5 @@ public class ResourceTest : PackTest
         Execute();
         Contains("""wasm: { name: "dotnet.native.wasm", content: undefined },""");
         Contains("""{ name: "Foo.wasm", content: undefined""");
-        Contains("""{ name: "Bootsharp.Common.wasm", content: undefined""");
-        Contains("""{ name: "System.Runtime.wasm", content: undefined""");
-        Contains("""{ name: "System.Private.CoreLib.wasm", content: undefined""");
     }
 }

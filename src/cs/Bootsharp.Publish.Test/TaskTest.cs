@@ -18,7 +18,7 @@ public abstract class TaskTest : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    protected void AddAssembly (string assemblyName, params MockSource[] sources)
+    protected virtual void AddAssembly (string assemblyName, params MockSource[] sources)
     {
         LastAddedAssemblyName = assemblyName;
         Project.AddAssembly(new(assemblyName, sources));

@@ -1,11 +1,15 @@
 ﻿namespace Bootsharp.Publish;
 
-internal sealed class ResourceGenerator (string entryAssemblyName, string buildDir, bool embed)
+internal sealed class ResourceGenerator (string entryAssemblyName, bool embed)
 {
-    public string Generate (AssemblyInspection inspection)
+    private readonly List<string> assemblies = [];
+    private string wasm = null!;
+
+    public string Generate (string buildDir)
     {
-        var wasm = BuildBin("dotnet.native.wasm", GenerateWasm());
-        var assemblies = inspection.Assemblies.Select(BuildAssembly);
+        foreach (var path in Directory.GetFiles(buildDir, "*.wasm"))
+            if (path.EndsWith("dotnet.native.wasm")) wasm = BuildBin(path);
+            else assemblies.Add(BuildBin(path));
         return
             $$"""
               export default {
@@ -18,23 +22,10 @@ internal sealed class ResourceGenerator (string entryAssemblyName, string buildD
               """;
     }
 
-    private string GenerateWasm ()
+    private string BuildBin (string path)
     {
-        if (!embed) return "undefined";
-        var path = Path.Combine(buildDir, "dotnet.native.wasm");
-        var bytes = File.ReadAllBytes(path);
-        return ToBase64(bytes);
-    }
-
-    private string BuildAssembly (AssemblyMeta assembly)
-    {
-        var name = assembly.Name + ".wasm";
-        var content = embed ? ToBase64(assembly.Bytes) : "undefined";
-        return BuildBin(name, content);
-    }
-
-    private string BuildBin (string name, string content)
-    {
+        var name = Path.GetFileName(path);
+        var content = embed ? ToBase64(File.ReadAllBytes(path)) : "undefined";
         return $$"""{ name: "{{name}}", content: {{content}} }""";
     }
 

@@ -32,6 +32,12 @@ public class PackTest : TaskTest
         Task.Execute();
     }
 
+    protected override void AddAssembly (string assemblyName, params MockSource[] sources)
+    {
+        base.AddAssembly(assemblyName, sources);
+        Project.WriteFile(assemblyName[..^3] + "wasm", "");
+    }
+
     private BootsharpPack CreateTask () => new() {
         BuildDirectory = Project.Root,
         InspectedDirectory = Project.Root,

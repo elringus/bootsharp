@@ -4,7 +4,6 @@ namespace Bootsharp.Publish;
 
 internal class AssemblyInspection (MetadataLoadContext ctx) : IDisposable
 {
-    public required IReadOnlyCollection<AssemblyMeta> Assemblies { get; init; }
     public required IReadOnlyCollection<InterfaceMeta> Interfaces { get; init; }
     public required IReadOnlyCollection<MethodMeta> Methods { get; init; }
     public required IReadOnlyCollection<Type> Crawled { get; init; }

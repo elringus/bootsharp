@@ -32,7 +32,11 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
     private AssemblyInspection InspectAssemblies (Preferences prefs)
     {
         var inspector = new AssemblyInspector(prefs, EntryAssemblyName);
-        var inspection = inspector.InspectInDirectory(InspectedDirectory);
+        // Assemblies in publish dir are trimmed and don't contain some data (eg, method arg names).
+        // While the inspected dir contains extra assemblies we don't need in build. Hence the filtering.
+        var included = Directory.GetFiles(BuildDirectory, "*.wasm").Select(Path.GetFileNameWithoutExtension).ToHashSet();
+        var inspected = Directory.GetFiles(InspectedDirectory, "*.dll").Where(p => included.Contains(Path.GetFileNameWithoutExtension(p)));
+        var inspection = inspector.InspectInDirectory(InspectedDirectory, inspected);
         new InspectionReporter(Log).Report(inspection);
         return inspection;
     }
@@ -53,8 +57,8 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
 
     private void GenerateResources (AssemblyInspection inspection)
     {
-        var generator = new ResourceGenerator(EntryAssemblyName, BuildDirectory, EmbedBinaries);
-        var content = generator.Generate(inspection);
+        var generator = new ResourceGenerator(EntryAssemblyName, EmbedBinaries);
+        var content = generator.Generate(BuildDirectory);
         File.WriteAllText(Path.Combine(BuildDirectory, "resources.g.js"), content);
     }
 

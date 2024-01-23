@@ -4,16 +4,15 @@ namespace Bootsharp.Publish;
 
 internal sealed class AssemblyInspector (Preferences prefs, string entryAssemblyName)
 {
-    private readonly List<AssemblyMeta> assemblies = [];
     private readonly List<InterfaceMeta> interfaces = [];
     private readonly List<MethodMeta> methods = [];
     private readonly List<string> warnings = [];
     private readonly TypeConverter converter = new(prefs);
 
-    public AssemblyInspection InspectInDirectory (string directory)
+    public AssemblyInspection InspectInDirectory (string directory, IEnumerable<string> paths)
     {
         var ctx = CreateLoadContext(directory);
-        foreach (var assemblyPath in Directory.GetFiles(directory, "*.dll"))
+        foreach (var assemblyPath in paths)
             try { InspectAssemblyFile(assemblyPath, ctx); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
         return CreateInspection(ctx);
@@ -21,7 +20,6 @@ internal sealed class AssemblyInspector (Preferences prefs, string entryAssembly
 
     private void InspectAssemblyFile (string assemblyPath, MetadataLoadContext ctx)
     {
-        assemblies.Add(CreateAssembly(assemblyPath));
         if (!ShouldIgnoreAssembly(assemblyPath))
             InspectAssembly(ctx.LoadFromAssemblyPath(assemblyPath));
     }
@@ -35,16 +33,10 @@ internal sealed class AssemblyInspector (Preferences prefs, string entryAssembly
     }
 
     private AssemblyInspection CreateInspection (MetadataLoadContext ctx) => new(ctx) {
-        Assemblies = [..assemblies],
         Interfaces = [..interfaces],
         Methods = [..methods],
         Crawled = [..converter.CrawledTypes],
         Warnings = [..warnings]
-    };
-
-    private AssemblyMeta CreateAssembly (string assemblyPath) => new() {
-        Name = Path.GetFileNameWithoutExtension(assemblyPath),
-        Bytes = File.ReadAllBytes(assemblyPath)
     };
 
     private void InspectAssembly (Assembly assembly)

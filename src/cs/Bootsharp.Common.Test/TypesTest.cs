@@ -43,8 +43,6 @@ public class TypesTest
             (import.ConstructorArguments[0].Value as IReadOnlyCollection<CustomAttributeTypedArgument>).Select(a => a.Value));
     }
 
-    private static object GetNamedValue (IList<CustomAttributeNamedArgument> args, string key) =>
-        args.First(a => a.MemberName == key).TypedValue.Value;
     private static CustomAttributeData GetMockExportAttribute () =>
         typeof(TypesTest).Assembly.CustomAttributes
             .First(a => a.AttributeType == typeof(JSExportAttribute));

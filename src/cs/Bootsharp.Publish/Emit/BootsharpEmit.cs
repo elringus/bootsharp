@@ -32,7 +32,8 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
     private AssemblyInspection InspectAssemblies (Preferences prefs)
     {
         var inspector = new AssemblyInspector(prefs, EntryAssemblyName);
-        var inspection = inspector.InspectInDirectory(InspectedDirectory);
+        var inspected = Directory.GetFiles(InspectedDirectory, "*.dll");
+        var inspection = inspector.InspectInDirectory(InspectedDirectory, inspected);
         new InspectionReporter(Log).Report(inspection);
         return inspection;
     }

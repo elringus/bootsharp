@@ -6,7 +6,6 @@ public class TypesTest
     public void Temp ()
     {
         // TODO: Remove when coverlet bug is resolved: https://github.com/coverlet-coverage/coverlet/issues/1561
-        _ = new AssemblyMeta { Name = "", Bytes = [] } with { Name = "foo" };
         _ = new InterfaceMeta { Kind = default, TypeSyntax = "", Name = "", Namespace = "", Methods = [] } with { Name = "foo" };
         _ = new InterfaceMethodMeta { Name = "", Generated = default } with { Name = "foo" };
         _ = new MethodMeta { Name = "", JSName = "", Arguments = default, Assembly = "", Kind = default, Space = "", JSSpace = "", ReturnValue = default } with { Assembly = "foo" };
