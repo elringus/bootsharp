@@ -2,12 +2,21 @@
 
 namespace Bootsharp.Publish;
 
-internal sealed class AssemblyInspector (Preferences prefs, string entryAssemblyName)
+internal sealed class AssemblyInspector
 {
     private readonly List<InterfaceMeta> interfaces = [];
     private readonly List<MethodMeta> methods = [];
     private readonly List<string> warnings = [];
-    private readonly TypeConverter converter = new(prefs);
+    private readonly TypeConverter converter;
+    private readonly MethodInspector methodInspector;
+    private readonly InterfaceInspector interfaceInspector;
+
+    public AssemblyInspector (Preferences prefs, string entryAssemblyName)
+    {
+        converter = new(prefs);
+        methodInspector = new(prefs, converter);
+        interfaceInspector = new(prefs, converter, entryAssemblyName);
+    }
 
     public AssemblyInspection InspectInDirectory (string directory, IEnumerable<string> paths)
     {
@@ -53,11 +62,11 @@ internal sealed class AssemblyInspector (Preferences prefs, string entryAssembly
         foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
         foreach (var attr in method.CustomAttributes)
             if (attr.AttributeType.FullName == typeof(JSInvokableAttribute).FullName)
-                methods.Add(CreateMethod(method, MethodKind.Invokable));
+                methods.Add(methodInspector.Inspect(method, MethodKind.Invokable));
             else if (attr.AttributeType.FullName == typeof(JSFunctionAttribute).FullName)
-                methods.Add(CreateMethod(method, MethodKind.Function));
+                methods.Add(methodInspector.Inspect(method, MethodKind.Function));
             else if (attr.AttributeType.FullName == typeof(JSEventAttribute).FullName)
-                methods.Add(CreateMethod(method, MethodKind.Event));
+                methods.Add(methodInspector.Inspect(method, MethodKind.Event));
     }
 
     private void InspectAssemblyAttribute (CustomAttributeData attribute)
@@ -68,86 +77,14 @@ internal sealed class AssemblyInspector (Preferences prefs, string entryAssembly
             : (InterfaceKind?)null;
         if (!kind.HasValue) return;
         foreach (var arg in (IEnumerable<CustomAttributeTypedArgument>)attribute.ConstructorArguments[0].Value!)
-            AddInterface((Type)arg.Value!, kind.Value);
+            InspectInterfaceType((Type)arg.Value!, kind.Value);
     }
 
-    private void AddInterface (Type iType, InterfaceKind kind)
+    private void InspectInterfaceType (Type type, InterfaceKind kind)
     {
-        var meta = CreateInterface(iType, kind);
+        var meta = interfaceInspector.Inspect(type, kind);
         interfaces.Add(meta);
         foreach (var method in meta.Methods)
             methods.Add(method.Generated);
-    }
-
-    private MethodMeta CreateMethod (MethodInfo info, MethodKind kind) => new() {
-        Kind = kind,
-        Assembly = info.DeclaringType!.Assembly.GetName().Name!,
-        Space = info.DeclaringType.FullName!,
-        Name = info.Name,
-        Arguments = info.GetParameters().Select(CreateArgument).ToArray(),
-        ReturnValue = new() {
-            Type = info.ReturnType,
-            TypeSyntax = BuildSyntax(info.ReturnType, info.ReturnParameter),
-            JSTypeSyntax = converter.ToTypeScript(info.ReturnType, GetNullability(info.ReturnParameter)),
-            Nullable = IsNullable(info),
-            Async = IsTaskLike(info.ReturnType),
-            Void = IsVoid(info.ReturnType),
-            Serialized = ShouldSerialize(info.ReturnType)
-        },
-        JSSpace = BuildMethodSpace(info),
-        JSName = WithPrefs(prefs.Function, info.Name, ToFirstLower(info.Name))
-    };
-
-    private ArgumentMeta CreateArgument (ParameterInfo info) => new() {
-        Name = info.Name!,
-        JSName = info.Name == "function" ? "fn" : info.Name!,
-        Value = new() {
-            Type = info.ParameterType,
-            TypeSyntax = BuildSyntax(info.ParameterType, info),
-            JSTypeSyntax = converter.ToTypeScript(info.ParameterType, GetNullability(info)),
-            Nullable = IsNullable(info),
-            Async = false,
-            Void = false,
-            Serialized = ShouldSerialize(info.ParameterType)
-        }
-    };
-
-    private InterfaceMeta CreateInterface (Type iType, InterfaceKind kind)
-    {
-        var space = "Bootsharp.Generated." + (kind == InterfaceKind.Export ? "Exports" : "Imports");
-        if (iType.Namespace != null) space += $".{iType.Namespace}";
-        var name = "JS" + iType.Name[1..];
-        return new InterfaceMeta {
-            Kind = kind,
-            TypeSyntax = BuildSyntax(iType),
-            Namespace = space,
-            Name = name,
-            Methods = iType.GetMethods().Select(m => CreateInterfaceMethod(m, kind, $"{space}.{name}")).ToArray()
-        };
-    }
-
-    private InterfaceMethodMeta CreateInterfaceMethod (MethodInfo info, InterfaceKind iKind, string space)
-    {
-        var name = WithPrefs(prefs.Event, info.Name, info.Name);
-        var mKind = iKind == InterfaceKind.Export ? MethodKind.Invokable
-            : name != info.Name ? MethodKind.Event : MethodKind.Function;
-        return new() {
-            Name = info.Name,
-            Generated = CreateMethod(info, mKind) with {
-                Assembly = entryAssemblyName,
-                Space = space,
-                Name = name,
-                JSName = ToFirstLower(name)
-            }
-        };
-    }
-
-    private string BuildMethodSpace (MethodInfo info)
-    {
-        var space = info.DeclaringType!.Namespace ?? "";
-        var name = BuildJSSpaceName(info.DeclaringType);
-        if (info.DeclaringType.IsInterface) name = name[1..];
-        var fullname = string.IsNullOrEmpty(space) ? name : $"{space}.{name}";
-        return WithPrefs(prefs.Space, fullname, fullname);
     }
 }

@@ -810,4 +810,30 @@ public class DeclarationTest : PackTest
             }
             """);
     }
+
+    [Fact]
+    public void GeneratesInstanceTypesForInterfaceValues ()
+    {
+        AddAssembly(
+            With("public interface IExported { void Inv (); }"),
+            With("public interface IImported { void Fun (); void NotifyEvt (); }"),
+            WithClass("[JSInvokable] public static IExported CreateExported (string arg) => default;"),
+            WithClass("[JSFunction] public static IImported CreateImported (string arg) => default;"));
+        Execute();
+        Contains(
+            """
+            export interface IImported {
+                fun(): void;
+                onEvt: Event<[]>;
+            }
+            export interface IExported {
+                inv(): void;
+            }
+
+            export namespace Class {
+                export function createExported(arg: string): IExported;
+                export let createImported: (arg: string) => IImported;
+            }
+            """);
+    }
 }

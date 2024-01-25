@@ -11,6 +11,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     private Type type => GetTypeAt(index);
     private Type? prevType => index == 0 ? null : GetTypeAt(index - 1);
     private Type? nextType => index == types.Length - 1 ? null : GetTypeAt(index + 1);
+    private int indent => !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
 
     private Type[] types = null!;
     private int index;
@@ -64,17 +65,16 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private void DeclareInterface ()
     {
-        var indent = !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
         AppendLine($"export interface {BuildTypeName(type)}", indent);
         AppendExtensions();
         builder.Append(" {");
         AppendProperties();
+        if (type.IsInterface) AppendMethods();
         AppendLine("}", indent);
     }
 
     private void DeclareEnum ()
     {
-        var indent = !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
         AppendLine($"export enum {type.Name} {{", indent);
         var names = Enum.GetNames(type);
         for (int i = 0; i < names.Length; i++)
@@ -105,18 +105,28 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
                 AppendProperty(property);
     }
 
+    private void AppendMethods ()
+    {
+        var flags = BindingFlags.Public | BindingFlags.Instance;
+        foreach (var method in type.GetMethods(flags))
+            AppendMethod(method);
+    }
+
     private void AppendProperty (PropertyInfo property)
     {
-        var indent = !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
         AppendLine(ToFirstLower(property.Name), indent + 1);
         if (IsNullable(property)) builder.Append('?');
-        builder.Append($": {BuildType()};");
+        builder.Append(": ");
+        if (property.PropertyType.IsGenericTypeParameter) builder.Append(property.PropertyType.Name);
+        else builder.Append(converter.ToTypeScript(property.PropertyType, GetNullability(property)));
+        builder.Append(';');
+    }
 
-        string BuildType ()
-        {
-            if (property.PropertyType.IsGenericTypeParameter) return property.PropertyType.Name;
-            return converter.ToTypeScript(property.PropertyType, GetNullability(property));
-        }
+    private void AppendMethod (MethodInfo method)
+    {
+        var name = WithPrefs(prefs.Event, method.Name, method.Name);
+        var @event = name != method.Name;
+        // AppendLine(ToFirstLower(name), indent + 1);
     }
 
     private void AppendLine (string content, int level)
