@@ -818,16 +818,20 @@ public class DeclarationTest : PackTest
     [Fact]
     public void RespectsTypePreference ()
     {
-        AddAssembly(
-            With(
-                """
-                [assembly: Bootsharp.JSPreferences(
-                    Type = [@"Record", "Foo", @".+`.+", "Bar"]
-                )]
-                """),
-            With("public record Record;"),
-            With("public record Generic<T>;"),
-            WithClass("[JSInvokable] public static void Inv (Record r, Generic<string> g) {}"));
+        AddAssembly(With(
+            """
+            [assembly: Bootsharp.JSPreferences(
+                Type = [@"Record", "Foo", @".+`.+", "Bar"]
+            )]
+
+            public record Record;
+            public record Generic<T>;
+
+            public class Class
+            {
+                [JSInvokable] public static void Inv (Record r, Generic<string> g) {}
+            }
+            """));
         Execute();
         Contains(
             """
@@ -929,14 +933,20 @@ public class DeclarationTest : PackTest
     [Fact]
     public void GeneratesInstancedInterfacesFromStaticMethods ()
     {
-        AddAssembly(
-            With("public enum Enum { A, B }"),
-            With("public interface IExportedInstancedA { void Inv (string s, Enum e); }"),
-            With("public interface IExportedInstancedB { Enum Inv (); }"),
-            With("public interface IImportedInstancedA { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }"),
-            With("public interface IImportedInstancedB { Enum Fun (); void NotifyEvt (); }"),
-            WithClass("[JSInvokable] public static IExportedInstancedA CreateExported (string arg, IImportedInstancedB i) => default;"),
-            WithClass("[JSFunction] public static IImportedInstancedA CreateImported (string arg, IExportedInstancedB i) => default;"));
+        AddAssembly(With(
+            """
+            public enum Enum { A, B }
+            public interface IExportedInstancedA { void Inv (string s, Enum e); }
+            public interface IExportedInstancedB { Enum Inv (); }
+            public interface IImportedInstancedA { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }
+            public interface IImportedInstancedB { Enum Fun (); void NotifyEvt (); }
+
+            public class Class
+            {
+                 [JSInvokable] public static IExportedInstancedA CreateExported (string arg, IImportedInstancedB i) => default;
+                 [JSFunction] public static IImportedInstancedA CreateImported (string arg, IExportedInstancedB i) => default;
+            }
+            """));
         Execute();
         Contains(
             """
@@ -969,16 +979,20 @@ public class DeclarationTest : PackTest
     [Fact]
     public void GeneratesInstancedInterfacesFromStaticInterfaces ()
     {
-        AddAssembly(
-            With("[assembly:JSExport(typeof(IExportedStatic))]"),
-            With("[assembly:JSImport(typeof(IImportedStatic))]"),
-            With("public interface IExportedStatic { IExportedInstancedA CreateExported (string arg, IImportedInstancedB i); }"),
-            With("public interface IImportedStatic { IImportedInstancedA CreateImported (string arg, IExportedInstancedB i); }"),
-            With("public enum Enum { A, B }"),
-            With("public interface IExportedInstancedA { void Inv (string s, Enum e); }"),
-            With("public interface IExportedInstancedB { Enum Inv (); }"),
-            With("public interface IImportedInstancedA { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }"),
-            With("public interface IImportedInstancedB { Enum Fun (); void NotifyEvt (); }"));
+        AddAssembly(With(
+            """
+            [assembly:JSExport(typeof(IExportedStatic))]
+            [assembly:JSImport(typeof(IImportedStatic))]
+
+            public interface IExportedStatic { IExportedInstancedA CreateExported (string arg, IImportedInstancedB i); }
+            public interface IImportedStatic { IImportedInstancedA CreateImported (string arg, IExportedInstancedB i); }
+
+            public enum Enum { A, B }
+            public interface IExportedInstancedA { void Inv (string s, Enum e); }
+            public interface IExportedInstancedB { Enum Inv (); }
+            public interface IImportedInstancedA { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }
+            public interface IImportedInstancedB { Enum Fun (); void NotifyEvt (); }
+            """));
         Execute();
         Contains(
             """
