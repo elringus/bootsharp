@@ -93,11 +93,10 @@ internal sealed class AssemblyInspector
 
     private void InspectStaticInteropInterface (Type type, InterfaceKind kind)
     {
-        var interfaceMetas = interfaceInspector.Inspect(type, kind, false);
-        interfaces.AddRange(interfaceMetas);
-        methods.AddRange(interfaceMetas.SelectMany(i => i.Methods.Select(m => m.Meta)));
-        foreach (var meta in interfaceMetas)
-        foreach (var method in meta.Methods)
+        var interfaceMeta = interfaceInspector.Inspect(type, kind, false);
+        interfaces.Add(interfaceMeta);
+        methods.AddRange(interfaceMeta.Methods.Select(m => m.Meta));
+        foreach (var method in interfaceMeta.Methods)
             InspectMethodParameters(method.Meta, kind);
     }
 
@@ -120,7 +119,7 @@ internal sealed class AssemblyInspector
     private void InspectMethodParameter (Type paramType, InterfaceKind kind)
     {
         if (!IsInstancedInterface(paramType)) return;
-        interfaces.AddRange(interfaceInspector.Inspect(paramType, kind, true));
+        interfaces.Add(interfaceInspector.Inspect(paramType, kind, true));
     }
 
     private bool IsInstancedInterface (Type type)

@@ -20,15 +20,7 @@ internal sealed class MethodInspector (Preferences prefs, TypeConverter converte
         Space = info.DeclaringType.FullName!,
         Name = info.Name,
         Arguments = info.GetParameters().Select(CreateArgument).ToArray(),
-        ReturnValue = new() {
-            Type = info.ReturnType,
-            TypeSyntax = BuildSyntax(info.ReturnType, info.ReturnParameter),
-            JSTypeSyntax = converter.ToTypeScript(info.ReturnType, GetNullability(info.ReturnParameter)),
-            Nullable = IsNullable(info),
-            Async = IsTaskLike(info.ReturnType),
-            Void = IsVoid(info.ReturnType),
-            Serialized = ShouldSerialize(info.ReturnType)
-        },
+        ReturnValue = CreateReturnValue(),
         JSSpace = BuildMethodSpace(),
         JSName = WithPrefs(prefs.Function, info.Name, ToFirstLower(info.Name))
     };
@@ -45,6 +37,16 @@ internal sealed class MethodInspector (Preferences prefs, TypeConverter converte
             Void = false,
             Serialized = ShouldSerialize(info.ParameterType)
         }
+    };
+
+    private ValueMeta CreateReturnValue () => new() {
+        Type = info.ReturnType,
+        TypeSyntax = BuildSyntax(info.ReturnType, info.ReturnParameter),
+        JSTypeSyntax = converter.ToTypeScript(info.ReturnType, GetNullability(info.ReturnParameter)),
+        Nullable = IsNullable(info),
+        Async = IsTaskLike(info.ReturnType),
+        Void = IsVoid(info.ReturnType),
+        Serialized = ShouldSerialize(info.ReturnType)
     };
 
     private string BuildMethodSpace ()

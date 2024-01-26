@@ -5,16 +5,8 @@ namespace Bootsharp.Publish;
 internal sealed class InterfaceInspector (Preferences prefs, TypeConverter converter, string entryAssemblyName)
 {
     private readonly MethodInspector methodInspector = new(prefs, converter);
-    private readonly List<InterfaceMeta> metas = [];
 
-    public InterfaceMeta[] Inspect (Type interfaceType, InterfaceKind kind, bool instanced)
-    {
-        metas.Clear();
-        metas.Add(CreateInterface(interfaceType, kind, instanced));
-        return metas.ToArray();
-    }
-
-    private InterfaceMeta CreateInterface (Type interfaceType, InterfaceKind kind, bool instanced)
+    public InterfaceMeta Inspect (Type interfaceType, InterfaceKind kind, bool instanced)
     {
         var space = "Bootsharp.Generated." + (kind == InterfaceKind.Export ? "Exports" : "Imports");
         if (interfaceType.Namespace != null) space += $".{interfaceType.Namespace}";
