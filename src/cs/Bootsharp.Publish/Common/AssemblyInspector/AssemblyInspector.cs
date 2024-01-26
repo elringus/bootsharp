@@ -14,7 +14,7 @@ internal sealed class AssemblyInspector
     public AssemblyInspector (Preferences prefs, string entryAssemblyName)
     {
         converter = new(prefs);
-        methodInspector = new(prefs, converter, entryAssemblyName);
+        methodInspector = new(prefs, converter);
         interfaceInspector = new(prefs, converter, entryAssemblyName);
     }
 
@@ -86,15 +86,47 @@ internal sealed class AssemblyInspector
 
     private void InspectStaticInteropMethod (MethodInfo info, MethodKind kind)
     {
-        var (methodMeta, instancedMeta) = methodInspector.Inspect(info, kind);
+        var methodMeta = methodInspector.Inspect(info, kind);
         methods.Add(methodMeta);
-        interfaces.AddRange(instancedMeta);
+        InspectMethodParameters(methodMeta, kind);
     }
 
     private void InspectStaticInteropInterface (Type type, InterfaceKind kind)
     {
         var interfaceMetas = interfaceInspector.Inspect(type, kind, false);
         interfaces.AddRange(interfaceMetas);
-        methods.AddRange(interfaceMetas.SelectMany(i => i.Methods.Select(m => m.Generated)));
+        methods.AddRange(interfaceMetas.SelectMany(i => i.Methods.Select(m => m.Meta)));
+        foreach (var meta in interfaceMetas)
+        foreach (var method in meta.Methods)
+            InspectMethodParameters(method.Meta, kind);
+    }
+
+    private void InspectMethodParameters (MethodMeta meta, MethodKind kind)
+    {
+        var iKind = kind == MethodKind.Invokable ? InterfaceKind.Export : InterfaceKind.Import;
+        InspectMethodParameters(meta, iKind);
+    }
+
+    private void InspectMethodParameters (MethodMeta meta, InterfaceKind kind)
+    {
+        // When interop instance is an argument to exported method, it's imported (JS) API and vice-versa.
+        var argKind = kind == InterfaceKind.Export ? InterfaceKind.Import : InterfaceKind.Export;
+        foreach (var arg in meta.Arguments)
+            InspectMethodParameter(arg.Value.Type, argKind);
+        if (!meta.ReturnValue.Void)
+            InspectMethodParameter(meta.ReturnValue.Type, kind);
+    }
+
+    private void InspectMethodParameter (Type paramType, InterfaceKind kind)
+    {
+        if (!IsInstancedInterface(paramType)) return;
+        interfaces.AddRange(interfaceInspector.Inspect(paramType, kind, true));
+    }
+
+    private bool IsInstancedInterface (Type type)
+    {
+        if (!type.IsInterface) return false;
+        if (string.IsNullOrEmpty(type.Namespace)) return true;
+        return !type.Namespace.StartsWith("System.", StringComparison.Ordinal);
     }
 }

@@ -121,26 +121,27 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     private void AppendInstancedMethods (InterfaceMeta instanced)
     {
         foreach (var meta in instanced.Methods)
-            if (meta.Generated.Kind == MethodKind.Event)
+            if (meta.Meta.Kind == MethodKind.Event)
                 AppendInstancedEvent(meta);
             else AppendInstancedFunction(meta);
     }
 
     private void AppendInstancedEvent (InterfaceMethodMeta meta)
     {
-        AppendLine(meta.Generated.JSName, indent + 1);
+        AppendLine(meta.Meta.JSName, indent + 1);
         builder.Append(": Event<[");
-        builder.AppendJoin(", ", meta.Generated.Arguments.Select(a => a.Value.JSTypeSyntax));
+        builder.AppendJoin(", ", meta.Meta.Arguments.Select(a => $"{a.JSName}: {a.Value.JSTypeSyntax}"));
         builder.Append("]>;");
     }
 
     private void AppendInstancedFunction (InterfaceMethodMeta meta)
     {
-        AppendLine(meta.Generated.JSName, indent + 1);
+        AppendLine(meta.Meta.JSName, indent + 1);
         builder.Append('(');
-        builder.AppendJoin(", ", meta.Generated.Arguments.Select(a => $"{a.JSName}: {a.Value.JSTypeSyntax}"));
+        builder.AppendJoin(", ", meta.Meta.Arguments.Select(a => $"{a.JSName}: {a.Value.JSTypeSyntax}"));
         builder.Append("): ");
-        builder.Append(meta.Generated.ReturnValue.JSTypeSyntax);
+        builder.Append(meta.Meta.ReturnValue.JSTypeSyntax);
+        builder.Append(';');
     }
 
     private void AppendLine (string content, int level)

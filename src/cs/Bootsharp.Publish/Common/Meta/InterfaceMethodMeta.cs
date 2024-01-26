@@ -9,9 +9,13 @@ internal sealed record InterfaceMethodMeta
     /// <summary>
     /// Name of the method as declared on the interface.
     /// </summary>
+    /// <remarks>
+    /// <see cref="MethodMeta.Name"/> of the generated C# implementation may
+    /// differ from the source method name on the interface, hence the wrapper.
+    /// </remarks>
     public required string Name { get; set; }
     /// <summary>
-    /// Metadata about the interop method generated for the interface method.
+    /// Metadata of the interop method.
     /// </summary>
-    public required MethodMeta Generated { get; set; }
+    public required MethodMeta Meta { get; set; }
 }

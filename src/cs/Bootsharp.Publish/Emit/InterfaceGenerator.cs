@@ -54,7 +54,7 @@ internal sealed class InterfaceGenerator
                       {{i.Name}}.handler = handler;
                   }
 
-                  {{JoinLines(i.Methods.Select(m => EmitExportMethod(m.Generated)), 2)}}
+                  {{JoinLines(i.Methods.Select(m => EmitExportMethod(m.Meta)), 2)}}
               }
           }
           """;
@@ -65,7 +65,7 @@ internal sealed class InterfaceGenerator
           {
               public class {{i.Name}} : {{i.TypeSyntax}}
               {
-                  {{JoinLines(i.Methods.Select(m => EmitImportMethod(m.Generated)), 2)}}
+                  {{JoinLines(i.Methods.Select(m => EmitImportMethod(m.Meta)), 2)}}
 
                   {{JoinLines(i.Methods.Select(m => EmitImportMethodImplementation(i, m)), 2)}}
               }
@@ -95,7 +95,7 @@ internal sealed class InterfaceGenerator
 
     private string EmitImportMethodImplementation (InterfaceMeta i, InterfaceMethodMeta method)
     {
-        var gen = method.Generated;
+        var gen = method.Meta;
         var sigArgs = string.Join(", ", gen.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         var args = string.Join(", ", gen.Arguments.Select(a => a.Name));
         return $"{gen.ReturnValue.TypeSyntax} {i.TypeSyntax}.{method.Name} ({sigArgs}) => {gen.Name}({args});";

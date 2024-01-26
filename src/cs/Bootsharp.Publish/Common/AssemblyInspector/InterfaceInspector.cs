@@ -4,7 +4,7 @@ namespace Bootsharp.Publish;
 
 internal sealed class InterfaceInspector (Preferences prefs, TypeConverter converter, string entryAssemblyName)
 {
-    private readonly MethodInspector methodInspector = new(prefs, converter, entryAssemblyName);
+    private readonly MethodInspector methodInspector = new(prefs, converter);
     private readonly List<InterfaceMeta> metas = [];
 
     public InterfaceMeta[] Inspect (Type interfaceType, InterfaceKind kind, bool instanced)
@@ -35,11 +35,10 @@ internal sealed class InterfaceInspector (Preferences prefs, TypeConverter conve
         var name = WithPrefs(prefs.Event, info.Name, info.Name);
         var mKind = iKind == InterfaceKind.Export ? MethodKind.Invokable
             : name != info.Name ? MethodKind.Event : MethodKind.Function;
-        var (method, instanced) = methodInspector.Inspect(info, mKind);
-        metas.AddRange(instanced);
+        var method = methodInspector.Inspect(info, mKind);
         return new() {
             Name = info.Name,
-            Generated = method with {
+            Meta = method with {
                 Assembly = entryAssemblyName,
                 Space = space,
                 Name = name,
