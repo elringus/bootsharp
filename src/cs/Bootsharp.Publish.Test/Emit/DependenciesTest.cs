@@ -8,7 +8,7 @@ public class DependenciesTest : EmitTest
     protected override string TestedContent => GeneratedDependencies;
 
     [Fact]
-    public void WhenNothingInspectedIncludesCommonDependencies ()
+    public void AddsCommonDependencies ()
     {
         Execute();
         Contains(
@@ -28,31 +28,24 @@ public class DependenciesTest : EmitTest
     }
 
     [Fact]
-    public void AddsGeneratedExportTypes ()
+    public void AddsInteropInterfaceImplementations ()
     {
         AddAssembly(
-            With("[assembly:JSExport(typeof(IFoo), typeof(Space.IBar))]"),
-            With("public interface IFoo {}"),
-            With("Space", "public interface IBar {}"));
+            With("[assembly:JSExport(typeof(IExported), typeof(Space.IExported))]"),
+            With("[assembly:JSImport(typeof(IImported), typeof(Space.IImported))]"),
+            With("public interface IExported {}"),
+            With("public interface IImported {}"),
+            With("Space", "public interface IExported {}"),
+            With("Space", "public interface IImported {}"));
         Execute();
-        Added(All, "Bootsharp.Generated.Exports.JSFoo");
-        Added(All, "Bootsharp.Generated.Exports.Space.JSBar");
+        Added(All, "Bootsharp.Generated.Exports.JSExported");
+        Added(All, "Bootsharp.Generated.Exports.Space.JSExported");
+        Added(All, "Bootsharp.Generated.Imports.JSImported");
+        Added(All, "Bootsharp.Generated.Imports.Space.JSImported");
     }
 
     [Fact]
-    public void AddsGeneratedImportTypes ()
-    {
-        AddAssembly(
-            With("[assembly:JSImport(typeof(IFoo), typeof(Space.IBar))]"),
-            With("public interface IFoo {}"),
-            With("Space", "public interface IBar {}"));
-        Execute();
-        Added(All, "Bootsharp.Generated.Imports.JSFoo");
-        Added(All, "Bootsharp.Generated.Imports.Space.JSBar");
-    }
-
-    [Fact]
-    public void AddsClassesWithInteropMethods ()
+    public void AddsClassesWithStaticInteropMethods ()
     {
         AddAssembly("Assembly.With.Dots.dll",
             With("SpaceA", "public class ClassA { [JSInvokable] public static void Foo () {} }"),
