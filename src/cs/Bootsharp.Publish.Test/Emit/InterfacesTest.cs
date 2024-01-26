@@ -5,7 +5,7 @@ public class InterfacesTest : EmitTest
     protected override string TestedContent => GeneratedInterfaces;
 
     [Fact]
-    public void GeneratesInteropClassForExportedInterface ()
+    public void GeneratesImplementationForExportedStaticInterface ()
     {
         AddAssembly(With(
             """
@@ -61,7 +61,7 @@ public class InterfacesTest : EmitTest
     }
 
     [Fact]
-    public void GeneratesImplementationForImportedInterface ()
+    public void GeneratesImplementationForImportedStaticInterface ()
     {
         AddAssembly(With(
             """
