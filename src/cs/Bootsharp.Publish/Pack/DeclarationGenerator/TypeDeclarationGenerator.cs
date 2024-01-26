@@ -13,12 +13,14 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     private Type? nextType => index == types.Length - 1 ? null : GetTypeAt(index + 1);
     private int indent => !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
 
+    private InterfaceMeta[] instanced = null!;
     private Type[] types = null!;
     private int index;
 
-    public string Generate (IEnumerable<Type> sourceTypes)
+    public string Generate (AssemblyInspection inspection)
     {
-        types = sourceTypes.OrderBy(GetNamespace).ToArray();
+        instanced = [..inspection.Interfaces.Where(i => i.Instanced)];
+        types = inspection.Crawled.OrderBy(GetNamespace).ToArray();
         for (index = 0; index < types.Length; index++)
             DeclareType();
         return builder.ToString();
@@ -68,8 +70,10 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         AppendLine($"export interface {BuildTypeName(type)}", indent);
         AppendExtensions();
         builder.Append(" {");
-        AppendProperties();
-        if (type.IsInterface) AppendMethods();
+        if (instanced.FirstOrDefault(i => i.Type == type) is { } inst)
+            foreach (var meta in inst.Methods)
+                AppendInstancedMethod(meta);
+        else AppendProperties();
         AppendLine("}", indent);
     }
 
@@ -105,13 +109,6 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
                 AppendProperty(property);
     }
 
-    private void AppendMethods ()
-    {
-        var flags = BindingFlags.Public | BindingFlags.Instance;
-        foreach (var method in type.GetMethods(flags))
-            AppendMethod(method);
-    }
-
     private void AppendProperty (PropertyInfo property)
     {
         AppendLine(ToFirstLower(property.Name), indent + 1);
@@ -122,11 +119,9 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         builder.Append(';');
     }
 
-    private void AppendMethod (MethodInfo method)
+    private void AppendInstancedMethod (InterfaceMethodMeta meta)
     {
-        var name = WithPrefs(prefs.Event, method.Name, method.Name);
-        var @event = name != method.Name;
-        // AppendLine(ToFirstLower(name), indent + 1);
+        AppendLine(meta.Generated.JSName, indent + 1);
     }
 
     private void AppendLine (string content, int level)

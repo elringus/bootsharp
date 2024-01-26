@@ -7,7 +7,7 @@ internal sealed class DeclarationGenerator (Preferences prefs)
 
     public string Generate (AssemblyInspection inspection) => JoinLines(0,
         """import type { Event } from "./event";""",
-        typesGenerator.Generate(inspection.Crawled),
+        typesGenerator.Generate(inspection),
         methodsGenerator.Generate(inspection.Methods)
     ) + "\n";
 }

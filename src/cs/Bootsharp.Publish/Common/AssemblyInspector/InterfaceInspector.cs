@@ -13,6 +13,8 @@ internal sealed class InterfaceInspector (Preferences prefs, TypeConverter conve
         var name = "JS" + interfaceType.Name[1..];
         return new InterfaceMeta {
             Kind = kind,
+            Instanced = false,
+            Type = interfaceType,
             TypeSyntax = BuildSyntax(interfaceType),
             Namespace = space,
             Name = name,
