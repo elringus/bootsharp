@@ -28,7 +28,7 @@ public class DependenciesTest : EmitTest
     }
 
     [Fact]
-    public void AddsInteropInterfaceImplementations ()
+    public void AddsStaticInteropInterfaceImplementations ()
     {
         AddAssembly(
             With("[assembly:JSExport(typeof(IExported), typeof(Space.IExported))]"),
@@ -42,6 +42,37 @@ public class DependenciesTest : EmitTest
         Added(All, "Bootsharp.Generated.Exports.Space.JSExported");
         Added(All, "Bootsharp.Generated.Imports.JSImported");
         Added(All, "Bootsharp.Generated.Imports.Space.JSImported");
+    }
+
+    [Fact]
+    public void AddsInstancedInteropInterfaceImplementations ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSExport(typeof(IExportedStatic))]
+            [assembly:JSImport(typeof(IImportedStatic))]
+
+            public interface IExportedStatic { IExportedInstancedA CreateExported (); }
+            public interface IImportedStatic { IImportedInstancedA CreateImported (); }
+
+            public interface IExportedInstancedA { }
+            public interface IExportedInstancedB { }
+            public interface IImportedInstancedA { }
+            public interface IImportedInstancedB { }
+
+            public class Class
+            {
+                 [JSInvokable] public static IExportedInstancedB CreateExported () => default;
+                 [JSFunction] public static IImportedInstancedB CreateImported () => default;
+            }
+            """));
+        Execute();
+        Added(All, "Bootsharp.Generated.Exports.JSExportedStatic");
+        Added(All, "Bootsharp.Generated.Exports.JSExportedInstancedA");
+        Added(All, "Bootsharp.Generated.Exports.JSExportedInstancedB");
+        Added(All, "Bootsharp.Generated.Imports.JSImportedStatic");
+        Added(All, "Bootsharp.Generated.Imports.JSImportedInstancedA");
+        Added(All, "Bootsharp.Generated.Imports.JSImportedInstancedB");
     }
 
     [Fact]
