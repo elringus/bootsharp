@@ -109,7 +109,7 @@ internal sealed class AssemblyInspector
 
     private void InspectMethodParameters (MethodMeta meta, InterfaceKind kind)
     {
-        // When interop instance is an argument to exported method, it's imported (JS) API and vice-versa.
+        // When interop instance is an argument of exported method, it's imported (JS) API and vice-versa.
         var argKind = kind == InterfaceKind.Export ? InterfaceKind.Import : InterfaceKind.Export;
         foreach (var arg in meta.Arguments)
             InspectMethodParameter(arg.Value.Type, argKind);
