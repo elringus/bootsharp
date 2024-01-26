@@ -815,19 +815,24 @@ public class DeclarationTest : PackTest
     public void GeneratesInstanceTypesForInterfaceValues ()
     {
         AddAssembly(
-            With("public interface IExported { void Inv (); }"),
-            With("public interface IImported { void Fun (); void NotifyEvt (); }"),
+            With("public enum Enum { A, B }"),
+            With("public interface IExported { void Inv (string s, Enum e); }"),
+            With("public interface IImported { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }"),
             WithClass("[JSInvokable] public static IExported CreateExported (string arg) => default;"),
             WithClass("[JSFunction] public static IImported CreateImported (string arg) => default;"));
         Execute();
         Contains(
             """
+            export enum Enum {
+                A,
+                B
+            }
             export interface IImported {
-                fun(): void;
-                onEvt: Event<[]>;
+                fun(s: string, e: Enum): void;
+                onEvt: Event<[s: string, e: Enum]>;
             }
             export interface IExported {
-                inv(): void;
+                inv(s: string, e: Enum): void;
             }
 
             export namespace Class {

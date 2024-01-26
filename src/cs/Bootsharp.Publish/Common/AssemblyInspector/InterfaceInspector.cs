@@ -6,14 +6,14 @@ internal sealed class InterfaceInspector (Preferences prefs, TypeConverter conve
 {
     private readonly MethodInspector methodInspector = new(prefs, converter);
 
-    public InterfaceMeta Inspect (Type interfaceType, InterfaceKind kind)
+    public InterfaceMeta Inspect (Type interfaceType, InterfaceKind kind, bool instanced)
     {
         var space = "Bootsharp.Generated." + (kind == InterfaceKind.Export ? "Exports" : "Imports");
         if (interfaceType.Namespace != null) space += $".{interfaceType.Namespace}";
         var name = "JS" + interfaceType.Name[1..];
         return new InterfaceMeta {
             Kind = kind,
-            Instanced = false,
+            Instanced = instanced,
             Type = interfaceType,
             TypeSyntax = BuildSyntax(interfaceType),
             Namespace = space,

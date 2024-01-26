@@ -82,7 +82,7 @@ internal sealed class AssemblyInspector
 
     private void InspectInterfaceType (Type type, InterfaceKind kind)
     {
-        var meta = interfaceInspector.Inspect(type, kind);
+        var meta = interfaceInspector.Inspect(type, kind, false);
         interfaces.Add(meta);
         foreach (var method in meta.Methods)
             methods.Add(method.Generated);

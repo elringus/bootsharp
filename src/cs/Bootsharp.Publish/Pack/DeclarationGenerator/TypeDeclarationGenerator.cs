@@ -71,8 +71,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         AppendExtensions();
         builder.Append(" {");
         if (instanced.FirstOrDefault(i => i.Type == type) is { } inst)
-            foreach (var meta in inst.Methods)
-                AppendInstancedMethod(meta);
+            AppendInstancedMethods(inst);
         else AppendProperties();
         AppendLine("}", indent);
     }
@@ -119,9 +118,29 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         builder.Append(';');
     }
 
-    private void AppendInstancedMethod (InterfaceMethodMeta meta)
+    private void AppendInstancedMethods (InterfaceMeta instanced)
+    {
+        foreach (var meta in instanced.Methods)
+            if (meta.Generated.Kind == MethodKind.Event)
+                AppendInstancedEvent(meta);
+            else AppendInstancedFunction(meta);
+    }
+
+    private void AppendInstancedEvent (InterfaceMethodMeta meta)
     {
         AppendLine(meta.Generated.JSName, indent + 1);
+        builder.Append(": Event<[");
+        builder.AppendJoin(", ", meta.Generated.Arguments.Select(a => a.Value.JSTypeSyntax));
+        builder.Append("]>;");
+    }
+
+    private void AppendInstancedFunction (InterfaceMethodMeta meta)
+    {
+        AppendLine(meta.Generated.JSName, indent + 1);
+        builder.Append('(');
+        builder.AppendJoin(", ", meta.Generated.Arguments.Select(a => $"{a.JSName}: {a.Value.JSTypeSyntax}"));
+        builder.Append("): ");
+        builder.Append(meta.Generated.ReturnValue.JSTypeSyntax);
     }
 
     private void AppendLine (string content, int level)
