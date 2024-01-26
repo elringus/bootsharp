@@ -14,7 +14,7 @@ internal sealed class AssemblyInspector
     public AssemblyInspector (Preferences prefs, string entryAssemblyName)
     {
         converter = new(prefs);
-        methodInspector = new(prefs, converter);
+        methodInspector = new(prefs, converter, entryAssemblyName);
         interfaceInspector = new(prefs, converter, entryAssemblyName);
     }
 
@@ -42,7 +42,7 @@ internal sealed class AssemblyInspector
     }
 
     private AssemblyInspection CreateInspection (MetadataLoadContext ctx) => new(ctx) {
-        Interfaces = [..interfaces],
+        Interfaces = [..interfaces.DistinctBy(i => i.FullName)],
         Methods = [..methods],
         Crawled = [..converter.CrawledTypes],
         Warnings = [..warnings]
@@ -60,31 +60,41 @@ internal sealed class AssemblyInspector
     {
         if (type.Namespace?.StartsWith("Bootsharp.Generated") ?? false) return;
         foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
-        foreach (var attr in method.CustomAttributes)
-            if (attr.AttributeType.FullName == typeof(JSInvokableAttribute).FullName)
-                methods.Add(methodInspector.Inspect(method, MethodKind.Invokable));
-            else if (attr.AttributeType.FullName == typeof(JSFunctionAttribute).FullName)
-                methods.Add(methodInspector.Inspect(method, MethodKind.Function));
-            else if (attr.AttributeType.FullName == typeof(JSEventAttribute).FullName)
-                methods.Add(methodInspector.Inspect(method, MethodKind.Event));
+            InspectExportedStaticMethod(method);
     }
 
     private void InspectAssemblyAttribute (CustomAttributeData attribute)
     {
+        var kind = default(InterfaceKind);
         var name = attribute.AttributeType.FullName;
-        var kind = name == typeof(JSExportAttribute).FullName ? InterfaceKind.Export
-            : name == typeof(JSImportAttribute).FullName ? InterfaceKind.Import
-            : (InterfaceKind?)null;
-        if (!kind.HasValue) return;
+        if (name == typeof(JSExportAttribute).FullName) kind = InterfaceKind.Export;
+        else if (name == typeof(JSImportAttribute).FullName) kind = InterfaceKind.Import;
+        else return;
         foreach (var arg in (IEnumerable<CustomAttributeTypedArgument>)attribute.ConstructorArguments[0].Value!)
-            InspectInterfaceType((Type)arg.Value!, kind.Value);
+            InspectStaticInteropInterface((Type)arg.Value!, kind);
     }
 
-    private void InspectInterfaceType (Type type, InterfaceKind kind)
+    private void InspectExportedStaticMethod (MethodInfo info)
     {
-        var meta = interfaceInspector.Inspect(type, kind, false);
-        interfaces.Add(meta);
-        foreach (var method in meta.Methods)
-            methods.Add(method.Generated);
+        var kind = default(MethodKind?);
+        foreach (var attr in info.CustomAttributes.Select(a => a.AttributeType.FullName))
+            if (attr == typeof(JSInvokableAttribute).FullName) kind = MethodKind.Invokable;
+            else if (attr == typeof(JSFunctionAttribute).FullName) kind = MethodKind.Function;
+            else if (attr == typeof(JSEventAttribute).FullName) kind = MethodKind.Event;
+        if (kind.HasValue) InspectStaticInteropMethod(info, kind.Value);
+    }
+
+    private void InspectStaticInteropMethod (MethodInfo info, MethodKind kind)
+    {
+        var (methodMeta, instancedMeta) = methodInspector.Inspect(info, kind);
+        methods.Add(methodMeta);
+        interfaces.AddRange(instancedMeta);
+    }
+
+    private void InspectStaticInteropInterface (Type type, InterfaceKind kind)
+    {
+        var interfaceMetas = interfaceInspector.Inspect(type, kind, false);
+        interfaces.AddRange(interfaceMetas);
+        methods.AddRange(interfaceMetas.SelectMany(i => i.Methods.Select(m => m.Generated)));
     }
 }

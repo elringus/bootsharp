@@ -812,7 +812,7 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void GeneratesInstanceTypesForInterfaceValues ()
+    public void GeneratesInstancedInterfaces ()
     {
         AddAssembly(
             With("public enum Enum { A, B }"),

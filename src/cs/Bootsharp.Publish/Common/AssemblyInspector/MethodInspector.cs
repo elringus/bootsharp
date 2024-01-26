@@ -2,9 +2,20 @@
 
 namespace Bootsharp.Publish;
 
-internal sealed class MethodInspector (Preferences prefs, TypeConverter converter)
+internal sealed class MethodInspector (Preferences prefs, TypeConverter converter, string entryAssemblyName)
 {
-    public MethodMeta Inspect (MethodInfo info, MethodKind kind) => new() {
+    private readonly InterfaceInspector interfaceInspector = new(prefs, converter, entryAssemblyName);
+    private MethodInfo info = null!;
+    private MethodKind kind;
+
+    public (MethodMeta method, InterfaceMeta[] instanced) Inspect (MethodInfo info, MethodKind kind)
+    {
+        this.info = info;
+        this.kind = kind;
+        return (CreateMethod(), CreateInstanced());
+    }
+
+    private MethodMeta CreateMethod () => new() {
         Kind = kind,
         Assembly = info.DeclaringType!.Assembly.GetName().Name!,
         Space = info.DeclaringType.FullName!,
@@ -19,9 +30,17 @@ internal sealed class MethodInspector (Preferences prefs, TypeConverter converte
             Void = IsVoid(info.ReturnType),
             Serialized = ShouldSerialize(info.ReturnType)
         },
-        JSSpace = BuildMethodSpace(info),
+        JSSpace = BuildMethodSpace(),
         JSName = WithPrefs(prefs.Function, info.Name, ToFirstLower(info.Name))
     };
+
+    private InterfaceMeta[] CreateInstanced ()
+    {
+        var inst = info.GetParameters().Where(IsInstanced).ToArray();
+        if (inst.Length == 0) return [];
+        var iKind = kind == MethodKind.Invokable ? InterfaceKind.Export : InterfaceKind.Import;
+        return inst.SelectMany(t => interfaceInspector.Inspect(t.ParameterType, iKind, true)).ToArray();
+    }
 
     private ArgumentMeta CreateArgument (ParameterInfo info) => new() {
         Name = info.Name!,
@@ -37,12 +56,19 @@ internal sealed class MethodInspector (Preferences prefs, TypeConverter converte
         }
     };
 
-    private string BuildMethodSpace (MethodInfo info)
+    private string BuildMethodSpace ()
     {
         var space = info.DeclaringType!.Namespace ?? "";
         var name = BuildJSSpaceName(info.DeclaringType);
         if (info.DeclaringType.IsInterface) name = name[1..];
         var fullname = string.IsNullOrEmpty(space) ? name : $"{space}.{name}";
         return WithPrefs(prefs.Space, fullname, fullname);
+    }
+
+    private bool IsInstanced (ParameterInfo arg)
+    {
+        var type = arg.ParameterType;
+        if (!type.IsInterface || string.IsNullOrEmpty(type.Namespace)) return false;
+        return !type.Namespace.StartsWith("System.", StringComparison.Ordinal);
     }
 }
