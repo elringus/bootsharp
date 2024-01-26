@@ -927,32 +927,85 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void GeneratesInstancedInterfaces ()
+    public void GeneratesInstancedInterfacesFromStaticMethods ()
     {
         AddAssembly(
             With("public enum Enum { A, B }"),
-            With("public interface IExported { void Inv (string s, Enum e); }"),
-            With("public interface IImported { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }"),
-            WithClass("[JSInvokable] public static IExported CreateExported (string arg) => default;"),
-            WithClass("[JSFunction] public static IImported CreateImported (string arg) => default;"));
+            With("public interface IExportedInstancedA { void Inv (string s, Enum e); }"),
+            With("public interface IExportedInstancedB { Enum Inv (); }"),
+            With("public interface IImportedInstancedA { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }"),
+            With("public interface IImportedInstancedB { Enum Fun (); void NotifyEvt (); }"),
+            WithClass("[JSInvokable] public static IExportedInstancedA CreateExported (string arg, IImportedInstancedB i) => default;"),
+            WithClass("[JSFunction] public static IImportedInstancedA CreateImported (string arg, IExportedInstancedB i) => default;"));
         Execute();
         Contains(
             """
-            export interface IExported {
+            export interface IImportedInstancedB {
+                fun(): Enum;
+                onEvt: Event<[]>;
+            }
+            export interface IExportedInstancedA {
                 inv(s: string, e: Enum): void;
             }
             export enum Enum {
                 A,
                 B
             }
-            export interface IImported {
+            export interface IExportedInstancedB {
+                inv(): Enum;
+            }
+            export interface IImportedInstancedA {
                 fun(s: string, e: Enum): void;
                 onEvt: Event<[s: string, e: Enum]>;
             }
 
             export namespace Class {
-                export function createExported(arg: string): IExported;
-                export let createImported: (arg: string) => IImported;
+                export function createExported(arg: string, i: IImportedInstancedB): IExportedInstancedA;
+                export let createImported: (arg: string, i: IExportedInstancedB) => IImportedInstancedA;
+            }
+            """);
+    }
+
+    [Fact]
+    public void GeneratesInstancedInterfacesFromStaticInterfaces ()
+    {
+        AddAssembly(
+            With("[assembly:JSExport(typeof(IExportedStatic))]"),
+            With("[assembly:JSImport(typeof(IImportedStatic))]"),
+            With("public interface IExportedStatic { IExportedInstancedA CreateExported (string arg, IImportedInstancedB i); }"),
+            With("public interface IImportedStatic { IImportedInstancedA CreateImported (string arg, IExportedInstancedB i); }"),
+            With("public enum Enum { A, B }"),
+            With("public interface IExportedInstancedA { void Inv (string s, Enum e); }"),
+            With("public interface IExportedInstancedB { Enum Inv (); }"),
+            With("public interface IImportedInstancedA { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }"),
+            With("public interface IImportedInstancedB { Enum Fun (); void NotifyEvt (); }"));
+        Execute();
+        Contains(
+            """
+            export interface IImportedInstancedB {
+                fun(): Enum;
+                onEvt: Event<[]>;
+            }
+            export interface IExportedInstancedA {
+                inv(s: string, e: Enum): void;
+            }
+            export enum Enum {
+                A,
+                B
+            }
+            export interface IExportedInstancedB {
+                inv(): Enum;
+            }
+            export interface IImportedInstancedA {
+                fun(s: string, e: Enum): void;
+                onEvt: Event<[s: string, e: Enum]>;
+            }
+
+            export namespace ExportedStatic {
+                export function createExported(arg: string, i: IImportedInstancedB): IExportedInstancedA;
+            }
+            export namespace ImportedStatic {
+                export let createImported: (arg: string, i: IExportedInstancedB) => IImportedInstancedA;
             }
             """);
     }
