@@ -8,7 +8,8 @@
 internal sealed record InterfaceMeta
 {
     /// <summary>
-    /// Kind of the interface.
+    /// Whether the interface represents C# API to be consumed in
+    /// JavaScript (export) or vice-versa (import).
     /// </summary>
     public required InterfaceKind Kind { get; init; }
     /// <summary>
