@@ -1,9 +1,9 @@
 ﻿namespace Bootsharp.Publish;
 
 /// <summary>
-/// C# interface supplied by user under either <see cref="JSExportAttribute"/>
-/// or <see cref="JSImportAttribute"/>, or as a value in an interop method
-/// representing an instanced API.
+/// Interface supplied by user under either <see cref="JSExportAttribute"/>
+/// or <see cref="JSImportAttribute"/> representing static interop API, or in
+/// an interop method, representing instanced interop API.
 /// </summary>
 internal sealed record InterfaceMeta
 {
@@ -32,7 +32,7 @@ internal sealed record InterfaceMeta
     /// </summary>
     public string FullName => $"{Namespace}.{Name}";
     /// <summary>
-    /// Interop methods declared on the interface.
+    /// Methods declared on the interface, representing the interop API.
     /// </summary>
     public required IReadOnlyCollection<MethodMeta> Methods { get; init; }
 }
