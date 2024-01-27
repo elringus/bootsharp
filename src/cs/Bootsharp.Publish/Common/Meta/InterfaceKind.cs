@@ -1,18 +1,16 @@
 ﻿namespace Bootsharp.Publish;
 
 /// <summary>
-/// Type of interop interface.
+/// The type of API interop interface represents.
 /// </summary>
 internal enum InterfaceKind
 {
     /// <summary>
-    /// The interface was supplied under <see cref="JSExportAttribute"/> and
-    /// is intended for exposing C# APIs to JavaScript.
+    /// The interface represents C# API consumed in JavaScript.
     /// </summary>
     Export,
     /// <summary>
-    /// The interface was supplied under <see cref="JSImportAttribute"/> and
-    /// is intended for exposing JavaScript APIs to C#.
+    /// The interface represents JavaScript API consumed in C#.
     /// </summary>
     Import
 }
