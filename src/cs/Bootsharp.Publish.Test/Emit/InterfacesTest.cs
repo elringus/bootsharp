@@ -116,6 +116,53 @@ public class InterfacesTest : EmitTest
     }
 
     [Fact]
+    public void GeneratesImplementationForImportedInstancedInterface ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSImport(typeof(IImportedStatic))]
+
+            public record Record;
+
+            public interface IImportedStatic
+            {
+                IImportedInstancedA CreateImported (string arg);
+            }
+
+            public interface IImportedInstancedA
+            {
+                void Inv (string? a);
+                Task InvAsync ();
+            }
+
+            public interface IImportedInstancedB
+            {
+                Record? InvRecord ();
+                Task<string> InvAsyncResult ();
+                string[] InvArray (int[] a);
+            }
+
+            public class Class
+            {
+                 [JSFunction] public static IImportedInstancedB CreateImported (string arg) => default;
+            }
+            """));
+        Execute();
+        Contains( //  TODO: ...
+            """
+            namespace Bootsharp.Generated.Imports
+            {
+                public class JSImportedStatic : global::IImportedStatic
+                {
+                    [JSFunction] public static global::IImportedInstancedA CreateImported (global::System.String arg) => Proxies.Get<Func<global::System.String, global::IImportedInstancedA>>("Bootsharp.Generated.Imports.JSImportedStatic.CreateImported")(arg);
+
+                    global::IImportedInstancedA global::IImportedStatic.CreateImported (global::System.String arg) => CreateImported(arg);
+                }
+            }
+            """);
+    }
+
+    [Fact]
     public void RespectsInterfaceNamespace ()
     {
         AddAssembly(With(
