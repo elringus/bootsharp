@@ -15,7 +15,7 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
     public override bool Execute ()
     {
         var prefs = ResolvePreferences();
-        using var inspection = InspectAssemblies(prefs);
+        using var inspection = InspectSolution(prefs);
         GenerateInterfaces(inspection);
         GenerateDependencies(inspection);
         GenerateSerializer(inspection);
@@ -29,37 +29,37 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
         return resolver.Resolve(InspectedDirectory);
     }
 
-    private AssemblyInspection InspectAssemblies (Preferences prefs)
+    private SolutionInspection InspectSolution (Preferences prefs)
     {
-        var inspector = new AssemblyInspector(prefs, EntryAssemblyName);
+        var inspector = new SolutionInspector(prefs, EntryAssemblyName);
         var inspected = Directory.GetFiles(InspectedDirectory, "*.dll");
-        var inspection = inspector.InspectInDirectory(InspectedDirectory, inspected);
+        var inspection = inspector.Inspect(InspectedDirectory, inspected);
         new InspectionReporter(Log).Report(inspection);
         return inspection;
     }
 
-    private void GenerateInterfaces (AssemblyInspection inspection)
+    private void GenerateInterfaces (SolutionInspection inspection)
     {
         var generator = new InterfaceGenerator();
         var content = generator.Generate(inspection);
         WriteGenerated(InterfacesFilePath, content);
     }
 
-    private void GenerateDependencies (AssemblyInspection inspection)
+    private void GenerateDependencies (SolutionInspection inspection)
     {
         var generator = new DependencyGenerator(EntryAssemblyName);
         var content = generator.Generate(inspection);
         WriteGenerated(DependenciesFilePath, content);
     }
 
-    private void GenerateSerializer (AssemblyInspection inspection)
+    private void GenerateSerializer (SolutionInspection inspection)
     {
         var generator = new SerializerGenerator();
         var content = generator.Generate(inspection);
         WriteGenerated(SerializerFilePath, content);
     }
 
-    private void GenerateInterop (AssemblyInspection inspection)
+    private void GenerateInterop (SolutionInspection inspection)
     {
         var generator = new InteropGenerator();
         var content = generator.Generate(inspection);

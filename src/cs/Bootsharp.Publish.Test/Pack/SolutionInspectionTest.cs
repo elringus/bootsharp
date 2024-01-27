@@ -1,6 +1,6 @@
 ﻿namespace Bootsharp.Publish.Test;
 
-public class AssemblyInspectionTest : PackTest
+public class SolutionInspectionTest : PackTest
 {
     [Fact]
     public void AllAssembliesAreInspected ()

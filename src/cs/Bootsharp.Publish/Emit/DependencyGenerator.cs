@@ -11,7 +11,7 @@ internal sealed class DependencyGenerator (string entryAssembly)
 {
     private readonly HashSet<string> added = [];
 
-    public string Generate (AssemblyInspection inspection)
+    public string Generate (SolutionInspection inspection)
     {
         AddGeneratedCommon();
         AddGeneratedInteropClasses(inspection);
@@ -37,15 +37,17 @@ internal sealed class DependencyGenerator (string entryAssembly)
         Add(All, "Bootsharp.Generated.Interop", entryAssembly);
     }
 
-    private void AddGeneratedInteropClasses (AssemblyInspection inspection)
+    private void AddGeneratedInteropClasses (SolutionInspection inspection)
     {
-        foreach (var inter in inspection.Interfaces)
+        foreach (var inter in inspection.StaticInterfaces)
+            Add(All, inter.FullName, entryAssembly);
+        foreach (var inter in inspection.InstancedInterfaces)
             Add(All, inter.FullName, entryAssembly);
     }
 
-    private void AddClassesWithInteropMethods (AssemblyInspection inspection)
+    private void AddClassesWithInteropMethods (SolutionInspection inspection)
     {
-        foreach (var method in inspection.Methods)
+        foreach (var method in inspection.StaticMethods)
             Add(All, method.Space, method.Assembly);
     }
 

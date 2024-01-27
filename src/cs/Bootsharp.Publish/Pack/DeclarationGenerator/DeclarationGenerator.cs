@@ -5,9 +5,9 @@ internal sealed class DeclarationGenerator (Preferences prefs)
     private readonly MethodDeclarationGenerator methodsGenerator = new();
     private readonly TypeDeclarationGenerator typesGenerator = new(prefs);
 
-    public string Generate (AssemblyInspection inspection) => JoinLines(0,
+    public string Generate (SolutionInspection inspection) => JoinLines(0,
         """import type { Event } from "./event";""",
         typesGenerator.Generate(inspection),
-        methodsGenerator.Generate(inspection.Methods)
+        methodsGenerator.Generate(inspection)
     ) + "\n";
 }

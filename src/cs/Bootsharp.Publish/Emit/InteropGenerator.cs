@@ -8,11 +8,13 @@ internal sealed class InteropGenerator
     private readonly HashSet<string> proxies = [];
     private readonly HashSet<string> methods = [];
 
-    public string Generate (AssemblyInspection inspection)
+    public string Generate (SolutionInspection inspection)
     {
-        foreach (var method in inspection.Methods) // @formatter:off
-            if (method.Kind == MethodKind.Invokable) AddExportMethod(method);
-            else { AddProxy(method); AddImportMethod(method); } // @formatter:on
+        var metas = inspection.StaticMethods
+            .Concat(inspection.StaticInterfaces.SelectMany(i => i.Methods));
+        foreach (var meta in metas) // @formatter:off
+            if (meta.Kind == MethodKind.Invokable) AddExportMethod(meta);
+            else { AddProxy(meta); AddImportMethod(meta); } // @formatter:on
         return
             $$"""
               #nullable enable

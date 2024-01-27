@@ -2,23 +2,29 @@
 
 namespace Bootsharp.Publish;
 
-internal sealed class AssemblyInspector
+internal sealed class SolutionInspector
 {
-    private readonly List<InterfaceMeta> interfaces = [];
-    private readonly List<MethodMeta> methods = [];
+    private readonly List<InterfaceMeta> staticInterfaces = [];
+    private readonly List<InterfaceMeta> instancedInterfaces = [];
+    private readonly List<MethodMeta> staticMethods = [];
     private readonly List<string> warnings = [];
     private readonly TypeConverter converter;
     private readonly MethodInspector methodInspector;
     private readonly InterfaceInspector interfaceInspector;
 
-    public AssemblyInspector (Preferences prefs, string entryAssemblyName)
+    public SolutionInspector (Preferences prefs, string entryAssemblyName)
     {
         converter = new(prefs);
         methodInspector = new(prefs, converter);
         interfaceInspector = new(prefs, converter, entryAssemblyName);
     }
 
-    public AssemblyInspection InspectInDirectory (string directory, IEnumerable<string> paths)
+    /// <summary>
+    /// Inspects specified solution assembly paths in the output directory.
+    /// </summary>
+    /// <param name="directory">The directory containing compiled assemblies.</param>
+    /// <param name="paths">Full paths of the assemblies to inspect.</param>
+    public SolutionInspection Inspect (string directory, IEnumerable<string> paths)
     {
         var ctx = CreateLoadContext(directory);
         foreach (var assemblyPath in paths)
@@ -41,9 +47,10 @@ internal sealed class AssemblyInspector
         warnings.Add(message);
     }
 
-    private AssemblyInspection CreateInspection (MetadataLoadContext ctx) => new(ctx) {
-        Interfaces = [..interfaces.DistinctBy(i => i.FullName)],
-        Methods = [..methods],
+    private SolutionInspection CreateInspection (MetadataLoadContext ctx) => new(ctx) {
+        StaticInterfaces = [..staticInterfaces.DistinctBy(i => i.FullName)],
+        InstancedInterfaces = [..instancedInterfaces.DistinctBy(i => i.FullName)],
+        StaticMethods = [..staticMethods],
         Crawled = [..converter.CrawledTypes],
         Warnings = [..warnings]
     };
@@ -87,17 +94,16 @@ internal sealed class AssemblyInspector
     private void InspectStaticInteropMethod (MethodInfo info, MethodKind kind)
     {
         var methodMeta = methodInspector.Inspect(info, kind);
-        methods.Add(methodMeta);
+        staticMethods.Add(methodMeta);
         InspectMethodParameters(methodMeta, kind);
     }
 
     private void InspectStaticInteropInterface (Type type, InterfaceKind kind)
     {
-        var interfaceMeta = interfaceInspector.Inspect(type, kind, false);
-        interfaces.Add(interfaceMeta);
-        methods.AddRange(interfaceMeta.Methods.Select(m => m.Meta));
+        var interfaceMeta = interfaceInspector.Inspect(type, kind);
+        staticInterfaces.Add(interfaceMeta);
         foreach (var method in interfaceMeta.Methods)
-            InspectMethodParameters(method.Meta, kind);
+            InspectMethodParameters(method, kind);
     }
 
     private void InspectMethodParameters (MethodMeta meta, MethodKind kind)
@@ -119,7 +125,7 @@ internal sealed class AssemblyInspector
     private void InspectMethodParameter (Type paramType, InterfaceKind kind)
     {
         if (!IsInstancedInterface(paramType)) return;
-        interfaces.Add(interfaceInspector.Inspect(paramType, kind, true));
+        instancedInterfaces.Add(interfaceInspector.Inspect(paramType, kind));
     }
 
     private bool IsInstancedInterface (Type type)

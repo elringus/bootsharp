@@ -17,9 +17,9 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     private Type[] types = null!;
     private int index;
 
-    public string Generate (AssemblyInspection inspection)
+    public string Generate (SolutionInspection inspection)
     {
-        instanced = [..inspection.Interfaces.Where(i => i.Instanced)];
+        instanced = [..inspection.InstancedInterfaces];
         types = inspection.Crawled.OrderBy(GetNamespace).ToArray();
         for (index = 0; index < types.Length; index++)
             DeclareType();
@@ -121,26 +121,26 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     private void AppendInstancedMethods (InterfaceMeta instanced)
     {
         foreach (var meta in instanced.Methods)
-            if (meta.Meta.Kind == MethodKind.Event)
+            if (meta.Kind == MethodKind.Event)
                 AppendInstancedEvent(meta);
             else AppendInstancedFunction(meta);
     }
 
-    private void AppendInstancedEvent (InterfaceMethodMeta meta)
+    private void AppendInstancedEvent (MethodMeta meta)
     {
-        AppendLine(meta.Meta.JSName, indent + 1);
+        AppendLine(meta.JSName, indent + 1);
         builder.Append(": Event<[");
-        builder.AppendJoin(", ", meta.Meta.Arguments.Select(a => $"{a.JSName}: {a.Value.JSTypeSyntax}"));
+        builder.AppendJoin(", ", meta.Arguments.Select(a => $"{a.JSName}: {a.Value.JSTypeSyntax}"));
         builder.Append("]>;");
     }
 
-    private void AppendInstancedFunction (InterfaceMethodMeta meta)
+    private void AppendInstancedFunction (MethodMeta meta)
     {
-        AppendLine(meta.Meta.JSName, indent + 1);
+        AppendLine(meta.JSName, indent + 1);
         builder.Append('(');
-        builder.AppendJoin(", ", meta.Meta.Arguments.Select(a => $"{a.JSName}: {a.Value.JSTypeSyntax}"));
+        builder.AppendJoin(", ", meta.Arguments.Select(a => $"{a.JSName}: {a.Value.JSTypeSyntax}"));
         builder.Append("): ");
-        builder.Append(meta.Meta.ReturnValue.JSTypeSyntax);
+        builder.Append(meta.ReturnValue.JSTypeSyntax);
         builder.Append(';');
     }
 

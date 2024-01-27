@@ -13,9 +13,11 @@ internal sealed class MethodDeclarationGenerator
     private MethodMeta[] methods = null!;
     private int index;
 
-    public string Generate (IEnumerable<MethodMeta> sourceMethods)
+    public string Generate (SolutionInspection inspection)
     {
-        methods = sourceMethods.OrderBy(m => m.JSSpace).ToArray();
+        methods = inspection.StaticMethods
+            .Concat(inspection.StaticInterfaces.SelectMany(i => i.Methods))
+            .OrderBy(m => m.JSSpace).ToArray();
         for (index = 0; index < methods.Length; index++)
             DeclareMethod();
         return builder.ToString();

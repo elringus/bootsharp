@@ -15,9 +15,11 @@ internal sealed class BindingGenerator (Preferences prefs)
     private Binding[] bindings = null!;
     private int index, level;
 
-    public string Generate (AssemblyInspection inspection)
+    public string Generate (SolutionInspection inspection)
     {
-        bindings = inspection.Methods
+        bindings = inspection.StaticMethods
+            .Concat(inspection.StaticInterfaces.SelectMany(i => i.Methods))
+            .Concat(inspection.InstancedInterfaces.SelectMany(i => i.Methods))
             .Select(m => new Binding(m, null, m.JSSpace))
             .Concat(inspection.Crawled.Where(t => t.IsEnum)
                 .Select(t => new Binding(null, t, BuildJSSpace(t, prefs))))

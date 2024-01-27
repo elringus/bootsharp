@@ -12,11 +12,6 @@ internal sealed record InterfaceMeta
     /// </summary>
     public required InterfaceKind Kind { get; init; }
     /// <summary>
-    /// Whether the interface is consumed as instanced value in the interop
-    /// methods, ie factory binding has to be emitted instead of static API.
-    /// </summary>
-    public required bool Instanced { get; init; }
-    /// <summary>
     /// C# type of the interface.
     /// </summary>
     public required Type Type { get; init; }
@@ -37,7 +32,7 @@ internal sealed record InterfaceMeta
     /// </summary>
     public string FullName => $"{Namespace}.{Name}";
     /// <summary>
-    /// Methods declared on the interface and associated interop counterparts.
+    /// Interop methods declared on the interface.
     /// </summary>
-    public required IReadOnlyCollection<InterfaceMethodMeta> Methods { get; init; }
+    public required IReadOnlyCollection<MethodMeta> Methods { get; init; }
 }

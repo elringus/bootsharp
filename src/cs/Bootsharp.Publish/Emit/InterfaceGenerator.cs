@@ -1,17 +1,16 @@
 ﻿namespace Bootsharp.Publish;
 
 /// <summary>
-/// Generates interop classes for interfaces specified under
-/// <see cref="JSExportAttribute"/> and <see cref="JSImportAttribute"/>.
+/// Generates implementations for interop interfaces.
 /// </summary>
 internal sealed class InterfaceGenerator
 {
     private readonly HashSet<string> classes = [];
     private readonly HashSet<string> registrations = [];
 
-    public string Generate (AssemblyInspection inspection)
+    public string Generate (SolutionInspection inspection)
     {
-        foreach (var inter in inspection.Interfaces)
+        foreach (var inter in inspection.StaticInterfaces)
             AddInterface(inter, inspection);
         return
             $$"""
@@ -34,7 +33,7 @@ internal sealed class InterfaceGenerator
               """;
     }
 
-    private void AddInterface (InterfaceMeta i, AssemblyInspection inspection)
+    private void AddInterface (InterfaceMeta i, SolutionInspection inspection)
     {
         if (i.Kind == InterfaceKind.Export) classes.Add(EmitExportClass(i));
         else classes.Add(EmitImportClass(i));
@@ -54,7 +53,7 @@ internal sealed class InterfaceGenerator
                       {{i.Name}}.handler = handler;
                   }
 
-                  {{JoinLines(i.Methods.Select(m => EmitExportMethod(m.Meta)), 2)}}
+                  {{JoinLines(i.Methods.Select(EmitExportMethod), 2)}}
               }
           }
           """;
@@ -65,7 +64,7 @@ internal sealed class InterfaceGenerator
           {
               public class {{i.Name}} : {{i.TypeSyntax}}
               {
-                  {{JoinLines(i.Methods.Select(m => EmitImportMethod(m.Meta)), 2)}}
+                  {{JoinLines(i.Methods.Select(EmitImportMethod), 2)}}
 
                   {{JoinLines(i.Methods.Select(m => EmitImportMethodImplementation(i, m)), 2)}}
               }
@@ -93,12 +92,11 @@ internal sealed class InterfaceGenerator
         return $"[{attr}] {sig} => {EmitProxyGetter(method)}({args});";
     }
 
-    private string EmitImportMethodImplementation (InterfaceMeta i, InterfaceMethodMeta method)
+    private string EmitImportMethodImplementation (InterfaceMeta i, MethodMeta method)
     {
-        var gen = method.Meta;
-        var sigArgs = string.Join(", ", gen.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
-        var args = string.Join(", ", gen.Arguments.Select(a => a.Name));
-        return $"{gen.ReturnValue.TypeSyntax} {i.TypeSyntax}.{method.Name} ({sigArgs}) => {gen.Name}({args});";
+        var sigArgs = string.Join(", ", method.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
+        var args = string.Join(", ", method.Arguments.Select(a => a.Name));
+        return $"{method.ReturnValue.TypeSyntax} {i.TypeSyntax}.{method.InterfaceName} ({sigArgs}) => {method.Name}({args});";
     }
 
     private string EmitProxyGetter (MethodMeta method)
