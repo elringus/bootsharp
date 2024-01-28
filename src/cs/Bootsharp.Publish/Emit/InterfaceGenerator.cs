@@ -101,7 +101,7 @@ internal sealed class InterfaceGenerator
 
     private string EmitProxyGetter (MethodMeta method)
     {
-        var func = method.ReturnValue.Void ? "Action" : "Func";
+        var func = method.ReturnValue.Void ? "global::System.Action" : "global::System.Func";
         var syntax = method.Arguments.Select(a => a.Value.TypeSyntax).ToList();
         if (!method.ReturnValue.Void) syntax.Add(method.ReturnValue.TypeSyntax);
         if (syntax.Count > 0) func = $"{func}<{string.Join(", ", syntax)}>";
