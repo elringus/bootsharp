@@ -122,41 +122,27 @@ public class InterfacesTest : EmitTest
             """
             [assembly:JSImport(typeof(IImportedStatic))]
 
-            public record Record;
-
             public interface IImportedStatic
             {
-                IImportedInstancedA CreateImported (string arg);
+                IImportedInstanced CreateInstanced (string arg);
             }
 
-            public interface IImportedInstancedA
+            public interface IImportedInstanced
             {
-                void Inv (string? a);
-                Task InvAsync ();
-            }
-
-            public interface IImportedInstancedB
-            {
-                Record? InvRecord ();
-                Task<string> InvAsyncResult ();
-                string[] InvArray (int[] a);
-            }
-
-            public class Class
-            {
-                 [JSFunction] public static IImportedInstancedB CreateImported (string arg) => default;
+                void Fun ();
+                void NotifyEvt ();
             }
             """));
         Execute();
-        Contains( //  TODO: ...
+        Contains(
             """
             namespace Bootsharp.Generated.Imports
             {
                 public class JSImportedStatic : global::IImportedStatic
                 {
-                    [JSFunction] public static global::IImportedInstancedA CreateImported (global::System.String arg) => Proxies.Get<Func<global::System.String, global::IImportedInstancedA>>("Bootsharp.Generated.Imports.JSImportedStatic.CreateImported")(arg);
+                    [JSFunction] public static global::IImportedInstanced CreateInstanced (global::System.String arg) => Proxies.Get<Func<global::System.String, global::IImportedInstanced>>("Bootsharp.Generated.Imports.JSImportedStatic.CreateInstanced")(arg);
 
-                    global::IImportedInstancedA global::IImportedStatic.CreateImported (global::System.String arg) => CreateImported(arg);
+                    global::IImportedInstanced global::IImportedStatic.CreateInstanced (global::System.String arg) => CreateInstanced(arg);
                 }
             }
             """);
