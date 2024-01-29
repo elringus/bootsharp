@@ -51,7 +51,7 @@ internal sealed class InteropGenerator
         string BuildSignature ()
         {
             var args = string.Join(", ", inv.Arguments.Select(BuildSignatureArg));
-            var @return = BuildReturn(inv);
+            var @return = BuildReturnValue(inv.ReturnValue);
             var signature = $"{@return} {BuildMethodName(inv)} ({args})";
             if (wait) signature = $"async {signature}";
             return signature;
@@ -116,32 +116,32 @@ internal sealed class InteropGenerator
     private void AddImportMethod (MethodMeta method)
     {
         var args = string.Join(", ", method.Arguments.Select(BuildSignatureArg));
-        var @return = BuildReturn(method);
+        var @return = BuildReturnValue(method.ReturnValue);
         var endpoint = $"{method.JSSpace}.{method.JSName}Serialized";
         var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{endpoint}", "Bootsharp")]""";
         var date = MarshalAmbiguous(method.ReturnValue.TypeSyntax, true);
         methods.Add($"{attr} {date}internal static partial {@return} {BuildMethodName(method)} ({args});");
     }
 
-    private string BuildValueType (ValueMeta meta)
+    private string BuildValueType (ValueMeta value)
     {
-        if (meta.Void) return "void";
-        var nil = meta.Nullable ? "?" : "";
-        if (meta.Instance) return $"global::System.Int32{(nil)}";
-        if (meta.Serialized) return $"global::System.String{(nil)}";
-        return meta.TypeSyntax;
+        if (value.Void) return "void";
+        var nil = value.Nullable ? "?" : "";
+        if (value.Instance) return $"global::System.Int32{(nil)}";
+        if (value.Serialized) return $"global::System.String{(nil)}";
+        return value.TypeSyntax;
     }
 
-    private string BuildSignatureArg (ArgumentMeta meta)
+    private string BuildSignatureArg (ArgumentMeta arg)
     {
-        var type = BuildValueType(meta.Value);
-        return $"{MarshalAmbiguous(meta.Value.TypeSyntax, false)}{type} {meta.Name}";
+        var type = BuildValueType(arg.Value);
+        return $"{MarshalAmbiguous(arg.Value.TypeSyntax, false)}{type} {arg.Name}";
     }
 
-    private string BuildReturn (MethodMeta meta)
+    private string BuildReturnValue (ValueMeta value)
     {
-        var syntax = BuildValueType(meta.ReturnValue);
-        if (meta.ReturnValue.Serialized && meta.ReturnValue.Async)
+        var syntax = BuildValueType(value);
+        if (value.Serialized && value.Async)
             syntax = $"global::System.Threading.Tasks.Task<{syntax}>";
         return syntax;
     }
