@@ -22,8 +22,8 @@ internal sealed class SolutionInspector
     /// <summary>
     /// Inspects specified solution assembly paths in the output directory.
     /// </summary>
-    /// <param name="directory">The directory containing compiled assemblies.</param>
-    /// <param name="paths">Full paths of the assemblies to inspect.</param>
+    /// <param name="directory">Absolute path to directory containing compiled assemblies.</param>
+    /// <param name="paths">Absolute paths of the assemblies to inspect.</param>
     public SolutionInspection Inspect (string directory, IEnumerable<string> paths)
     {
         var ctx = CreateLoadContext(directory);
