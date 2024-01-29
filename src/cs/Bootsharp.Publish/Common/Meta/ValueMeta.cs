@@ -33,4 +33,8 @@ internal sealed record ValueMeta
     /// Whether the value has to be marshalled to/from JSON for interop.
     /// </summary>
     public required bool Serialized { get; init; }
+    /// <summary>
+    /// Whether the value is an interop instance.
+    /// </summary>
+    public bool Instance => IsInstancedInteropInterface(Type);
 }

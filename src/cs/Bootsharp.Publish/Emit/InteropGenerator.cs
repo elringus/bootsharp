@@ -44,18 +44,14 @@ internal sealed class InteropGenerator
     private void AddExportMethod (MethodMeta inv)
     {
         const string attr = "[System.Runtime.InteropServices.JavaScript.JSExport]";
-        var date = MarshalAmbiguous(inv.ReturnValue.TypeSyntax, true);
+        var marshalAs = MarshalAmbiguous(inv.ReturnValue.TypeSyntax, true);
         var wait = inv.ReturnValue.Async && inv.ReturnValue.Serialized;
-        methods.Add($"{attr} {date}internal static {BuildSignature()} => {BuildBody()};");
+        methods.Add($"{attr} {marshalAs}internal static {BuildSignature()} => {BuildBody()};");
 
         string BuildSignature ()
         {
             var args = string.Join(", ", inv.Arguments.Select(BuildSignatureArg));
-            var @return = inv.ReturnValue.Void ? "void" : (inv.ReturnValue.Serialized
-                ? $"global::System.String{(inv.ReturnValue.Nullable ? "?" : "")}"
-                : inv.ReturnValue.TypeSyntax);
-            if (inv.ReturnValue.Serialized && inv.ReturnValue.Async)
-                @return = $"global::System.Threading.Tasks.Task<{@return}>";
+            var @return = BuildReturn(inv);
             var signature = $"{@return} {BuildMethodName(inv)} ({args})";
             if (wait) signature = $"async {signature}";
             return signature;
@@ -66,22 +62,20 @@ internal sealed class InteropGenerator
             var args = string.Join(", ", inv.Arguments.Select(BuildBodyArg));
             var body = $"global::{inv.Space}.{inv.Name}({args})";
             if (wait) body = $"await {body}";
-            if (inv.ReturnValue.Serialized) body = $"Serialize({body})";
+            if (inv.ReturnValue.Instance) body = $"global::Bootsharp.Instances.GetId({body})";
+            else if (inv.ReturnValue.Serialized) body = $"Serialize({body})";
             return body;
-        }
-
-        string BuildSignatureArg (ArgumentMeta arg)
-        {
-            var type = arg.Value.Serialized
-                ? $"global::System.String{(arg.Value.Nullable ? "?" : "")}"
-                : arg.Value.TypeSyntax;
-            return $"{MarshalAmbiguous(arg.Value.TypeSyntax, false)}{type} {arg.Name}";
         }
 
         string BuildBodyArg (ArgumentMeta arg)
         {
-            if (!arg.Value.Serialized) return arg.Name;
-            return $"Deserialize<{arg.Value.TypeSyntax}>({arg.Name})";
+            if (arg.Value.Instance)
+            {
+                var (_, _, full) = BuildInteropInterfaceImplementationName(arg.Value.Type, InterfaceKind.Import);
+                return $"new global::{full}({arg.Name})";
+            }
+            if (arg.Value.Serialized) return $"Deserialize<{arg.Value.TypeSyntax}>({arg.Name})";
+            return arg.Name;
         }
     }
 
@@ -97,6 +91,11 @@ internal sealed class InteropGenerator
         {
             var args = string.Join(", ", method.Arguments.Select(BuildBodyArg));
             var body = $"{BuildMethodName(method)}({args})";
+            if (method.ReturnValue.Instance)
+            {
+                var (_, _, full) = BuildInteropInterfaceImplementationName(method.ReturnValue.Type, InterfaceKind.Import);
+                return $"new global::{full}({body})";
+            }
             if (!method.ReturnValue.Serialized) return body;
             if (wait) body = $"await {body}";
             var type = method.ReturnValue.Async
@@ -107,31 +106,44 @@ internal sealed class InteropGenerator
 
         string BuildBodyArg (ArgumentMeta arg)
         {
-            if (!arg.Value.Serialized) return arg.Name;
-            return $"Serialize({arg.Name})";
+            if (arg.Value.Instance)
+                return $"({arg.Value.TypeSyntax})global::Bootsharp.Instances.GetInstance({arg.Name})";
+            if (arg.Value.Serialized) return $"Serialize({arg.Name})";
+            return arg.Name;
         }
     }
 
     private void AddImportMethod (MethodMeta method)
     {
-        var args = string.Join(", ", method.Arguments.Select(BuildArg));
-        var @return = method.ReturnValue.Void ? "void" : (method.ReturnValue.Serialized
-            ? $"global::System.String{(method.ReturnValue.Nullable ? "?" : "")}"
-            : method.ReturnValue.TypeSyntax);
-        if (method.ReturnValue.Serialized && method.ReturnValue.Async)
-            @return = $"global::System.Threading.Tasks.Task<{@return}>";
+        var args = string.Join(", ", method.Arguments.Select(BuildSignatureArg));
+        var @return = BuildReturn(method);
         var endpoint = $"{method.JSSpace}.{method.JSName}Serialized";
         var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{endpoint}", "Bootsharp")]""";
         var date = MarshalAmbiguous(method.ReturnValue.TypeSyntax, true);
         methods.Add($"{attr} {date}internal static partial {@return} {BuildMethodName(method)} ({args});");
+    }
 
-        string BuildArg (ArgumentMeta arg)
-        {
-            var type = arg.Value.Serialized
-                ? $"global::System.String{(arg.Value.Nullable ? "?" : "")}"
-                : arg.Value.TypeSyntax;
-            return $"{MarshalAmbiguous(arg.Value.TypeSyntax, false)}{type} {arg.Name}";
-        }
+    private string BuildValueType (ValueMeta meta)
+    {
+        if (meta.Void) return "void";
+        var nil = meta.Nullable ? "?" : "";
+        if (meta.Instance) return $"global::System.Int32{(nil)}";
+        if (meta.Serialized) return $"global::System.String{(nil)}";
+        return meta.TypeSyntax;
+    }
+
+    private string BuildSignatureArg (ArgumentMeta meta)
+    {
+        var type = BuildValueType(meta.Value);
+        return $"{MarshalAmbiguous(meta.Value.TypeSyntax, false)}{type} {meta.Name}";
+    }
+
+    private string BuildReturn (MethodMeta meta)
+    {
+        var syntax = BuildValueType(meta.ReturnValue);
+        if (meta.ReturnValue.Serialized && meta.ReturnValue.Async)
+            syntax = $"global::System.Threading.Tasks.Task<{syntax}>";
+        return syntax;
     }
 
     private string BuildMethodName (MethodMeta method)

@@ -7,25 +7,42 @@ public static class Instances
 {
     private static readonly Dictionary<int, object> idToInstance = [];
     private static readonly Queue<int> idPool = [];
-    private static int maxId = int.MinValue;
+    private static int nextId = int.MinValue;
 
-    public static int Register (object instance)
+    /// <summary>
+    /// Resolves unique ID of the specified interop instance.
+    /// </summary>
+    /// <param name="instance">The instance to get ID for.</param>
+    public static int GetId (object instance)
     {
-        var id = idPool.Count > 0 ? idPool.Dequeue() : ++maxId;
+        if (FindRegistered(instance) is { } id) return id;
+        id = idPool.Count > 0 ? idPool.Dequeue() : nextId++;
         idToInstance[id] = instance;
         return id;
     }
 
-    public static object Get (int id) => idToInstance[id];
+    /// <summary>
+    /// Resolves registered instance by the specified ID.
+    /// </summary>
+    /// <param name="id">Unique ID of the instance to resolve.</param>
+    public static object GetInstance (int id) => idToInstance[id];
 
     /// <summary>
-    /// Notifies that C# -> JS (exported) interop instance is no longer used on
-    /// JS side (eg, was garbage collected) and can be released on C# side as well.
+    /// Notifies that interop instance is no longer used on JavaScript side
+    /// (eg, was garbage collected) and can be released on C# side as well.
     /// </summary>
     /// <param name="id">ID of the disposed interop instance.</param>
     public static void Dispose (int id)
     {
         idToInstance.Remove(id);
         idPool.Enqueue(id);
+    }
+
+    private static int? FindRegistered (object instance)
+    {
+        foreach (var kv in idToInstance)
+            if (kv.Value == instance)
+                return kv.Key;
+        return null;
     }
 }

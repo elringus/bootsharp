@@ -88,7 +88,7 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
-    public void GeneratesForMethodsInGeneratedClasses ()
+    public void GeneratesForStaticInteropInterfaces ()
     {
         AddAssembly(With(
             """
@@ -104,6 +104,32 @@ public class InteropTest : EmitTest
         Contains("JSExport] internal static void Bootsharp_Generated_Exports_Space_JSExported_Inv () => global::Bootsharp.Generated.Exports.Space.JSExported.Inv();");
         Contains("""JSImport("Imported.funSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_JSImported_Fun ();""");
         Contains("""JSImport("Imported.onEvtSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_JSImported_OnEvt ();""");
+    }
+
+    [Fact]
+    public void GeneratesForInstancedInteropInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            namespace Space
+            {
+                public interface IExported { void Inv (); }
+                public interface IImported { void Fun (); void NotifyEvt(); }
+            }
+
+            public interface IExported { void Inv (); }
+            public interface IImported { void Fun (); void NotifyEvt(); }
+
+            public class Class
+            {
+                 [JSInvokable] public static Space.IExported GetExported (Space.IImported arg) => default;
+                 [JSFunction] public static IImported GetImported (IExported arg) => Proxies.Get<Func<IExported, IImported>>("Class.GetImported")(arg);
+            }
+            """));
+        Execute();
+        Contains("""Proxies.Set("Class.GetImported", (global::IExported arg) => new global::Bootsharp.Generated.Imports.JSImported(Class_GetImported((global::IExported)global::Bootsharp.Instances.GetInstance(arg))));""");
+        Contains("JSExport] internal static global::System.Int32 Class_GetExported (global::System.Int32 arg) => global::Bootsharp.Instances.GetId(global::Class.GetExported(new global::Bootsharp.Generated.Imports.Space.JSImported(arg)));");
+        Contains("""JSImport("Class.getImportedSerialized", "Bootsharp")] internal static partial global::System.Int32 Class_GetImported (global::System.Int32 arg);""");
     }
 
     [Fact]

@@ -8,16 +8,14 @@ internal sealed class InterfaceInspector (Preferences prefs, TypeConverter conve
 
     public InterfaceMeta Inspect (Type interfaceType, InterfaceKind kind)
     {
-        var space = "Bootsharp.Generated." + (kind == InterfaceKind.Export ? "Exports" : "Imports");
-        if (interfaceType.Namespace != null) space += $".{interfaceType.Namespace}";
-        var name = "JS" + interfaceType.Name[1..];
+        var (space, name, full) = BuildInteropInterfaceImplementationName(interfaceType, kind);
         return new InterfaceMeta {
             Kind = kind,
             Type = interfaceType,
             TypeSyntax = BuildSyntax(interfaceType),
             Namespace = space,
             Name = name,
-            Methods = interfaceType.GetMethods().Select(m => CreateMethod(m, kind, $"{space}.{name}")).ToArray()
+            Methods = interfaceType.GetMethods().Select(m => CreateMethod(m, kind, full)).ToArray()
         };
     }
 

@@ -140,7 +140,7 @@ public class InterfacesTest : EmitTest
 //             {
 //                 public class JSImportedInstanced(global::System.Int32 _id) : global::IImportedInstanced
 //                 {
-//                     ~JSImportedInstanced() => Bootsharp.Generated.Interop.DisposeImportedInstance(_id);
+//                     ~JSImportedInstanced() => global::Bootsharp.Generated.Interop.DisposeImportedInstance(_id);
 //
 //                     [JSFunction] public static void Fun (global::System.Int32 _id, global::System.String arg) => Proxies.Get<global::System.Action<global::System.Int32, global::System.String>>("Bootsharp.Generated.Imports.JSImportedInstanced.Fun")(_id, arg);
 //                     [JSEvent] public static void OnEvt (global::System.Int32 _id, global::System.String arg) => Proxies.Get<global::System.Action<global::System.Int32, global::System.String>>("Bootsharp.Generated.Imports.JSImportedInstanced.OnEvt")(_id, arg);
