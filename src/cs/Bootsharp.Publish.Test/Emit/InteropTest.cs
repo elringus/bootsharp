@@ -5,7 +5,7 @@ public class InteropTest : EmitTest
     protected override string TestedContent => GeneratedInterop;
 
     [Fact]
-    public void WhenNothingInspectedGeneratesEmptyClass ()
+    public void WhenNothingInspectedGeneratesDefaults ()
     {
         Execute();
         Contains(
@@ -23,6 +23,14 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
+    public void GeneratesDisposeInstanceBindings ()
+    {
+        Execute();
+        Contains("JSExport] internal static void DisposeExportedInstance (global::System.Int32 id) => global::Bootsharp.Instances.Dispose(id);");
+        Contains("""JSImport("disposeImportedInstance", "Bootsharp")] internal static partial void DisposeImportedInstance (global::System.Int32 id);""");
+    }
+
+    [Fact]
     public void GeneratesForMethodsWithoutNamespace ()
     {
         AddAssembly(With(
@@ -37,9 +45,9 @@ public class InteropTest : EmitTest
         Execute();
         Contains("""Proxies.Set("Class.Fun", () => Class_Fun());""");
         Contains("""Proxies.Set("Class.Evt", () => Class_Evt());""");
-        Contains("[System.Runtime.InteropServices.JavaScript.JSExport] internal static void Class_Inv () => global::Class.Inv();");
-        Contains("""[System.Runtime.InteropServices.JavaScript.JSImport("Class.funSerialized", "Bootsharp")] internal static partial void Class_Fun ();""");
-        Contains("""[System.Runtime.InteropServices.JavaScript.JSImport("Class.evtSerialized", "Bootsharp")] internal static partial void Class_Evt ();""");
+        Contains("JSExport] internal static void Class_Inv () => global::Class.Inv();");
+        Contains("""JSImport("Class.funSerialized", "Bootsharp")] internal static partial void Class_Fun ();""");
+        Contains("""JSImport("Class.evtSerialized", "Bootsharp")] internal static partial void Class_Evt ();""");
     }
 
     [Fact]

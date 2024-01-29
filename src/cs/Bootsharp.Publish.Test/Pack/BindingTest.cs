@@ -14,7 +14,7 @@ public class BindingTest : PackTest
     [Fact]
     public void InteropFunctionsImported ()
     {
-        AddAssembly(WithClass("Foo", "[JSInvokable] public static void Bar () {}"));
+        AddAssembly(WithClass("[JSInvokable] public static void Inv () {}"));
         Execute();
         Contains(
             """
@@ -434,7 +434,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForExportImportInterfaces ()
+    public void GeneratesForStaticInteropInterfaces ()
     {
         AddAssembly(With(
             """
@@ -468,7 +468,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForExportImportInterfacesWithSpacePref ()
+    public void GeneratesForStaticInteropInterfacesWithSpacePref ()
     {
         AddAssembly(With(
             """
