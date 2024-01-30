@@ -57,7 +57,7 @@ internal sealed class InteropGenerator
         string BuildSignature ()
         {
             var args = string.Join(", ", inv.Arguments.Select(BuildSignatureArg));
-            if (instanced) args = args = PrependInstanceIdArg(args);
+            if (instanced) args = args = PrependInstanceIdArgTypeAndName(args);
             var @return = BuildReturnValue(inv.ReturnValue);
             var signature = $"{@return} {BuildMethodName(inv)} ({args})";
             if (wait) signature = $"async {signature}";
@@ -93,7 +93,7 @@ internal sealed class InteropGenerator
         var instanced = TryInstanced(method, out _);
         var id = $"{method.Space}.{method.Name}";
         var args = string.Join(", ", method.Arguments.Select(arg => $"{arg.Value.TypeSyntax} {arg.Name}"));
-        if (instanced) args = args = PrependInstanceIdArg(args);
+        if (instanced) args = args = PrependInstanceIdArgTypeAndName(args);
         var wait = method.ReturnValue.Async && method.ReturnValue.Serialized;
         var async = wait ? "async " : "";
         proxies.Add($"""Proxies.Set("{id}", {async}({args}) => {BuildBody()});""");
@@ -101,7 +101,7 @@ internal sealed class InteropGenerator
         string BuildBody ()
         {
             var args = string.Join(", ", method.Arguments.Select(BuildBodyArg));
-            if (instanced) args = "_id" + (args.Length > 0 ? $", {args}" : "");
+            if (instanced) args = PrependInstanceIdArgName(args);
             var body = $"{BuildMethodName(method)}({args})";
             if (method.ReturnValue.Instance)
             {
@@ -127,7 +127,7 @@ internal sealed class InteropGenerator
     private void AddImportMethod (MethodMeta method)
     {
         var args = string.Join(", ", method.Arguments.Select(BuildSignatureArg));
-        if (TryInstanced(method, out _)) args = PrependInstanceIdArg(args);
+        if (TryInstanced(method, out _)) args = PrependInstanceIdArgTypeAndName(args);
         var @return = BuildReturnValue(method.ReturnValue);
         var endpoint = $"{method.JSSpace}.{method.JSName}Serialized";
         var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{endpoint}", "Bootsharp")]""";
@@ -167,10 +167,5 @@ internal sealed class InteropGenerator
     {
         instance = instanced.FirstOrDefault(i => i.Methods.Contains(method));
         return instance is not null;
-    }
-
-    private string PrependInstanceIdArg (string args)
-    {
-        return "global::System.Int32 _id" + (args.Length > 0 ? $", {args}" : "");
     }
 }

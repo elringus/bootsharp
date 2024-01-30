@@ -206,6 +206,17 @@ internal static class TypeUtilities
         return (space, name, $"{space}.{name}");
     }
 
+    public static string PrependInstanceIdArgName (string args)
+    {
+        if (string.IsNullOrEmpty(args)) return "_id";
+        return $"_id, {args}";
+    }
+
+    public static string PrependInstanceIdArgTypeAndName (string args)
+    {
+        return $"{BuildSyntax(typeof(int))} {PrependInstanceIdArgName(args)}";
+    }
+
     public static string WithPrefs (IReadOnlyCollection<Preference> prefs, string input, string @default)
     {
         foreach (var pref in prefs)

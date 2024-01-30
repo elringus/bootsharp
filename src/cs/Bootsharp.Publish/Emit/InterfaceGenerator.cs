@@ -7,11 +7,16 @@ internal sealed class InterfaceGenerator
 {
     private readonly HashSet<string> classes = [];
     private readonly HashSet<string> registrations = [];
+    private HashSet<InterfaceMeta> instanced = [];
 
     public string Generate (SolutionInspection inspection)
     {
+        instanced = inspection.InstancedInterfaces.ToHashSet();
         foreach (var inter in inspection.StaticInterfaces)
-            AddInterface(inter, inspection);
+            AddInterface(inter);
+        foreach (var inter in inspection.InstancedInterfaces)
+            if (inter.Kind == InterfaceKind.Import)
+                classes.Add(EmitInstancedImportClass(inter));
         return
             $$"""
               #nullable enable
@@ -33,7 +38,7 @@ internal sealed class InterfaceGenerator
               """;
     }
 
-    private void AddInterface (InterfaceMeta i, SolutionInspection inspection)
+    private void AddInterface (InterfaceMeta i)
     {
         if (i.Kind == InterfaceKind.Export) classes.Add(EmitExportClass(i));
         else classes.Add(EmitImportClass(i));
@@ -64,7 +69,22 @@ internal sealed class InterfaceGenerator
           {
               public class {{i.Name}} : {{i.TypeSyntax}}
               {
-                  {{JoinLines(i.Methods.Select(EmitImportMethod), 2)}}
+                  {{JoinLines(i.Methods.Select(m => EmitImportMethod(i, m)), 2)}}
+
+                  {{JoinLines(i.Methods.Select(m => EmitImportMethodImplementation(i, m)), 2)}}
+              }
+          }
+          """;
+
+    private string EmitInstancedImportClass (InterfaceMeta i) =>
+        $$"""
+          namespace {{i.Namespace}}
+          {
+              public class {{i.Name}}(global::System.Int32 _id) : {{i.TypeSyntax}}
+              {
+                  ~{{i.Name}}() => global::Bootsharp.Generated.Interop.DisposeImportedInstance(_id);
+
+                  {{JoinLines(i.Methods.Select(m => EmitImportMethod(i, m)), 2)}}
 
                   {{JoinLines(i.Methods.Select(m => EmitImportMethodImplementation(i, m)), 2)}}
               }
@@ -83,26 +103,30 @@ internal sealed class InterfaceGenerator
         return $"[JSInvokable] {sig} => handler.{method.Name}({args});";
     }
 
-    private string EmitImportMethod (MethodMeta method)
+    private string EmitImportMethod (InterfaceMeta i, MethodMeta method)
     {
         var attr = method.Kind == MethodKind.Function ? "JSFunction" : "JSEvent";
         var sigArgs = string.Join(", ", method.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
+        if (instanced.Contains(i)) sigArgs = PrependInstanceIdArgTypeAndName(sigArgs);
         var sig = $"public static {method.ReturnValue.TypeSyntax} {method.Name} ({sigArgs})";
         var args = string.Join(", ", method.Arguments.Select(a => a.Name));
-        return $"[{attr}] {sig} => {EmitProxyGetter(method)}({args});";
+        if (instanced.Contains(i)) args = PrependInstanceIdArgName(args);
+        return $"[{attr}] {sig} => {EmitProxyGetter(i, method)}({args});";
     }
 
     private string EmitImportMethodImplementation (InterfaceMeta i, MethodMeta method)
     {
         var sigArgs = string.Join(", ", method.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         var args = string.Join(", ", method.Arguments.Select(a => a.Name));
+        if (instanced.Contains(i)) args = PrependInstanceIdArgName(args);
         return $"{method.ReturnValue.TypeSyntax} {i.TypeSyntax}.{method.InterfaceName} ({sigArgs}) => {method.Name}({args});";
     }
 
-    private string EmitProxyGetter (MethodMeta method)
+    private string EmitProxyGetter (InterfaceMeta i, MethodMeta method)
     {
         var func = method.ReturnValue.Void ? "global::System.Action" : "global::System.Func";
         var syntax = method.Arguments.Select(a => a.Value.TypeSyntax).ToList();
+        if (instanced.Contains(i)) syntax.Insert(0, BuildSyntax(typeof(int)));
         if (!method.ReturnValue.Void) syntax.Add(method.ReturnValue.TypeSyntax);
         if (syntax.Count > 0) func = $"{func}<{string.Join(", ", syntax)}>";
         return $"Proxies.Get<{func}>(\"{method.Space}.{method.Name}\")";

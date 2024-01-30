@@ -115,42 +115,39 @@ public class InterfacesTest : EmitTest
             """);
     }
 
-//     [Fact]
-//     public void GeneratesImplementationForImportedInstancedInterface ()
-//     {
-//         AddAssembly(With(
-//             """
-//             [assembly:JSImport(typeof(IImportedStatic))]
-//
-//             public interface IImportedStatic
-//             {
-//                 IImportedInstanced CreateInstanced ();
-//             }
-//
-//             public interface IImportedInstanced
-//             {
-//                 void Fun (string arg);
-//                 void NotifyEvt (string arg);
-//             }
-//             """));
-//         Execute();
-//         Contains(
-//             """
-//             namespace Bootsharp.Generated.Imports
-//             {
-//                 public class JSImportedInstanced(global::System.Int32 _id) : global::IImportedInstanced
-//                 {
-//                     ~JSImportedInstanced() => global::Bootsharp.Generated.Interop.DisposeImportedInstance(_id);
-//
-//                     [JSFunction] public static void Fun (global::System.Int32 _id, global::System.String arg) => Proxies.Get<global::System.Action<global::System.Int32, global::System.String>>("Bootsharp.Generated.Imports.JSImportedInstanced.Fun")(_id, arg);
-//                     [JSEvent] public static void OnEvt (global::System.Int32 _id, global::System.String arg) => Proxies.Get<global::System.Action<global::System.Int32, global::System.String>>("Bootsharp.Generated.Imports.JSImportedInstanced.OnEvt")(_id, arg);
-//
-//                     void global::IImportedInstanced.Fun (global::System.String arg) => Fun(_id, arg);
-//                     void global::IImportedInstanced.NotifyEvt (global::System.String arg) => OnEvt(_id, arg);
-//                 }
-//             }
-//             """);
-//     }
+    [Fact]
+    public void GeneratesImplementationForInstancedImportInterface ()
+    {
+        AddAssembly(With(
+            """
+            public interface IExported { void Inv (string arg); }
+            public interface IImported { void Fun (string arg); void NotifyEvt(string arg); }
+
+            public class Class
+            {
+                [JSInvokable] public static IExported GetExported () => default;
+                [JSFunction] public static IImported GetImported () => Proxies.Get<Func<IImported>>("Class.GetImported")();
+            }
+            """));
+        Execute();
+        Contains(
+            """
+            namespace Bootsharp.Generated.Imports
+            {
+                public class JSImported(global::System.Int32 _id) : global::IImported
+                {
+                    ~JSImported() => global::Bootsharp.Generated.Interop.DisposeImportedInstance(_id);
+
+                    [JSFunction] public static void Fun (global::System.Int32 _id, global::System.String arg) => Proxies.Get<global::System.Action<global::System.Int32, global::System.String>>("Bootsharp.Generated.Imports.JSImported.Fun")(_id, arg);
+                    [JSEvent] public static void OnEvt (global::System.Int32 _id, global::System.String arg) => Proxies.Get<global::System.Action<global::System.Int32, global::System.String>>("Bootsharp.Generated.Imports.JSImported.OnEvt")(_id, arg);
+
+                    void global::IImported.Fun (global::System.String arg) => Fun(_id, arg);
+                    void global::IImported.NotifyEvt (global::System.String arg) => OnEvt(_id, arg);
+                }
+            }
+            """);
+        Assert.DoesNotContain("JSExported", TestedContent); // Exported instances are authored by user and registered on initial interop.
+    }
 
     [Fact]
     public void RespectsInterfaceNamespace ()
