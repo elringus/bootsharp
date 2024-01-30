@@ -126,9 +126,8 @@ internal sealed class InteropGenerator
 
     private void AddImportMethod (MethodMeta method)
     {
-        var instanced = TryInstanced(method, out _);
         var args = string.Join(", ", method.Arguments.Select(BuildSignatureArg));
-        if (instanced) args = "global::System.Int32 _id" + (args.Length > 0 ? $", {args}" : "");
+        if (TryInstanced(method, out _)) args = "global::System.Int32 _id" + (args.Length > 0 ? $", {args}" : "");
         var @return = BuildReturnValue(method.ReturnValue);
         var endpoint = $"{method.JSSpace}.{method.JSName}Serialized";
         var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{endpoint}", "Bootsharp")]""";
