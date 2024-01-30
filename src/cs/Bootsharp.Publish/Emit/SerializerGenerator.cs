@@ -61,7 +61,7 @@ internal sealed class SerializerGenerator
     {
         var names = new HashSet<string>();
         foreach (var type in inspection.Crawled.DistinctBy(t => t.FullName))
-            if (!names.Add(type.Name))
+            if (ShouldSerialize(type) && !names.Add(type.Name))
                 CollectAttributes(BuildSyntax(type), type);
     }
 
