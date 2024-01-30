@@ -5,6 +5,7 @@
 /// </summary>
 public static class Instances
 {
+    private static readonly Dictionary<object, int> instanceToId = [];
     private static readonly Dictionary<int, object> idToInstance = [];
     private static readonly Queue<int> idPool = [];
     private static int nextId = int.MinValue;
@@ -15,10 +16,10 @@ public static class Instances
     /// <param name="instance">The instance to get ID for.</param>
     public static int GetId (object instance)
     {
-        if (FindRegistered(instance) is { } id) return id;
+        if (instanceToId.TryGetValue(instance, out var id)) return id;
         id = idPool.Count > 0 ? idPool.Dequeue() : nextId++;
         idToInstance[id] = instance;
-        return id;
+        return instanceToId[instance] = id;
     }
 
     /// <summary>
@@ -34,15 +35,8 @@ public static class Instances
     /// <param name="id">ID of the disposed interop instance.</param>
     public static void Dispose (int id)
     {
+        instanceToId.Remove(idToInstance[id]);
         idToInstance.Remove(id);
         idPool.Enqueue(id);
-    }
-
-    private static int? FindRegistered (object instance)
-    {
-        foreach (var kv in idToInstance)
-            if (kv.Value == instance)
-                return kv.Key;
-        return null;
     }
 }
