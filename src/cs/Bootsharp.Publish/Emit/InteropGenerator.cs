@@ -1,4 +1,6 @@
-﻿namespace Bootsharp.Publish;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bootsharp.Publish;
 
 /// <summary>
 /// Generates bindings to be picked by .NET's interop source generator.
@@ -7,12 +9,15 @@ internal sealed class InteropGenerator
 {
     private readonly HashSet<string> proxies = [];
     private readonly HashSet<string> methods = [];
+    private IReadOnlyCollection<InterfaceMeta> instanced = [];
 
     public string Generate (SolutionInspection inspection)
     {
-        var metas = inspection.StaticMethods
-            .Concat(inspection.StaticInterfaces.SelectMany(i => i.Methods));
-        foreach (var meta in metas) // @formatter:off
+        instanced = inspection.InstancedInterfaces;
+        var @static = inspection.StaticMethods
+            .Concat(inspection.StaticInterfaces.SelectMany(i => i.Methods))
+            .Concat(inspection.InstancedInterfaces.SelectMany(i => i.Methods));
+        foreach (var meta in @static) // @formatter:off
             if (meta.Kind == MethodKind.Invokable) AddExportMethod(meta);
             else { AddProxy(meta); AddImportMethod(meta); } // @formatter:on
         return
@@ -43,14 +48,16 @@ internal sealed class InteropGenerator
 
     private void AddExportMethod (MethodMeta inv)
     {
-        const string attr = "[System.Runtime.InteropServices.JavaScript.JSExport]";
+        var instanced = TryInstanced(inv, out var instance);
         var marshalAs = MarshalAmbiguous(inv.ReturnValue.TypeSyntax, true);
         var wait = inv.ReturnValue.Async && inv.ReturnValue.Serialized;
-        methods.Add($"{attr} {marshalAs}internal static {BuildSignature()} => {BuildBody()};");
+        var attr = $"[System.Runtime.InteropServices.JavaScript.JSExport] {marshalAs}";
+        methods.Add($"{attr}internal static {BuildSignature()} => {BuildBody()};");
 
         string BuildSignature ()
         {
             var args = string.Join(", ", inv.Arguments.Select(BuildSignatureArg));
+            if (instanced) args = "global::System.Int32 _id" + (args.Length > 0 ? $", {args}" : "");
             var @return = BuildReturnValue(inv.ReturnValue);
             var signature = $"{@return} {BuildMethodName(inv)} ({args})";
             if (wait) signature = $"async {signature}";
@@ -60,7 +67,9 @@ internal sealed class InteropGenerator
         string BuildBody ()
         {
             var args = string.Join(", ", inv.Arguments.Select(BuildBodyArg));
-            var body = $"global::{inv.Space}.{inv.Name}({args})";
+            var body = instanced
+                ? $"(({instance!.TypeSyntax})global::Bootsharp.Instances.GetInstance(_id)).{inv.Name}({args})"
+                : $"global::{inv.Space}.{inv.Name}({args})";
             if (wait) body = $"await {body}";
             if (inv.ReturnValue.Instance) body = $"global::Bootsharp.Instances.GetId({body})";
             else if (inv.ReturnValue.Serialized) body = $"Serialize({body})";
@@ -81,8 +90,10 @@ internal sealed class InteropGenerator
 
     private void AddProxy (MethodMeta method)
     {
+        var instanced = TryInstanced(method, out _);
         var id = $"{method.Space}.{method.Name}";
         var args = string.Join(", ", method.Arguments.Select(arg => $"{arg.Value.TypeSyntax} {arg.Name}"));
+        if (instanced) args = "global::System.Int32 _id" + (args.Length > 0 ? $", {args}" : "");
         var wait = method.ReturnValue.Async && method.ReturnValue.Serialized;
         var async = wait ? "async " : "";
         proxies.Add($"""Proxies.Set("{id}", {async}({args}) => {BuildBody()});""");
@@ -90,6 +101,7 @@ internal sealed class InteropGenerator
         string BuildBody ()
         {
             var args = string.Join(", ", method.Arguments.Select(BuildBodyArg));
+            if (instanced) args = "_id" + (args.Length > 0 ? $", {args}" : "");
             var body = $"{BuildMethodName(method)}({args})";
             if (method.ReturnValue.Instance)
             {
@@ -106,8 +118,7 @@ internal sealed class InteropGenerator
 
         string BuildBodyArg (ArgumentMeta arg)
         {
-            if (arg.Value.Instance)
-                return $"({arg.Value.TypeSyntax})global::Bootsharp.Instances.GetInstance({arg.Name})";
+            if (arg.Value.Instance) return $"({arg.Value.TypeSyntax})global::Bootsharp.Instances.GetInstance({arg.Name})";
             if (arg.Value.Serialized) return $"Serialize({arg.Name})";
             return arg.Name;
         }
@@ -115,7 +126,9 @@ internal sealed class InteropGenerator
 
     private void AddImportMethod (MethodMeta method)
     {
+        var instanced = TryInstanced(method, out _);
         var args = string.Join(", ", method.Arguments.Select(BuildSignatureArg));
+        if (instanced) args = "global::System.Int32 _id" + (args.Length > 0 ? $", {args}" : "");
         var @return = BuildReturnValue(method.ReturnValue);
         var endpoint = $"{method.JSSpace}.{method.JSName}Serialized";
         var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{endpoint}", "Bootsharp")]""";
@@ -149,5 +162,11 @@ internal sealed class InteropGenerator
     private string BuildMethodName (MethodMeta method)
     {
         return $"{method.Space.Replace('.', '_')}_{method.Name}";
+    }
+
+    private bool TryInstanced (MethodMeta method, [NotNullWhen(true)] out InterfaceMeta? instance)
+    {
+        instance = instanced.FirstOrDefault(i => i.Methods.Contains(method));
+        return instance is not null;
     }
 }

@@ -122,14 +122,24 @@ public class InteropTest : EmitTest
 
             public class Class
             {
-                 [JSInvokable] public static Space.IExported GetExported (Space.IImported arg) => default;
-                 [JSFunction] public static IImported GetImported (IExported arg) => Proxies.Get<Func<IExported, IImported>>("Class.GetImported")(arg);
+                [JSInvokable] public static Space.IExported GetExported (Space.IImported arg) => default;
+                [JSFunction] public static IImported GetImported (IExported arg) => Proxies.Get<Func<IExported, IImported>>("Class.GetImported")(arg);
             }
             """));
         Execute();
         Contains("""Proxies.Set("Class.GetImported", (global::IExported arg) => new global::Bootsharp.Generated.Imports.JSImported(Class_GetImported((global::IExported)global::Bootsharp.Instances.GetInstance(arg))));""");
+        Contains("""Proxies.Set("Bootsharp.Generated.Imports.JSImported.Fun", (global::System.Int32 _id) => Bootsharp_Generated_Imports_JSImported_Fun(_id));""");
+        Contains("""Proxies.Set("Bootsharp.Generated.Imports.JSImported.OnEvt", (global::System.Int32 _id) => Bootsharp_Generated_Imports_JSImported_OnEvt(_id));""");
+        Contains("""Proxies.Set("Bootsharp.Generated.Imports.Space.JSImported.Fun", (global::System.Int32 _id) => Bootsharp_Generated_Imports_Space_JSImported_Fun(_id));""");
+        Contains("""Proxies.Set("Bootsharp.Generated.Imports.Space.JSImported.OnEvt", (global::System.Int32 _id) => Bootsharp_Generated_Imports_Space_JSImported_OnEvt(_id));""");
         Contains("JSExport] internal static global::System.Int32 Class_GetExported (global::System.Int32 arg) => global::Bootsharp.Instances.GetId(global::Class.GetExported(new global::Bootsharp.Generated.Imports.Space.JSImported(arg)));");
         Contains("""JSImport("Class.getImportedSerialized", "Bootsharp")] internal static partial global::System.Int32 Class_GetImported (global::System.Int32 arg);""");
+        Contains("JSExport] internal static void Bootsharp_Generated_Exports_JSExported_Inv (global::System.Int32 _id) => ((global::IExported)global::Bootsharp.Instances.GetInstance(_id)).Inv();");
+        Contains("""JSImport("Imported.funSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_JSImported_Fun (global::System.Int32 _id);""");
+        Contains("""JSImport("Imported.onEvtSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_JSImported_OnEvt (global::System.Int32 _id);""");
+        Contains("JSExport] internal static void Bootsharp_Generated_Exports_Space_JSExported_Inv (global::System.Int32 _id) => ((global::Space.IExported)global::Bootsharp.Instances.GetInstance(_id)).Inv();");
+        Contains("""JSImport("Space.Imported.funSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_Space_JSImported_Fun (global::System.Int32 _id);""");
+        Contains("""JSImport("Space.Imported.onEvtSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_Space_JSImported_OnEvt (global::System.Int32 _id);""");
     }
 
     [Fact]
