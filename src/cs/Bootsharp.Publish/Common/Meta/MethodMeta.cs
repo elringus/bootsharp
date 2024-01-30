@@ -33,7 +33,8 @@ internal sealed record MethodMeta
     /// <summary>
     /// When the method's class is a generated implementation of an interop interface, contains
     /// name of the associated interface method. The name may differ from <see cref="Name"/>,
-    /// which would be the name of the method on the generated interface implementation.
+    /// which would be the name of the method on the generated interface implementation and is
+    /// subject to <see cref="JSPreferencesAttribute.Event"/> and <see cref="JSPreferencesAttribute.Function"/>.
     /// </summary>
     public string? InterfaceName { get; init; }
     /// <summary>
