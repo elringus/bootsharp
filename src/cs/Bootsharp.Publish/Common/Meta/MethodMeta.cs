@@ -31,7 +31,7 @@ internal sealed record MethodMeta
     /// </summary>
     public required string JSName { get; init; }
     /// <summary>
-    /// When the method's class is generated implementation of an interop interface, contains
+    /// When the method's class is a generated implementation of an interop interface, contains
     /// name of the associated interface method. The name may differ from <see cref="Name"/>,
     /// which would be the name of the method on the generated interface implementation.
     /// </summary>
