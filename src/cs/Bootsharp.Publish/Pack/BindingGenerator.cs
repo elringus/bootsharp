@@ -35,6 +35,7 @@ internal sealed class BindingGenerator (Preferences prefs)
     {
         builder.Append("import { exports } from \"./exports\";\n");
         builder.Append("import { Event } from \"./event\";\n");
+        builder.Append("import { getInstanceId, getInstance } from \"./instances\";\n");
         builder.Append("function getExports () { if (exports == null) throw Error(\"Boot the runtime before invoking C# APIs.\"); return exports; }\n");
         builder.Append("function serialize(obj) { return JSON.stringify(obj); }\n");
         builder.Append("function deserialize(json) { const result = JSON.parse(json); if (result === null) return undefined; return result; }\n");

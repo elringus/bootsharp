@@ -20,6 +20,7 @@ public class BindingTest : PackTest
             """
             import { exports } from "./exports";
             import { Event } from "./event";
+            import { getInstanceId, getInstance } from "./instances";
             function getExports () { if (exports == null) throw Error("Boot the runtime before invoking C# APIs."); return exports; }
             function serialize(obj) { return JSON.stringify(obj); }
             function deserialize(json) { const result = JSON.parse(json); if (result === null) return undefined; return result; }
@@ -494,6 +495,51 @@ public class BindingTest : PackTest
                 onEvt: new Event(),
                 onEvtSerialized: (s, e) => Foo.onEvt.broadcast(s, deserialize(e)),
                 Enum: { "0": "A", "1": "B", "A": 0, "B": 1 }
+            };
+            """);
+    }
+
+    [Fact]
+    public void GeneratesForInstancedInteropInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            public enum Enum { A, B }
+
+            public interface IExported { Enum Inv (string str); }
+            public interface IImported { void NotifyEvt(string str); }
+
+            namespace Space
+            {
+                public interface IExported { void Inv (Enum en); }
+                public interface IImported { void Fun (Enum en); }
+            }
+
+            public class Class
+            {
+                [JSInvokable] public static Space.IExported GetExported (Space.IImported inst) => default;
+                [JSFunction] public static IImported GetImported (IExported inst) => Proxies.Get<Func<IExported, IImported>>("Class.GetImported")(inst);
+            }
+            """));
+        Execute();
+        Contains(
+            """
+            class JSExported {
+                constructor(_id) { this._id = _id; }
+                inv(str) { return Exported.inv(this._id, str); }
+            }
+            """);
+        Contains(
+            """
+            class Space_JSExported {
+                constructor(_id) { this._id = _id; }
+                inv(en) { Space.Exported.inv(this._id, en); }
+            }
+            """);
+        Contains( // Should register new Space_JSExported()? And in InteropTest???
+            """
+            export const Class = {
+                getExported: (inst) => new Space_JSExported(getExports().Class_GetExported(getInstanceId(inst))),
             };
             """);
     }

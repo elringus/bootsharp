@@ -118,7 +118,7 @@ internal sealed class InteropGenerator
 
         string BuildBodyArg (ArgumentMeta arg)
         {
-            if (arg.Value.Instance) return $"({arg.Value.TypeSyntax})global::Bootsharp.Instances.GetInstance({arg.Name})";
+            if (arg.Value.Instance) return $"global::Bootsharp.Instances.GetId({arg.Name})";
             if (arg.Value.Serialized) return $"Serialize({arg.Name})";
             return arg.Name;
         }
