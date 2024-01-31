@@ -68,10 +68,10 @@ internal sealed class InteropGenerator
         {
             var args = string.Join(", ", inv.Arguments.Select(BuildBodyArg));
             var body = instanced
-                ? $"(({instance!.TypeSyntax})global::Bootsharp.Instances.GetInstance(_id)).{inv.Name}({args})"
+                ? $"(({instance!.TypeSyntax})global::Bootsharp.Instances.Get(_id)).{inv.Name}({args})"
                 : $"global::{inv.Space}.{inv.Name}({args})";
             if (wait) body = $"await {body}";
-            if (inv.ReturnValue.Instance) body = $"global::Bootsharp.Instances.GetId({body})";
+            if (inv.ReturnValue.Instance) body = $"global::Bootsharp.Instances.Register({body})";
             else if (inv.ReturnValue.Serialized) body = $"Serialize({body})";
             return body;
         }
@@ -118,7 +118,7 @@ internal sealed class InteropGenerator
 
         string BuildBodyArg (ArgumentMeta arg)
         {
-            if (arg.Value.Instance) return $"global::Bootsharp.Instances.GetId({arg.Name})";
+            if (arg.Value.Instance) return $"global::Bootsharp.Instances.Register({arg.Name})";
             if (arg.Value.Serialized) return $"Serialize({arg.Name})";
             return arg.Name;
         }

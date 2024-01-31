@@ -20,7 +20,7 @@ public class BindingTest : PackTest
             """
             import { exports } from "./exports";
             import { Event } from "./event";
-            import { getInstanceId, getInstance } from "./instances";
+            import { registerInstance, getInstance, disposeOnFinalize } from "./instances";
             function getExports () { if (exports == null) throw Error("Boot the runtime before invoking C# APIs."); return exports; }
             function serialize(obj) { return JSON.stringify(obj); }
             function deserialize(json) { const result = JSON.parse(json); if (result === null) return undefined; return result; }
@@ -525,21 +525,24 @@ public class BindingTest : PackTest
         Contains(
             """
             class JSExported {
-                constructor(_id) { this._id = _id; }
+                constructor(_id) { this._id = _id; disposeOnFinalize(this); }
                 inv(str) { return Exported.inv(this._id, str); }
             }
             """);
         Contains(
             """
             class Space_JSExported {
-                constructor(_id) { this._id = _id; }
+                constructor(_id) { this._id = _id; disposeOnFinalize(this); }
                 inv(en) { Space.Exported.inv(this._id, en); }
             }
             """);
-        Contains( // Should register new Space_JSExported()? And in InteropTest???
+        Contains(
             """
             export const Class = {
-                getExported: (inst) => new Space_JSExported(getExports().Class_GetExported(getInstanceId(inst))),
+                getExported: (inst) => new Space_JSExported(getExports().Class_GetExported(registerInstance(inst))),
+                get getImported() { return this.getImportedHandler; },
+                set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = (inst) => registerInstance(this.getImportedHandler(new JSExported((inst))); },
+                get getImportedSerialized() { if (typeof this.getImportedHandler !== "function") throw Error("Failed to invoke 'Class.getImported' from C#. Make sure to assign function in JavaScript."); return this.getImportedSerializedHandler; },
             };
             """);
     }
