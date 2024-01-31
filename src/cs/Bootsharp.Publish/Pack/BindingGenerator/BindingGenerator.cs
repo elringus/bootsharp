@@ -7,6 +7,7 @@ internal sealed class BindingGenerator (Preferences prefs)
     private record Binding (MethodMeta? Method, Type? Enum, string Namespace);
 
     private readonly StringBuilder builder = new();
+    private readonly BindingClassGenerator classGenerator = new();
 
     private Binding binding => bindings[index];
     private Binding? prevBinding => index == 0 ? null : bindings[index - 1];
@@ -26,6 +27,8 @@ internal sealed class BindingGenerator (Preferences prefs)
             .OrderBy(m => m.Namespace).ToArray();
         if (bindings.Length == 0) return "";
         EmitImports();
+        if (inspection.InstancedInterfaces.Count > 0)
+            builder.Append(classGenerator.Generate(inspection.InstancedInterfaces));
         for (index = 0; index < bindings.Length; index++)
             EmitBinding();
         return builder.ToString();
@@ -35,10 +38,10 @@ internal sealed class BindingGenerator (Preferences prefs)
     {
         builder.Append("import { exports } from \"./exports\";\n");
         builder.Append("import { Event } from \"./event\";\n");
-        builder.Append("import { registerInstance, getInstance, disposeOnFinalize } from \"./instances\";\n");
+        builder.Append("import { registerInstance, getInstance, disposeOnFinalize } from \"./instances\";\n\n");
         builder.Append("function getExports () { if (exports == null) throw Error(\"Boot the runtime before invoking C# APIs.\"); return exports; }\n");
         builder.Append("function serialize(obj) { return JSON.stringify(obj); }\n");
-        builder.Append("function deserialize(json) { const result = JSON.parse(json); if (result === null) return undefined; return result; }\n");
+        builder.Append("function deserialize(json) { const result = JSON.parse(json); if (result === null) return undefined; return result; }\n\n");
     }
 
     private void EmitBinding ()
