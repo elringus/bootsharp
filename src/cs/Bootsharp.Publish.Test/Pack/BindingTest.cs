@@ -512,7 +512,7 @@ public class BindingTest : PackTest
             namespace Space
             {
                 public interface IExported { void Inv (Enum en); }
-                public interface IImported { void Fun (Enum en); }
+                public interface IImported { Enum Fun (Enum en); }
             }
 
             public class Class
@@ -528,9 +528,6 @@ public class BindingTest : PackTest
                 constructor(_id) { this._id = _id; disposeOnFinalize(this); }
                 inv(str) { return Exported.inv(this._id, str); }
             }
-            """);
-        Contains(
-            """
             class Space_JSExported {
                 constructor(_id) { this._id = _id; disposeOnFinalize(this); }
                 inv(en) { Space.Exported.inv(this._id, en); }
@@ -542,7 +539,21 @@ public class BindingTest : PackTest
                 getExported: (inst) => new Space_JSExported(getExports().Class_GetExported(registerInstance(inst))),
                 get getImported() { return this.getImportedHandler; },
                 set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = (inst) => registerInstance(this.getImportedHandler(new JSExported((inst))); },
-                get getImportedSerialized() { if (typeof this.getImportedHandler !== "function") throw Error("Failed to invoke 'Class.getImported' from C#. Make sure to assign function in JavaScript."); return this.getImportedSerializedHandler; },
+                get getImportedSerialized() { if (typeof this.getImportedHandler !== "function") throw Error("Failed to invoke 'Class.getImported' from C#. Make sure to assign function in JavaScript."); return this.getImportedSerializedHandler; }
+            };
+            export const Exported = {
+                inv: (_id, str) => deserialize(getExports().Bootsharp_Generated_Exports_JSExported_Inv(_id, str))
+            };
+            export const Imported = {
+                onEvtSerialized: (_id, str) => getInstance(_id).onEvt.broadcast(str)
+            };
+            export const Space = {
+                Exported: {
+                    inv: (_id, en) => getExports().Bootsharp_Generated_Exports_Space_JSExported_Inv(_id, serialize(en))
+                },
+                Imported: {
+                    funSerialized: (_id, en) => serialize(getInstance(_id).fun(deserialize(en)))
+                }
             };
             """);
     }
