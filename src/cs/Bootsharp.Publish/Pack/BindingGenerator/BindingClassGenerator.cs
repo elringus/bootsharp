@@ -5,12 +5,12 @@ internal sealed class BindingClassGenerator
     public string Generate (IReadOnlyCollection<InterfaceMeta> instanced)
     {
         var exported = instanced.Where(i => i.Kind == InterfaceKind.Export);
-        return JoinLines(exported.Select(BuildClass), 0);
+        return JoinLines(exported.Select(BuildClass), 0) + '\n';
     }
 
     private string BuildClass (InterfaceMeta inter) =>
         $$"""
-          class {{inter.FullName.Replace("Bootsharp.Generated.Exports.", "").Replace(".", "_")}} {
+          class {{BuildJSInteropInstanceClassName(inter)}} {
               constructor(_id) { this._id = _id; disposeOnFinalize(this); }
               {{JoinLines(inter.Methods.Select(BuildFunction))}}
           }

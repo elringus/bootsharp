@@ -217,6 +217,11 @@ internal static class TypeUtilities
         return $"{BuildSyntax(typeof(int))} {PrependInstanceIdArgName(args)}";
     }
 
+    public static string BuildJSInteropInstanceClassName (InterfaceMeta inter)
+    {
+        return inter.FullName.Replace("Bootsharp.Generated.Exports.", "").Replace(".", "_");
+    }
+
     public static string WithPrefs (IReadOnlyCollection<Preference> prefs, string input, string @default)
     {
         foreach (var pref in prefs)

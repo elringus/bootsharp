@@ -539,7 +539,7 @@ public class BindingTest : PackTest
             export const Class = {
                 getExported: (inst) => new Space_JSExported(getExports().Class_GetExported(registerInstance(inst))),
                 get getImported() { return this.getImportedHandler; },
-                set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = (inst) => registerInstance(this.getImportedHandler(new JSExported((inst))); },
+                set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = (inst) => registerInstance(this.getImportedHandler(new JSExported(inst))); },
                 get getImportedSerialized() { if (typeof this.getImportedHandler !== "function") throw Error("Failed to invoke 'Class.getImported' from C#. Make sure to assign function in JavaScript."); return this.getImportedSerializedHandler; }
             };
             export const Exported = {
