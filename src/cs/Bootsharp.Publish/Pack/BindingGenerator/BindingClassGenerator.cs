@@ -11,7 +11,7 @@ internal sealed class BindingClassGenerator
     private string BuildClass (InterfaceMeta inter) =>
         $$"""
           class {{BuildJSInteropInstanceClassName(inter)}} {
-              constructor(_id) { this._id = _id; disposeOnFinalize(this); }
+              constructor(_id) { this._id = _id; disposeOnFinalize(this, _id); }
               {{JoinLines(inter.Methods.Select(BuildFunction))}}
           }
           """;

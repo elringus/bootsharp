@@ -27,7 +27,7 @@ public class InteropTest : EmitTest
     {
         Execute();
         Contains("JSExport] internal static void DisposeExportedInstance (global::System.Int32 id) => global::Bootsharp.Instances.Dispose(id);");
-        Contains("""JSImport("disposeImportedInstance", "Bootsharp")] internal static partial void DisposeImportedInstance (global::System.Int32 id);""");
+        Contains("""JSImport("disposeInstance", "Bootsharp")] internal static partial void DisposeImportedInstance (global::System.Int32 id);""");
     }
 
     [Fact]

@@ -39,7 +39,7 @@ internal sealed class InteropGenerator
                   }
 
                   [System.Runtime.InteropServices.JavaScript.JSExport] internal static void DisposeExportedInstance (global::System.Int32 id) => global::Bootsharp.Instances.Dispose(id);
-                  [System.Runtime.InteropServices.JavaScript.JSImport("disposeImportedInstance", "Bootsharp")] internal static partial void DisposeImportedInstance (global::System.Int32 id);
+                  [System.Runtime.InteropServices.JavaScript.JSImport("disposeInstance", "Bootsharp")] internal static partial void DisposeImportedInstance (global::System.Int32 id);
 
                   {{JoinLines(methods)}}
               }

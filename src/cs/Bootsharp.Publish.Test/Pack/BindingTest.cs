@@ -526,11 +526,11 @@ public class BindingTest : PackTest
         Contains(
             """
             class Space_JSExported {
-                constructor(_id) { this._id = _id; disposeOnFinalize(this); }
+                constructor(_id) { this._id = _id; disposeOnFinalize(this, _id); }
                 inv(en) { Space.Exported.inv(this._id, en); }
             }
             class JSExported {
-                constructor(_id) { this._id = _id; disposeOnFinalize(this); }
+                constructor(_id) { this._id = _id; disposeOnFinalize(this, _id); }
                 inv(str) { return Exported.inv(this._id, str); }
             }
             """);
