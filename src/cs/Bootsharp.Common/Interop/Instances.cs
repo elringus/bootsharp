@@ -25,7 +25,12 @@ public static class Instances
     /// Resolves registered instance by the specified ID.
     /// </summary>
     /// <param name="id">Unique ID of the instance to resolve.</param>
-    public static object Get (int id) => idToInstance[id];
+    public static object Get (int id)
+    {
+        if (!idToInstance.TryGetValue(id, out var instance))
+            throw new Error($"Failed to resolve exported interop instance with '{id}' ID: not registered.");
+        return instance;
+    }
 
     /// <summary>
     /// Notifies that interop instance is no longer used on JavaScript side
@@ -34,7 +39,8 @@ public static class Instances
     /// <param name="id">ID of the disposed interop instance.</param>
     public static void Dispose (int id)
     {
-        idToInstance.Remove(id);
+        if (!idToInstance.Remove(id))
+            throw new Error($"Failed to dispose exported interop instance with '{id}' ID: not registered.");
         idPool.Enqueue(id);
     }
 }
