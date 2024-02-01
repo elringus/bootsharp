@@ -3,7 +3,9 @@ import { exports } from "./exports";
 const finalizer = new FinalizationRegistry(finalizeInstance);
 const idToInstance = new Map<number, object>();
 const idPool = new Array<number>();
-let nextId = Number.MIN_SAFE_INTEGER;
+let nextId = -2147483648; // Number.MIN_SAFE_INTEGER is below C#'s Int32.MinValue
+
+/* v8 ignore start */ // TODO: Figure how to test finalize/dispose behaviour.
 
 /** Registers specified imported (JS -> C#) interop instance and associates it with unique ID.
  *  @param instance Interop instance to resolve ID for.

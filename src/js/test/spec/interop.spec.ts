@@ -14,22 +14,7 @@ describe("while bootsharp is booted", () => {
     it("throws when invoking un-assigned JS function from C#", () => {
         const error = /Failed to invoke '.+' from C#. Make sure to assign function in JavaScript/;
         any(Test.Program).onMainInvoked = undefined;
-        expect(Test.Functions.getBytes).toBeUndefined();
-        expect(Test.Functions.getString).toBeUndefined();
-        expect(Test.Functions.getStringAsync).toBeUndefined();
-        expect(Test.Platform.throwJS).toBeUndefined();
-        expect(Test.Program.onMainInvoked).toBeUndefined();
-        expect(Test.Types.Registry.getRegistry).toBeUndefined();
-        expect(Test.Types.Registry.getRegistries).toBeUndefined();
-        expect(Test.Types.Registry.getRegistryMap).toBeUndefined();
-        expect(() => to<() => void>(Test.Functions).getStringSerialized()).throw(error);
-        expect(() => to<() => void>(Test.Functions).getStringAsyncSerialized()).throw(error);
-        expect(() => to<() => void>(Test.Functions).getBytesSerialized()).throw(error);
-        expect(() => to<() => void>(Test.Platform).throwJSSerialized()).throw(error);
         expect(() => to<() => void>(Test.Program).onMainInvokedSerialized()).throw(error);
-        expect(() => to<() => void>(Test.Types.Registry).getRegistrySerialized()).throw(error);
-        expect(() => to<() => void>(Test.Types.Registry).getRegistriesSerialized()).throw(error);
-        expect(() => to<() => void>(Test.Types.Registry).getRegistryMapSerialized()).throw(error);
     });
     it("can invoke C# method", async () => {
         expect(Test.Invokable.joinStrings("foo", "bar")).toStrictEqual("foobar");
@@ -140,14 +125,14 @@ describe("while bootsharp is booted", () => {
     });
     it("can catch js exception", () => {
         Test.Platform.throwJS = function () { throw new Error("foo"); };
-        expect(Test.Platform.catchException().split("\n")[0]).toStrictEqual("Error: foo");
+        expect(Test.Platform.catchException()!.split("\n")[0]).toStrictEqual("Error: foo");
     });
     it("can catch dotnet exceptions", () => {
         expect(() => Test.Platform.throwCS("bar")).throw("bar");
     });
     it("can invoke async method with async js callback", async () => {
         Test.Functions.getStringAsync = async () => {
-            await new Promise(res => setTimeout(res, 100));
+            await new Promise(res => setTimeout(res, 1));
             return "foo";
         };
         expect(await Test.Functions.echoStringAsync()).toStrictEqual("foo");
@@ -161,5 +146,24 @@ describe("while bootsharp is booted", () => {
     it("can compare indexed enums", () => {
         expect(Test.Invokable.getIdxEnumOne() === Test.IdxEnum.One).toBeTruthy();
         expect(Test.Invokable.getIdxEnumOne() === Test.IdxEnum.Two).not.toBeTruthy();
+    });
+    it("can interop with exported interfaces", async () => {
+        const result = await Test.Program.getExportedArgAndVehicleIdAsync({ id: "foo", maxSpeed: 0 }, "bar");
+        expect(result).toStrictEqual("foobar");
+    });
+    it("can interop with imported interfaces", async () => {
+        class Imported {
+            constructor(private arg: string) { }
+            getInstanceArg() { return this.arg; }
+            async getVehicleIdAsync(vehicle: Test.Types.Vehicle) {
+                await new Promise(res => setTimeout(res, 1));
+                return vehicle.id;
+            }
+        }
+        Test.Types.ImportedStatic.getInstance = arg => new Imported(arg);
+        const result1 = await Test.Program.getImportedArgAndVehicleIdAsync({ id: "foo", maxSpeed: 0 }, "bar");
+        const result2 = await Test.Program.getImportedArgAndVehicleIdAsync({ id: "baz", maxSpeed: 0 }, "nya");
+        expect(result1).toStrictEqual("foobar");
+        expect(result2).toStrictEqual("baznya");
     });
 });

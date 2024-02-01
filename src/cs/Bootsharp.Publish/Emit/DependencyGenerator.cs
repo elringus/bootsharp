@@ -42,7 +42,8 @@ internal sealed class DependencyGenerator (string entryAssembly)
         foreach (var inter in inspection.StaticInterfaces)
             Add(All, inter.FullName, entryAssembly);
         foreach (var inter in inspection.InstancedInterfaces)
-            Add(All, inter.FullName, entryAssembly);
+            if (inter.Kind == InterfaceKind.Import)
+                Add(All, inter.FullName, entryAssembly);
     }
 
     private void AddClassesWithInteropMethods (SolutionInspection inspection)

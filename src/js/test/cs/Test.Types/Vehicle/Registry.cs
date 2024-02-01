@@ -24,14 +24,14 @@ public partial class Registry
     [JSInvokable]
     public static async Task<IReadOnlyList<Registry>> ConcatRegistriesAsync (IReadOnlyList<Registry> registries)
     {
-        await Task.Delay(10);
+        await Task.Delay(1);
         return registries.Concat(GetRegistries()).ToArray();
     }
 
     [JSInvokable]
     public static async Task<IReadOnlyDictionary<string, Registry>> MapRegistriesAsync (IReadOnlyDictionary<string, Registry> map)
     {
-        await Task.Delay(10);
+        await Task.Delay(1);
         return map.Concat(GetRegistryMap()).ToDictionary(kv => kv.Key, kv => kv.Value);
     }
 

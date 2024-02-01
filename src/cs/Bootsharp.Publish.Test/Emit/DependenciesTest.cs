@@ -68,11 +68,11 @@ public class DependenciesTest : EmitTest
             """));
         Execute();
         Added(All, "Bootsharp.Generated.Exports.JSExportedStatic");
-        Added(All, "Bootsharp.Generated.Exports.JSExportedInstancedA");
-        Added(All, "Bootsharp.Generated.Exports.JSExportedInstancedB");
         Added(All, "Bootsharp.Generated.Imports.JSImportedStatic");
         Added(All, "Bootsharp.Generated.Imports.JSImportedInstancedA");
         Added(All, "Bootsharp.Generated.Imports.JSImportedInstancedB");
+        // Export interop instances are not generated in C#; they're authored by user.
+        Assert.DoesNotContain("Bootsharp.Generated.Exports.JSExportedInstanced", TestedContent);
     }
 
     [Fact]
