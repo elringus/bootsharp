@@ -31,7 +31,7 @@ public static partial class Program
     public static async Task<string> GetExportedArgAndVehicleIdAsync (Vehicle vehicle, string arg)
     {
         var exported = services.GetService<IExportedStatic>()!;
-        var instance = exported.GetInstance(arg);
+        var instance = await exported.GetInstanceAsync(arg);
         return await instance.GetVehicleIdAsync(vehicle) + instance.GetInstanceArg();
     }
 
@@ -39,7 +39,7 @@ public static partial class Program
     public static async Task<string> GetImportedArgAndVehicleIdAsync (Vehicle vehicle, string arg)
     {
         var imported = services.GetService<IImportedStatic>()!;
-        var instance = imported.GetInstance(arg);
+        var instance = await imported.GetInstanceAsync(arg);
         return await instance.GetVehicleIdAsync(vehicle) + instance.GetInstanceArg();
     }
 }

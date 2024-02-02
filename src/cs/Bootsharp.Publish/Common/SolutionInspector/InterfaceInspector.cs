@@ -8,28 +8,36 @@ internal sealed class InterfaceInspector (Preferences prefs, TypeConverter conve
 
     public InterfaceMeta Inspect (Type interfaceType, InterfaceKind kind)
     {
-        var (space, name, full) = BuildInteropInterfaceImplementationName(interfaceType, kind);
+        var impl = BuildInteropInterfaceImplementationName(interfaceType, kind);
         return new InterfaceMeta {
             Kind = kind,
             Type = interfaceType,
             TypeSyntax = BuildSyntax(interfaceType),
-            Namespace = space,
-            Name = name,
-            Methods = interfaceType.GetMethods().Select(m => CreateMethod(m, kind, full)).ToArray()
+            Namespace = impl.space,
+            Name = impl.name,
+            Methods = interfaceType.GetMethods()
+                .Where(m => m.IsAbstract)
+                .Select(m => CreateMethod(m, kind, impl.full)).ToArray()
         };
     }
 
-    private MethodMeta CreateMethod (MethodInfo info, InterfaceKind iKind, string space)
+    private MethodMeta CreateMethod (MethodInfo info, InterfaceKind kind, string space)
     {
         var name = WithPrefs(prefs.Event, info.Name, info.Name);
-        var mKind = iKind == InterfaceKind.Export ? MethodKind.Invokable
-            : name != info.Name ? MethodKind.Event : MethodKind.Function;
-        return methodInspector.Inspect(info, mKind) with {
+        return methodInspector.Inspect(info, ResolveMethodKind(kind, info, name)) with {
             Assembly = entryAssemblyName,
             Space = space,
             Name = name,
             JSName = ToFirstLower(name),
             InterfaceName = info.Name
         };
+    }
+
+    private MethodKind ResolveMethodKind (InterfaceKind iKind, MethodInfo info, string implMethodName)
+    {
+        if (iKind == InterfaceKind.Export) return MethodKind.Invokable;
+        // TODO: This assumes event methods are always renamed via prefs, which may not be the case.
+        if (implMethodName != info.Name) return MethodKind.Event;
+        return MethodKind.Function;
     }
 }

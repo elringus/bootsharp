@@ -115,7 +115,7 @@ internal sealed class BindingGenerator (Preferences prefs)
         var invArgs = string.Join(", ", method.Arguments.Select(BuildInvArg));
         if (instanced) invArgs = PrependInstanceIdArgName(invArgs);
         var body = $"{(wait ? "await " : "")}{endpoint}({invArgs})";
-        if (method.ReturnValue.Instance) body = $"new {BuildInstanceClassName(method.ReturnValue)}({body})";
+        if (method.ReturnValue.Instance) body = $"new {BuildInstanceClassName(method.ReturnValue.InstanceType)}({body})";
         else if (method.ReturnValue.Serialized) body = $"deserialize({body})";
         var func = $"{(wait ? "async " : "")}({funcArgs}) => {body}";
         builder.Append($"{Break()}{method.JSName}: {func}");
@@ -154,7 +154,7 @@ internal sealed class BindingGenerator (Preferences prefs)
 
         string BuildInvArg (ArgumentMeta arg)
         {
-            if (arg.Value.Instance) return $"new {BuildInstanceClassName(arg.Value)}({arg.JSName})";
+            if (arg.Value.Instance) return $"new {BuildInstanceClassName(arg.Value.InstanceType)}({arg.JSName})";
             if (arg.Value.Serialized) return $"deserialize({arg.JSName})";
             return arg.JSName;
         }
@@ -182,16 +182,16 @@ internal sealed class BindingGenerator (Preferences prefs)
     }
 
     private bool ShouldWait (MethodMeta method) =>
-        (method.Arguments.Any(a => a.Value.Serialized) ||
-         method.ReturnValue.Serialized) && method.ReturnValue.Async;
+        (method.Arguments.Any(a => a.Value.Serialized || a.Value.Instance) ||
+         method.ReturnValue.Serialized || method.ReturnValue.Instance) && method.ReturnValue.Async;
 
     private string Break () => $"{Comma()}\n{Pad(level + 1)}";
     private string Pad (int level) => new(' ', level * 4);
     private string Comma () => builder[^1] == '{' ? "" : ",";
 
-    private string BuildInstanceClassName (ValueMeta value)
+    private string BuildInstanceClassName (Type instanceType)
     {
-        var instance = instanced.First(i => i.Type == value.Type);
+        var instance = instanced.First(i => i.Type == instanceType);
         return BuildJSInteropInstanceClassName(instance);
     }
 

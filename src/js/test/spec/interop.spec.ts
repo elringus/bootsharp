@@ -160,7 +160,10 @@ describe("while bootsharp is booted", () => {
                 return vehicle.id;
             }
         }
-        Test.Types.ImportedStatic.getInstance = arg => new Imported(arg);
+        Test.Types.ImportedStatic.getInstanceAsync = async (arg) => {
+            await new Promise(res => setTimeout(res, 1));
+            return new Imported(arg);
+        };
         const result1 = await Test.Program.getImportedArgAndVehicleIdAsync({ id: "foo", maxSpeed: 0 }, "bar");
         const result2 = await Test.Program.getImportedArgAndVehicleIdAsync({ id: "baz", maxSpeed: 0 }, "nya");
         expect(result1).toStrictEqual("foobar");

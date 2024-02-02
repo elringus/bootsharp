@@ -1,6 +1,8 @@
-﻿namespace Test.Types;
+﻿using System.Threading.Tasks;
+
+namespace Test.Types;
 
 public interface IImportedStatic
 {
-    IImportedInstanced GetInstance (string arg);
+    Task<IExportedInstanced> GetInstanceAsync (string arg);
 }

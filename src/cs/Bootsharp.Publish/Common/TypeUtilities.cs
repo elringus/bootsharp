@@ -153,8 +153,11 @@ internal static class TypeUtilities
         return typeName[..delimiterIndex];
     }
 
-    public static bool IsInstancedInteropInterface (Type type)
+    public static bool IsInstancedInteropInterface (Type type, [NotNullWhen(true)] out Type? instanceType)
     {
+        if (IsTaskWithResult(type, out instanceType))
+            return IsInstancedInteropInterface(instanceType, out _);
+        instanceType = type;
         if (!type.IsInterface) return false;
         if (string.IsNullOrEmpty(type.Namespace)) return true;
         return !type.Namespace.StartsWith("System.", StringComparison.Ordinal);
@@ -164,7 +167,7 @@ internal static class TypeUtilities
     public static bool ShouldSerialize (Type type)
     {
         if (IsVoid(type)) return false;
-        if (IsInstancedInteropInterface(type)) return false;
+        if (IsInstancedInteropInterface(type, out _)) return false;
         if (IsTaskWithResult(type, out var result))
             // TODO: Remove 'IsList(result)' when resolved: https://github.com/elringus/bootsharp/issues/138
             return IsList(result) || ShouldSerialize(result);
@@ -198,11 +201,11 @@ internal static class TypeUtilities
         return string.IsNullOrEmpty(space) ? name : $"{space}.{name}";
     }
 
-    public static (string space, string name, string full) BuildInteropInterfaceImplementationName (Type interfaceType, InterfaceKind kind)
+    public static (string space, string name, string full) BuildInteropInterfaceImplementationName (Type instanceType, InterfaceKind kind)
     {
         var space = "Bootsharp.Generated." + (kind == InterfaceKind.Export ? "Exports" : "Imports");
-        if (interfaceType.Namespace != null) space += $".{interfaceType.Namespace}";
-        var name = "JS" + interfaceType.Name[1..];
+        if (instanceType.Namespace != null) space += $".{instanceType.Namespace}";
+        var name = "JS" + instanceType.Name[1..];
         return (space, name, $"{space}.{name}");
     }
 

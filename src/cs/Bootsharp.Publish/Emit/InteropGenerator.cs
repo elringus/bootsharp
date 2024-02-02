@@ -50,7 +50,7 @@ internal sealed class InteropGenerator
     {
         var instanced = TryInstanced(inv, out var instance);
         var marshalAs = MarshalAmbiguous(inv.ReturnValue.TypeSyntax, true);
-        var wait = inv.ReturnValue.Async && inv.ReturnValue.Serialized;
+        var wait = ShouldWait(inv.ReturnValue);
         var attr = $"[System.Runtime.InteropServices.JavaScript.JSExport] {marshalAs}";
         methods.Add($"{attr}internal static {BuildSignature()} => {BuildBody()};");
 
@@ -80,7 +80,7 @@ internal sealed class InteropGenerator
         {
             if (arg.Value.Instance)
             {
-                var (_, _, full) = BuildInteropInterfaceImplementationName(arg.Value.Type, InterfaceKind.Import);
+                var (_, _, full) = BuildInteropInterfaceImplementationName(arg.Value.InstanceType, InterfaceKind.Import);
                 return $"new global::{full}({arg.Name})";
             }
             if (arg.Value.Serialized) return $"Deserialize<{arg.Value.TypeSyntax}>({arg.Name})";
@@ -94,7 +94,7 @@ internal sealed class InteropGenerator
         var id = $"{method.Space}.{method.Name}";
         var args = string.Join(", ", method.Arguments.Select(arg => $"{arg.Value.TypeSyntax} {arg.Name}"));
         if (instanced) args = args = PrependInstanceIdArgTypeAndName(args);
-        var wait = method.ReturnValue.Async && method.ReturnValue.Serialized;
+        var wait = ShouldWait(method.ReturnValue);
         var async = wait ? "async " : "";
         proxies.Add($"""Proxies.Set("{id}", {async}({args}) => {BuildBody()});""");
 
@@ -103,13 +103,13 @@ internal sealed class InteropGenerator
             var args = string.Join(", ", method.Arguments.Select(BuildBodyArg));
             if (instanced) args = PrependInstanceIdArgName(args);
             var body = $"{BuildMethodName(method)}({args})";
+            if (wait) body = $"await {body}";
             if (method.ReturnValue.Instance)
             {
-                var (_, _, full) = BuildInteropInterfaceImplementationName(method.ReturnValue.Type, InterfaceKind.Import);
-                return $"new global::{full}({body})";
+                var (_, _, full) = BuildInteropInterfaceImplementationName(method.ReturnValue.InstanceType, InterfaceKind.Import);
+                return $"({BuildSyntax(method.ReturnValue.InstanceType)})new global::{full}({body})";
             }
             if (!method.ReturnValue.Serialized) return body;
-            if (wait) body = $"await {body}";
             var type = method.ReturnValue.Async
                 ? method.ReturnValue.TypeSyntax[36..^1]
                 : method.ReturnValue.TypeSyntax;
@@ -153,7 +153,7 @@ internal sealed class InteropGenerator
     private string BuildReturnValue (ValueMeta value)
     {
         var syntax = BuildValueType(value);
-        if (value.Serialized && value.Async)
+        if (ShouldWait(value))
             syntax = $"global::System.Threading.Tasks.Task<{syntax}>";
         return syntax;
     }
@@ -167,5 +167,10 @@ internal sealed class InteropGenerator
     {
         instance = instanced.FirstOrDefault(i => i.Methods.Contains(method));
         return instance is not null;
+    }
+
+    private bool ShouldWait (ValueMeta value)
+    {
+        return value.Async && (value.Serialized || value.Instance);
     }
 }

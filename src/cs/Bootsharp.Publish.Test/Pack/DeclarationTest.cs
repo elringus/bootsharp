@@ -1023,4 +1023,27 @@ public class DeclarationTest : PackTest
             }
             """);
     }
+
+    [Fact]
+    public void IgnoresImplementedInterfaceMethods ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSExport(typeof(IExportedStatic))]
+            [assembly:JSImport(typeof(IImportedStatic))]
+
+            public interface IExportedStatic { int Foo () => 0; }
+            public interface IImportedStatic { int Foo () => 0; }
+            public interface IExportedInstanced { int Foo () => 0; }
+            public interface IImportedInstanced { int Foo () => 0; }
+
+            public class Class
+            {
+                [JSInvokable] public static IExportedInstanced GetExported () => default;
+                [JSFunction] public static IImportedInstanced GetImported () => default;
+            }
+            """));
+        Execute();
+        Assert.DoesNotContain("Foo", TestedContent, StringComparison.OrdinalIgnoreCase);
+    }
 }

@@ -124,7 +124,7 @@ internal sealed class SolutionInspector
 
     private void InspectMethodParameter (Type paramType, InterfaceKind kind)
     {
-        if (!IsInstancedInteropInterface(paramType)) return;
-        instancedInterfaces.Add(interfaceInspector.Inspect(paramType, kind));
+        if (IsInstancedInteropInterface(paramType, out var instanceType))
+            instancedInterfaces.Add(interfaceInspector.Inspect(instanceType, kind));
     }
 }

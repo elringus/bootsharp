@@ -1,4 +1,6 @@
-﻿namespace Bootsharp.Publish;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bootsharp.Publish;
 
 /// <summary>
 /// Interop method's argument or returned value.
@@ -36,5 +38,10 @@ internal sealed record ValueMeta
     /// <summary>
     /// Whether the value is an interop instance.
     /// </summary>
-    public bool Instance => IsInstancedInteropInterface(Type);
+    [MemberNotNullWhen(true, nameof(InstanceType))]
+    public required bool Instance { get; init; }
+    /// <summary>
+    /// When <see cref="Instance"/> contains type of the associated interop interface instance.
+    /// </summary>
+    public required Type? InstanceType { get; init; }
 }
