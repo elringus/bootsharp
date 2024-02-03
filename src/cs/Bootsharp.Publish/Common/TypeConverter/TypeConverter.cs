@@ -74,10 +74,8 @@ internal sealed class TypeConverter (Preferences prefs)
     {
         if (type.Name == "Void") return "void";
         if (CrawledTypes.Contains(type)) return BuildJSSpaceFullName(type, prefs);
+        if (IsNumber(type)) return "number";
         return Type.GetTypeCode(type) switch {
-            TypeCode.Byte or TypeCode.SByte or TypeCode.UInt16 or TypeCode.UInt32 or
-                TypeCode.UInt64 or TypeCode.Int16 or TypeCode.Int32 or
-                TypeCode.Decimal or TypeCode.Double or TypeCode.Single => "number",
             TypeCode.Int64 => "bigint",
             TypeCode.Char or TypeCode.String => "string",
             TypeCode.Boolean => "boolean",
@@ -85,6 +83,10 @@ internal sealed class TypeConverter (Preferences prefs)
             _ => "any"
         };
     }
+
+    private bool IsNumber (Type type) => Type.GetTypeCode(type) is
+        TypeCode.Byte or TypeCode.SByte or TypeCode.UInt16 or TypeCode.UInt32 or TypeCode.UInt64 or
+        TypeCode.Int16 or TypeCode.Int32 or TypeCode.Decimal or TypeCode.Double or TypeCode.Single;
 
     private bool EnterNullability ()
     {

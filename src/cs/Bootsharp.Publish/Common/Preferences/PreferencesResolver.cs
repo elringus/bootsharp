@@ -34,7 +34,7 @@ internal sealed class PreferencesResolver (string entryAssemblyName)
         var value = CreateValue(attr.NamedArguments.First(a => a.MemberName == name).TypedValue);
         var prefs = new Preference[value.Length / 2];
         for (int i = 0; i < prefs.Length; i++)
-            prefs[i] = new(value[i * 2], value[i * 2 + 1]);
+            prefs[i] = new(value[i * 2], value[(i * 2) + 1]);
         return prefs;
     }
 
