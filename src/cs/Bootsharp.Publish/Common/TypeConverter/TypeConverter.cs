@@ -72,7 +72,7 @@ internal sealed class TypeConverter (Preferences prefs)
 
     private string ConvertFinal (Type type)
     {
-        if (type.Name == "Void") return "void";
+        if (IsVoid(type)) return "void";
         if (CrawledTypes.Contains(type)) return BuildJSSpaceFullName(type, prefs);
         if (IsNumber(type)) return "number";
         return Type.GetTypeCode(type) switch {
