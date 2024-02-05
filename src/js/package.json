@@ -1,8 +1,8 @@
 {
     "scripts": {
         "compile": "sh scripts/compile-test.sh",
-        "test": "vitest run --silent --pool=vmThreads",
-        "cover": "npm test -- --coverage.enabled --coverage.100 --coverage.include=**/sideload/*.mjs --coverage.exclude=**/dotnet.* --coverage.allowExternal",
+        "test": "sh scripts/test.sh",
+        "cover": "sh scripts/cover.sh",
         "build": "sh scripts/build.sh"
     },
     "devDependencies": {

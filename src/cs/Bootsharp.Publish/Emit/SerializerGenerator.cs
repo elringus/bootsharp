@@ -9,10 +9,13 @@ internal sealed class SerializerGenerator
 {
     private readonly HashSet<string> attributes = [];
 
-    public string Generate (AssemblyInspection inspection)
+    public string Generate (SolutionInspection inspection)
     {
-        foreach (var method in inspection.Methods)
-            CollectAttributes(method);
+        var metas = inspection.StaticMethods
+            .Concat(inspection.StaticInterfaces.SelectMany(i => i.Methods))
+            .Concat(inspection.InstancedInterfaces.SelectMany(i => i.Methods));
+        foreach (var meta in metas)
+            CollectAttributes(meta);
         CollectDuplicates(inspection);
         if (attributes.Count == 0) return "";
         return
@@ -54,11 +57,11 @@ internal sealed class SerializerGenerator
         attributes.Add(BuildAttribute(syntax));
     }
 
-    private void CollectDuplicates (AssemblyInspection inspection)
+    private void CollectDuplicates (SolutionInspection inspection)
     {
         var names = new HashSet<string>();
         foreach (var type in inspection.Crawled.DistinctBy(t => t.FullName))
-            if (!names.Add(type.Name))
+            if (ShouldSerialize(type) && !names.Add(type.Name))
                 CollectAttributes(BuildSyntax(type), type);
     }
 

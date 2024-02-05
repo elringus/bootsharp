@@ -179,8 +179,15 @@ public class DeclarationTest : PackTest
             WithClass("Nya.Bar", "[JSInvokable] public static void Fun () { }"),
             WithClass("Nya.Foo", "[JSInvokable] public static void Foo () { }"));
         Execute();
-        Contains("export namespace Nya.Bar.Class {\n    export function fun(): void;\n}");
-        Contains("export namespace Nya.Foo.Class {\n    export function foo(): void;\n}");
+        Contains(
+            """
+            export namespace Nya.Bar.Class {
+                export function fun(): void;
+            }
+            export namespace Nya.Foo.Class {
+                export function foo(): void;
+            }
+            """);
     }
 
     [Fact]
@@ -293,14 +300,33 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
+    public void OtherTypesAreTranslatedToAny ()
+    {
+        AddAssembly(WithClass("[JSInvokable] public static DBNull Method (IEnumerable<string> t) => default;"));
+        Execute();
+        Contains("method(t: any): any");
+    }
+
+    [Fact]
     public void DefinitionIsGeneratedForObjectType ()
     {
         AddAssembly(
             With("n", "public class Foo { public string S { get; set; } public int I { get; set; } }"),
             WithClass("n", "[JSInvokable] public static Foo Method (Foo t) => default;"));
         Execute();
-        Matches(@"export interface Foo {\s*s: string;\s*i: number;\s*}");
-        Contains("method(t: n.Foo): n.Foo");
+        Contains(
+            """
+            export namespace n {
+                export interface Foo {
+                    s: string;
+                    i: number;
+                }
+            }
+
+            export namespace n.Class {
+                export function method(t: n.Foo): n.Foo;
+            }
+            """);
     }
 
     [Fact]
@@ -310,12 +336,25 @@ public class DeclarationTest : PackTest
             With("n", "public interface Interface { Interface Foo { get; } void Bar (Interface b); }"),
             With("n", "public class Base { }"),
             With("n", "public class Derived : Base, Interface { public Interface Foo { get; } public void Bar (Interface b) {} }"),
-            WithClass("n", "[JSInvokable] public static Derived Method (Interface b) => default;"));
+            WithClass("n", "[JSInvokable] public static Derived Method (Base b) => default;"));
         Execute();
-        Matches(@"export interface Interface {\s*foo: n.Interface;\s*}");
-        Matches(@"export interface Base {\s*}");
-        Matches(@"export interface Derived extends n.Base, n.Interface {\s*foo: n.Interface;\s*}");
-        Contains("method(b: n.Interface): n.Derived");
+        Contains(
+            """
+            export namespace n {
+                export interface Base {
+                }
+                export interface Derived extends n.Base, n.Interface {
+                    foo: n.Interface;
+                }
+                export interface Interface {
+                    foo: n.Interface;
+                }
+            }
+
+            export namespace n.Class {
+                export function method(b: n.Base): n.Derived;
+            }
+            """);
     }
 
     [Fact]
@@ -326,9 +365,20 @@ public class DeclarationTest : PackTest
             With("n", "public class Container { public List<Item> Items { get; } }"),
             WithClass("n", "[JSInvokable] public static Container Combine (List<Item> items) => default;"));
         Execute();
-        Matches(@"export interface Item {\s*}");
-        Matches(@"export interface Container {\s*items: Array<n.Item>;\s*}");
-        Contains("combine(items: Array<n.Item>): n.Container");
+        Contains(
+            """
+            export namespace n {
+                export interface Item {
+                }
+                export interface Container {
+                    items: Array<n.Item>;
+                }
+            }
+
+            export namespace n.Class {
+                export function combine(items: Array<n.Item>): n.Container;
+            }
+            """);
     }
 
     [Fact]
@@ -339,9 +389,20 @@ public class DeclarationTest : PackTest
             With("n", "public class Container { public Item[][] Items { get; } }"),
             WithClass("n", "[JSInvokable] public static Container Get () => default;"));
         Execute();
-        Matches(@"export interface Item {\s*}");
-        Matches(@"export interface Container {\s*items: Array<Array<n.Item>>;\s*}");
-        Contains("get(): n.Container");
+        Contains(
+            """
+            export namespace n {
+                export interface Container {
+                    items: Array<Array<n.Item>>;
+                }
+                export interface Item {
+                }
+            }
+
+            export namespace n.Class {
+                export function get(): n.Container;
+            }
+            """);
     }
 
     [Fact]
@@ -352,9 +413,20 @@ public class DeclarationTest : PackTest
             With("n", "public class Container { public IReadOnlyList<Item> Items { get; } }"),
             WithClass("n", "[JSInvokable] public static Container Combine (IReadOnlyList<Item> items) => default;"));
         Execute();
-        Matches(@"export interface Item {\s*}");
-        Matches(@"export interface Container {\s*items: Array<n.Item>;\s*}");
-        Contains("combine(items: Array<n.Item>): n.Container");
+        Contains(
+            """
+            export namespace n {
+                export interface Item {
+                }
+                export interface Container {
+                    items: Array<n.Item>;
+                }
+            }
+
+            export namespace n.Class {
+                export function combine(items: Array<n.Item>): n.Container;
+            }
+            """);
     }
 
     [Fact]
@@ -365,9 +437,20 @@ public class DeclarationTest : PackTest
             With("n", "public class Container { public Dictionary<string, Item> Items { get; } }"),
             WithClass("n", "[JSInvokable] public static Container Combine (Dictionary<string, Item> items) => default;"));
         Execute();
-        Matches(@"export interface Item {\s*}");
-        Matches(@"export interface Container {\s*items: Map<string, n.Item>;\s*}");
-        Contains("combine(items: Map<string, n.Item>): n.Container");
+        Contains(
+            """
+            export namespace n {
+                export interface Item {
+                }
+                export interface Container {
+                    items: Map<string, n.Item>;
+                }
+            }
+
+            export namespace n.Class {
+                export function combine(items: Map<string, n.Item>): n.Container;
+            }
+            """);
     }
 
     [Fact]
@@ -378,9 +461,20 @@ public class DeclarationTest : PackTest
             With("n", "public class Container { public IReadOnlyDictionary<string, Item> Items { get; } }"),
             WithClass("n", "[JSInvokable] public static Container Combine (IReadOnlyDictionary<string, Item> items) => default;"));
         Execute();
-        Matches(@"export interface Item {\s*}");
-        Matches(@"export interface Container {\s*items: Map<string, n.Item>;\s*}");
-        Contains("combine(items: Map<string, n.Item>): n.Container");
+        Contains(
+            """
+            export namespace n {
+                export interface Item {
+                }
+                export interface Container {
+                    items: Map<string, n.Item>;
+                }
+            }
+
+            export namespace n.Class {
+                export function combine(items: Map<string, n.Item>): n.Container;
+            }
+            """);
     }
 
     [Fact]
@@ -535,21 +629,23 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void OtherTypesAreTranslatedToAny ()
-    {
-        AddAssembly(WithClass("[JSInvokable] public static DBNull Method (IEnumerable<string> t) => default;"));
-        Execute();
-        Contains("method(t: any): any");
-    }
-
-    [Fact]
     public void StaticPropertiesAreNotIncluded ()
     {
         AddAssembly(
             WithClass("public class Foo { public static string Soo { get; } }"),
             WithClass("[JSInvokable] public static Foo Bar () => default;"));
         Execute();
-        Matches(@"export interface Foo {\s*}");
+        Contains(
+            """
+            export namespace Class {
+                export interface Foo {
+                }
+            }
+
+            export namespace Class {
+                export function bar(): Class.Foo;
+            }
+            """);
     }
 
     [Fact]
@@ -559,7 +655,17 @@ public class DeclarationTest : PackTest
             WithClass("public class Foo { public bool Boo => true; }"),
             WithClass("[JSInvokable] public static Foo Bar () => default;"));
         Execute();
-        Matches(@"export interface Foo {\s*}");
+        Contains(
+            """
+            export namespace Class {
+                export interface Foo {
+                }
+            }
+
+            export namespace Class {
+                export function bar(): Class.Foo;
+            }
+            """);
     }
 
     [Fact]
@@ -696,23 +802,36 @@ public class DeclarationTest : PackTest
             With("Foo.Bar.Nya", "public class Nya { }"),
             WithClass("Foo.Bar.Fun", "[JSFunction] public static void OnFun (Nya.Nya nya) { }"));
         Execute();
-        Contains("export namespace Nya {\n    export interface Nya {\n    }\n}");
-        Contains("export namespace Fun.Class {\n    export let onFun: (nya: Nya.Nya) => void;\n}");
+        Contains(
+            """
+            export namespace Nya {
+                export interface Nya {
+                }
+            }
+
+            export namespace Fun.Class {
+                export let onFun: (nya: Nya.Nya) => void;
+            }
+            """);
     }
 
     [Fact]
     public void RespectsTypePreference ()
     {
-        AddAssembly(
-            With(
-                """
-                [assembly: Bootsharp.JSPreferences(
-                    Type = [@"Record", "Foo", @".+`.+", "Bar"]
-                )]
-                """),
-            With("public record Record;"),
-            With("public record Generic<T>;"),
-            WithClass("[JSInvokable] public static void Inv (Record r, Generic<string> g) {}"));
+        AddAssembly(With(
+            """
+            [assembly: Bootsharp.JSPreferences(
+                Type = [@"Record", "Foo", @".+`.+", "Bar"]
+            )]
+
+            public record Record;
+            public record Generic<T>;
+
+            public class Class
+            {
+                [JSInvokable] public static void Inv (Record r, Generic<string> g) {}
+            }
+            """));
         Execute();
         Contains(
             """
@@ -809,5 +928,122 @@ public class DeclarationTest : PackTest
                 export const onEvt: Event<[s: string, e: Foo.Enum]>;
             }
             """);
+    }
+
+    [Fact]
+    public void GeneratesInstancedInterfacesFromStaticMethods ()
+    {
+        AddAssembly(With(
+            """
+            public enum Enum { A, B }
+            public interface IExportedInstancedA { void Inv (string s, Enum e); }
+            public interface IExportedInstancedB { Enum Inv (); }
+            public interface IImportedInstancedA { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }
+            public interface IImportedInstancedB { Enum Fun (); void NotifyEvt (); }
+
+            public class Class
+            {
+                 [JSInvokable] public static IExportedInstancedA CreateExported (string arg, IImportedInstancedB i) => default;
+                 [JSFunction] public static IImportedInstancedA CreateImported (string arg, IExportedInstancedB i) => default;
+            }
+            """));
+        Execute();
+        Contains(
+            """
+            export interface IImportedInstancedB {
+                fun(): Enum;
+                onEvt: Event<[]>;
+            }
+            export interface IExportedInstancedA {
+                inv(s: string, e: Enum): void;
+            }
+            export enum Enum {
+                A,
+                B
+            }
+            export interface IExportedInstancedB {
+                inv(): Enum;
+            }
+            export interface IImportedInstancedA {
+                fun(s: string, e: Enum): void;
+                onEvt: Event<[s: string, e: Enum]>;
+            }
+
+            export namespace Class {
+                export function createExported(arg: string, i: IImportedInstancedB): IExportedInstancedA;
+                export let createImported: (arg: string, i: IExportedInstancedB) => IImportedInstancedA;
+            }
+            """);
+    }
+
+    [Fact]
+    public void GeneratesInstancedInterfacesFromStaticInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSExport(typeof(IExportedStatic))]
+            [assembly:JSImport(typeof(IImportedStatic))]
+
+            public interface IExportedStatic { IExportedInstancedA CreateExported (string arg, IImportedInstancedB i); }
+            public interface IImportedStatic { IImportedInstancedA CreateImported (string arg, IExportedInstancedB i); }
+
+            public enum Enum { A, B }
+            public interface IExportedInstancedA { void Inv (string s, Enum e); }
+            public interface IExportedInstancedB { Enum Inv (); }
+            public interface IImportedInstancedA { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }
+            public interface IImportedInstancedB { Enum Fun (); void NotifyEvt (); }
+            """));
+        Execute();
+        Contains(
+            """
+            export interface IImportedInstancedB {
+                fun(): Enum;
+                onEvt: Event<[]>;
+            }
+            export interface IExportedInstancedA {
+                inv(s: string, e: Enum): void;
+            }
+            export enum Enum {
+                A,
+                B
+            }
+            export interface IExportedInstancedB {
+                inv(): Enum;
+            }
+            export interface IImportedInstancedA {
+                fun(s: string, e: Enum): void;
+                onEvt: Event<[s: string, e: Enum]>;
+            }
+
+            export namespace ExportedStatic {
+                export function createExported(arg: string, i: IImportedInstancedB): IExportedInstancedA;
+            }
+            export namespace ImportedStatic {
+                export let createImported: (arg: string, i: IExportedInstancedB) => IImportedInstancedA;
+            }
+            """);
+    }
+
+    [Fact]
+    public void IgnoresImplementedInterfaceMethods ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSExport(typeof(IExportedStatic))]
+            [assembly:JSImport(typeof(IImportedStatic))]
+
+            public interface IExportedStatic { int Foo () => 0; }
+            public interface IImportedStatic { int Foo () => 0; }
+            public interface IExportedInstanced { int Foo () => 0; }
+            public interface IImportedInstanced { int Foo () => 0; }
+
+            public class Class
+            {
+                [JSInvokable] public static IExportedInstanced GetExported () => default;
+                [JSFunction] public static IImportedInstanced GetImported () => default;
+            }
+            """));
+        Execute();
+        Assert.DoesNotContain("Foo", TestedContent, StringComparison.OrdinalIgnoreCase);
     }
 }

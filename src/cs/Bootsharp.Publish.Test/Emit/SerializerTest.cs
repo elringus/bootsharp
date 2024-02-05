@@ -22,6 +22,30 @@ public class SerializerTest : EmitTest
         Assert.DoesNotContain("JsonSerializable", TestedContent);
     }
 
+    [Fact]
+    public void DoesntSerializeInstancedInteropInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            namespace Space
+            {
+                public interface IExported { void Inv (); }
+                public interface IImported { void Fun (); void NotifyEvt(); }
+            }
+
+            public interface IExported { void Inv (); }
+            public interface IImported { void Fun (); void NotifyEvt(); }
+
+            public class Class
+            {
+                [JSInvokable] public static Space.IExported GetExported (Space.IImported arg) => default;
+                [JSFunction] public static Task<IImported> GetImported (IExported arg) => default;
+            }
+            """));
+        Execute();
+        Assert.DoesNotContain("JsonSerializable", TestedContent);
+    }
+
     [Fact] // .NET's generator indexes types by short names (w/o namespace) and fails on duplicates.
     public void AddsOnlyTopLevelTypesAndCrawledDuplicates ()
     {

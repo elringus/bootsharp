@@ -14,12 +14,14 @@ public class BindingTest : PackTest
     [Fact]
     public void InteropFunctionsImported ()
     {
-        AddAssembly(WithClass("Foo", "[JSInvokable] public static void Bar () {}"));
+        AddAssembly(WithClass("[JSInvokable] public static void Inv () {}"));
         Execute();
         Contains(
             """
             import { exports } from "./exports";
             import { Event } from "./event";
+            import { registerInstance, getInstance, disposeOnFinalize } from "./instances";
+
             function getExports () { if (exports == null) throw Error("Boot the runtime before invoking C# APIs."); return exports; }
             function serialize(obj) { return JSON.stringify(obj); }
             function deserialize(json) { const result = JSON.parse(json); if (result === null) return undefined; return result; }
@@ -434,7 +436,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForExportImportInterfaces ()
+    public void GeneratesForStaticInteropInterfaces ()
     {
         AddAssembly(With(
             """
@@ -468,7 +470,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForExportImportInterfacesWithSpacePref ()
+    public void GeneratesForStaticInteropInterfacesWithSpacePref ()
     {
         AddAssembly(With(
             """
@@ -496,5 +498,87 @@ public class BindingTest : PackTest
                 Enum: { "0": "A", "1": "B", "A": 0, "B": 1 }
             };
             """);
+    }
+
+    [Fact]
+    public void GeneratesForInstancedInteropInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            public enum Enum { A, B }
+
+            public interface IExported { Enum Inv (string str); }
+            public interface IImported { void NotifyEvt(string str); }
+
+            namespace Space
+            {
+                public interface IExported { void Inv (Enum en); }
+                public interface IImported { Enum Fun (Enum en); }
+            }
+
+            public class Class
+            {
+                [JSInvokable] public static Task<Space.IExported> GetExported (Space.IImported inst) => default;
+                [JSFunction] public static Task<IImported> GetImported (IExported inst) => Proxies.Get<Func<IExported, Task<IImported>>>("Class.GetImported")(inst);
+            }
+            """));
+        Execute();
+        Contains(
+            """
+            class Space_JSExported {
+                constructor(_id) { this._id = _id; disposeOnFinalize(this, _id); }
+                inv(en) { Space.Exported.inv(this._id, en); }
+            }
+            class JSExported {
+                constructor(_id) { this._id = _id; disposeOnFinalize(this, _id); }
+                inv(str) { return Exported.inv(this._id, str); }
+            }
+            """);
+        Contains(
+            """
+            export const Class = {
+                getExported: async (inst) => new Space_JSExported(await getExports().Class_GetExported(registerInstance(inst))),
+                get getImported() { return this.getImportedHandler; },
+                set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = async (inst) => registerInstance(await this.getImportedHandler(new JSExported(inst))); },
+                get getImportedSerialized() { if (typeof this.getImportedHandler !== "function") throw Error("Failed to invoke 'Class.getImported' from C#. Make sure to assign function in JavaScript."); return this.getImportedSerializedHandler; }
+            };
+            export const Exported = {
+                inv: (_id, str) => deserialize(getExports().Bootsharp_Generated_Exports_JSExported_Inv(_id, str))
+            };
+            export const Imported = {
+                onEvtSerialized: (_id, str) => getInstance(_id).onEvt.broadcast(str)
+            };
+            export const Space = {
+                Exported: {
+                    inv: (_id, en) => getExports().Bootsharp_Generated_Exports_Space_JSExported_Inv(_id, serialize(en))
+                },
+                Imported: {
+                    funSerialized: (_id, en) => serialize(getInstance(_id).fun(deserialize(en)))
+                }
+            };
+            """);
+    }
+
+    [Fact]
+    public void IgnoresImplementedInterfaceMethods ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSExport(typeof(IExportedStatic))]
+            [assembly:JSImport(typeof(IImportedStatic))]
+
+            public interface IExportedStatic { int Foo () => 0; }
+            public interface IImportedStatic { int Foo () => 0; }
+            public interface IExportedInstanced { int Foo () => 0; }
+            public interface IImportedInstanced { int Foo () => 0; }
+
+            public class Class
+            {
+                [JSInvokable] public static IExportedInstanced GetExported () => default;
+                [JSFunction] public static IImportedInstanced GetImported () => default;
+            }
+            """));
+        Execute();
+        Assert.DoesNotContain("Foo", TestedContent, StringComparison.OrdinalIgnoreCase);
     }
 }

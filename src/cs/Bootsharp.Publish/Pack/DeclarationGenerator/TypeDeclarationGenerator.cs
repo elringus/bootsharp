@@ -11,13 +11,16 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     private Type type => GetTypeAt(index);
     private Type? prevType => index == 0 ? null : GetTypeAt(index - 1);
     private Type? nextType => index == types.Length - 1 ? null : GetTypeAt(index + 1);
+    private int indent => !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
 
+    private InterfaceMeta[] instanced = null!;
     private Type[] types = null!;
     private int index;
 
-    public string Generate (IEnumerable<Type> sourceTypes)
+    public string Generate (SolutionInspection inspection)
     {
-        types = sourceTypes.OrderBy(GetNamespace).ToArray();
+        instanced = [..inspection.InstancedInterfaces];
+        types = inspection.Crawled.OrderBy(GetNamespace).ToArray();
         for (index = 0; index < types.Length; index++)
             DeclareType();
         return builder.ToString();
@@ -64,17 +67,17 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private void DeclareInterface ()
     {
-        var indent = !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
         AppendLine($"export interface {BuildTypeName(type)}", indent);
         AppendExtensions();
         builder.Append(" {");
-        AppendProperties();
+        if (instanced.FirstOrDefault(i => i.Type == type) is { } inst)
+            AppendInstancedMethods(inst);
+        else AppendProperties();
         AppendLine("}", indent);
     }
 
     private void DeclareEnum ()
     {
-        var indent = !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
         AppendLine($"export enum {type.Name} {{", indent);
         var names = Enum.GetNames(type);
         for (int i = 0; i < names.Length; i++)
@@ -107,16 +110,38 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private void AppendProperty (PropertyInfo property)
     {
-        var indent = !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
         AppendLine(ToFirstLower(property.Name), indent + 1);
         if (IsNullable(property)) builder.Append('?');
-        builder.Append($": {BuildType()};");
+        builder.Append(": ");
+        if (property.PropertyType.IsGenericTypeParameter) builder.Append(property.PropertyType.Name);
+        else builder.Append(converter.ToTypeScript(property.PropertyType, GetNullability(property)));
+        builder.Append(';');
+    }
 
-        string BuildType ()
-        {
-            if (property.PropertyType.IsGenericTypeParameter) return property.PropertyType.Name;
-            return converter.ToTypeScript(property.PropertyType, GetNullability(property));
-        }
+    private void AppendInstancedMethods (InterfaceMeta instanced)
+    {
+        foreach (var meta in instanced.Methods)
+            if (meta.Kind == MethodKind.Event)
+                AppendInstancedEvent(meta);
+            else AppendInstancedFunction(meta);
+    }
+
+    private void AppendInstancedEvent (MethodMeta meta)
+    {
+        AppendLine(meta.JSName, indent + 1);
+        builder.Append(": Event<[");
+        builder.AppendJoin(", ", meta.Arguments.Select(a => $"{a.JSName}: {a.Value.JSTypeSyntax}"));
+        builder.Append("]>;");
+    }
+
+    private void AppendInstancedFunction (MethodMeta meta)
+    {
+        AppendLine(meta.JSName, indent + 1);
+        builder.Append('(');
+        builder.AppendJoin(", ", meta.Arguments.Select(a => $"{a.JSName}: {a.Value.JSTypeSyntax}"));
+        builder.Append("): ");
+        builder.Append(meta.ReturnValue.JSTypeSyntax);
+        builder.Append(';');
     }
 
     private void AppendLine (string content, int level)

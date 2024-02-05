@@ -5,7 +5,7 @@ public class InteropTest : EmitTest
     protected override string TestedContent => GeneratedInterop;
 
     [Fact]
-    public void WhenNothingInspectedGeneratesEmptyClass ()
+    public void WhenNothingInspectedGeneratesDefaults ()
     {
         Execute();
         Contains(
@@ -23,6 +23,14 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
+    public void GeneratesDisposeInstanceBindings ()
+    {
+        Execute();
+        Contains("JSExport] internal static void DisposeExportedInstance (global::System.Int32 id) => global::Bootsharp.Instances.Dispose(id);");
+        Contains("""JSImport("disposeInstance", "Bootsharp")] internal static partial void DisposeImportedInstance (global::System.Int32 id);""");
+    }
+
+    [Fact]
     public void GeneratesForMethodsWithoutNamespace ()
     {
         AddAssembly(With(
@@ -37,9 +45,9 @@ public class InteropTest : EmitTest
         Execute();
         Contains("""Proxies.Set("Class.Fun", () => Class_Fun());""");
         Contains("""Proxies.Set("Class.Evt", () => Class_Evt());""");
-        Contains("[System.Runtime.InteropServices.JavaScript.JSExport] internal static void Class_Inv () => global::Class.Inv();");
-        Contains("""[System.Runtime.InteropServices.JavaScript.JSImport("Class.funSerialized", "Bootsharp")] internal static partial void Class_Fun ();""");
-        Contains("""[System.Runtime.InteropServices.JavaScript.JSImport("Class.evtSerialized", "Bootsharp")] internal static partial void Class_Evt ();""");
+        Contains("JSExport] internal static void Class_Inv () => global::Class.Inv();");
+        Contains("""JSImport("Class.funSerialized", "Bootsharp")] internal static partial void Class_Fun ();""");
+        Contains("""JSImport("Class.evtSerialized", "Bootsharp")] internal static partial void Class_Evt ();""");
     }
 
     [Fact]
@@ -80,7 +88,7 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
-    public void GeneratesForMethodsInGeneratedClasses ()
+    public void GeneratesForStaticInteropInterfaces ()
     {
         AddAssembly(With(
             """
@@ -96,6 +104,61 @@ public class InteropTest : EmitTest
         Contains("JSExport] internal static void Bootsharp_Generated_Exports_Space_JSExported_Inv () => global::Bootsharp.Generated.Exports.Space.JSExported.Inv();");
         Contains("""JSImport("Imported.funSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_JSImported_Fun ();""");
         Contains("""JSImport("Imported.onEvtSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_JSImported_OnEvt ();""");
+    }
+
+    [Fact]
+    public void GeneratesForInstancedInteropInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            namespace Space
+            {
+                public interface IExported { void Inv (); }
+                public interface IImported { void Fun (); }
+            }
+
+            public interface IExported { void Inv (); }
+            public interface IImported { void NotifyEvt(); }
+
+            public class Class
+            {
+                [JSInvokable] public static Task<Space.IExported> GetExported (Space.IImported arg) => default;
+                [JSFunction] public static Task<IImported> GetImported (IExported arg) => Proxies.Get<Func<IExported, Task<IImported>>>("Class.GetImported")(arg);
+            }
+            """));
+        Execute();
+        Contains("""Proxies.Set("Class.GetImported", async (global::IExported arg) => (global::IImported)new global::Bootsharp.Generated.Imports.JSImported(await Class_GetImported(global::Bootsharp.Instances.Register(arg))));""");
+        Contains("""Proxies.Set("Bootsharp.Generated.Imports.JSImported.OnEvt", (global::System.Int32 _id) => Bootsharp_Generated_Imports_JSImported_OnEvt(_id));""");
+        Contains("""Proxies.Set("Bootsharp.Generated.Imports.Space.JSImported.Fun", (global::System.Int32 _id) => Bootsharp_Generated_Imports_Space_JSImported_Fun(_id));""");
+        Contains("JSExport] internal static async global::System.Threading.Tasks.Task<global::System.Int32> Class_GetExported (global::System.Int32 arg) => global::Bootsharp.Instances.Register(await global::Class.GetExported(new global::Bootsharp.Generated.Imports.Space.JSImported(arg)));");
+        Contains("""JSImport("Class.getImportedSerialized", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.Int32> Class_GetImported (global::System.Int32 arg);""");
+        Contains("JSExport] internal static void Bootsharp_Generated_Exports_JSExported_Inv (global::System.Int32 _id) => ((global::IExported)global::Bootsharp.Instances.Get(_id)).Inv();");
+        Contains("""JSImport("Imported.onEvtSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_JSImported_OnEvt (global::System.Int32 _id);""");
+        Contains("JSExport] internal static void Bootsharp_Generated_Exports_Space_JSExported_Inv (global::System.Int32 _id) => ((global::Space.IExported)global::Bootsharp.Instances.Get(_id)).Inv();");
+        Contains("""JSImport("Space.Imported.funSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_Space_JSImported_Fun (global::System.Int32 _id);""");
+    }
+
+    [Fact]
+    public void IgnoresImplementedInterfaceMethods ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSExport(typeof(IExportedStatic))]
+            [assembly:JSImport(typeof(IImportedStatic))]
+
+            public interface IExportedStatic { int Foo () => 0; }
+            public interface IImportedStatic { int Foo () => 0; }
+            public interface IExportedInstanced { int Foo () => 0; }
+            public interface IImportedInstanced { int Foo () => 0; }
+
+            public class Class
+            {
+                [JSInvokable] public static IExportedInstanced GetExported () => default;
+                [JSFunction] public static IImportedInstanced GetImported () => default;
+            }
+            """));
+        Execute();
+        Assert.DoesNotContain("Foo", TestedContent, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

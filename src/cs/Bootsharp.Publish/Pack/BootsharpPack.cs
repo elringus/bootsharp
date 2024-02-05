@@ -15,7 +15,7 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
     public override bool Execute ()
     {
         var prefs = ResolvePreferences();
-        using var inspection = InspectAssemblies(prefs);
+        using var inspection = InspectSolution(prefs);
         GenerateBindings(prefs, inspection);
         GenerateDeclarations(prefs, inspection);
         GenerateResources(inspection);
@@ -29,33 +29,33 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
         return resolver.Resolve(InspectedDirectory);
     }
 
-    private AssemblyInspection InspectAssemblies (Preferences prefs)
+    private SolutionInspection InspectSolution (Preferences prefs)
     {
-        var inspector = new AssemblyInspector(prefs, EntryAssemblyName);
+        var inspector = new SolutionInspector(prefs, EntryAssemblyName);
         // Assemblies in publish dir are trimmed and don't contain some data (eg, method arg names).
         // While the inspected dir contains extra assemblies we don't need in build. Hence the filtering.
         var included = Directory.GetFiles(BuildDirectory, "*.wasm").Select(Path.GetFileNameWithoutExtension).ToHashSet();
         var inspected = Directory.GetFiles(InspectedDirectory, "*.dll").Where(p => included.Contains(Path.GetFileNameWithoutExtension(p)));
-        var inspection = inspector.InspectInDirectory(InspectedDirectory, inspected);
+        var inspection = inspector.Inspect(InspectedDirectory, inspected);
         new InspectionReporter(Log).Report(inspection);
         return inspection;
     }
 
-    private void GenerateBindings (Preferences prefs, AssemblyInspection inspection)
+    private void GenerateBindings (Preferences prefs, SolutionInspection inspection)
     {
         var generator = new BindingGenerator(prefs);
         var content = generator.Generate(inspection);
         File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.js"), content);
     }
 
-    private void GenerateDeclarations (Preferences prefs, AssemblyInspection inspection)
+    private void GenerateDeclarations (Preferences prefs, SolutionInspection inspection)
     {
         var generator = new DeclarationGenerator(prefs);
         var content = generator.Generate(inspection);
         File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.d.ts"), content);
     }
 
-    private void GenerateResources (AssemblyInspection inspection)
+    private void GenerateResources (SolutionInspection inspection)
     {
         var generator = new ResourceGenerator(EntryAssemblyName, EmbedBinaries);
         var content = generator.Generate(BuildDirectory);
