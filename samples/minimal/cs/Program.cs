@@ -8,12 +8,12 @@ public static partial class Program
         OnMainInvoked($"Hello {GetFrontendName()}, .NET here!");
     }
 
-    [JSEvent] // used in JS as `bootsharp.Global.onMainInvoked.subscribe`
+    [JSEvent] // Used in JS as Program.onMainInvoked.subscribe(...)
     public static partial void OnMainInvoked (string message);
 
-    [JSFunction] // assigned in JS as `bootsharp.Global.getName = () => ...`
+    [JSFunction] // Assigned in JS as Program.getFrontendName = ...
     public static partial string GetFrontendName ();
 
-    [JSInvokable] // invoked from JS as `bootsharp.Global.GetBackendName()`
+    [JSInvokable] // Invoked from JS as Program.GetBackendName()
     public static string GetBackendName () => $".NET {Environment.Version}";
 }

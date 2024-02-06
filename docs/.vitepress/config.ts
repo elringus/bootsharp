@@ -50,6 +50,16 @@ export default defineConfig({
                     items: [
                         { text: "Introduction", link: "/guide/" },
                         { text: "Getting Started", link: "/guide/getting-started" },
+                        { text: "Events", link: "/guide/events" },
+                        { text: "Serialization", link: "/guide/serialization" },
+                        { text: "Interop Interfaces", link: "/guide/interop-interfaces" },
+                        { text: "Interop Instances", link: "/guide/interop-instances" },
+                        { text: "Emit Preferences", link: "/guide/emit-prefs" },
+                        { text: "Build Configuration", link: "/guide/build-config" },
+                        { text: "Sideloading Binaries", link: "/guide/sideloading" },
+                        { text: "AOT Compilation", link: "/guide/aot" },
+                        { text: "Assembly Trimming", link: "/guide/trimming" },
+                        { text: "Multi-threading", link: "/guide/multi-threading" }
                     ]
                 },
                 {

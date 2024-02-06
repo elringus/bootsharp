@@ -14,7 +14,7 @@ In contrast to solutions like [Blazor](https://dotnet.microsoft.com/en-us/apps/a
 
 ## How?
 
-Bootsharp installs as a NuGet package to the C# project dedicated for building the solution for web. It's specifically designed to not "leak" the dependency outside entry assembly of the web target, which is essential to keep the domain clean from any platform-specific details.
+Bootsharp installs as a [NuGet package](https://www.nuget.org/packages/Bootsharp) to the C# project dedicated for building the solution for web. It's specifically designed to not "leak" the dependency outside entry assembly of the web target, which is essential to keep the domain clean from any platform-specific details.
 
 While it's possible to author both export (C# -> JS) and import (C# <- JS) bindings via static methods, complex solutions will benefit from interface-based interop: simply feed Bootsharp C# interfaces describing export and import API surfaces, and it will automatically generate associated bindings and type declarations.
 

@@ -1,0 +1,3 @@
+﻿# Build Configuration
+
+(.csproj configs)
