@@ -16,7 +16,7 @@ In contrast to solutions like [Blazor](https://dotnet.microsoft.com/en-us/apps/a
 
 Bootsharp installs as a NuGet package to the C# project dedicated for building the solution for web. It takes special care to not "leak" the dependency outside entry assembly of the web target, which is essential to keep the domain clean from any platform-specific details.
 
-While it's possible to author both export (C# -> JavaScript) and import (JavaScript -> C#) bindings via static methods, complex solutions will benefit from interface-based interop: simply feed Bootsharp C# interfaces, describing export and import API surfaces, and it will automatically generate associated bindings and type declarations.
+While it's possible to author both export (C# -> JavaScript) and import (JavaScript -> C#) bindings via static methods, complex solutions will benefit from interface-based interop: simply feed Bootsharp C# interfaces describing export and import API surfaces, and it will automatically generate associated bindings and type declarations.
 
 ![](/img/banner.png)
 
@@ -24,8 +24,12 @@ Bootsharp will automatically build and bundle JavaScript package when publishing
 
 ::: code-group
 ```jsonc [package.json]
+"scripts": {
+    // Compile C# solution into ES module.
+    "compile": "dotnet publish backend"
+},
 "dependencies": {
-    // Reference C# solution.
+    // Reference C# solution module.
     "backend": "file:backend"
 }
 ```
@@ -33,7 +37,7 @@ Bootsharp will automatically build and bundle JavaScript package when publishing
 
 ::: code-group
 ```ts [main.ts]
-// Import C# solution.
+// Import C# solution module.
 import bootsharp, { Backend, Frontend } from "backend";
 
 // Boot C# WASM module.
