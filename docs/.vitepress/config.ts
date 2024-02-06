@@ -48,7 +48,15 @@ export default defineConfig({
                 {
                     text: "Guide",
                     items: [
-                        { text: "Introduction", link: "/guide/" }
+                        { text: "Introduction", link: "/guide/" },
+                        { text: "Getting Started", link: "/guide/getting-started" },
+                    ]
+                },
+                {
+                    text: "Extensions",
+                    items: [
+                        { text: "Dependency Injection", link: "/guide/extensions/dependency-injection" },
+                        { text: "File System", link: "/guide/extensions/file-system" }
                     ]
                 }
             ],
