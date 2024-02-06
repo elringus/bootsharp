@@ -16,7 +16,7 @@ hero:
       text: View on GitHub
       link: https://github.com/elringus/bootsharp
   image:
-    src: /img/hero.svg
+    src: /favicon.svg
     alt: Bootsharp
 ---
 
