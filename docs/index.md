@@ -7,7 +7,7 @@ titleTemplate: Bootsharp • :title
 hero:
   name: Bootsharp
   text: Use C# in web apps with comfort
-  tagline: Single-file ES module, auto-generated JavaScript bindings and type definitions.
+  tagline: Author domain in C#, while taking full advantage of the modern JavaScript frontend ecosystem.
   actions:
     - theme: brand
       text: Get Started
@@ -29,29 +29,29 @@ hero:
                         <article class="box">
                             <div class="box-title">
                                 <div class="icon">✨</div>
-                                <h2 class="title">Transformative</h2>
+                                <h2 class="title">High-level Interop</h2>
                             </div>
-                            <p class="details">Builds optimized HTML for arbitrary image, video and YouTube syntax, such as URLs, markdown or JSX tags.</p></article>
+                            <p class="details">Automatically generates JavaScript bindings and TypeScript declarations for your C# APIs facilitating seamless interoperation.</p></article>
                     </div>
                 </div>
                 <div class="grid-3 item">
                     <div class="VPLink no-icon VPFeature">
                         <article class="box">
                             <div class="box-title">
-                                <div class="icon">⚡</div>
-                                <h2 class="title">Accelerating</h2>
+                                <div class="icon">📦</div>
+                                <h2 class="title">Embed or Sideload</h2>
                             </div>
-                            <p class="details">Encodes to the modern AV1/AVIF format compressing by up to 90% without noticeable quality loss. Supports GPU acceleration.</p></article>
+                            <p class="details">Choose between embedding all the C# binaries into single-file ES module for portability or side-load for best performance and build size.</p></article>
                     </div>
                 </div>
                 <div class="grid-3 item">
                     <div class="VPLink no-icon VPFeature">
                         <article class="box">
                             <div class="box-title">
-                                <div class="icon">♻️</div>
-                                <h2 class="title">Polyglot</h2>
+                                <div class="icon">🗺️</div>
+                                <h2 class="title">Runs Everywhere</h2>
                             </div>
-                            <p class="details">Works with most known media formats: JPEG, PNG, APNG, SVG, GIF, WEBP, WEBM, MP4, AVI, MOV, MKV, BMP, TIFF, TGA and even PSD.</p></article>
+                            <p class="details">Node, Deno, Bun, web browsers and even constrained environments, such as VS Code extensions — your app will work everywhere.</p></article>
                     </div>
                 </div>
             </div>
@@ -61,39 +61,39 @@ hero:
                         <article class="box">
                             <div class="box-title">
                                 <div class="icon">🌊</div>
-                                <h2 class="title">Smooth</h2>
+                                <h2 class="title">Flexible APIs</h2>
                             </div>
-                            <p class="details">Generates tiny blurred covers from the source content to be beautifully crossfaded into HD originals once lazy-loaded.</p></article>
+                            <p class="details">Manually author interop APIs via static C# methods or simply feed Bootsharp your domain-specific interfaces — it'll figure the rest.</p></article>
                     </div>
                 </div>
                 <div class="grid-4 item">
                     <div class="VPLink no-icon VPFeature">
                         <article class="box">
                             <div class="box-title">
-                                <div class="icon">📐</div>
-                                <h2 class="title">Adaptive</h2>
+                                <div class="icon">🏷️</div>
+                                <h2 class="title">Instance Bindings</h2>
                             </div>
-                            <p class="details">Optionally scales down the content to specified threshold while preserving high-resolution variants for high-DPI displays.</p></article>
+                            <p class="details">When an interface value is specified in interop API, instance binding is generated allowing to interoperate on stateful objects.</p></article>
                     </div>
                 </div>
                 <div class="grid-4 item">
                     <div class="VPLink no-icon VPFeature">
                         <article class="box">
                             <div class="box-title">
-                                <div class="icon">🌐</div>
-                                <h2 class="title">Outgoing</h2>
+                                <div class="icon">🛠️</div>
+                                <h2 class="title">Customizable</h2>
                             </div>
-                            <p class="details">Fetches from remote sources, such as image hostings. Uploads optimized content to designated endpoint, such as CDN.</p></article>
+                            <p class="details">Configure namespaces for emitted bindings, function and event names, C# -> TypeScript type mappings and more.</p></article>
                     </div>
                 </div>
                 <div class="grid-4 item">
                     <div class="VPLink no-icon VPFeature">
                         <article class="box">
                             <div class="box-title">
-                                <div class="icon">🗺️</div>
-                                <h2 class="title">Omnipresent</h2>
+                                <div class="icon">🔥</div>
+                                <h2 class="title">Modern .NET</h2>
                             </div>
-                            <p class="details">Built-in plugins for Astro, SvelteKit, SolidStart, VitePress, Nuxt and Remix. Adapters for Node, Deno and Bun runtimes.</p></article>
+                            <p class="details">Supports latest runtime features: WASM multi-threading, AOT compilation, assembly trimming, streaming module instantiation.</p></article>
                     </div>
                 </div>
             </div>
