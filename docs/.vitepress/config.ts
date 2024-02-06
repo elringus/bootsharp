@@ -1,4 +1,5 @@
-import { defineConfig } from "vitepress";
+import { defineConfig, DefaultTheme } from "vitepress";
+import proc from "node:child_process";
 import imgit from "imgit/vite";
 import md from "./md";
 
@@ -30,8 +31,9 @@ export default defineConfig({
         docFooter: { prev: "Previous page", next: "Next page" },
         nav: [
             { text: "Guide", link: "/guide/", activeMatch: "/guide/" },
+            { text: "Reference", link: "/api/", activeMatch: "/api/" },
             {
-                text: "v0.1.0", items: [
+                text: proc.execSync("git describe --abbrev=0 --tags").toString(), items: [
                     { text: "Changes", link: "https://github.com/elringus/bootsharp/releases/latest" },
                     { text: "Contribute", link: "https://github.com/elringus/bootsharp/labels/help%20wanted" }
                 ]
@@ -49,8 +51,17 @@ export default defineConfig({
                         { text: "Introduction", link: "/guide/" }
                     ]
                 }
-            ]
+            ],
+            "/api/": await getApiSidebar()
         }
     },
     sitemap: { hostname: "https://bootsharp.com" }
 });
+
+async function getApiSidebar(): Promise<DefaultTheme.SidebarItem[]> {
+    const items = (await import("./../api/typedoc-sidebar.json")).default;
+    const server = items.find(i => i.text === "server");
+    const client = items.find(i => i.text === "client");
+    const other = items.filter(i => i !== server && i !== client);
+    return [{ text: "Reference", items: [server, client, ...other] }];
+}

@@ -24,16 +24,16 @@
     font-optical-sizing: auto;
 
     /* Main highlight/link color (light mode). */
-    /*--vp-c-brand-1: #d22c40;*/
+    /*--vp-c-brand-1: #9c00e7;*/
     /* Link hover color (light mode). */
-    /*--vp-c-brand-2: #be2033;*/
+    /*--vp-c-brand-2: #b519ff;*/
 }
 
 .dark {
     /* Main highlight/link color (dark mode). */
-    /*--vp-c-brand-1: #ee3248;*/
+    /*--vp-c-brand-1: #b583ff;*/
     /* Link hover color (dark mode). */
-    /*--vp-c-brand-2: #f35d44;*/
+    --vp-c-brand-2: #c7cdff;
 }
 
 .dark .dark-only,
@@ -140,6 +140,12 @@ table > tfoot:not(:last-child) {
     background: none !important;
 }
 
+/* remove opacity gradient under navbar */
+.curtain,
+.aside-curtain {
+    display: none !important;
+}
+
 /* a hack for logo title to keep sidebar bg color */
 @media (min-width: 960px) {
     .VPNavBar.has-sidebar div.title {
@@ -148,24 +154,16 @@ table > tfoot:not(:last-child) {
 }
 
 /* a bit of tint to make navbar not as transparent */
-.VPNavBar {
+.VPNavBar:not(.top) {
     background: rgba(255, 255, 255, 0.75) !important;
 }
 
-.dark .VPNavBar {
-    background: rgba(30, 30, 32, 0.5) !important;
-}
-
-.VPLocalNav {
-    background: rgba(255, 255, 255, 0.75) !important;
-}
-
-.dark .VPLocalNav {
+.dark .VPNavBar:not(.top) {
     background: rgba(30, 30, 32, 0.5) !important;
 }
 
 /* the blur effect */
-.VPNav::after {
+.VPNavBar:not(.top)::after {
     content: "";
     position: absolute;
     top: 0;
@@ -176,13 +174,14 @@ table > tfoot:not(:last-child) {
     z-index: -1;
 }
 
-.VPLocalNav::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    backdrop-filter: saturate(180%) blur(5px);
-    z-index: -1;
+.VPNavBar.top::after {
+    opacity: 0;
+}
+
+.VPNavBar.top {
+    background-color: transparent;
+}
+
+.VPNavBar {
+    transition: border-bottom-color 0.25s, background-color 0.25s, opacity 0.25s;
 }
