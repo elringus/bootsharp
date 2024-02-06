@@ -12,10 +12,24 @@
 </p>
 <br/>
 
-# Bootsharp
+# Use C# in web apps with comfort
 
-Compile C# solution into single-file ES module with auto-generated JavaScript bindings and type definitions.
+Author domain in C#, while taking full advantage of the modern JavaScript frontend ecosystem.
 
-![](https://raw.githubusercontent.com/elringus/bootsharp/main/docs/public/img/banner.png)
+✨ Automatically generates JavaScript bindings and TypeScript declarations for your C# APIs facilitating seamless interoperation.
 
-Documentation will be added later. Please refer to [samples](https://github.com/elringus/bootsharp/tree/main/samples) for the time being.
+📦 Choose between embedding all the C# binaries into single-file ES module for portability or side-load for best performance and build size.
+
+🗺️ Node, Deno, Bun, web browsers and even constrained environments, such as VS Code extensions — your app will work everywhere.
+
+🌊 Manually author interop APIs via static C# methods or simply feed Bootsharp your domain-specific interfaces — it'll figure the rest.
+
+🏷️ When an interface value is specified in interop API, instance binding is generated allowing to interoperate on stateful objects.
+
+🛠️ Configure namespaces for emitted bindings, function and event names, C# -> TypeScript type mappings and more.
+
+🔥 Supports latest .NET features: WASM multi-threading, AOT compilation, assembly trimming, streaming module instantiation.
+
+### 🎬 Get Started
+
+https://bootsharp.com/guide
