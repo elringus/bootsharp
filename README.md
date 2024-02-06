@@ -16,13 +16,13 @@
 
 Author domain in C#, while taking full advantage of the modern JavaScript frontend ecosystem.
 
-✨ Automatically generates JavaScript bindings and TypeScript declarations for your C# APIs facilitating seamless interoperation.
+✨ Generates JavaScript bindings and type declarations for your C# APIs facilitating seamless interop between the domain and UI.
 
-📦 Choose between embedding all the C# binaries into single-file ES module for portability or side-load for best performance and build size.
+📦 Choose between embedding all the C# binaries into single-file ES module for portability or sideload for best performance and build size.
 
 🗺️ Node, Deno, Bun, web browsers and even constrained environments, such as VS Code extensions — your app will work everywhere.
 
-🌊 Manually author interop APIs via static C# methods or simply feed Bootsharp your domain-specific interfaces — it'll figure the rest.
+⚡ Manually author interop APIs via static C# methods or simply feed Bootsharp your domain-specific interfaces — it'll figure the rest.
 
 🏷️ When an interface value is specified in interop API, instance binding is generated allowing to interoperate on stateful objects.
 

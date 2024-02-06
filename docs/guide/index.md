@@ -10,13 +10,13 @@ C# is a popular language for building maintainable software with complex domain 
 
 Web platform is the industry-standard for building modern user interfaces. It has best in class tooling and frameworks, such as [React](https://react.dev) and [Svelte](https://svelte.dev) — allowing to build better frontends faster, compared to any other language/platform ecosystem.
 
-In contrast to solutions like [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor), which attempt to bring the entire web platform inside .NET (effectively reversing the natural workflow), Bootsharp facilitates high-level interoperation between C# and TypeScript, allowing to build domain and UI layers under their natural ecosystems.
+In contrast to solutions like [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor), which attempt to bring the entire web platform inside .NET (effectively reversing natural workflow), Bootsharp facilitates high-level interoperation between C# and TypeScript, allowing to build domain and UI layers under their natural ecosystems.
 
 ## How?
 
-Bootsharp installs as a NuGet package to the C# project dedicated for building the solution for web. It takes special care to not "leak" the dependency outside entry assembly of the web target, which is essential to keep the domain clean from any platform-specific details.
+Bootsharp installs as a NuGet package to the C# project dedicated for building the solution for web. It's specifically designed to not "leak" the dependency outside entry assembly of the web target, which is essential to keep the domain clean from any platform-specific details.
 
-While it's possible to author both export (C# -> JavaScript) and import (JavaScript -> C#) bindings via static methods, complex solutions will benefit from interface-based interop: simply feed Bootsharp C# interfaces describing export and import API surfaces, and it will automatically generate associated bindings and type declarations.
+While it's possible to author both export (C# -> JS) and import (C# <- JS) bindings via static methods, complex solutions will benefit from interface-based interop: simply feed Bootsharp C# interfaces describing export and import API surfaces, and it will automatically generate associated bindings and type declarations.
 
 ![](/img/banner.png)
 

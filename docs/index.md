@@ -29,9 +29,9 @@ hero:
                         <article class="box">
                             <div class="box-title">
                                 <div class="icon">✨</div>
-                                <h2 class="title">High-level Interop</h2>
+                                <h2 class="title">High-level Interoperability</h2>
                             </div>
-                            <p class="details">Automatically generates JavaScript bindings and TypeScript declarations for your C# APIs facilitating seamless interoperation.</p></article>
+                            <p class="details">Generates JavaScript bindings and type declarations for your C# APIs facilitating seamless interop between the domain and UI.</p></article>
                     </div>
                 </div>
                 <div class="grid-3 item">
@@ -41,7 +41,7 @@ hero:
                                 <div class="icon">📦</div>
                                 <h2 class="title">Embed or Sideload</h2>
                             </div>
-                            <p class="details">Choose between embedding all the C# binaries into single-file ES module for portability or side-load for best performance and build size.</p></article>
+                            <p class="details">Choose between embedding all the C# binaries into single-file ES module for portability or sideload for best performance and build size.</p></article>
                     </div>
                 </div>
                 <div class="grid-3 item">
@@ -60,8 +60,8 @@ hero:
                     <div class="VPLink no-icon VPFeature">
                         <article class="box">
                             <div class="box-title">
-                                <div class="icon">🌊</div>
-                                <h2 class="title">Flexible APIs</h2>
+                                <div class="icon">⚡</div>
+                                <h2 class="title">Interop Interfaces</h2>
                             </div>
                             <p class="details">Manually author interop APIs via static C# methods or simply feed Bootsharp your domain-specific interfaces — it'll figure the rest.</p></article>
                     </div>
