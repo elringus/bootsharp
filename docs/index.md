@@ -16,7 +16,7 @@ hero:
       text: View on GitHub
       link: https://github.com/elringus/bootsharp
   image:
-    src: /favicon.svg
+    src: /img/hero.svg
     alt: Bootsharp
 ---
 
@@ -103,22 +103,22 @@ hero:
 
 <style>
 :root {
-  --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #bd34fe 30%, #41d1ff);
-  --vp-home-hero-image-background-image: linear-gradient(75deg, #bd34fe 40%, #47caff 50%);
-  --vp-home-hero-image-filter: blur(44px);
+    --vp-home-hero-name-color: transparent;
+    --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #bd34fe 30%, #41d1ff);
+    --vp-home-hero-image-background-image: linear-gradient(75deg, #bd34fe 40%, #47caff 50%);
+    --vp-home-hero-image-filter: blur(60px) opacity(0.66);
 }
 
 @media (min-width: 640px) {
-  :root {
-    --vp-home-hero-image-filter: blur(56px);
-  }
+    :root {
+        --vp-home-hero-image-filter: blur(80px) opacity(0.66);
+    }
 }
 
 @media (min-width: 960px) {
-  :root {
-    --vp-home-hero-image-filter: blur(68px);
-  }
+    :root {
+        --vp-home-hero-image-filter: blur(100px) opacity(0.66);
+    }
 
     .VPHome .name .clip {
         line-height: 64px;
