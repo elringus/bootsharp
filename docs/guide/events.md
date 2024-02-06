@@ -9,11 +9,11 @@ public static partial void OnSomethingChanged (string payload);
 
 — and consume it from JavaScript as follows:
 
-```js
+```ts
 Program.onSomethingChanged.subscribe(handleSomething);
 Program.onSomethingChanged.unsubscribe(handleSomething);
 
-function handleSomething(payload) {
+function handleSomething(payload: string) {
 
 }
 ```
@@ -22,7 +22,7 @@ When the method in invoked in C#, subscribed JavaScript handlers will be notifie
 
 ## React Event Hooks
 
-Below are some utility hooks, which you can use in React for convenience:
+Below are sample React utility hooks, which you may find useful:
 
 ```ts
 export function useEvent<T extends unknown[]>(
