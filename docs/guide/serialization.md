@@ -1,17 +1,81 @@
 ﻿# Serialization
 
-To override default JSON serializer options used for marshalling the interop data, use `JS.Runtime.ConfigureJson` method before the program entry point is invoked. For example, below will add `JsonStringEnumConverter` converter to allow serializing enums via strings:
+Most simple types, such as numbers, booleans, strings, arrays (lists) and promises (tasks) of them are marshalled in-memory when crossing the C# <-> JavaScript boundary. Below are some of the natively-supported types (refer to .NET docs for the [full list](https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop)):
+
+| C#       | JavaScript | Task of | Array of |
+|----------|------------|:-------:|:--------:|
+| bool     | boolean    |   ✔️    |    ❌     |
+| byte     | number     |   ✔️    |    ✔️    |
+| char     | string     |   ✔️    |    ❌     |
+| string   | string     |   ✔️    |    ✔️    |
+| int      | number     |   ✔️    |    ✔️    |
+| long     | BigInt     |   ✔️    |    ❌     |
+| float    | Number     |   ✔️    |    ❌     |
+| DateTime | Date       |   ✔️    |    ❌     |
+
+When a value of non-natively supported type is specified in an interop API, Bootsharp will attempt to de-/serialize it with [System.Text.JSON](https://learn.microsoft.com/en-us/dotnet/api/system.text.json?view=net-8.0) using fast source-generation mode. The whole process is encapsulated under the hood on both the C# and JavaScript sides, so you don't have to manually author generator hints or specify `[MarshallAs]` attributes for each value:
+
+```csharp
+public record User (long Id, string Name, DateTime Registered);
+
+[JSInvokable]
+public static void AddUser (User user) { }
+
+[JSEvent]
+public static partial void OnUserModified (User user);
+```
+
+— Bootsharp will automatically emit C# and JavaScript code required to de-/serialize `User` record on both ends, so that you can consume the APIs as if they were initially authored in JavaScript:
+
+```ts
+import { Program } from "bootsharp";
+
+Program.addUser({ id: 17, name: "Carl", registered: Date.now() });
+
+Program.onUserModified.subscribe(handleUserModified);
+
+function handleUserModified(user: Program.User) { }
+```
+
+## Enums Serialization
+
+Enums are marshalled as numbers for better performance, while additional name <-> index mappings are emitted on the JavaScript side for convenience.
+
+```csharp
+public enum Options { Foo, Bar }
+
+[JSInvokable]
+public static Options GetOption () => Options.Bar;
+```
+
+— while "Options" return value will be passed to JavaScript as an integer index, Bootsharp will map enum indexes to string values (and vice-versa) in the emitted code, so that following will work as expected:
+
+```csharp
+import { Program } from "bootsharp";
+
+const option = Program.getOption();
+console.log(option === Program.Options.Foo); // false
+console.log(option === Program.Options.Bar); // true
+console.log(Program.Options[Program.Options.Foo]); // "Foo"
+console.log(Program.Options[1]); // "Bar"
+```
+
+## Configuring Serialization Behaviour
+
+To override default JSON serializer options used for marshalling the interop data, use `Bootsharp.Serializer.Options` property before the program entry point is invoked:
 
 ```csharp
 static class Program
 {
     static Program () // Static constructor is invoked before 'Main'
     {
-        JS.Runtime.ConfigureJson(options =>
-            options.Converters.Add(new JsonStringEnumConverter())
-            options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        );
+        // Make enums serialize as strings.
+        var converter = new JsonStringEnumConverter();
+        Bootsharp.Serializer.Options.Converters.Add(converter);
     }
 
     public static void Main () { }
 }
+```
+
+Refere to .NET docs for the available serialization options: https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/overview.
