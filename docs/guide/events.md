@@ -22,9 +22,9 @@ When the method in invoked in C#, subscribed JavaScript handlers will be notifie
 
 ## Events in Interop Interfaces
 
-To make a method in an [interop interface](/guide/interop-interfaces.md) act as event broadcaster, make its name start with "Notify". Such methods will be detected by Bootsharp and exposed to JavaScript as events with "Notify" changed to "On". For example, `NotifyUserUpdated` C# method will be exposed as `OnUserUpdated` JavaScript event.
+To make a method in an [interop interface](/guide/interop-interfaces) act as event broadcaster, make its name start with "Notify". Such methods will be detected by Bootsharp and exposed to JavaScript as events with "Notify" changed to "On". For example, `NotifyUserUpdated` C# method will be exposed as `OnUserUpdated` JavaScript event.
 
-Which interface methods are considered events and the way they are named in JavaScript can be customized with [emit preferences](/guide/emit-prefs.md).
+Which interface methods are considered events and the way they are named in JavaScript can be customized with [emit preferences](/guide/emit-prefs).
 
 ## React Event Hooks
 
