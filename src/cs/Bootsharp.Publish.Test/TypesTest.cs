@@ -12,4 +12,6 @@ public class TypesTest
         _ = new ValueMeta { Type = default, Nullable = true, TypeSyntax = "", Void = true, Serialized = true, Async = true, JSTypeSyntax = "", Instance = false, InstanceType = null } with { TypeSyntax = "foo" };
         _ = new Preferences { Event = [] } with { Function = [] };
     }
+
+    public static Dictionary<string, bool> GetMap () => new () { ["foo"] = true };
 }

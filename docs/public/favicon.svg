@@ -1,5 +1,5 @@
 <!-- ./ImageMagick/convert.exe -background none "Source.svg" "Target.png" -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 200 200">
     <defs>
         <linearGradient x1="0.75" y1="0.75" x2="0.25" y2="1" id="circleGrad">
             <stop offset="0" stop-color="#46c8ff"/>
