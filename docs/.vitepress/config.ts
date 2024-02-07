@@ -7,6 +7,7 @@ import md from "./md";
 export default defineConfig({
     title: "Bootsharp",
     titleTemplate: ":title • Bootsharp",
+    description: "Compile C# solution into ES module with auto-generated bindings and type definitions.",
     appearance: "dark",
     cleanUrls: true,
     lastUpdated: true,
