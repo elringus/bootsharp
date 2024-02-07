@@ -21,6 +21,7 @@ jobs:
       - uses: actions/setup-node@v3
       - name: build
         run: |
+          npm i --prefix src/js
           cd docs
           npm install
           npm run docs:api
