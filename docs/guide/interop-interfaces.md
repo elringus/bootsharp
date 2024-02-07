@@ -1,8 +1,8 @@
 ﻿# Interop Interfaces
 
-Instead of writing a binding for each method, make DotNetJS generate them automatically with `[JSImport]` and `[JSExport]` assembly attributes.
+Instead of manually authoring a binding for each method, make Bootsharp generate them automatically with `[JSImport]` and `[JSExport]` assembly attributes.
 
-For example, let's say we have a JS frontend, which needs to be notified when a data is mutated on our C# backend, so it can render the updated state; additionally, our frontend may have a setting (eg, stored in browser cache) to temporary mute notifications, which needs to be retrieved by the backend. Create the following interface in C# to describe the expected frontend APIs:
+For example, say we have a JavaScript UI (frontend), which needs to be notified when a data is mutated on the C# domain layer (backend), so it can render the updated state; additionally, our frontend may have a setting (eg, stored in browser cache) to temporary mute notifications, which needs to be retrieved by the backend. Create the following interface in C# to describe the expected frontend APIs:
 
 ```csharp
 interface IFrontend
@@ -15,20 +15,21 @@ interface IFrontend
 Now add the interface type to the JS import list:
 
 ```csharp
-[assembly: JSImport(new[] { typeof(IFrontend) })]
+[assembly: JSImport([
+    typeof(IFrontend)
+])]
 ```
 
-DotNetJS will generate the following C# implementation:
+Bootsharp will generate following C# implementation:
 
 ```csharp
-public class JSFrontend : IFrontend
+public static partial class JSFrontend : IFrontend
 {
-    [JSFunction] public static void NotifyDataChanged (Data data) => JS.Invoke("dotnet.Frontend.notifyDataChanged.broadcast", new object[] { data });
-    [JSFunction] public static bool IsMuted () => JS.Invoke<bool>("dotnet.Frontend.isMuted");
+    [JSFunction] public static partial void NotifyDataChanged (Data data);
+    [JSFunction] public static partial bool IsMuted ();
 
     void IFrontend.NotifyDataChanged (Data data) => NotifyDataChanged(data);
     bool IFrontend.IsMuted () => IsMuted();
-
 }
 ```
 
@@ -36,12 +37,12 @@ public class JSFrontend : IFrontend
 
 ```ts
 export namespace Frontend {
-    export const notifyDataChanged: Event<[Data]>;
+    export const onDataChanged: Event<[Data]>;
     export let isMuted: () => boolean;
 }
 ```
 
-Now let's say we want to provide an API for frontend to request mutation of the data:
+Now say we want to provide an API for frontend to request mutation of the data:
 
 ```csharp
 interface IBackend
@@ -50,10 +51,12 @@ interface IBackend
 }
 ```
 
-Export the interface to JS:
+Export the interface to JavaScript:
 
 ```csharp
-[assembly: JSExport(new[] { typeof(IBackend) })]
+[assembly: JSExport([
+    typeof(IBackend)
+])]
 ```
 
 Get the following implementation auto-generated:
@@ -68,11 +71,12 @@ public class JSBackend
         JSBackend.handler = handler;
     }
 
-    [JSInvokable] public static void AddData (Data data) => handler.AddData(data);
+    [JSInvokable]
+    public static void AddData (Data data) => handler.AddData(data);
 }
 ```
 
-— which will as well produce following spec to be consumed on JS side:
+— which will produce following spec to be consumed on JavaScript side:
 
 ```ts
 export namespace Backend {
@@ -80,4 +84,8 @@ export namespace Backend {
 }
 ```
 
-Find example on using the attributes in the [React sample](https://github.com/Elringus/DotNetJS/blob/main/Samples/React).
+To make Bootsharp automatically inject and inititliaize generate interop implementations, use [dependency injection](/guide/extensions/dependency-injection) extension.
+
+::: tip Example
+Find example on using interop interfaces in the [React sample](https://github.com/elringus/bootsharp/tree/main/samples/react).
+:::

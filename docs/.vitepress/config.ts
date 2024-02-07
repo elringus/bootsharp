@@ -58,10 +58,7 @@ export default defineConfig({
                         { text: "Interop Instances", link: "/guide/interop-instances" },
                         { text: "Emit Preferences", link: "/guide/emit-prefs" },
                         { text: "Build Configuration", link: "/guide/build-config" },
-                        { text: "Sideloading Binaries", link: "/guide/sideloading" },
-                        { text: "AOT Compilation", link: "/guide/aot" },
-                        { text: "Assembly Trimming", link: "/guide/trimming" },
-                        { text: "Multi-threading", link: "/guide/multi-threading" }
+                        { text: "Sideloading Binaries", link: "/guide/sideloading" }
                     ]
                 },
                 {
