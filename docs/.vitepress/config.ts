@@ -52,6 +52,7 @@ export default defineConfig({
                         { text: "Getting Started", link: "/guide/getting-started" },
                         { text: "Events", link: "/guide/events" },
                         { text: "Serialization", link: "/guide/serialization" },
+                        { text: "Namespaces", link: "/guide/namespaces" },
                         { text: "Interop Interfaces", link: "/guide/interop-interfaces" },
                         { text: "Interop Instances", link: "/guide/interop-instances" },
                         { text: "Emit Preferences", link: "/guide/emit-prefs" },

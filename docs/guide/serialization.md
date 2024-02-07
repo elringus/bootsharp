@@ -48,9 +48,9 @@ public enum Options { Foo, Bar }
 public static Options GetOption () => Options.Bar;
 ```
 
-— while "Options" return value will be passed to JavaScript as an integer index, Bootsharp will map enum indexes to string values (and vice-versa) in the emitted code, so that following will work as expected:
+— while "GetOptions" return value will be passed to JavaScript as an integer index, Bootsharp will map enum indexes to string values (and vice-versa) in the emitted code, so that following will work as expected:
 
-```csharp
+```ts
 import { Program } from "bootsharp";
 
 const option = Program.getOption();
@@ -58,6 +58,43 @@ console.log(option === Program.Options.Foo); // false
 console.log(option === Program.Options.Bar); // true
 console.log(Program.Options[Program.Options.Foo]); // "Foo"
 console.log(Program.Options[1]); // "Bar"
+```
+
+## Dictionary Serialization
+
+ES6 [Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) doesn't natively support JSON serialization, hence Bootsharp will use plain objects when serializing C# dictionaries:
+
+```csharp
+[JSInvokable]
+public static Dictionary<string, bool> GetMap () =>
+    new () { ["foo"] = true, ["bar"] = false };
+```
+
+— the dictionary can be accessed via keys as usual JavaScript object:
+
+```ts
+import { Program } from "bootsharp";
+
+const map = Program.getMap();
+console.log(map.foo); // true
+console.log(map["bar"]); // false
+```
+
+## Collection Interfaces
+
+It's common to use various collection interfaces, such as `IReadOnlyList` or `IReadOnlyDictionary` when authoring C# APIs. Bootsharp will accept any kind of array or dictionary compatible interface in the interop APIs and marshal them as plain arrays and maps by default:
+
+```csharp
+[JSInvokable]
+public static IReadOnlyDictionary<string, float> Map (
+    IReadOnlyList<string> a, IReadOnlyCollection<float> b) { }
+```
+
+```ts
+import { Program } from "bootsharp";
+
+const map = Program.map(["foo", "bar"], [0, 7]);
+console.log(map.bar); // 7
 ```
 
 ## Configuring Serialization Behaviour
