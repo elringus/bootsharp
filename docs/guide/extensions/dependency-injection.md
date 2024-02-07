@@ -29,11 +29,13 @@ using Bootsharp.Inject;
 using Microsoft.Extensions.DependencyInjection;
 
 [assembly: JSExport(
-    typeof(IExported)
+    typeof(IExported),
+    // other APIs to export to JavaScript
 )]
 
 [assembly: JSImport(
-    typeof(IImported)
+    typeof(IImported),
+    // other APIs to import from JavaScript
 )]
 
 new ServiceCollection()
@@ -43,6 +45,7 @@ new ServiceCollection()
     .AddSingleton<SomeService>()
     // Provide handler for the exported interface.
     .AddSingleton<IExported, Exported>()
+    // Build the collection.
     .BuildServiceProvider()
     // Initialize the exported implementations.
     .RunBootsharp();
@@ -57,3 +60,7 @@ public class SomeService (IImported imported) { }
 ```ts
 import { Exported } from "bootsharp";
 ```
+
+::: tip EXAMPLE
+Find example on using the DI extension in the [React sample](https://github.com/elringus/bootsharp/blob/main/samples/react).
+:::
