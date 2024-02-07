@@ -27,6 +27,8 @@
     /*--vp-c-brand-1: #9c00e7;*/
     /* Link hover color (light mode). */
     /*--vp-c-brand-2: #b519ff;*/
+    /* Danger block override for sponsors. (light mode) */
+    --vp-custom-block-danger-bg: #fee3f5;
 }
 
 .dark {
@@ -34,6 +36,8 @@
     /*--vp-c-brand-1: #b583ff;*/
     /* Link hover color (dark mode). */
     --vp-c-brand-2: #c7cdff;
+    /* Danger block override for sponsors. (dark mode) */
+    --vp-custom-block-danger-bg: #55223c;
 }
 
 .dark .dark-only,

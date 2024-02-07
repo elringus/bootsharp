@@ -16,6 +16,7 @@ export default defineConfig({
         ["link", { rel: "icon", href: "/favicon.svg" }],
         ["link", { rel: "preload", href: "/fonts/inter.woff2", as: "font", type: "font/woff2", crossorigin: "" }],
         ["link", { rel: "preload", href: "/fonts/jb.woff2", as: "font", type: "font/woff2", crossorigin: "" }],
+        ["meta", { name: "og:image", content: "/img/og.jpg" }],
         ["meta", { name: "twitter:card", content: "summary_large_image" }]
     ],
     themeConfig: {
@@ -65,7 +66,7 @@ export default defineConfig({
                     text: "Extensions",
                     items: [
                         { text: "Dependency Injection", link: "/guide/extensions/dependency-injection" },
-                        { text: "File System", link: "/guide/extensions/file-system" }
+                        { text: "File System ✨", link: "/guide/extensions/file-system" }
                     ]
                 }
             ],
