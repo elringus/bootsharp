@@ -24,7 +24,7 @@ export default defineConfig({
         logo: { src: "/favicon.svg" },
         logoLink: "/",
         socialLinks: [{ icon: "github", link: "https://github.com/elringus/bootsharp" }],
-        search: { provider: "local" },
+        search: { provider: "local", options: { detailedView: true } },
         lastUpdated: { text: "Updated", formatOptions: { dateStyle: "medium" } },
         sidebarMenuLabel: "Menu",
         darkModeSwitchLabel: "Appearance",
