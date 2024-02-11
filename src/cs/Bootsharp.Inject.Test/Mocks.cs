@@ -1,17 +1,22 @@
-﻿namespace Bootsharp.Inject.Test;
+﻿global using static Bootsharp.Inject.Test.Mocks;
 
-public interface IBackend;
-public interface IFrontend;
-public class Backend : IBackend;
-public class Frontend : IFrontend;
-public class JSFrontend : IFrontend;
+namespace Bootsharp.Inject.Test;
 
-public class JSBackend
+public static class Mocks
 {
-    public static IBackend Handler { get; private set; }
+    public interface IBackend;
+    public interface IFrontend;
+    public class Backend : IBackend;
+    public class Frontend : IFrontend;
+    public class JSFrontend : IFrontend;
 
-    public JSBackend (IBackend handler)
+    public class JSBackend
     {
-        Handler = handler;
+        public static IBackend Handler { get; private set; }
+
+        public JSBackend (IBackend handler)
+        {
+            Handler = handler;
+        }
     }
 }

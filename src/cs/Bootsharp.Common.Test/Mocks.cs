@@ -1,6 +1,11 @@
-﻿namespace Bootsharp.Common.Test;
+﻿global using static Bootsharp.Common.Test.Mocks;
 
-public interface IBackend;
-public interface IFrontend;
-public class Backend : IBackend;
-public class Frontend : IFrontend;
+namespace Bootsharp.Common.Test;
+
+public static class Mocks
+{
+    public interface IBackend;
+    public interface IFrontend;
+    public class Backend : IBackend;
+    public class Frontend : IFrontend;
+}
