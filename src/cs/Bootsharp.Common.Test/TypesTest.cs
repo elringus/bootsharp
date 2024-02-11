@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using Bootsharp;
-using Bootsharp.Common.Test;
 
 [assembly: JSExport(typeof(IBackend))]
 [assembly: JSImport(typeof(IFrontend))]
