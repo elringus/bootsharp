@@ -16,6 +16,8 @@
 
 Bootsharp streamlines consuming .NET C# apps and libraries in web projects. It's ideal for building web applications, where domain (backend) is authored in .NET C#, while the UI (frontend) is a standalone TypeScript project.
 
+![](https://raw.githubusercontent.com/elringus/bootsharp/main/docs/public/img/banner.png)
+
 ✨ High-level C# <-> TypeScript interop
 
 📦 Embeds binaries to single-file ES module
