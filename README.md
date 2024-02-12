@@ -38,7 +38,7 @@ Bootsharp streamlines consuming .NET C# apps and libraries in web projects. It's
 
 In contrast to solutions like Blazor, which attempt to bring the entire web platform inside .NET, Bootsharp facilitates high-level interoperation between C# and TypeScript, allowing to build the UI layer under its natural ecosystem using industry-standard tooling and frameworks, such as [React](https://react.dev) and [Svelte](https://svelte.dev).
 
-# Why not `System.Runtime.InteropServices.JavaScript`?
+# Why not `System.JavaScript`?
 
 Bootsharp itself is built on top of [.NET's new JavaScript interop](https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop?view=aspnetcore-8.0) introduced in .NET 7.
 
