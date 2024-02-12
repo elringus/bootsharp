@@ -14,22 +14,24 @@
 
 # Use C# in web apps with comfort
 
-Author domain in C#, while taking full advantage of the modern JavaScript frontend ecosystem.
+Bootsharp streamlines consuming .NET C# apps and libraries in web projects. It's ideal for building web applications, where domain (backend) is authored in .NET C#, while the UI (frontend) is a standalone TypeScript project.
 
-✨ Generates JavaScript bindings and type declarations for your C# APIs facilitating seamless interop between the domain and UI.
+✨ High-level C# <-> TypeScript interop
 
-📦 Choose between embedding all the C# binaries into single-file ES module for portability or sideload for best performance and build size.
+📦 Embeds binaries to single-file ES module
 
-🗺️ Node, Deno, Bun, web browsers and even constrained environments, such as VS Code extensions — your app will work everywhere.
+🗺️ Works in browsers and JS runtimes (Node, Deno, Bun)
 
-⚡ Manually author interop APIs via static C# methods or simply feed Bootsharp your domain-specific interfaces — it'll figure the rest.
+⚡ Generated bindings and types over C# interfaces
 
-🏷️ When an interface value is specified in interop API, instance binding is generated allowing to interoperate on stateful objects.
+🏷️ Supports interop over object instances
 
-🛠️ Configure namespaces for emitted bindings, function and event names, C# -> TypeScript type mappings and more.
+🛠️ Allows customizing emitted bindings
 
-🔥 Supports latest .NET features: WASM multi-threading, AOT compilation, assembly trimming, streaming module instantiation.
+🔥 Supports WASM multi-threading, AOT, trimming
+
+In contrast to solutions like Blazor, which attempt to bring the entire web platform inside .NET, Bootsharp facilitates high-level interoperation between C# and TypeScript, allowing to build the UI layers under its natural ecosystem using industry-standard tooling and frameworks, such as [React](https://react.dev) and [Svelte](https://svelte.dev).
 
 ### 🎬 Get Started
 
-https://bootsharp.com/guide
+https://bootsharp.com/guide/getting-started
