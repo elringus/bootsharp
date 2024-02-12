@@ -34,6 +34,11 @@ Bootsharp streamlines consuming .NET C# apps and libraries in web projects. It's
 
 🔥 Supports WASM multi-threading, AOT, trimming
 
+
+# 🎬 Get Started
+
+https://bootsharp.com/guide/getting-started
+
 # Why not Blazor?
 
 In contrast to solutions like Blazor, which attempt to bring the entire web platform inside .NET, Bootsharp facilitates high-level interoperation between C# and TypeScript, allowing to build the UI layer under its natural ecosystem using industry-standard tooling and frameworks, such as [React](https://react.dev) and [Svelte](https://svelte.dev).
@@ -45,7 +50,3 @@ Bootsharp itself is built on top of [System.Runtime.InteropServices.JavaScript](
 If you're looking to expose simple library API to JavaScript and don't need type declarations, Bootsharp would probably be an overkill. However, .NET's interop is low-level, doesn't support passing custom types by value and requires lots of boilerplate to author the bindings. It's impractical for large API surfaces.
 
 With Bootsharp, you'll be able to just throw your domain-specific interfaces at it and use them seamlessly from the other side, as if they were originally authored in TypeScrip (and vice-versa). Additionally, Bootsharp provides an option to bundle all the binaries into single-file ES module and patches .NET's internal JavaScript code to make it compatible with restricted runtime environments, such as VS Code web extensions.
-
-# 🎬 Get Started
-
-https://bootsharp.com/guide/getting-started
