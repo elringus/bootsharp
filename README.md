@@ -40,7 +40,7 @@ In contrast to solutions like Blazor, which attempt to bring the entire web plat
 
 # Why not `System.JavaScript`?
 
-Bootsharp itself is built on top of [.NET's new JavaScript interop](https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop?view=aspnetcore-8.0) introduced in .NET 7.
+Bootsharp itself is built on top of [System.Runtime.InteropServices.JavaScript](https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop?view=aspnetcore-8.0) introduced in .NET 7.
 
 If you're looking to expose simple library API to JavaScript and don't need type declarations, Bootsharp would probably be an overkill. However, .NET's interop is low-level, doesn't support passing custom types by value and requires lots of boilerplate to author the bindings. It's impractical for large API surfaces.
 
