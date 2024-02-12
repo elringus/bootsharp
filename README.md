@@ -14,7 +14,7 @@
 
 # Use C# in web apps with comfort
 
-Bootsharp streamlines consuming .NET C# apps and libraries in web projects. It's ideal for building web applications, where domain (backend) is authored in .NET C#, while the UI (frontend) is a standalone TypeScript project.
+Bootsharp streamlines consuming .NET C# apps and libraries in web projects. It's ideal for building web applications, where domain (backend) is authored in .NET C#, while the UI (frontend) is a standalone TypeScript or JavaScript project. Think of it as [Embind](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html) for C++ or [wasm-bindgen](https://github.com/rustwasm/wasm-bindgen) for Rust.
 
 ![](https://raw.githubusercontent.com/elringus/bootsharp/main/docs/public/img/banner.png)
 
@@ -37,6 +37,14 @@ Bootsharp streamlines consuming .NET C# apps and libraries in web projects. It's
 # Why not Blazor?
 
 In contrast to solutions like Blazor, which attempt to bring the entire web platform inside .NET, Bootsharp facilitates high-level interoperation between C# and TypeScript, allowing to build the UI layer under its natural ecosystem using industry-standard tooling and frameworks, such as [React](https://react.dev) and [Svelte](https://svelte.dev).
+
+# Why not `System.Runtime.InteropServices.JavaScript`?
+
+Bootsharp itself is built on top of [.NET's new JavaScript interop](https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop?view=aspnetcore-8.0) introduced in .NET 7.
+
+If you're looking to expose simple library API to JavaScript and don't need type declarations, Bootsharp would probably be an overkill. However, .NET's interop is low-level, doesn't support passing custom types by value and requires lots of boilerplate to author the bindings. It's impractical for large API surfaces.
+
+With Bootsharp, you'll be able to just throw your domain-specific interfaces at it and use them seamlessly from the other side, as if they were originally authored in TypeScrip (and vice-versa).
 
 # 🎬 Get Started
 
