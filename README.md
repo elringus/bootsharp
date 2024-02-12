@@ -14,22 +14,39 @@
 
 # Use C# in web apps with comfort
 
-Author domain in C#, while taking full advantage of the modern JavaScript frontend ecosystem.
+Bootsharp streamlines consuming .NET C# apps and libraries in web projects. It's ideal for building web applications, where domain (backend) is authored in .NET C#, while the UI (frontend) is a standalone TypeScript or JavaScript project. Think of it as [Embind](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html) for C++ or [wasm-bindgen](https://github.com/rustwasm/wasm-bindgen) for Rust.
 
-✨ Generates JavaScript bindings and type declarations for your C# APIs facilitating seamless interop between the domain and UI.
+![](https://raw.githubusercontent.com/elringus/bootsharp/main/docs/public/img/banner.png)
 
-📦 Choose between embedding all the C# binaries into single-file ES module for portability or sideload for best performance and build size.
+# Features
 
-🗺️ Node, Deno, Bun, web browsers and even constrained environments, such as VS Code extensions — your app will work everywhere.
+✨ High-level C# <-> TypeScript interop
 
-⚡ Manually author interop APIs via static C# methods or simply feed Bootsharp your domain-specific interfaces — it'll figure the rest.
+📦 Embeds binaries to single-file ES module
 
-🏷️ When an interface value is specified in interop API, instance binding is generated allowing to interoperate on stateful objects.
+🗺️ Works in browsers and JS runtimes (Node, Deno, Bun)
 
-🛠️ Configure namespaces for emitted bindings, function and event names, C# -> TypeScript type mappings and more.
+⚡ Generated bindings and types over C# interfaces
 
-🔥 Supports latest .NET features: WASM multi-threading, AOT compilation, assembly trimming, streaming module instantiation.
+🏷️ Supports interop over object instances
 
-### 🎬 Get Started
+🛠️ Allows customizing emitted bindings
 
-https://bootsharp.com/guide
+🔥 Supports WASM multi-threading, AOT, trimming
+
+
+# 🎬 Get Started
+
+https://bootsharp.com/guide/getting-started
+
+# Why not Blazor?
+
+In contrast to solutions like Blazor, which attempt to bring the entire web platform inside .NET, Bootsharp facilitates high-level interoperation between C# and TypeScript, allowing to build the UI layer under its natural ecosystem using industry-standard tooling and frameworks, such as [React](https://react.dev) and [Svelte](https://svelte.dev).
+
+# Why not `System.JavaScript`?
+
+Bootsharp itself is built on top of [System.Runtime.InteropServices.JavaScript](https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop?view=aspnetcore-8.0) introduced in .NET 7.
+
+If you're looking to expose simple library API to JavaScript and don't need type declarations, Bootsharp would probably be an overkill. However, .NET's interop is low-level, doesn't support passing custom types by value and requires lots of boilerplate to author the bindings. It's impractical for large API surfaces.
+
+With Bootsharp, you'll be able to just throw your domain-specific interfaces at it and use them seamlessly from the other side, as if they were originally authored in TypeScrip (and vice-versa). Additionally, Bootsharp provides an option to bundle all the binaries into single-file ES module and patches .NET's internal JavaScript code to make it compatible with constrained runtime environments, such as VS Code [web extensions](https://code.visualstudio.com/api/extension-guides/web-extensions).
