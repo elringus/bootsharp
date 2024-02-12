@@ -26,7 +26,7 @@ Bootsharp streamlines consuming .NET C# apps and libraries in web projects. It's
 
 🗺️ Works in browsers and JS runtimes (Node, Deno, Bun)
 
-⚡ Generated bindings and types over C# interfaces
+⚡ Generates bindings and types over C# interfaces
 
 🏷️ Supports interop over object instances
 
@@ -49,4 +49,4 @@ Bootsharp itself is built on top of [System.Runtime.InteropServices.JavaScript](
 
 If you're looking to expose simple library API to JavaScript and don't need type declarations, Bootsharp would probably be an overkill. However, .NET's interop is low-level, doesn't support passing custom types by value and requires lots of boilerplate to author the bindings. It's impractical for large API surfaces.
 
-With Bootsharp, you'll be able to just throw your domain-specific interfaces at it and use them seamlessly from the other side, as if they were originally authored in TypeScrip (and vice-versa). Additionally, Bootsharp provides an option to bundle all the binaries into single-file ES module and patches .NET's internal JavaScript code to make it compatible with constrained runtime environments, such as VS Code [web extensions](https://code.visualstudio.com/api/extension-guides/web-extensions).
+With Bootsharp, you'll be able to just feed it your domain-specific interfaces and use them seamlessly from the other side, as if they were originally authored in TypeScript (and vice-versa). Additionally, Bootsharp provides an option to bundle all the binaries into single-file ES module and patches .NET's internal JavaScript code to make it compatible with constrained runtime environments, such as VS Code [web extensions](https://code.visualstudio.com/api/extension-guides/web-extensions).
