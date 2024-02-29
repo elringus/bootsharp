@@ -1,6 +1,6 @@
 ---
 layout: home
-
+markdownStyles: false
 title: Use C# in web apps with comfort
 titleTemplate: Bootsharp • :title
 
@@ -20,7 +20,7 @@ hero:
     alt: Bootsharp
 ---
 
-<div class="VPFeatures VPHomeFeatures">
+<div class="features">
     <div class="container">
         <div class="items" style="margin: -8px">
             <div class="items">
@@ -29,7 +29,7 @@ hero:
                         <article class="box">
                             <div class="box-title">
                                 <div class="icon">✨</div>
-                                <h2 class="title">High-level Interoperability</h2>
+                                <h2 class="title">High-level Interoperation</h2>
                             </div>
                             <p class="details">Generates JavaScript bindings and type declarations for your C# APIs facilitating seamless interop between the domain and UI.</p></article>
                     </div>
@@ -201,9 +201,9 @@ hero:
 
 <style scoped>
 /* A hack copying home page specific styles, as they're applied with guid attr. */
-.VPFeatures { position: relative; padding: 0 24px; }
-@media (min-width: 640px) { .VPFeatures { padding: 0 48px; } }
-@media (min-width: 960px) { .VPFeatures { padding: 0 64px; } }
+.features { position: relative; padding: 0 24px; }
+@media (min-width: 640px) { .features { padding: 0 48px; } }
+@media (min-width: 960px) { .features { padding: 0 64px; } }
 .container { margin: 0 auto; max-width: 1152px; }
 .items { display: flex; flex-wrap: wrap; }
 .item { padding: 8px; width: 100%; }
