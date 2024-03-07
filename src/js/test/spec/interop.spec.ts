@@ -169,4 +169,10 @@ describe("while bootsharp is booted", () => {
         expect(result1).toStrictEqual("foobar");
         expect(result2).toStrictEqual("baznya");
     });
+    it("empty string of a struct is transferred correctly", () => {
+        const id = Test.Types.Registry.getWithEmptyId().id;
+        expect(id).not.toBeNull();
+        expect(id).not.toBeUndefined();
+        expect(id).toStrictEqual("");
+    });
 });

@@ -43,4 +43,7 @@ public partial class Registry
 
     [JSFunction]
     public static partial IReadOnlyDictionary<string, Registry> GetRegistryMap ();
+
+    [JSInvokable]
+    public static Vehicle GetWithEmptyId () => new() { Id = "" };
 }
