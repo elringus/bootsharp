@@ -26,6 +26,9 @@ describe("while bootsharp is booted", () => {
         Test.Functions.getString = () => "foo";
         expect(Test.Functions.echoString()).toStrictEqual("foo");
     });
+    it("can transfer lists", () => {
+        expect(Test.Functions.echoList(["foo", "bar", "baz"])).toStrictEqual(["foo", "bar", "baz"]);
+    });
     it("can transfer decimals", () => {
         expect(Test.Invokable.sumDoubles(-1, 2.75)).toStrictEqual(1.75);
     });

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bootsharp;
 
@@ -16,6 +17,12 @@ public static partial class Functions
     {
         await Task.Delay(1);
         return await GetStringAsync();
+    }
+
+    [JSInvokable]
+    public static IReadOnlyList<string> EchoList (IReadOnlyList<string> list)
+    {
+        return [..list];
     }
 
     [JSFunction]
