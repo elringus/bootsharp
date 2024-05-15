@@ -38,7 +38,7 @@ internal sealed class MethodInspector (Preferences prefs, TypeConverter converte
         Nullable = @return ? IsNullable(method) : IsNullable(param),
         Async = @return && IsTaskLike(param.ParameterType),
         Void = @return && IsVoid(param.ParameterType),
-        Serialized = ShouldSerialize(param.ParameterType),
+        Marshalled = ShouldMarshall(param.ParameterType),
         Instance = IsInstancedInteropInterface(param.ParameterType, out var instanceType),
         InstanceType = instanceType
     };

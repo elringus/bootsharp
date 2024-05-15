@@ -9,7 +9,6 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
     public required string EntryAssemblyName { get; set; }
     public required string InterfacesFilePath { get; set; }
     public required string DependenciesFilePath { get; set; }
-    public required string SerializerFilePath { get; set; }
     public required string InteropFilePath { get; set; }
 
     public override bool Execute ()
@@ -18,7 +17,6 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
         using var inspection = InspectSolution(prefs);
         GenerateInterfaces(inspection);
         GenerateDependencies(inspection);
-        GenerateSerializer(inspection);
         GenerateInterop(inspection);
         return true;
     }
@@ -50,13 +48,6 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
         var generator = new DependencyGenerator(EntryAssemblyName);
         var content = generator.Generate(inspection);
         WriteGenerated(DependenciesFilePath, content);
-    }
-
-    private void GenerateSerializer (SolutionInspection inspection)
-    {
-        var generator = new SerializerGenerator();
-        var content = generator.Generate(inspection);
-        WriteGenerated(SerializerFilePath, content);
     }
 
     private void GenerateInterop (SolutionInspection inspection)

@@ -7,7 +7,6 @@
         <BootsharpIntermediateDirectory>$(IntermediateOutputPath)bootsharp</BootsharpIntermediateDirectory>
         <BootsharpInterfacesFilePath>$(BootsharpIntermediateDirectory)/Interfaces.g.cs</BootsharpInterfacesFilePath>
         <BootsharpDependenciesFilePath>$(BootsharpIntermediateDirectory)/Dependencies.g.cs</BootsharpDependenciesFilePath>
-        <BootsharpSerializerFilePath>$(BootsharpIntermediateDirectory)/Serializer.g.cs</BootsharpSerializerFilePath>
         <BootsharpInteropFilePath>$(BootsharpIntermediateDirectory)/Interop.g.cs</BootsharpInteropFilePath>
         <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
     </PropertyGroup>
@@ -59,21 +58,18 @@
         <!-- Pre-compile the solution, as we'll need to inspect the assemblies in the next step. -->
         <MSBuild Projects="$(MSBuildProjectFile)" Targets="BuildCompile" Properties="BootsharpSkip=true"/>
 
-        <!-- Emit code to be analyzed by .NET's source generators: interop methods and serialized type hints. -->
+        <!-- Emit code to be analyzed by .NET's source generators, such as 'System.JavaScript' bindings. -->
         <BootsharpEmit InspectedDirectory="$(OutputPath)"
                        EntryAssemblyName="$(BootsharpEntryAssemblyName)"
                        InterfacesFilePath="$(BootsharpInterfacesFilePath)"
                        DependenciesFilePath="$(BootsharpDependenciesFilePath)"
-                       SerializerFilePath="$(BootsharpSerializerFilePath)"
                        InteropFilePath="$(BootsharpInteropFilePath)"/>
         <ItemGroup>
             <Compile Remove="$(BootsharpInterfacesFilePath)"/>
             <Compile Remove="$(BootsharpDependenciesFilePath)"/>
-            <Compile Remove="$(BootsharpSerializerFilePath)"/>
             <Compile Remove="$(BootsharpInteropFilePath)"/>
             <Compile Include="$(BootsharpInterfacesFilePath)"/>
             <Compile Include="$(BootsharpDependenciesFilePath)"/>
-            <Compile Include="$(BootsharpSerializerFilePath)"/>
             <Compile Include="$(BootsharpInteropFilePath)"/>
         </ItemGroup>
 

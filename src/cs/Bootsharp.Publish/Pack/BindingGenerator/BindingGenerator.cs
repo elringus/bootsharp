@@ -116,14 +116,14 @@ internal sealed class BindingGenerator (Preferences prefs)
         if (instanced) invArgs = PrependInstanceIdArgName(invArgs);
         var body = $"{(wait ? "await " : "")}{endpoint}({invArgs})";
         if (method.ReturnValue.Instance) body = $"new {BuildInstanceClassName(method.ReturnValue.InstanceType)}({body})";
-        else if (method.ReturnValue.Serialized) body = $"deserialize({body})";
+        else if (method.ReturnValue.Marshalled) body = $"deserialize({body})";
         var func = $"{(wait ? "async " : "")}({funcArgs}) => {body}";
         builder.Append($"{Break()}{method.JSName}: {func}");
 
         string BuildInvArg (ArgumentMeta arg)
         {
             if (arg.Value.Instance) return $"registerInstance({arg.JSName})";
-            if (arg.Value.Serialized) return $"serialize({arg.JSName})";
+            if (arg.Value.Marshalled) return $"serialize({arg.JSName})";
             return arg.JSName;
         }
     }
@@ -139,7 +139,7 @@ internal sealed class BindingGenerator (Preferences prefs)
         var handler = instanced ? $"getInstance(_id).{name}" : $"this.{name}Handler";
         var body = $"{(wait ? "await " : "")}{handler}({invArgs})";
         if (method.ReturnValue.Instance) body = $"registerInstance({body})";
-        else if (method.ReturnValue.Serialized) body = $"serialize({body})";
+        else if (method.ReturnValue.Marshalled) body = $"serialize({body})";
         var serdeHandler = $"{(wait ? "async " : "")}({funcArgs}) => {body}";
         if (instanced) builder.Append($"{Break()}{name}Serialized: {serdeHandler}");
         else
@@ -155,7 +155,7 @@ internal sealed class BindingGenerator (Preferences prefs)
         string BuildInvArg (ArgumentMeta arg)
         {
             if (arg.Value.Instance) return $"new {BuildInstanceClassName(arg.Value.InstanceType)}({arg.JSName})";
-            if (arg.Value.Serialized) return $"deserialize({arg.JSName})";
+            if (arg.Value.Marshalled) return $"deserialize({arg.JSName})";
             return arg.JSName;
         }
     }
@@ -167,7 +167,7 @@ internal sealed class BindingGenerator (Preferences prefs)
         if (!instanced) builder.Append($"{Break()}{name}: new Event()");
         var funcArgs = string.Join(", ", method.Arguments.Select(a => a.JSName));
         if (instanced) funcArgs = PrependInstanceIdArgName(funcArgs);
-        var invArgs = string.Join(", ", method.Arguments.Select(arg => arg.Value.Serialized ? $"deserialize({arg.JSName})" : arg.JSName));
+        var invArgs = string.Join(", ", method.Arguments.Select(arg => arg.Value.Marshalled ? $"deserialize({arg.JSName})" : arg.JSName));
         var handler = instanced ? "getInstance(_id)" : method.JSSpace;
         builder.Append($"{Break()}{name}Serialized: ({funcArgs}) => {handler}.{name}.broadcast({invArgs})");
     }
@@ -182,8 +182,8 @@ internal sealed class BindingGenerator (Preferences prefs)
     }
 
     private bool ShouldWait (MethodMeta method) =>
-        (method.Arguments.Any(a => a.Value.Serialized || a.Value.Instance) ||
-         method.ReturnValue.Serialized || method.ReturnValue.Instance) && method.ReturnValue.Async;
+        (method.Arguments.Any(a => a.Value.Marshalled || a.Value.Instance) ||
+         method.ReturnValue.Marshalled || method.ReturnValue.Instance) && method.ReturnValue.Async;
 
     private string Break () => $"{Comma()}\n{Pad(level + 1)}";
     private string Pad (int level) => new(' ', level * 4);

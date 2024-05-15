@@ -37,10 +37,10 @@ internal sealed class InteropGenerator
                   {
                       {{JoinLines(proxies, 2)}}
                   }
-
+              
                   [System.Runtime.InteropServices.JavaScript.JSExport] internal static void DisposeExportedInstance (global::System.Int32 id) => global::Bootsharp.Instances.Dispose(id);
                   [System.Runtime.InteropServices.JavaScript.JSImport("disposeInstance", "Bootsharp")] internal static partial void DisposeImportedInstance (global::System.Int32 id);
-
+              
                   {{JoinLines(methods)}}
               }
               """;
@@ -72,7 +72,7 @@ internal sealed class InteropGenerator
                 : $"global::{inv.Space}.{inv.Name}({args})";
             if (wait) body = $"await {body}";
             if (inv.ReturnValue.Instance) body = $"global::Bootsharp.Instances.Register({body})";
-            else if (inv.ReturnValue.Serialized) body = $"Serialize({body})";
+            else if (inv.ReturnValue.Marshalled) body = $"Serialize({body})";
             return body;
         }
 
@@ -83,7 +83,7 @@ internal sealed class InteropGenerator
                 var (_, _, full) = BuildInteropInterfaceImplementationName(arg.Value.InstanceType, InterfaceKind.Import);
                 return $"new global::{full}({arg.Name})";
             }
-            if (arg.Value.Serialized) return $"Deserialize<{arg.Value.TypeSyntax}>({arg.Name})";
+            if (arg.Value.Marshalled) return $"Deserialize<{arg.Value.TypeSyntax}>({arg.Name})";
             return arg.Name;
         }
     }
@@ -109,7 +109,7 @@ internal sealed class InteropGenerator
                 var (_, _, full) = BuildInteropInterfaceImplementationName(method.ReturnValue.InstanceType, InterfaceKind.Import);
                 return $"({BuildSyntax(method.ReturnValue.InstanceType)})new global::{full}({body})";
             }
-            if (!method.ReturnValue.Serialized) return body;
+            if (!method.ReturnValue.Marshalled) return body;
             var type = method.ReturnValue.Async
                 ? method.ReturnValue.TypeSyntax[36..^1]
                 : method.ReturnValue.TypeSyntax;
@@ -119,7 +119,7 @@ internal sealed class InteropGenerator
         string BuildBodyArg (ArgumentMeta arg)
         {
             if (arg.Value.Instance) return $"global::Bootsharp.Instances.Register({arg.Name})";
-            if (arg.Value.Serialized) return $"Serialize({arg.Name})";
+            if (arg.Value.Marshalled) return $"Serialize({arg.Name})";
             return arg.Name;
         }
     }
@@ -140,7 +140,7 @@ internal sealed class InteropGenerator
         if (value.Void) return "void";
         var nil = value.Nullable ? "?" : "";
         if (value.Instance) return $"global::System.Int32{(nil)}";
-        if (value.Serialized) return $"global::System.String{(nil)}";
+        if (value.Marshalled) return $"global::System.String{(nil)}";
         return value.TypeSyntax;
     }
 
@@ -171,6 +171,6 @@ internal sealed class InteropGenerator
 
     private bool ShouldWait (ValueMeta value)
     {
-        return value.Async && (value.Serialized || value.Instance);
+        return value.Async && (value.Marshalled || value.Instance);
     }
 }
