@@ -7,6 +7,7 @@ namespace Bootsharp.Publish;
 /// </summary>
 internal sealed class InteropGenerator
 {
+    private readonly InteropMarshaller marshaller = new();
     private readonly HashSet<string> proxies = [];
     private readonly HashSet<string> methods = [];
     private IReadOnlyCollection<InterfaceMeta> instanced = [];
@@ -26,7 +27,6 @@ internal sealed class InteropGenerator
               #pragma warning disable
 
               using System.Runtime.InteropServices.JavaScript;
-              using static Bootsharp.Serializer;
 
               namespace Bootsharp.Generated;
 
@@ -42,6 +42,8 @@ internal sealed class InteropGenerator
                   [System.Runtime.InteropServices.JavaScript.JSImport("disposeInstance", "Bootsharp")] internal static partial void DisposeImportedInstance (global::System.Int32 id);
               
                   {{JoinLines(methods)}}
+                  
+                  {{JoinLines(marshaller.GetGeneratedMethods())}}
               }
               """;
     }
@@ -72,7 +74,7 @@ internal sealed class InteropGenerator
                 : $"global::{inv.Space}.{inv.Name}({args})";
             if (wait) body = $"await {body}";
             if (inv.ReturnValue.Instance) body = $"global::Bootsharp.Instances.Register({body})";
-            else if (inv.ReturnValue.Marshalled) body = $"Serialize({body})";
+            else if (inv.ReturnValue.Marshalled) body = $"{marshaller.Marshal(inv.ReturnValue)}({body})";
             return body;
         }
 
@@ -83,7 +85,7 @@ internal sealed class InteropGenerator
                 var (_, _, full) = BuildInteropInterfaceImplementationName(arg.Value.InstanceType, InterfaceKind.Import);
                 return $"new global::{full}({arg.Name})";
             }
-            if (arg.Value.Marshalled) return $"Deserialize<{arg.Value.TypeSyntax}>({arg.Name})";
+            if (arg.Value.Marshalled) return $"{marshaller.Unmarshal(arg.Value)}({arg.Name})";
             return arg.Name;
         }
     }
@@ -110,16 +112,13 @@ internal sealed class InteropGenerator
                 return $"({BuildSyntax(method.ReturnValue.InstanceType)})new global::{full}({body})";
             }
             if (!method.ReturnValue.Marshalled) return body;
-            var type = method.ReturnValue.Async
-                ? method.ReturnValue.TypeSyntax[36..^1]
-                : method.ReturnValue.TypeSyntax;
-            return $"Deserialize<{type}>({body})";
+            return $"{marshaller.Unmarshal(method.ReturnValue)}({body})";
         }
 
         string BuildBodyArg (ArgumentMeta arg)
         {
             if (arg.Value.Instance) return $"global::Bootsharp.Instances.Register({arg.Name})";
-            if (arg.Value.Marshalled) return $"Serialize({arg.Name})";
+            if (arg.Value.Marshalled) return $"{marshaller.Marshal(arg.Value)}({arg.Name})";
             return arg.Name;
         }
     }
@@ -129,7 +128,7 @@ internal sealed class InteropGenerator
         var args = string.Join(", ", method.Arguments.Select(BuildSignatureArg));
         if (TryInstanced(method, out _)) args = PrependInstanceIdArgTypeAndName(args);
         var @return = BuildReturnValue(method.ReturnValue);
-        var endpoint = $"{method.JSSpace}.{method.JSName}Serialized";
+        var endpoint = $"{method.JSSpace}.{method.JSName}Marshalled";
         var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{endpoint}", "Bootsharp")]""";
         var date = MarshalAmbiguous(method.ReturnValue.TypeSyntax, true);
         methods.Add($"{attr} {date}internal static partial {@return} {BuildMethodName(method)} ({args});");
@@ -139,8 +138,8 @@ internal sealed class InteropGenerator
     {
         if (value.Void) return "void";
         var nil = value.Nullable ? "?" : "";
-        if (value.Instance) return $"global::System.Int32{(nil)}";
-        if (value.Marshalled) return $"global::System.String{(nil)}";
+        if (value.Instance) return $"global::System.Int32{nil}";
+        if (value.Marshalled) return $"global::System.Object{nil}";
         return value.TypeSyntax;
     }
 

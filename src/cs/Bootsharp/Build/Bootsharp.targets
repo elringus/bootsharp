@@ -58,7 +58,7 @@
         <!-- Pre-compile the solution, as we'll need to inspect the assemblies in the next step. -->
         <MSBuild Projects="$(MSBuildProjectFile)" Targets="BuildCompile" Properties="BootsharpSkip=true"/>
 
-        <!-- Emit code to be analyzed by .NET's source generators, such as 'System.JavaScript' bindings. -->
+        <!-- Emit code to be analyzed by .NET's source generators, such as JavaScript interop services. -->
         <BootsharpEmit InspectedDirectory="$(OutputPath)"
                        EntryAssemblyName="$(BootsharpEntryAssemblyName)"
                        InterfacesFilePath="$(BootsharpInterfacesFilePath)"
