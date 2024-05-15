@@ -20,7 +20,7 @@ public static partial class Functions
     }
 
     [JSInvokable]
-    public static IReadOnlyList<string> EchoList (IReadOnlyList<string> list)
+    public static IReadOnlyList<string> EchoColExpr (IReadOnlyList<string> list)
     {
         return [..list];
     }
@@ -33,4 +33,11 @@ public static partial class Functions
 
     [JSFunction]
     public static partial byte[] GetBytes ();
+
+    [JSInvokable]
+    public static async Task<byte[]> EchoBytesAsync (byte[] arr)
+    {
+        await Task.Delay(1);
+        return arr;
+    }
 }

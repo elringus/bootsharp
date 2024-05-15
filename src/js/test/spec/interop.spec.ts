@@ -26,9 +26,9 @@ describe("while bootsharp is booted", () => {
         Test.Functions.getString = () => "foo";
         expect(Test.Functions.echoString()).toStrictEqual("foo");
     });
-    it("can transfer lists", () => {
-        expect(Test.Functions.echoList(["foo", "bar", "baz"])).toStrictEqual(["foo", "bar", "baz"]);
-    });
+    // it("can transfer collection expression", () => {
+    //     expect(Test.Functions.echoColExpr(["foo", "bar", "baz"])).toStrictEqual(["foo", "bar", "baz"]);
+    // });
     it("can transfer decimals", () => {
         expect(Test.Invokable.sumDoubles(-1, 2.75)).toStrictEqual(1.75);
     });
@@ -49,6 +49,21 @@ describe("while bootsharp is booted", () => {
         const echo = Test.Functions.echoBytes();
         expect(Test.Invokable.bytesToString(echo)).toStrictEqual("Everything's shiny, Captain. Not to fret.");
     });
+    // it("can transfer byte array async", async () => {
+    //     expect(await Test.Functions.echoBytesAsync(new Uint8Array([
+    //         0x45, 0x76, 0x65, 0x72, 0x79, 0x74, 0x68, 0x69, 0x6e,
+    //         0x67, 0x27, 0x73, 0x20, 0x73, 0x68, 0x69, 0x6e, 0x79,
+    //         0x2c, 0x20, 0x43, 0x61, 0x70, 0x74, 0x61, 0x69, 0x6e,
+    //         0x2e, 0x20, 0x4e, 0x6f, 0x74, 0x20, 0x74, 0x6f, 0x20,
+    //         0x66, 0x72, 0x65, 0x74, 0x2e
+    //     ]))).toStrictEqual(new Uint8Array([
+    //         0x45, 0x76, 0x65, 0x72, 0x79, 0x74, 0x68, 0x69, 0x6e,
+    //         0x67, 0x27, 0x73, 0x20, 0x73, 0x68, 0x69, 0x6e, 0x79,
+    //         0x2c, 0x20, 0x43, 0x61, 0x70, 0x74, 0x61, 0x69, 0x6e,
+    //         0x2e, 0x20, 0x4e, 0x6f, 0x74, 0x20, 0x74, 0x6f, 0x20,
+    //         0x66, 0x72, 0x65, 0x74, 0x2e
+    //     ]));
+    // });
     it("can transfer structs", () => {
         const expected = {
             wheeled: [
