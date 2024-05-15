@@ -33,13 +33,15 @@ internal static class TypeUtilities
             ? type.GenericTypeArguments[0] : null) != null;
     }
 
-    public static string MarshalAmbiguous (string typeSyntax, bool @return)
+    public static string MarshalAmbiguous (ValueMeta meta, bool @return)
     {
-        var promise = typeSyntax.StartsWith("global::System.Threading.Tasks.Task<");
-        if (promise) typeSyntax = typeSyntax[36..];
-        var result =
-            typeSyntax.StartsWith("global::System.DateTime") ? "JSType.Date" :
-            typeSyntax.StartsWith("global::System.Int64") ? "JSType.BigInt" : "";
+        var typeSyntax = meta.TypeSyntax;
+        var promise = meta.TypeSyntax.StartsWith("global::System.Threading.Tasks.Task<");
+        if (promise) typeSyntax = meta.TypeSyntax[36..];
+        var result = "";
+        if (meta.Marshalled) result = "JSType.Any";
+        else if (typeSyntax.StartsWith("global::System.DateTime")) result = "JSType.Date";
+        else if (typeSyntax.StartsWith("global::System.Int64")) result = "JSType.BigInt";
         if (result == "") return "";
         if (promise) result = $"JSType.Promise<{result}>";
         result = $"JSMarshalAs<{result}>";
