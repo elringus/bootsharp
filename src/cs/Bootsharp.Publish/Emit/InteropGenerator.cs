@@ -27,6 +27,7 @@ internal sealed class InteropGenerator
               #pragma warning disable
 
               using System.Runtime.InteropServices.JavaScript;
+              using static Bootsharp.Marshalling;
 
               namespace Bootsharp.Generated;
 
