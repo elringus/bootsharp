@@ -7,7 +7,7 @@ namespace Bootsharp.Publish;
 /// </summary>
 internal sealed class InteropGenerator
 {
-    private readonly InteropMarshaller marshaller = new();
+    private readonly InteropMarshaller marsh = new();
     private readonly HashSet<string> proxies = [];
     private readonly HashSet<string> methods = [];
     private IReadOnlyCollection<InterfaceMeta> instanced = [];
@@ -44,7 +44,7 @@ internal sealed class InteropGenerator
               
                   {{JoinLines(methods)}}
                   
-                  {{JoinLines(marshaller.GetGeneratedMethods())}}
+                  {{JoinLines(marsh.GetGenerated())}}
               }
               """;
     }
@@ -75,7 +75,7 @@ internal sealed class InteropGenerator
                 : $"global::{inv.Space}.{inv.Name}({args})";
             if (wait) body = $"await {body}";
             if (inv.ReturnValue.Instance) body = $"global::Bootsharp.Instances.Register({body})";
-            else if (inv.ReturnValue.Marshalled) body = $"{marshaller.Marshal(inv.ReturnValue)}({body})";
+            else if (inv.ReturnValue.Marshalled) body = $"{marsh.Marshal(inv.ReturnValue.Type)}({body})";
             return body;
         }
 
@@ -86,7 +86,7 @@ internal sealed class InteropGenerator
                 var (_, _, full) = BuildInteropInterfaceImplementationName(arg.Value.InstanceType, InterfaceKind.Import);
                 return $"new global::{full}({arg.Name})";
             }
-            if (arg.Value.Marshalled) return $"{marshaller.Unmarshal(arg.Value)}({arg.Name})";
+            if (arg.Value.Marshalled) return $"{marsh.Unmarshal(arg.Value.Type)}({arg.Name})";
             return arg.Name;
         }
     }
@@ -113,13 +113,13 @@ internal sealed class InteropGenerator
                 return $"({BuildSyntax(method.ReturnValue.InstanceType)})new global::{full}({body})";
             }
             if (!method.ReturnValue.Marshalled) return body;
-            return $"{marshaller.Unmarshal(method.ReturnValue)}({body})";
+            return $"{marsh.Unmarshal(method.ReturnValue.Type)}({body})";
         }
 
         string BuildBodyArg (ArgumentMeta arg)
         {
             if (arg.Value.Instance) return $"global::Bootsharp.Instances.Register({arg.Name})";
-            if (arg.Value.Marshalled) return $"{marshaller.Marshal(arg.Value)}({arg.Name})";
+            if (arg.Value.Marshalled) return $"{marsh.Marshal(arg.Value.Type)}({arg.Name})";
             return arg.Name;
         }
     }

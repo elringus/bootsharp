@@ -198,17 +198,22 @@ public class InteropTest : EmitTest
             {
                 [JSInvokable] public static Record InvA (Record a) => default;
                 [JSInvokable] public static Task<Record?[]?> InvB (Record?[]? a) => default;
+                [JSInvokable] public static Task<byte[]> InvC () => default;
                 [JSFunction] public static Record FunA (Record a) => Proxies.Get<Func<Record, Record>>("Space.Class.FunA")(a);
                 [JSFunction] public static Task<Record?[]?> FunB (Record?[]? a) => Proxies.Get<Func<Record?[]?, Task<Record?[]?>>>("Space.Class.FunB")(a);
+                [JSFunction] public static Task<byte[]> FunC () => Proxies.Get<Func<Task<byte[]>>>("Space.Class.FunC")();
             }
             """));
         Execute();
         Contains("""Proxies.Set("Space.Class.FunA", (global::Space.Record a) => Unmarshal_Space_Record(Space_Class_FunA(Marshal_Space_Record(a))));""");
-        Contains("""Proxies.Set("Space.Class.FunB", async (global::Space.Record?[]? a) => Unmarshal_Space_Record_Nil_Array_Nil(await Space_Class_FunB(Marshal_Space_Record_Nil_Array_Nil(a))));""");
+        Contains("""Proxies.Set("Space.Class.FunB", async (global::Space.Record?[]? a) => Unmarshal_Space_Record_Array(await Space_Class_FunB(Marshal_Space_Record_Array(a))));""");
+        Contains("""Proxies.Set("Space.Class.FunC", async () => (await Space_Class_FunC()));""");
         Contains("JSExport] [return: JSMarshalAs<JSType.Any>] internal static global::System.Object Space_Class_InvA ([JSMarshalAs<JSType.Any>] global::System.Object a) => Marshal_Space_Record(global::Space.Class.InvA(Unmarshal_Space_Record(a)));");
-        Contains("JSExport] [return: JSMarshalAs<JSType.Promise<JSType.Any>>] internal static async global::System.Threading.Tasks.Task<global::System.Object?> Space_Class_InvB ([JSMarshalAs<JSType.Any>] global::System.Object? a) => Marshal_Space_Record_Nil_Array_Nil(await global::Space.Class.InvB(Unmarshal_Space_Record_Nil_Array_Nil(a)));");
+        Contains("JSExport] [return: JSMarshalAs<JSType.Promise<JSType.Any>>] internal static async global::System.Threading.Tasks.Task<global::System.Object?> Space_Class_InvB ([JSMarshalAs<JSType.Any>] global::System.Object? a) => Marshal_Space_Record_Array(await global::Space.Class.InvB(Unmarshal_Space_Record_Array(a)));");
+        Contains("JSExport] [return: JSMarshalAs<JSType.Promise<JSType.Any>>] internal static async global::System.Threading.Tasks.Task<global::System.Object> Space_Class_InvC () => (await global::Space.Class.InvC());");
         Contains("""JSImport("Space.Class.funAMarshalled", "Bootsharp")] [return: JSMarshalAs<JSType.Any>] internal static partial global::System.Object Space_Class_FunA ([JSMarshalAs<JSType.Any>] global::System.Object a);""");
         Contains("""JSImport("Space.Class.funBMarshalled", "Bootsharp")] [return: JSMarshalAs<JSType.Promise<JSType.Any>>] internal static partial global::System.Threading.Tasks.Task<global::System.Object?> Space_Class_FunB ([JSMarshalAs<JSType.Any>] global::System.Object? a);""");
+        Contains("""JSImport("Space.Class.funCMarshalled", "Bootsharp")] [return: JSMarshalAs<JSType.Promise<JSType.Any>>] internal static partial global::System.Threading.Tasks.Task<global::System.Object> Space_Class_FunC ();""");
     }
 
     [Fact]
