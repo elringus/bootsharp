@@ -2,7 +2,7 @@
 
 internal class InteropMarshaller
 {
-    private readonly Dictionary<string, string> generatedByName = new() { [""] = "" };
+    private readonly Dictionary<string, string> generatedByName = [];
 
     public string Marshal (Type type)
     {
