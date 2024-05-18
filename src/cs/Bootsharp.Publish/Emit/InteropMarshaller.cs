@@ -42,7 +42,7 @@ internal class InteropMarshaller
     private string GenerateMarshalMethod (string name, Type type)
     {
         var nullable = IsNullable(type) || !type.IsValueType;
-        var props = GetMarshalProps(type).Select(EmitProperty);
+        var props = GetMarshaledProperties(type).Select(MarshalProperty);
         return
             $$"""
               private static object {{name}} ({{BuildSyntax(type)}} obj)
@@ -54,7 +54,7 @@ internal class InteropMarshaller
               }
               """;
 
-        string EmitProperty (PropertyInfo prop)
+        string MarshalProperty (PropertyInfo prop)
         {
             return "";
         }

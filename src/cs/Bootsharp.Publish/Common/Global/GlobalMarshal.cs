@@ -50,7 +50,7 @@ internal static class GlobalMarshal
         return !native.Contains(type.FullName!);
     }
 
-    public static PropertyInfo[] GetMarshalProps (Type type)
+    public static PropertyInfo[] GetMarshaledProperties (Type type)
     {
         // Even though 'MetadataToken' is not guaranteed to be stable,
         // we use it under single shared compilation unit and only
