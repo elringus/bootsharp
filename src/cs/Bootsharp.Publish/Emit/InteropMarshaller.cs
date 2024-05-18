@@ -1,4 +1,6 @@
-﻿namespace Bootsharp.Publish;
+﻿using System.Reflection;
+
+namespace Bootsharp.Publish;
 
 internal class InteropMarshaller
 {
@@ -39,12 +41,35 @@ internal class InteropMarshaller
 
     private string GenerateMarshalMethod (string name, Type type)
     {
-        return "";
+        var nullable = IsNullable(type) || !type.IsValueType;
+        var props = GetMarshalProps(type).Select(EmitProperty);
+        return
+            $$"""
+              private static object {{name}} ({{BuildSyntax(type)}} obj)
+              {
+                  {{JoinLines([
+                      nullable ? "if (obj is null) return null;" : null,
+                      $"return new object[] {{ {string.Join(", ", props)} }};"
+                  ])}}
+              }
+              """;
+
+        string EmitProperty (PropertyInfo prop)
+        {
+            return "";
+        }
     }
 
     private string GenerateUnmarshalMethod (string name, Type type)
     {
-        return "";
+        var stx = BuildSyntax(type);
+        return
+            $$"""
+              private static {{stx}} {{name}} (object raw)
+              {
+                  
+              }
+              """;
     }
 
     private static string GenerateCommon () =>
