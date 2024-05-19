@@ -50,6 +50,12 @@ internal static class GlobalMarshal
         return !native.Contains(type.FullName!);
     }
 
+    public static string GetMarshalId (Type type) => BuildSyntax(type)
+        .Replace('.', '_').Replace('+', '_')
+        .Replace("<", "_").Replace(">", "").Replace(",", "_")
+        .Replace("[", "_Array").Replace("]", "")
+        .Replace("global::", "").Replace(" ", "");
+
     public static PropertyInfo[] GetMarshaledProperties (Type type)
     {
         // Even though 'MetadataToken' is not guaranteed to be stable,

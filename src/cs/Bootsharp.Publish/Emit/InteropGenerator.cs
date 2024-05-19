@@ -75,8 +75,10 @@ internal sealed class InteropGenerator
                 : $"global::{inv.Space}.{inv.Name}({args})";
             if (wait) body = $"await {body}";
             if (inv.ReturnValue.Instance) body = $"global::Bootsharp.Instances.Register({body})";
-            else if (inv.ReturnValue.Marshalled) body = $"{marsh.Marshal(inv.ReturnValue.Type)}({body})";
-            return body;
+            if (!inv.ReturnValue.Marshalled) return body;
+            if (IsTaskWithResult(inv.ReturnValue.Type, out var result))
+                return $"{marsh.Marshal(result)}({body})";
+            return $"{marsh.Marshal(inv.ReturnValue.Type)}({body})";
         }
 
         string BuildBodyArg (ArgumentMeta arg)
@@ -113,6 +115,8 @@ internal sealed class InteropGenerator
                 return $"({BuildSyntax(method.ReturnValue.InstanceType)})new global::{full}({body})";
             }
             if (!method.ReturnValue.Marshalled) return body;
+            if (IsTaskWithResult(method.ReturnValue.Type, out var result))
+                return $"{marsh.Unmarshal(result)}({body})";
             return $"{marsh.Unmarshal(method.ReturnValue.Type)}({body})";
         }
 
