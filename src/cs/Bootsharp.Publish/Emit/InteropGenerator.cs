@@ -7,7 +7,7 @@ namespace Bootsharp.Publish;
 /// </summary>
 internal sealed class InteropGenerator
 {
-    private readonly InteropMarshaller marsh = new();
+    private readonly MarshalGenerator marsh = new();
     private readonly HashSet<string> proxies = [];
     private readonly HashSet<string> methods = [];
     private IReadOnlyCollection<InterfaceMeta> instanced = [];
@@ -27,6 +27,7 @@ internal sealed class InteropGenerator
               #pragma warning disable
 
               using System.Runtime.InteropServices.JavaScript;
+              using System.Linq;
               using static Bootsharp.Marshalling;
 
               namespace Bootsharp.Generated;

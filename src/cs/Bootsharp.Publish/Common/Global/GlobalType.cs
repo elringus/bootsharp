@@ -49,6 +49,16 @@ internal static class GlobalType
             : arrayType.GenericTypeArguments[0];
     }
 
+    public static Type GetDictionaryKeyType (Type dictType)
+    {
+        return dictType.GenericTypeArguments[0];
+    }
+
+    public static Type GetDictionaryValueType (Type dictType)
+    {
+        return dictType.GenericTypeArguments[1];
+    }
+
     public static NullabilityInfo GetNullability (PropertyInfo property)
     {
         return new NullabilityInfoContext().Create(property);

@@ -11,6 +11,7 @@ public class InteropTest : EmitTest
         Contains(
             """
             using System.Runtime.InteropServices.JavaScript;
+            using System.Linq;
             using static Bootsharp.Marshalling;
 
             namespace Bootsharp.Generated;
