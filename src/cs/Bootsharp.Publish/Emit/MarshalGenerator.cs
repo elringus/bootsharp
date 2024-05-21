@@ -77,17 +77,17 @@ internal class MarshalGenerator
 
         string UnmarshalValue (string name, Type valueType)
         {
-            throw new NotImplementedException();
+            return "";
         }
 
         string UnmarshalList (string name, Type listType)
         {
-            throw new NotImplementedException();
+            return "";
         }
 
         string UnmarshalDictionary (string name, Type dictType)
         {
-            throw new NotImplementedException();
+            return "";
         }
 
         string UnmarshalStruct (string name, Type structType)
@@ -95,7 +95,7 @@ internal class MarshalGenerator
             // new Struct { Foo = "" };
             // new Record("");
 
-            throw new NotImplementedException();
+            return "";
 
             bool ShouldInitViaCtor (Type type) => type.GetConstructors().Any(c => c.GetParameters().Length > 0);
         }

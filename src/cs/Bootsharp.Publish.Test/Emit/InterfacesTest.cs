@@ -146,7 +146,7 @@ public class InterfacesTest : EmitTest
                 }
             }
             """);
-        Assert.DoesNotContain("JSExported", TestedContent); // Exported instances are authored by user and registered on initial interop.
+        DoesNotContain("JSExported"); // Exported instances are authored by user and registered on initial interop.
     }
 
     [Fact]
@@ -297,6 +297,6 @@ public class InterfacesTest : EmitTest
             }
             """));
         Execute();
-        Assert.DoesNotContain("Foo", TestedContent, StringComparison.OrdinalIgnoreCase);
+        DoesNotContain("Foo");
     }
 }

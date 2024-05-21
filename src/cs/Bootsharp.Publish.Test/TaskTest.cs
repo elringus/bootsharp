@@ -54,6 +54,11 @@ public abstract class TaskTest : IDisposable
         Assert.Contains(content, TestedContent);
     }
 
+    protected void DoesNotContain (string content)
+    {
+        Assert.DoesNotContain(content, TestedContent, StringComparison.OrdinalIgnoreCase);
+    }
+
     protected MatchCollection Matches (string pattern)
     {
         Assert.Matches(pattern, TestedContent);

@@ -158,7 +158,7 @@ public class InteropTest : EmitTest
             }
             """));
         Execute();
-        Assert.DoesNotContain("Foo", TestedContent, StringComparison.OrdinalIgnoreCase);
+        DoesNotContain("Foo");
     }
 
     [Fact]
@@ -236,6 +236,24 @@ public class InteropTest : EmitTest
         Execute();
         Contains("private static object Marshal_Space_Struct (global::Space.Struct obj) => new object[] { obj.Int };");
         Contains("private static object Marshal_Space_Record (global::Space.Record obj) => obj is null ? null : new object[] { obj.String is null ? null : obj.String, obj.Int, obj.NullInt is null ? null : obj.NullInt, obj.ByteArr is null ? null : obj.ByteArr, Marshal_Space_Struct(obj.Struct), obj.ByteList is null ? null : obj.ByteList.ToArray(), obj.StructList is null ? null : obj.StructList.Select(Marshal_Space_Struct).ToArray(), obj.Dict is null ? null : (object[])[..obj.Dict.Keys, ..obj.Dict.Values], obj.StructDict is null ? null : (object[])[..obj.StructDict.Keys.Select(Marshal_Space_Struct), ..obj.StructDict.Values.Select(Marshal_Space_Struct)] };");
+    }
+
+    [Fact]
+    public void DoesntMarshalUnwritableProperties ()
+    {
+        AddAssembly(With(
+            """
+            public struct Struct { public int DontMarshalMePlease => 1; public string DoMarshalMePlease { get; init; } }
+            public record Record { public int DontMarshalMePlease => 1; public Struct DoMarshalMePlease { get; init; } }
+
+            public class Class
+            {
+                [JSInvokable] public static Record Inv (Record r) => default;
+            }
+            """));
+        Execute();
+        Contains("DoMarshalMePlease");
+        DoesNotContain("DontMarshalMePlease");
     }
 
     [Fact]
