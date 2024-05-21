@@ -28,7 +28,6 @@ internal sealed class InteropGenerator
 
               using System.Runtime.InteropServices.JavaScript;
               using System.Linq;
-              using static Bootsharp.Marshalling;
 
               namespace Bootsharp.Generated;
 
