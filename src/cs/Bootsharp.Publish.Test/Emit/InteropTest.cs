@@ -244,7 +244,7 @@ public class InteropTest : EmitTest
     {
         AddAssembly(With(
             """
-            [assembly:JSPreferences(Space = [@"Space", "Foo"])]
+            [assembly:JSPreferences(Space = ["Space", "Foo"])]
             [assembly:JSExport(typeof(Space.IExported))]
             [assembly:JSImport(typeof(Space.IImported))]
 
