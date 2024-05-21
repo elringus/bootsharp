@@ -70,14 +70,34 @@ internal class MarshalGenerator
         }
     }
 
-    private string GenerateUnmarshalMethod (string name, Type type)
+    private string GenerateUnmarshalMethod (string methodName, Type marshalledType)
     {
-        return
-            $$"""
-              private static {{BuildSyntax(type)}} {{name}} (object raw)
-              {
-                  
-              }
-              """;
+        return $"private static {BuildSyntax(marshalledType)} {methodName} (object raw) " +
+               $"{{ var arr = (System.Collections.IList)raw; return {UnmarshalValue("arr", marshalledType)}; }}";
+
+        string UnmarshalValue (string name, Type valueType)
+        {
+            throw new NotImplementedException();
+        }
+
+        string UnmarshalList (string name, Type listType)
+        {
+            throw new NotImplementedException();
+        }
+
+        string UnmarshalDictionary (string name, Type dictType)
+        {
+            throw new NotImplementedException();
+        }
+
+        string UnmarshalStruct (string name, Type structType)
+        {
+            // new Struct { Foo = "" };
+            // new Record("");
+
+            throw new NotImplementedException();
+
+            bool ShouldInitViaCtor (Type type) => type.GetConstructors().Any(c => c.GetParameters().Length > 0);
+        }
     }
 }

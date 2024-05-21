@@ -62,6 +62,6 @@ internal static class GlobalMarshal
         // we use it under single shared compilation unit and only
         // at build time, hence the order is expected to be stable.
         return type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-            .OrderBy(x => x.MetadataToken).ToArray();
+            .Where(p => p.CanWrite).OrderBy(p => p.MetadataToken).ToArray();
     }
 }
