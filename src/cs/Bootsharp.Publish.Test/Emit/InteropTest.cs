@@ -218,6 +218,28 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
+    public void GeneratesMarshalMethods ()
+    {
+        AddAssembly(With(
+            """
+            namespace Space;
+
+            public struct Struct { public int Int { get; set; } }
+            public record Record (string String, int Int, int? NullInt, byte[] ByteArr, Struct Struct,
+                IReadOnlyList<byte> ByteList, IList<Struct> StructList, IReadOnlyDictionary<int, string> Dict,
+                Dictionary<Struct, Struct> StructDict);
+
+            public class Class
+            {
+                [JSInvokable] public static Record Inv () => default;
+            }
+            """));
+        Execute();
+        Contains("private static object Marshal_Space_Struct (global::Space.Struct obj) => new object[] { obj.Int };");
+        Contains("private static object Marshal_Space_Record (global::Space.Record obj) => obj is null ? null : new object[] { obj.String is null ? null : obj.String, obj.Int, obj.NullInt is null ? null : obj.NullInt, obj.ByteArr is null ? null : obj.ByteArr, Marshal_Space_Struct(obj.Struct), obj.ByteList is null ? null : obj.ByteList.ToArray(), obj.StructList is null ? null : obj.StructList.Select(Marshal_Space_Struct).ToArray(), obj.Dict is null ? null : (object[])[..obj.Dict.Keys, ..obj.Dict.Values], obj.StructDict is null ? null : (object[])[..obj.StructDict.Keys.Select(Marshal_Space_Struct), ..obj.StructDict.Values.Select(Marshal_Space_Struct)] };");
+    }
+
+    [Fact]
     public void RespectsSpacePreference ()
     {
         AddAssembly(With(

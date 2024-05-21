@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace Bootsharp.Publish;
+﻿namespace Bootsharp.Publish;
 
 internal class MarshalGenerator
 {
@@ -30,59 +28,53 @@ internal class MarshalGenerator
         // TODO: Remove once solved https://github.com/elringus/bootsharp/issues/138.
         type.IsArray && !ShouldMarshall(type.GetElementType()!);
 
-    private string GenerateMarshalMethod (string name, Type type)
+    private string GenerateMarshalMethod (string methodName, Type marshalledType)
     {
-        return $"private static object {name} ({BuildSyntax(type)} obj) => {MarshalValue("obj", type)};";
+        return $"private static object {methodName} ({BuildSyntax(marshalledType)} obj)" +
+               $" => {MarshalValue("obj", marshalledType)};";
 
-        string MarshalValue (string name, Type type)
+        string MarshalValue (string name, Type valueType)
         {
-            var nullable = IsNullable(type) || !type.IsValueType;
-            var template = nullable ? $"{name} is null ? null : (##)" : "##";
-            if (!ShouldMarshall(type)) return BuildTemplate(name);
-            if (IsList(type)) return BuildTemplate(MarshalList(name, type));
-            if (IsDictionary(type)) return BuildTemplate(MarshalDictionary(name, type));
-            return BuildTemplate(MarshalStruct(name, type));
+            var nullable = IsNullable(valueType) || !valueType.IsValueType;
+            var template = nullable ? $"{name} is null ? null : ##" : "##";
+            if (!ShouldMarshall(valueType)) return BuildTemplate(name);
+            if (IsList(valueType)) return BuildTemplate(MarshalList(name, valueType));
+            if (IsDictionary(valueType)) return BuildTemplate(MarshalDictionary(name, valueType));
+            return BuildTemplate(MarshalStruct(name, valueType));
 
             string BuildTemplate (string expression) => template.Replace("##", expression);
         }
 
-        string MarshalList (string name, Type type)
+        string MarshalList (string name, Type listType)
         {
-            var elementType = GetListElementType(type);
+            var elementType = GetListElementType(listType);
             if (!ShouldMarshall(elementType)) return $"{name}.ToArray()";
             return $"{name}.Select({Marshal(elementType)}).ToArray()";
         }
 
-        string MarshalDictionary (string name, Type type)
+        string MarshalDictionary (string name, Type dictType)
         {
-            var keyType = GetDictionaryKeyType(type);
-            var valType = GetDictionaryValueType(type);
+            var keyType = GetDictionaryKeyType(dictType);
+            var valType = GetDictionaryValueType(dictType);
             var keys = ShouldMarshall(keyType) ? $"{name}.Keys.Select({Marshal(keyType)})" : $"{name}.Keys";
             var vals = ShouldMarshall(valType) ? $"{name}.Values.Select({Marshal(valType)})" : $"{name}.Values";
             return $"(object[])[..{keys}, ..{vals}]";
         }
 
-        string MarshalStruct (string name, Type type)
+        string MarshalStruct (string name, Type structType)
         {
-            // TODO: ... <-----------------------------------------------
-            var props = GetMarshaledProperties(type).Select(MarshalProperty);
-            return $"new object[] {{ {string.Join(", ", props)} }};";
-        }
-
-        string MarshalProperty (PropertyInfo prop)
-        {
-            var type = prop.PropertyType;
-            if (!ShouldMarshall(type)) return $"obj.{prop.Name}";
-            return "";
+            if (structType != marshalledType) return $"{Marshal(structType)}({name})";
+            var props = GetMarshaledProperties(structType)
+                .Select(p => MarshalValue($"{name}.{p.Name}", p.PropertyType));
+            return $"new object[] {{ {string.Join(", ", props)} }}";
         }
     }
 
     private string GenerateUnmarshalMethod (string name, Type type)
     {
-        var stx = BuildSyntax(type);
         return
             $$"""
-              private static {{stx}} {{name}} (object raw)
+              private static {{BuildSyntax(type)}} {{name}} (object raw)
               {
                   
               }
