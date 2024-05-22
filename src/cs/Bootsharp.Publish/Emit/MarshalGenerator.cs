@@ -79,10 +79,11 @@ internal class MarshalGenerator
         {
             var nullable = IsNullable(valueType) || !valueType.IsValueType;
             var template = nullable ? $"{name} is null ? null : ##" : "##";
+            if (valueType == typeof(int)) return $"(int)(double){name}";
             if (IsList(valueType)) return BuildTemplate(UnmarshalList(name, valueType));
             if (IsDictionary(valueType)) return BuildTemplate(UnmarshalDictionary(name, valueType));
-            if (!ShouldUnmarshall(valueType)) return BuildTemplate($"({BuildSyntax(valueType)}){name}");
-            return BuildTemplate(UnmarshalStruct(name, valueType));
+            if (ShouldUnmarshall(valueType)) BuildTemplate(UnmarshalStruct(name, valueType));
+            return BuildTemplate($"({BuildSyntax(valueType)}){name}");
 
             string BuildTemplate (string expression) => template.Replace("##", expression);
         }
@@ -92,7 +93,7 @@ internal class MarshalGenerator
             var elementType = GetListElementType(listType);
             var elementSyntax = BuildSyntax(elementType);
             var syntax = ShouldUnmarshall(elementType)
-                ? $"((object[])[..(System.Collections.IList){name}]).Select({Unmarshal(elementType)})"
+                ? $"((System.Collections.Generic.IEnumerable<object>)[..(System.Collections.IList){name}]).Select({Unmarshal(elementType)})"
                 : $"({elementSyntax}[]){name}";
             if (listType == typeof(List<>)) return $"({syntax}).ToList()";
             return ShouldUnmarshall(elementType) ? $"{syntax}.ToArray()" : syntax;
