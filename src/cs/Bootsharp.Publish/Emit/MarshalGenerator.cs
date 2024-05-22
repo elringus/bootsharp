@@ -73,7 +73,7 @@ internal class MarshalGenerator
     private string GenerateUnmarshalMethod (string methodName, Type marshalledType)
     {
         return $"private static {BuildSyntax(marshalledType)} {methodName} (object raw) " +
-               $"{{ var arr = (System.Collections.IList)raw; return {UnmarshalValue("arr", marshalledType)}; }}";
+               $" => {UnmarshalValue("raw", marshalledType)};";
 
         string UnmarshalValue (string name, Type valueType)
         {
@@ -81,7 +81,7 @@ internal class MarshalGenerator
             var template = nullable ? $"{name} is null ? null : ##" : "##";
             if (IsList(valueType)) return BuildTemplate(UnmarshalList(name, valueType));
             if (IsDictionary(valueType)) return BuildTemplate(UnmarshalDictionary(name, valueType));
-            if (!ShouldMarshall(valueType)) return BuildTemplate($"({BuildSyntax(valueType)}){name}");
+            if (!ShouldUnmarshall(valueType)) return BuildTemplate($"({BuildSyntax(valueType)}){name}");
             return BuildTemplate(UnmarshalStruct(name, valueType));
 
             string BuildTemplate (string expression) => template.Replace("##", expression);
@@ -91,9 +91,11 @@ internal class MarshalGenerator
         {
             var elementType = GetListElementType(listType);
             var elementSyntax = BuildSyntax(elementType);
-            if (ShouldMarshall(elementType)) return $""; // TODO: <--------------
-            if (listType == typeof(List<>)) return $"(({elementSyntax}[])raw).ToList()";
-            return $"({elementSyntax}){name}";
+            var syntax = ShouldUnmarshall(elementType)
+                ? $"((IReadOnlyList<object>)[..(System.Collections.IList){name}]).Select({Unmarshal(elementType)})"
+                : $"({elementSyntax}[]){name}";
+            if (listType == typeof(List<>)) return $"({syntax}).ToList()";
+            return ShouldUnmarshall(elementType) ? $"{syntax}.ToArray()" : syntax;
         }
 
         string UnmarshalDictionary (string name, Type dictType)

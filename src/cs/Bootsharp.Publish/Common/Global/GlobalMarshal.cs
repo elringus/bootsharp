@@ -50,6 +50,12 @@ internal static class GlobalMarshal
         return !native.Contains(type.FullName!);
     }
 
+    public static bool ShouldUnmarshall (Type type)
+    {
+        return ShouldMarshall(type) ||
+               type == typeof(int); // All numbers coming from JS are doubles. 
+    }
+
     public static string GetMarshalId (Type type) => BuildSyntax(type)
         .Replace('.', '_').Replace('+', '_')
         .Replace("<", "_").Replace(">", "").Replace(",", "_")
