@@ -92,7 +92,7 @@ internal class MarshalGenerator
             var elementType = GetListElementType(listType);
             var elementSyntax = BuildSyntax(elementType);
             var syntax = ShouldUnmarshall(elementType)
-                ? $"((IReadOnlyList<object>)[..(System.Collections.IList){name}]).Select({Unmarshal(elementType)})"
+                ? $"((object[])[..(System.Collections.IList){name}]).Select({Unmarshal(elementType)})"
                 : $"({elementSyntax}[]){name}";
             if (listType == typeof(List<>)) return $"({syntax}).ToList()";
             return ShouldUnmarshall(elementType) ? $"{syntax}.ToArray()" : syntax;
