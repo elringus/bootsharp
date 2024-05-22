@@ -77,12 +77,23 @@ internal class MarshalGenerator
 
         string UnmarshalValue (string name, Type valueType)
         {
-            return "";
+            var nullable = IsNullable(valueType) || !valueType.IsValueType;
+            var template = nullable ? $"{name} is null ? null : ##" : "##";
+            if (IsList(valueType)) return BuildTemplate(UnmarshalList(name, valueType));
+            if (IsDictionary(valueType)) return BuildTemplate(UnmarshalDictionary(name, valueType));
+            if (!ShouldMarshall(valueType)) return BuildTemplate($"({BuildSyntax(valueType)}){name}");
+            return BuildTemplate(UnmarshalStruct(name, valueType));
+
+            string BuildTemplate (string expression) => template.Replace("##", expression);
         }
 
         string UnmarshalList (string name, Type listType)
         {
-            return "";
+            var elementType = GetListElementType(listType);
+            var elementSyntax = BuildSyntax(elementType);
+            if (ShouldMarshall(elementType)) return $""; // TODO: <--------------
+            if (listType == typeof(List<>)) return $"(({elementSyntax}[])raw).ToList()";
+            return $"({elementSyntax}){name}";
         }
 
         string UnmarshalDictionary (string name, Type dictType)
