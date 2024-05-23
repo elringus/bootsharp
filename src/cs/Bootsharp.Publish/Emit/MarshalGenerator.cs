@@ -26,7 +26,7 @@ internal class MarshalGenerator
 
     private bool IsNestedArrayWorkaround (Type type) =>
         // TODO: Remove once solved https://github.com/elringus/bootsharp/issues/138.
-        type.IsArray && !ShouldMarshall(type.GetElementType()!);
+        type.IsArray && !ShouldMarshal(type.GetElementType()!);
 
     private string GenerateMarshalMethod (string methodName, Type marshalledType)
     {
@@ -37,7 +37,7 @@ internal class MarshalGenerator
         {
             var nullable = IsNullable(valueType) || !valueType.IsValueType;
             var template = nullable ? $"{name} is null ? null : ##" : "##";
-            if (!ShouldMarshall(valueType)) return BuildTemplate(name);
+            if (!ShouldMarshal(valueType)) return BuildTemplate(name);
             if (IsList(valueType)) return BuildTemplate(MarshalList(name, valueType));
             if (IsDictionary(valueType)) return BuildTemplate(MarshalDictionary(name, valueType));
             return BuildTemplate(MarshalStruct(name, valueType));
@@ -48,7 +48,7 @@ internal class MarshalGenerator
         string MarshalList (string name, Type listType)
         {
             var elementType = GetListElementType(listType);
-            if (!ShouldMarshall(elementType)) return $"{name}.ToArray()";
+            if (!ShouldMarshal(elementType)) return $"{name}.ToArray()";
             return $"{name}.Select({Marshal(elementType)}).ToArray()";
         }
 
@@ -56,8 +56,8 @@ internal class MarshalGenerator
         {
             var keyType = GetDictionaryKeyType(dictType);
             var valType = GetDictionaryValueType(dictType);
-            var keys = ShouldMarshall(keyType) ? $"{name}.Keys.Select({Marshal(keyType)})" : $"{name}.Keys";
-            var vals = ShouldMarshall(valType) ? $"{name}.Values.Select({Marshal(valType)})" : $"{name}.Values";
+            var keys = ShouldMarshal(keyType) ? $"{name}.Keys.Select({Marshal(keyType)})" : $"{name}.Keys";
+            var vals = ShouldMarshal(valType) ? $"{name}.Values.Select({Marshal(valType)})" : $"{name}.Values";
             return $"(object[])[..{keys}, ..{vals}]";
         }
 
@@ -79,10 +79,10 @@ internal class MarshalGenerator
         {
             var nullable = IsNullable(valueType) || !valueType.IsValueType;
             var template = nullable ? $"{name} is null ? null : ##" : "##";
-            if (valueType == typeof(int)) return $"(int)(double){name}";
             if (IsList(valueType)) return BuildTemplate(UnmarshalList(name, valueType));
             if (IsDictionary(valueType)) return BuildTemplate(UnmarshalDictionary(name, valueType));
-            if (ShouldUnmarshall(valueType)) BuildTemplate(UnmarshalStruct(name, valueType));
+            if (ShouldMarshal(valueType)) BuildTemplate(UnmarshalStruct(name, valueType));
+            if (IsNonDoubleNumeric(valueType)) return BuildTemplate($"({BuildSyntax(valueType)})(double){name}");
             return BuildTemplate($"({BuildSyntax(valueType)}){name}");
 
             string BuildTemplate (string expression) => template.Replace("##", expression);
@@ -91,12 +91,13 @@ internal class MarshalGenerator
         string UnmarshalList (string name, Type listType)
         {
             var elementType = GetListElementType(listType);
-            var elementSyntax = BuildSyntax(elementType);
-            var syntax = ShouldUnmarshall(elementType)
-                ? $"((System.Collections.Generic.IEnumerable<object>)[..(System.Collections.IList){name}]).Select({Unmarshal(elementType)})"
-                : $"({elementSyntax}[]){name}";
-            if (listType == typeof(List<>)) return $"({syntax}).ToList()";
-            return ShouldUnmarshall(elementType) ? $"{syntax}.ToArray()" : syntax;
+            if (IsNonDoubleNumeric(elementType))
+                return $"({BuildSyntax(listType)})[..(((double[]){name}).Select({Unmarshal(elementType)})]";
+            if (ShouldMarshal(elementType))
+                return $"({BuildSyntax(listType)})[..(((object[]){name}).Select({Unmarshal(elementType)})]";
+            if (listType == typeof(List<>))
+                return $"(({BuildSyntax(elementType)}[]){name}).ToList()";
+            return $"({BuildSyntax(elementType)}[]){name}";
         }
 
         string UnmarshalDictionary (string name, Type dictType)
@@ -113,5 +114,11 @@ internal class MarshalGenerator
 
             bool ShouldInitViaCtor (Type type) => type.GetConstructors().Any(c => c.GetParameters().Length > 0);
         }
+
+        // All numbers in JavaScript are doubles.
+        bool IsNonDoubleNumeric (Type type) =>
+            type.IsPrimitive &&
+            type != typeof(double) &&
+            type != typeof(bool);
     }
 }

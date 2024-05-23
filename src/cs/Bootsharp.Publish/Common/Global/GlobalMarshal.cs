@@ -36,24 +36,18 @@ internal static class GlobalMarshal
     }
 
     // https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop
-    public static bool ShouldMarshall (Type type)
+    public static bool ShouldMarshal (Type type)
     {
         if (IsVoid(type)) return false;
         if (IsInstancedInteropInterface(type, out _)) return false;
         if (IsTaskWithResult(type, out var result))
             // TODO: Remove 'IsList(result)' when resolved: https://github.com/elringus/bootsharp/issues/138
-            return IsList(result) || ShouldMarshall(result);
+            return IsList(result) || ShouldMarshal(result);
         var array = type.IsArray;
         if (array) type = type.GetElementType()!;
         if (IsNullable(type)) type = GetNullableUnderlyingType(type);
         if (array) return !arrayNative.Contains(type.FullName!);
         return !native.Contains(type.FullName!);
-    }
-
-    public static bool ShouldUnmarshall (Type type)
-    {
-        return ShouldMarshall(type) ||
-               type == typeof(int); // All numbers coming from JS are doubles. 
     }
 
     public static string GetMarshalId (Type type) => BuildSyntax(type)
