@@ -82,7 +82,7 @@ internal class MarshalGenerator
             if (IsList(valueType)) return BuildTemplate(UnmarshalList(name, valueType));
             if (IsDictionary(valueType)) return BuildTemplate(UnmarshalDictionary(name, valueType));
             if (ShouldMarshal(valueType)) BuildTemplate(UnmarshalStruct(name, valueType));
-            if (IsNonDoubleNumeric(valueType)) return BuildTemplate($"({BuildSyntax(valueType)})(double){name}");
+            if (IsNonDoubleNum(valueType)) return BuildTemplate($"({BuildSyntax(valueType)})(double){name}");
             return BuildTemplate($"({BuildSyntax(valueType)}){name}");
 
             string BuildTemplate (string expression) => template.Replace("##", expression);
@@ -91,10 +91,10 @@ internal class MarshalGenerator
         string UnmarshalList (string name, Type listType)
         {
             var elementType = GetListElementType(listType);
-            if (IsNonDoubleNumeric(elementType))
-                return $"({BuildSyntax(listType)})[..(((double[]){name}).Select({Unmarshal(elementType)})]";
+            if (IsNonDoubleNum(elementType))
+                return $"({BuildSyntax(listType)})[..((double[]){name}).Select({Unmarshal(elementType)})]";
             if (ShouldMarshal(elementType))
-                return $"({BuildSyntax(listType)})[..(((object[]){name}).Select({Unmarshal(elementType)})]";
+                return $"({BuildSyntax(listType)})[..((object[]){name}).Select({Unmarshal(elementType)})]";
             if (listType == typeof(List<>))
                 return $"(({BuildSyntax(elementType)}[]){name}).ToList()";
             return $"({BuildSyntax(elementType)}[]){name}";
@@ -102,7 +102,16 @@ internal class MarshalGenerator
 
         string UnmarshalDictionary (string name, Type dictType)
         {
-            return "";
+            var arr = $"((object[]){name})";
+            var keyType = GetDictionaryKeyType(dictType);
+            var valType = GetDictionaryValueType(dictType);
+            var key = ShouldMarshal(keyType) || IsNonDoubleNum(keyType)
+                ? $"{Unmarshal(keyType)}(obj)"
+                : $"({BuildSyntax(keyType)})obj";
+            var val = ShouldMarshal(valType) || IsNonDoubleNum(valType)
+                ? $"{Unmarshal(valType)}({arr}[idx + {arr}.Length / 2])"
+                : $"({BuildSyntax(valType)}){arr}[idx + {arr}.Length / 2]";
+            return $"{arr}.Take({arr}.Length / 2).Select((obj, idx) => ({key}, {val})).ToDictionary()";
         }
 
         string UnmarshalStruct (string name, Type structType)
@@ -116,7 +125,7 @@ internal class MarshalGenerator
         }
 
         // All numbers in JavaScript are doubles.
-        bool IsNonDoubleNumeric (Type type) =>
+        bool IsNonDoubleNum (Type type) =>
             type.IsPrimitive &&
             type != typeof(double) &&
             type != typeof(bool);
