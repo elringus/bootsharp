@@ -72,8 +72,7 @@ internal class MarshalGenerator
 
     private string GenerateUnmarshalMethod (string methodName, Type marshalledType)
     {
-        var rawType = IsNonDoubleNum(marshalledType) ? "double" : "object";
-        return $"private static {BuildSyntax(marshalledType)} {methodName} ({rawType} raw)" +
+        return $"private static {BuildSyntax(marshalledType)} {methodName} (object raw)" +
                $" => {UnmarshalValue("raw", marshalledType)};";
 
         string UnmarshalValue (string name, Type valueType)
@@ -83,7 +82,10 @@ internal class MarshalGenerator
             if (IsList(valueType)) return BuildTemplate(UnmarshalList(name, valueType));
             if (IsDictionary(valueType)) return BuildTemplate(UnmarshalDictionary(name, valueType));
             if (ShouldMarshal(valueType)) return BuildTemplate(UnmarshalStruct(name, valueType));
-            if (IsNonDoubleNum(valueType)) return BuildTemplate($"({BuildSyntax(valueType)})(double){name}");
+            if (IsNonDoubleNum(valueType))
+                return valueType == marshalledType
+                    ? BuildTemplate($"({BuildSyntax(valueType)})(double){name}")
+                    : BuildTemplate($"{Unmarshal(valueType)}({name})");
             return BuildTemplate($"({BuildSyntax(valueType)}){name}");
 
             string BuildTemplate (string expression) => template.Replace("##", expression);
@@ -93,9 +95,9 @@ internal class MarshalGenerator
         {
             var elementType = GetListElementType(listType);
             if (IsNonDoubleNum(elementType))
-                return $"({BuildSyntax(listType)})[..((double[]){name}).Select({Unmarshal(elementType)})]";
+                return $"({BuildSyntax(listType)})[..((double[]){name}).Select(e => {Unmarshal(elementType)}(e))]";
             if (ShouldMarshal(elementType))
-                return $"({BuildSyntax(listType)})[..((object[]){name}).Select({Unmarshal(elementType)})]";
+                return $"({BuildSyntax(listType)})[..((object[]){name}).Select(e => {Unmarshal(elementType)}(e))]";
             if (!listType.IsArray && !listType.IsInterface)
                 return $"(({BuildSyntax(elementType)}[]){name}).ToList()";
             return $"({BuildSyntax(elementType)}[]){name}";
