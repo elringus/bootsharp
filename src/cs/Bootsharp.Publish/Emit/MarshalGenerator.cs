@@ -105,23 +105,20 @@ internal class MarshalGenerator
             var arr = $"((object[]){name})";
             var keyType = GetDictionaryKeyType(dictType);
             var valType = GetDictionaryValueType(dictType);
-            var key = ShouldMarshal(keyType) || IsNonDoubleNum(keyType)
-                ? $"{Unmarshal(keyType)}(obj)"
-                : $"({BuildSyntax(keyType)})obj";
-            var val = ShouldMarshal(valType) || IsNonDoubleNum(valType)
-                ? $"{Unmarshal(valType)}({arr}[idx + {arr}.Length / 2])"
-                : $"({BuildSyntax(valType)}){arr}[idx + {arr}.Length / 2]";
-            return $"{arr}.Take({arr}.Length / 2).Select((obj, idx) => ({key}, {val})).ToDictionary()";
+            return $"{arr}.Take({arr}.Length / 2).Select((obj, idx) => (" +
+                   $"{UnmarshalValue("obj", keyType)}, " +
+                   $"{UnmarshalValue($"{arr}[idx + {arr}.Length / 2]", valType)}" +
+                   $")).ToDictionary()";
         }
 
         string UnmarshalStruct (string name, Type structType)
         {
-            // new Struct { Foo = "" };
-            // new Record("");
-
-            return "";
-
-            bool ShouldInitViaCtor (Type type) => type.GetConstructors().Any(c => c.GetParameters().Length > 0);
+            if (structType != marshalledType) return $"{Unmarshal(structType)}({name})";
+            var arr = $"((object[]){name})";
+            var ctor = structType.GetConstructors().Any(c => c.GetParameters().Length > 0);
+            var args = string.Join(", ", GetMarshaledProperties(structType).Select((p, idx) =>
+                (ctor ? "" : $"{p.Name} = ") + UnmarshalValue($"{arr}[{idx}]", p.PropertyType)));
+            return $"new {BuildSyntax(structType)}" + (ctor ? $"({args})" : $" {{ {args} }}");
         }
 
         // All numbers in JavaScript are doubles.
