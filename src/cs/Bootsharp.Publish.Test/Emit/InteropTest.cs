@@ -239,6 +239,29 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
+    public void GeneratesUnmarshalMethods ()
+    {
+        AddAssembly(With(
+            """
+            namespace Space;
+
+            public struct Struct { public int Int { get; set; } }
+            public record Record (string String, int Int, int? NullInt, byte[] ByteArr, Struct Struct,
+                IReadOnlyList<byte> ByteList, IList<Struct> StructList, IReadOnlyDictionary<int, string> Dict,
+                Dictionary<Struct, Struct> StructDict, List<string> StringList, string[] StringArray);
+
+            public class Class
+            {
+                [JSInvokable] public static void Inv (Record r) { }
+            }
+            """));
+        Execute();
+        Contains("private static global::System.Byte Unmarshal_System_Byte (double raw) => (global::System.Byte)(double)raw;");
+        Contains("private static global::Space.Struct Unmarshal_Space_Struct (object raw) => new global::Space.Struct { Int = (global::System.Int32)(double)((object[])raw)[0] };");
+        Contains("private static global::Space.Record Unmarshal_Space_Record (object raw) => raw is null ? null : new global::Space.Record(((object[])raw)[0] is null ? null : (global::System.String)((object[])raw)[0], (global::System.Int32)(double)((object[])raw)[1], ((object[])raw)[2] is null ? null : (global::System.Int32?)((object[])raw)[2], ((object[])raw)[3] is null ? null : (global::System.Byte[])[..((double[])((object[])raw)[3]).Select(Unmarshal_System_Byte)], Unmarshal_Space_Struct(((object[])raw)[4]), ((object[])raw)[5] is null ? null : (global::System.Collections.Generic.IReadOnlyList<global::System.Byte>)[..((double[])((object[])raw)[5]).Select(Unmarshal_System_Byte)], ((object[])raw)[6] is null ? null : (global::System.Collections.Generic.IList<global::Space.Struct>)[..((object[])((object[])raw)[6]).Select(Unmarshal_Space_Struct)], ((object[])raw)[7] is null ? null : ((object[])((object[])raw)[7]).Take(((object[])((object[])raw)[7]).Length / 2).Select((obj, idx) => ((global::System.Int32)(double)obj, ((object[])((object[])raw)[7])[idx + ((object[])((object[])raw)[7]).Length / 2] is null ? null : (global::System.String)((object[])((object[])raw)[7])[idx + ((object[])((object[])raw)[7]).Length / 2])).ToDictionary(), ((object[])raw)[8] is null ? null : ((object[])((object[])raw)[8]).Take(((object[])((object[])raw)[8]).Length / 2).Select((obj, idx) => (Unmarshal_Space_Struct(obj), Unmarshal_Space_Struct(((object[])((object[])raw)[8])[idx + ((object[])((object[])raw)[8]).Length / 2]))).ToDictionary(), ((object[])raw)[9] is null ? null : ((global::System.String[])((object[])raw)[9]).ToList(), ((object[])raw)[10] is null ? null : (global::System.String[])((object[])raw)[10]);");
+    }
+
+    [Fact]
     public void DoesntMarshalUnwritableProperties ()
     {
         AddAssembly(With(

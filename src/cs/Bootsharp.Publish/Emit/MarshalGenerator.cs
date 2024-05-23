@@ -72,7 +72,8 @@ internal class MarshalGenerator
 
     private string GenerateUnmarshalMethod (string methodName, Type marshalledType)
     {
-        return $"private static {BuildSyntax(marshalledType)} {methodName} (object raw) " +
+        var rawType = IsNonDoubleNum(marshalledType) ? "double" : "object";
+        return $"private static {BuildSyntax(marshalledType)} {methodName} ({rawType} raw)" +
                $" => {UnmarshalValue("raw", marshalledType)};";
 
         string UnmarshalValue (string name, Type valueType)
@@ -81,7 +82,7 @@ internal class MarshalGenerator
             var template = nullable ? $"{name} is null ? null : ##" : "##";
             if (IsList(valueType)) return BuildTemplate(UnmarshalList(name, valueType));
             if (IsDictionary(valueType)) return BuildTemplate(UnmarshalDictionary(name, valueType));
-            if (ShouldMarshal(valueType)) BuildTemplate(UnmarshalStruct(name, valueType));
+            if (ShouldMarshal(valueType)) return BuildTemplate(UnmarshalStruct(name, valueType));
             if (IsNonDoubleNum(valueType)) return BuildTemplate($"({BuildSyntax(valueType)})(double){name}");
             return BuildTemplate($"({BuildSyntax(valueType)}){name}");
 
@@ -95,7 +96,7 @@ internal class MarshalGenerator
                 return $"({BuildSyntax(listType)})[..((double[]){name}).Select({Unmarshal(elementType)})]";
             if (ShouldMarshal(elementType))
                 return $"({BuildSyntax(listType)})[..((object[]){name}).Select({Unmarshal(elementType)})]";
-            if (listType == typeof(List<>))
+            if (!listType.IsArray && !listType.IsInterface)
                 return $"(({BuildSyntax(elementType)}[]){name}).ToList()";
             return $"({BuildSyntax(elementType)}[]){name}";
         }
