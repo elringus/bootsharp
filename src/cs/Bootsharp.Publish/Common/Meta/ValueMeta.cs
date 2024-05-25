@@ -32,9 +32,9 @@ internal sealed record ValueMeta
     /// </summary>
     public required bool Void { get; init; }
     /// <summary>
-    /// Whether the value has to be marshalled for interop.
+    /// Whether the value has to be marshaled for interop.
     /// </summary>
-    public required bool Marshalled { get; init; }
+    public required bool Marshaled { get; init; }
     /// <summary>
     /// Whether the value is an interop instance.
     /// </summary>

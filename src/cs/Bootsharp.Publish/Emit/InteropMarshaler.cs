@@ -1,12 +1,13 @@
 ﻿namespace Bootsharp.Publish;
 
-internal class MarshalGenerator
+internal sealed class InteropMarshaler
 {
     private readonly Dictionary<string, string> generatedByName = [];
 
     public string Marshal (Type type)
     {
-        if (IsNestedArrayWorkaround(type)) return "";
+        if (IsTaskWithResult(type, out var result)) type = result;
+        if (ShouldMarshalPassThrough(type)) return "";
         var methodName = $"Marshal_{GetMarshalId(type)}";
         if (generatedByName.ContainsKey(methodName)) return methodName;
         generatedByName[methodName] = GenerateMarshalMethod(methodName, type);
@@ -15,7 +16,8 @@ internal class MarshalGenerator
 
     public string Unmarshal (Type type)
     {
-        if (IsNestedArrayWorkaround(type)) return "";
+        if (IsTaskWithResult(type, out var result)) type = result;
+        if (ShouldMarshalPassThrough(type)) return "";
         var methodName = $"Unmarshal_{GetMarshalId(type)}";
         if (generatedByName.ContainsKey(methodName)) return methodName;
         generatedByName[methodName] = GenerateUnmarshalMethod(methodName, type);
@@ -24,14 +26,10 @@ internal class MarshalGenerator
 
     public IReadOnlyCollection<string> GetGenerated () => generatedByName.Values;
 
-    private bool IsNestedArrayWorkaround (Type type) =>
-        // TODO: Remove once solved https://github.com/elringus/bootsharp/issues/138.
-        type.IsArray && !ShouldMarshal(type.GetElementType()!);
-
-    private string GenerateMarshalMethod (string methodName, Type marshalledType)
+    private string GenerateMarshalMethod (string methodName, Type marshaledType)
     {
-        return $"private static object {methodName} ({BuildSyntax(marshalledType)} obj)" +
-               $" => {MarshalValue("obj", marshalledType)};";
+        return $"private static object {methodName} ({BuildSyntax(marshaledType)} obj)" +
+               $" => {MarshalValue("obj", marshaledType)};";
 
         string MarshalValue (string name, Type valueType)
         {
@@ -63,17 +61,17 @@ internal class MarshalGenerator
 
         string MarshalStruct (string name, Type structType)
         {
-            if (structType != marshalledType) return $"{Marshal(structType)}({name})";
+            if (structType != marshaledType) return $"{Marshal(structType)}({name})";
             var props = GetMarshaledProperties(structType)
                 .Select(p => MarshalValue($"{name}.{p.Name}", p.PropertyType));
             return $"new object[] {{ {string.Join(", ", props)} }}";
         }
     }
 
-    private string GenerateUnmarshalMethod (string methodName, Type marshalledType)
+    private string GenerateUnmarshalMethod (string methodName, Type marshaledType)
     {
-        return $"private static {BuildSyntax(marshalledType)} {methodName} (object raw)" +
-               $" => {UnmarshalValue("raw", marshalledType)};";
+        return $"private static {BuildSyntax(marshaledType)} {methodName} (object raw)" +
+               $" => {UnmarshalValue("raw", marshaledType)};";
 
         string UnmarshalValue (string name, Type valueType)
         {
@@ -83,7 +81,7 @@ internal class MarshalGenerator
             if (IsDictionary(valueType)) return BuildTemplate(UnmarshalDictionary(name, valueType));
             if (ShouldMarshal(valueType)) return BuildTemplate(UnmarshalStruct(name, valueType));
             if (IsNonDoubleNum(valueType))
-                return valueType == marshalledType
+                return valueType == marshaledType
                     ? BuildTemplate($"({BuildSyntax(valueType)})(double){name}")
                     : BuildTemplate($"{Unmarshal(valueType)}({name})");
             return BuildTemplate($"({BuildSyntax(valueType)}){name}");
@@ -116,7 +114,7 @@ internal class MarshalGenerator
 
         string UnmarshalStruct (string name, Type structType)
         {
-            if (structType != marshalledType) return $"{Unmarshal(structType)}({name})";
+            if (structType != marshaledType) return $"{Unmarshal(structType)}({name})";
             var arr = $"((object[]){name})";
             var ctor = structType.GetConstructors().Any(c => c.GetParameters().Length > 0);
             var args = string.Join(", ", GetMarshaledProperties(structType).Select((p, idx) =>

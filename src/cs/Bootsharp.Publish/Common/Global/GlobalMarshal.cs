@@ -25,7 +25,7 @@ internal static class GlobalMarshal
         var promise = meta.TypeSyntax.StartsWith("global::System.Threading.Tasks.Task<");
         if (promise) typeSyntax = meta.TypeSyntax[36..];
         var result = "";
-        if (meta.Marshalled) result = "JSType.Any";
+        if (meta.Marshaled) result = "JSType.Any";
         else if (typeSyntax.StartsWith("global::System.DateTime")) result = "JSType.Date";
         else if (typeSyntax.StartsWith("global::System.Int64")) result = "JSType.BigInt";
         if (result == "") return "";
@@ -52,7 +52,7 @@ internal static class GlobalMarshal
 
     public static string GetMarshalId (Type type) => BuildSyntax(type)
         .Replace('.', '_').Replace('+', '_')
-        .Replace("<", "_").Replace(">", "").Replace(",", "_")
+        .Replace('<', '_').Replace(">", "").Replace(',', '_')
         .Replace("[", "_Array").Replace("]", "")
         .Replace("global::", "").Replace(" ", "");
 
@@ -64,4 +64,8 @@ internal static class GlobalMarshal
         return type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
             .Where(p => p.CanWrite).OrderBy(p => p.MetadataToken).ToArray();
     }
+
+    // TODO: Remove once solved https://github.com/elringus/bootsharp/issues/138.
+    public static bool ShouldMarshalPassThrough (Type type) =>
+        type.IsArray && !ShouldMarshal(type.GetElementType()!);
 }

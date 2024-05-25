@@ -7,9 +7,9 @@ namespace Bootsharp.Publish;
 /// </summary>
 internal sealed class InteropGenerator
 {
-    private readonly MarshalGenerator marsh = new();
     private readonly HashSet<string> proxies = [];
     private readonly HashSet<string> methods = [];
+    private readonly InteropMarshaler marshaler = new();
     private IReadOnlyCollection<InterfaceMeta> instanced = [];
 
     public string Generate (SolutionInspection inspection)
@@ -44,7 +44,7 @@ internal sealed class InteropGenerator
               
                   {{JoinLines(methods)}}
                   
-                  {{JoinLines(marsh.GetGenerated())}}
+                  {{JoinLines(marshaler.GetGenerated())}}
               }
               """;
     }
@@ -75,10 +75,8 @@ internal sealed class InteropGenerator
                 : $"global::{inv.Space}.{inv.Name}({args})";
             if (wait) body = $"await {body}";
             if (inv.ReturnValue.Instance) body = $"global::Bootsharp.Instances.Register({body})";
-            if (!inv.ReturnValue.Marshalled) return body;
-            if (IsTaskWithResult(inv.ReturnValue.Type, out var result))
-                return $"{marsh.Marshal(result)}({body})";
-            return $"{marsh.Marshal(inv.ReturnValue.Type)}({body})";
+            if (!inv.ReturnValue.Marshaled) return body;
+            return $"{marshaler.Marshal(inv.ReturnValue.Type)}({body})";
         }
 
         string BuildBodyArg (ArgumentMeta arg)
@@ -88,7 +86,7 @@ internal sealed class InteropGenerator
                 var (_, _, full) = BuildInteropInterfaceImplementationName(arg.Value.InstanceType, InterfaceKind.Import);
                 return $"new global::{full}({arg.Name})";
             }
-            if (arg.Value.Marshalled) return $"{marsh.Unmarshal(arg.Value.Type)}({arg.Name})";
+            if (arg.Value.Marshaled) return $"{marshaler.Unmarshal(arg.Value.Type)}({arg.Name})";
             return arg.Name;
         }
     }
@@ -114,16 +112,14 @@ internal sealed class InteropGenerator
                 var (_, _, full) = BuildInteropInterfaceImplementationName(method.ReturnValue.InstanceType, InterfaceKind.Import);
                 return $"({BuildSyntax(method.ReturnValue.InstanceType)})new global::{full}({body})";
             }
-            if (!method.ReturnValue.Marshalled) return body;
-            if (IsTaskWithResult(method.ReturnValue.Type, out var result))
-                return $"{marsh.Unmarshal(result)}({body})";
-            return $"{marsh.Unmarshal(method.ReturnValue.Type)}({body})";
+            if (!method.ReturnValue.Marshaled) return body;
+            return $"{marshaler.Unmarshal(method.ReturnValue.Type)}({body})";
         }
 
         string BuildBodyArg (ArgumentMeta arg)
         {
             if (arg.Value.Instance) return $"global::Bootsharp.Instances.Register({arg.Name})";
-            if (arg.Value.Marshalled) return $"{marsh.Marshal(arg.Value.Type)}({arg.Name})";
+            if (arg.Value.Marshaled) return $"{marshaler.Marshal(arg.Value.Type)}({arg.Name})";
             return arg.Name;
         }
     }
@@ -133,7 +129,7 @@ internal sealed class InteropGenerator
         var args = string.Join(", ", method.Arguments.Select(BuildSignatureArg));
         if (TryInstanced(method, out _)) args = PrependInstanceIdArgTypeAndName(args);
         var @return = BuildReturnValue(method.ReturnValue);
-        var endpoint = $"{method.JSSpace}.{method.JSName}Marshalled";
+        var endpoint = $"{method.JSSpace}.{method.JSName}Marshaled";
         var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{endpoint}", "Bootsharp")]""";
         var date = MarshalAmbiguous(method.ReturnValue, true);
         methods.Add($"{attr} {date}internal static partial {@return} {BuildMethodName(method)} ({args});");
@@ -144,7 +140,7 @@ internal sealed class InteropGenerator
         if (value.Void) return "void";
         var nil = value.Nullable ? "?" : "";
         if (value.Instance) return $"global::System.Int32{nil}";
-        if (value.Marshalled) return $"global::System.Object{nil}";
+        if (value.Marshaled) return $"global::System.Object{nil}";
         return value.TypeSyntax;
     }
 
@@ -175,6 +171,6 @@ internal sealed class InteropGenerator
 
     private bool ShouldWait (ValueMeta value)
     {
-        return value.Async && (value.Marshalled || value.Instance);
+        return value.Async && (value.Marshaled || value.Instance);
     }
 }
