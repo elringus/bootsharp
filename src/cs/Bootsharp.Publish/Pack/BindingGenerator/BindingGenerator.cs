@@ -34,7 +34,7 @@ internal sealed class BindingGenerator (Preferences prefs)
             builder.Append(classGenerator.Generate(inspection.InstancedInterfaces));
         for (index = 0; index < bindings.Length; index++)
             EmitBinding();
-        builder.Append('\n');
+        builder.Append("\n\n");
         foreach (var marshalFn in marshaler.GetGenerated())
             builder.Append(marshalFn + "\n");
         return builder.ToString();
@@ -46,7 +46,7 @@ internal sealed class BindingGenerator (Preferences prefs)
         import { Event } from "./event";
         import { registerInstance, getInstance, disposeOnFinalize } from "./instances";
 
-        function getExports () { if (exports == null) throw Error("Boot the runtime before invoking C# APIs."); return exports; }
+        function getExports() { if (exports == null) throw Error("Boot the runtime before invoking C# APIs."); return exports; }
 
         /* v8 ignore start */
         """

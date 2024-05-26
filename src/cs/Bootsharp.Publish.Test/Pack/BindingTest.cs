@@ -22,7 +22,7 @@ public class BindingTest : PackTest
             import { Event } from "./event";
             import { registerInstance, getInstance, disposeOnFinalize } from "./instances";
 
-            function getExports () { if (exports == null) throw Error("Boot the runtime before invoking C# APIs."); return exports; }
+            function getExports() { if (exports == null) throw Error("Boot the runtime before invoking C# APIs."); return exports; }
             """);
     }
 
@@ -598,7 +598,29 @@ public class BindingTest : PackTest
             }
             """));
         Execute();
-        Contains("function marshal_Space_Struct (obj) { return [ obj.int ]; }");
-        Contains("function marshal_Space_Record (obj) { return obj == null ? undefined : [ obj.string == null ? undefined : obj.string, obj.int, obj.nullInt == null ? undefined : obj.nullInt, obj.byteArr == null ? undefined : obj.byteArr, marshal_Space_Struct(obj.struct), obj.byteList == null ? undefined : obj.byteList, obj.structList == null ? undefined : obj.structList.map(marshal_Space_Struct), obj.dict == null ? undefined : [...obj.dict.keys(), ...obj.dict.values()], obj.structDict == null ? undefined : [...Array.from(obj.structDict.keys(), marshal_Space_Struct), ...Array.from(obj.structDict.values(), marshal_Space_Struct)] ]; }");
+        Contains("function marshal_Space_Struct(obj) { return [ obj.int ]; }");
+        Contains("function marshal_Space_Record(obj) { return obj == null ? null : [ obj.string == null ? null : obj.string, obj.int, obj.nullInt == null ? null : obj.nullInt, obj.byteArr == null ? null : obj.byteArr, marshal_Space_Struct(obj.struct), obj.byteList == null ? null : obj.byteList, obj.structList == null ? null : obj.structList.map(marshal_Space_Struct), obj.dict == null ? null : [...obj.dict.keys(), ...obj.dict.values()], obj.structDict == null ? null : [...Array.from(obj.structDict.keys(), marshal_Space_Struct), ...Array.from(obj.structDict.values(), marshal_Space_Struct)] ]; }");
+    }
+
+    [Fact]
+    public void GeneratesUnmarshalMethods ()
+    {
+        AddAssembly(With(
+            """
+            namespace Space;
+
+            public struct Struct { public int Int { get; set; } }
+            public record Record (string String, int Int, int? NullInt, byte[] ByteArr, Struct Struct,
+                IReadOnlyList<byte> ByteList, IList<Struct> StructList, IReadOnlyDictionary<int, string> Dict,
+                Dictionary<Struct, Struct> StructDict, List<string> StringList, string[] StringArray);
+
+            public class Class
+            {
+                [JSInvokable] public static Record Inv () => default;
+            }
+            """));
+        Execute();
+        Contains("function unmarshal_Space_Struct(raw) { return { int: raw[0] }; }");
+        Contains("function unmarshal_Space_Record(raw) { return raw == null ? undefined : { string: raw[0] == null ? undefined : raw[0], int: raw[1], nullInt: raw[2] == null ? undefined : raw[2], byteArr: raw[3] == null ? undefined : raw[3], struct: unmarshal_Space_Struct(raw[4]), byteList: raw[5] == null ? undefined : raw[5], structList: raw[6] == null ? undefined : raw[6].map(unmarshal_Space_Struct), dict: raw[7] == null ? undefined : new Map(raw[7].slice(0, raw[7].length / 2).map((obj, idx) => [obj, raw[7][idx + raw[7].length / 2] == null ? undefined : raw[7][idx + raw[7].length / 2]])), structDict: raw[8] == null ? undefined : new Map(raw[8].slice(0, raw[8].length / 2).map((obj, idx) => [unmarshal_Space_Struct(obj), unmarshal_Space_Struct(raw[8][idx + raw[8].length / 2])])), stringList: raw[9] == null ? undefined : raw[9], stringArray: raw[10] == null ? undefined : raw[10] }; }");
     }
 }
