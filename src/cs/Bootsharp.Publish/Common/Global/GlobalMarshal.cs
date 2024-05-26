@@ -38,6 +38,7 @@ internal static class GlobalMarshal
     // https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop
     public static bool ShouldMarshal (Type type)
     {
+        if (type.IsEnum) return true;
         if (IsVoid(type)) return false;
         if (IsInstancedInteropInterface(type, out _)) return false;
         if (IsTaskWithResult(type, out var result))

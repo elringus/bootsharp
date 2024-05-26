@@ -36,6 +36,7 @@ internal sealed class InteropMarshaler
             var nullable = IsNullable(valueType) || !valueType.IsValueType;
             var template = nullable ? $"{name} is null ? null : ##" : "##";
             if (!ShouldMarshal(valueType)) return BuildTemplate(name);
+            if (valueType.IsEnum) return BuildTemplate($"({BuildSyntax(Enum.GetUnderlyingType(valueType))}){name}");
             if (IsList(valueType)) return BuildTemplate(MarshalList(name, valueType));
             if (IsDictionary(valueType)) return BuildTemplate(MarshalDictionary(name, valueType));
             return BuildTemplate(MarshalStruct(name, valueType));
@@ -77,6 +78,7 @@ internal sealed class InteropMarshaler
         {
             var nullable = IsNullable(valueType) || !valueType.IsValueType;
             var template = nullable ? $"{name} is null ? null : ##" : "##";
+            if (valueType.IsEnum) return BuildTemplate($"({BuildSyntax(valueType)})({BuildSyntax(Enum.GetUnderlyingType(valueType))})(double){name}");
             if (IsList(valueType)) return BuildTemplate(UnmarshalList(name, valueType));
             if (IsDictionary(valueType)) return BuildTemplate(UnmarshalDictionary(name, valueType));
             if (ShouldMarshal(valueType)) return BuildTemplate(UnmarshalStruct(name, valueType));

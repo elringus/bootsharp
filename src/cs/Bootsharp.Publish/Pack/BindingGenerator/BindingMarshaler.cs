@@ -35,6 +35,7 @@ internal sealed class BindingMarshaler
             var nullable = IsNullable(valueType) || !valueType.IsValueType;
             var template = nullable ? $"{name} == null ? null : ##" : "##";
             if (!ShouldMarshal(valueType)) return BuildTemplate(name);
+            if (valueType.IsEnum) return BuildTemplate(name);
             if (IsList(valueType)) return BuildTemplate(MarshalList(name, valueType));
             if (IsDictionary(valueType)) return BuildTemplate(MarshalDictionary(name, valueType));
             return BuildTemplate(MarshalStruct(name, valueType));
@@ -75,6 +76,7 @@ internal sealed class BindingMarshaler
         {
             var nullable = IsNullable(valueType) || !valueType.IsValueType;
             var template = nullable ? $"{name} == null ? undefined : ##" : "##";
+            if (valueType.IsEnum) return BuildTemplate(name);
             if (IsList(valueType)) return BuildTemplate(UnmarshalList(name, valueType));
             if (IsDictionary(valueType)) return BuildTemplate(UnmarshalDictionary(name, valueType));
             if (ShouldMarshal(valueType)) return BuildTemplate(UnmarshalStruct(name, valueType));

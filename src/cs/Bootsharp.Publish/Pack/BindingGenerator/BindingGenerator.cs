@@ -50,7 +50,7 @@ internal sealed class BindingGenerator (Preferences prefs)
 
         /* v8 ignore start */
         """
-    );
+    ).Append('\n');
 
     private void EmitBinding ()
     {

@@ -223,7 +223,8 @@ public class InteropTest : EmitTest
             """
             namespace Space;
 
-            public struct Struct { public int Int { get; set; } }
+            public enum Enum { Foo, Bar }
+            public struct Struct { public int Int { get; set; } public Enum Enum { get; set; } }
             public record Record (string String, int Int, int? NullInt, byte[] ByteArr, Struct Struct,
                 IReadOnlyList<byte> ByteList, IList<Struct> StructList, IReadOnlyDictionary<int, string> Dict,
                 Dictionary<Struct, Struct> StructDict);
@@ -234,7 +235,7 @@ public class InteropTest : EmitTest
             }
             """));
         Execute();
-        Contains("private static object Marshal_Space_Struct (global::Space.Struct obj) => new object[] { obj.Int };");
+        Contains("private static object Marshal_Space_Struct (global::Space.Struct obj) => new object[] { obj.Int, (global::System.Int32)obj.Enum };");
         Contains("private static object Marshal_Space_Record (global::Space.Record obj) => obj is null ? null : new object[] { obj.String is null ? null : obj.String, obj.Int, obj.NullInt is null ? null : obj.NullInt, obj.ByteArr is null ? null : obj.ByteArr, Marshal_Space_Struct(obj.Struct), obj.ByteList is null ? null : obj.ByteList.ToArray(), obj.StructList is null ? null : obj.StructList.Select(Marshal_Space_Struct).ToArray(), obj.Dict is null ? null : (object[])[..obj.Dict.Keys, ..obj.Dict.Values], obj.StructDict is null ? null : (object[])[..obj.StructDict.Keys.Select(Marshal_Space_Struct), ..obj.StructDict.Values.Select(Marshal_Space_Struct)] };");
     }
 
@@ -245,7 +246,8 @@ public class InteropTest : EmitTest
             """
             namespace Space;
 
-            public struct Struct { public int Int { get; set; } }
+            public enum Enum { Foo, Bar }
+            public struct Struct { public int Int { get; set; } public Enum Enum { get; set; } }
             public record Record (string String, int Int, int? NullInt, byte[] ByteArr, Struct Struct,
                 IReadOnlyList<byte> ByteList, IList<Struct> StructList, IReadOnlyDictionary<int, string> Dict,
                 Dictionary<Struct, Struct> StructDict, List<string> StringList, string[] StringArray);
@@ -258,7 +260,7 @@ public class InteropTest : EmitTest
         Execute();
         Contains("private static global::System.Byte Unmarshal_System_Byte (object raw) => (global::System.Byte)(double)raw;");
         Contains("private static global::System.Int32 Unmarshal_System_Int32 (object raw) => (global::System.Int32)(double)raw;");
-        Contains("private static global::Space.Struct Unmarshal_Space_Struct (object raw) => new global::Space.Struct { Int = Unmarshal_System_Int32(((object[])raw)[0]) };");
+        Contains("private static global::Space.Struct Unmarshal_Space_Struct (object raw) => new global::Space.Struct { Int = Unmarshal_System_Int32(((object[])raw)[0]), Enum = (global::Space.Enum)(global::System.Int32)(double)((object[])raw)[1] };");
         Contains("private static global::Space.Record Unmarshal_Space_Record (object raw) => raw is null ? null : new global::Space.Record(((object[])raw)[0] is null ? null : (global::System.String)((object[])raw)[0], Unmarshal_System_Int32(((object[])raw)[1]), ((object[])raw)[2] is null ? null : (global::System.Int32?)((object[])raw)[2], ((object[])raw)[3] is null ? null : (global::System.Byte[])[..((double[])((object[])raw)[3]).Select(e => Unmarshal_System_Byte(e))], Unmarshal_Space_Struct(((object[])raw)[4]), ((object[])raw)[5] is null ? null : (global::System.Collections.Generic.IReadOnlyList<global::System.Byte>)[..((double[])((object[])raw)[5]).Select(e => Unmarshal_System_Byte(e))], ((object[])raw)[6] is null ? null : (global::System.Collections.Generic.IList<global::Space.Struct>)[..((object[])((object[])raw)[6]).Select(e => Unmarshal_Space_Struct(e))], ((object[])raw)[7] is null ? null : ((object[])((object[])raw)[7]).Take(((object[])((object[])raw)[7]).Length / 2).Select((obj, idx) => (Unmarshal_System_Int32(obj), ((object[])((object[])raw)[7])[idx + ((object[])((object[])raw)[7]).Length / 2] is null ? null : (global::System.String)((object[])((object[])raw)[7])[idx + ((object[])((object[])raw)[7]).Length / 2])).ToDictionary(), ((object[])raw)[8] is null ? null : ((object[])((object[])raw)[8]).Take(((object[])((object[])raw)[8]).Length / 2).Select((obj, idx) => (Unmarshal_Space_Struct(obj), Unmarshal_Space_Struct(((object[])((object[])raw)[8])[idx + ((object[])((object[])raw)[8]).Length / 2]))).ToDictionary(), ((object[])raw)[9] is null ? null : ((global::System.String[])((object[])raw)[9]).ToList(), ((object[])raw)[10] is null ? null : (global::System.String[])((object[])raw)[10]);");
     }
 
