@@ -16,7 +16,7 @@
 /// }
 /// </code><br/>
 /// Proxy for the "Foo" method is registered as follows (emitted at build;
-/// actual code will have additional de-/serialization steps):<br/>
+/// actual code will have additional marshaling steps):<br/>
 /// <code>
 /// Proxies.Set("Space.Class.Foo", (arg) => Bootsharp.Generated.Interop.Space_Class_Foo(arg));
 /// </code><br/>
