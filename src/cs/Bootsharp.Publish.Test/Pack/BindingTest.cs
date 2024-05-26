@@ -579,4 +579,26 @@ public class BindingTest : PackTest
         Execute();
         DoesNotContain("Foo");
     }
+
+    [Fact]
+    public void GeneratesMarshalMethods ()
+    {
+        AddAssembly(With(
+            """
+            namespace Space;
+
+            public struct Struct { public int Int { get; set; } }
+            public record Record (string String, int Int, int? NullInt, byte[] ByteArr, Struct Struct,
+                IReadOnlyList<byte> ByteList, IList<Struct> StructList, IReadOnlyDictionary<int, string> Dict,
+                Dictionary<Struct, Struct> StructDict);
+
+            public class Class
+            {
+                [JSInvokable] public static void Inv (Record r) { }
+            }
+            """));
+        Execute();
+        Contains("function marshal_Space_Struct (obj) { return [ obj.int ]; }");
+        Contains("function marshal_Space_Record (obj) { return obj == null ? undefined : [ obj.string == null ? undefined : obj.string, obj.int, obj.nullInt == null ? undefined : obj.nullInt, obj.byteArr == null ? undefined : obj.byteArr, marshal_Space_Struct(obj.struct), obj.byteList == null ? undefined : obj.byteList, obj.structList == null ? undefined : obj.structList.map(marshal_Space_Struct), obj.dict == null ? undefined : [...obj.dict.keys(), ...obj.dict.values()], obj.structDict == null ? undefined : [...Array.from(obj.structDict.keys(), marshal_Space_Struct), ...Array.from(obj.structDict.values(), marshal_Space_Struct)] ]; }");
+    }
 }

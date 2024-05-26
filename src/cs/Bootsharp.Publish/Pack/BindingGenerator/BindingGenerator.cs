@@ -34,6 +34,7 @@ internal sealed class BindingGenerator (Preferences prefs)
             builder.Append(classGenerator.Generate(inspection.InstancedInterfaces));
         for (index = 0; index < bindings.Length; index++)
             EmitBinding();
+        builder.Append('\n');
         foreach (var marshalFn in marshaler.GetGenerated())
             builder.Append(marshalFn + "\n");
         return builder.ToString();
