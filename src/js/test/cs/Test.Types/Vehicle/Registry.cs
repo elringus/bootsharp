@@ -14,7 +14,7 @@ public partial class Registry
     public static Registry EchoRegistry (Registry registry) => registry;
 
     [JSInvokable]
-    public static float CountTotalSpeed ()
+    public static double CountTotalSpeed ()
     {
         var registry = GetRegistry();
         return registry.Tracked.Sum(t => t.MaxSpeed) +

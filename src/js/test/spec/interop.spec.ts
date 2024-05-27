@@ -14,7 +14,7 @@ describe("while bootsharp is booted", () => {
     it("throws when invoking un-assigned JS function from C#", () => {
         const error = /Failed to invoke '.+' from C#. Make sure to assign function in JavaScript/;
         any(Test.Program).onMainInvoked = undefined;
-        expect(() => to<() => void>(Test.Program).onMainInvokedSerialized()).throw(error);
+        expect(() => to<() => void>(Test.Program).onMainInvokedMarshaled()).throw(error);
     });
     it("can invoke C# method", async () => {
         expect(Test.Invokable.joinStrings("foo", "bar")).toStrictEqual("foobar");
@@ -79,32 +79,33 @@ describe("while bootsharp is booted", () => {
         expect(actual).toStrictEqual(expected);
     });
     it("can transfer lists as arrays", async () => {
-        Test.Types.Registry.getRegistries = () => [<never>{ wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] }];
-        const result = await Test.Types.Registry.concatRegistriesAsync(<never>[
-            { wheeled: [{ id: "bar", maxSpeed: 1, wheelCount: 9 }] },
-            { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }] }
+        Test.Types.Registry.getRegistries = () => [{
+            wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }],
+            tracked: []
+        }];
+        const result = await Test.Types.Registry.concatRegistriesAsync([
+            { wheeled: [{ id: "bar", maxSpeed: 1, wheelCount: 9 }], tracked: [] },
+            { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }], wheeled: [] }
         ]);
         expect(result).toStrictEqual([
-            { wheeled: [{ id: "bar", maxSpeed: 1, wheelCount: 9 }] },
-            { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }] },
-            { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] }
+            { wheeled: [{ id: "bar", maxSpeed: 1, wheelCount: 9 }], tracked: [] },
+            { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }], wheeled: [] },
+            { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }], tracked: [] }
         ]);
     });
     it("can transfer dictionaries as maps", async () => {
-        // ES6 Map doesn't natively support JSON serialization, so using plain objects.
-        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
-        Test.Types.Registry.getRegistryMap = () => (<never>{
-            foo: { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] },
-            bar: { wheeled: [{ id: "bar", maxSpeed: 15, wheelCount: 5 }] }
-        });
-        const result = await Test.Types.Registry.mapRegistriesAsync(<never>{
-            baz: { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }] }
-        });
-        expect(result).toStrictEqual({
-            baz: { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }] },
-            foo: { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] },
-            bar: { wheeled: [{ id: "bar", maxSpeed: 15, wheelCount: 5 }] }
-        });
+        Test.Types.Registry.getRegistryMap = () => new Map([
+            ["foo", { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }], tracked: [] }],
+            ["bar", { wheeled: [{ id: "bar", maxSpeed: 15, wheelCount: 5 }], tracked: [] }]
+        ]);
+        const result = await Test.Types.Registry.mapRegistriesAsync(new Map([
+            ["baz", { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }], wheeled: [] }]
+        ]));
+        expect(result).toStrictEqual(new Map([
+            ["baz", { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }], wheeled: [] }],
+            ["foo", { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }], tracked: [] }],
+            ["bar", { wheeled: [{ id: "bar", maxSpeed: 15, wheelCount: 5 }], tracked: [] }]
+        ]));
     });
     it("can invoke assigned JS functions in C#", () => {
         Test.Types.Registry.getRegistry = () => ({

@@ -30,6 +30,7 @@ internal sealed class BindingGenerator (Preferences prefs)
             .OrderBy(m => m.Namespace).ToArray();
         if (bindings.Length == 0) return "";
         EmitImports();
+        builder.Append("\n\n");
         if (inspection.InstancedInterfaces.Count > 0)
             builder.Append(classGenerator.Generate(inspection.InstancedInterfaces));
         for (index = 0; index < bindings.Length; index++)
@@ -50,7 +51,7 @@ internal sealed class BindingGenerator (Preferences prefs)
 
         /* v8 ignore start */
         """
-    ).Append('\n');
+    );
 
     private void EmitBinding ()
     {

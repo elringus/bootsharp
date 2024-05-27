@@ -3,5 +3,5 @@
 public class Vehicle
 {
     public string Id { get; set; }
-    public float MaxSpeed { get; set; }
+    public double MaxSpeed { get; set; }
 }
