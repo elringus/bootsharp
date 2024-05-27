@@ -20,7 +20,25 @@ public static partial class Functions
     }
 
     [JSInvokable]
-    public static IReadOnlyList<string> EchoColExpr (IReadOnlyList<string> list)
+    public static IReadOnlyList<string> EchoColExprString (IReadOnlyList<string> list)
+    {
+        return [..list];
+    }
+
+    [JSInvokable]
+    public static IReadOnlyList<double> EchoColExprDouble (IReadOnlyList<double> list)
+    {
+        return [..list];
+    }
+
+    [JSInvokable]
+    public static IReadOnlyList<int> EchoColExprInt (IReadOnlyList<int> list)
+    {
+        return [..list];
+    }
+
+    [JSInvokable]
+    public static IReadOnlyList<byte> EchoColExprByte (IReadOnlyList<byte> list)
     {
         return [..list];
     }

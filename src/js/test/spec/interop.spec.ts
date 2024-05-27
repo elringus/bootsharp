@@ -26,9 +26,12 @@ describe("while bootsharp is booted", () => {
         Test.Functions.getString = () => "foo";
         expect(Test.Functions.echoString()).toStrictEqual("foo");
     });
-    // it("can transfer collection expression", () => {
-    //     expect(Test.Functions.echoColExpr(["foo", "bar", "baz"])).toStrictEqual(["foo", "bar", "baz"]);
-    // });
+    it("can transfer collection expressions", () => {
+        expect(Test.Functions.echoColExprString(["foo", "bar"])).toStrictEqual(["foo", "bar"]);
+        expect(Test.Functions.echoColExprDouble(new Float64Array([0.5, -1.9]))).toStrictEqual(new Float64Array([0.5, -1.9]));
+        expect(Test.Functions.echoColExprInt(new Int32Array([1, 2]))).toStrictEqual(new Int32Array([1, 2]));
+        expect(Test.Functions.echoColExprByte(new Uint8Array([1, 2]))).toStrictEqual(new Uint8Array([1, 2]));
+    });
     it("can transfer decimals", () => {
         expect(Test.Invokable.sumDoubles(-1, 2.75)).toStrictEqual(1.75);
     });

@@ -94,13 +94,12 @@ internal sealed class InteropMarshaler
         string UnmarshalList (string name, Type listType)
         {
             var elementType = GetListElementType(listType);
-            if (IsNonDoubleNum(elementType))
-                return $"({BuildSyntax(listType)})[..((double[]){name}).Select(e => {Unmarshal(elementType)}(e))]";
-            if (ShouldMarshal(elementType))
-                return $"({BuildSyntax(listType)})[..((object[]){name}).Select(e => {Unmarshal(elementType)}(e))]";
-            if (!listType.IsArray && !listType.IsInterface)
-                return $"(({BuildSyntax(elementType)}[]){name}).ToList()";
-            return $"({BuildSyntax(elementType)}[]){name}";
+            if (elementType.FullName!.Contains(typeof(int).FullName!) ||
+                elementType.FullName!.Contains(typeof(double).FullName!) ||
+                elementType.FullName!.Contains(typeof(byte).FullName!))
+                if (listType.IsArray || listType.IsInterface) return $"({BuildSyntax(elementType)}[]){name}";
+                else return $"(({BuildSyntax(elementType)}[]){name}).ToList()";
+            return $"({BuildSyntax(listType)})[..((object[]){name}).Select(e => {Unmarshal(elementType)}(e))]";
         }
 
         string UnmarshalDictionary (string name, Type dictType)
@@ -127,7 +126,7 @@ internal sealed class InteropMarshaler
         // All numbers in JavaScript are doubles.
         bool IsNonDoubleNum (Type type) =>
             type.IsPrimitive &&
-            type != typeof(double) &&
-            type != typeof(bool);
+            !type.FullName!.Contains(typeof(double).FullName!) &&
+            !type.FullName!.Contains(typeof(bool).FullName!);
     }
 }
