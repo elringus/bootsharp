@@ -9,7 +9,7 @@
         <TrimmerSingleWarn>false</TrimmerSingleWarn>
         <BootsharpBundleCommand>npx rollup index.js -d ./ -f es -g process,module --output.preserveModules --entryFileNames [name].mjs</BootsharpBundleCommand>
         <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
-        <!--<RunAOTCompilation>true</RunAOTCompilation>-->
+        <RunAOTCompilation>true</RunAOTCompilation>
     </PropertyGroup>
 
     <ItemGroup>
