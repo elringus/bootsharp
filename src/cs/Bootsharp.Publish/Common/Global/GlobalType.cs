@@ -1,27 +1,11 @@
-﻿global using static Bootsharp.Publish.TypeUtilities;
-using System.Collections.Frozen;
+﻿global using static Bootsharp.Publish.GlobalType;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 
 namespace Bootsharp.Publish;
 
-internal static class TypeUtilities
+internal static class GlobalType
 {
-    private static readonly FrozenSet<string> native = new[] {
-        typeof(string).FullName!, typeof(bool).FullName!, typeof(byte).FullName!,
-        typeof(char).FullName!, typeof(short).FullName!, typeof(long).FullName!,
-        typeof(int).FullName!, typeof(float).FullName!, typeof(double).FullName!,
-        typeof(nint).FullName!, typeof(Task).FullName!, typeof(DateTime).FullName!,
-        typeof(DateTimeOffset).FullName!, typeof(Exception).FullName!
-    }.ToFrozenSet();
-
-    private static readonly FrozenSet<string> arrayNative = new[] {
-        typeof(byte).FullName!, typeof(int).FullName!,
-        typeof(double).FullName!, typeof(string).FullName!
-    }.ToFrozenSet();
-
     public static bool IsTaskLike (Type type)
     {
         return type.GetMethod(nameof(Task.GetAwaiter)) != null;
@@ -31,20 +15,6 @@ internal static class TypeUtilities
     {
         return (result = IsTaskLike(type) && type.GenericTypeArguments.Length == 1
             ? type.GenericTypeArguments[0] : null) != null;
-    }
-
-    public static string MarshalAmbiguous (string typeSyntax, bool @return)
-    {
-        var promise = typeSyntax.StartsWith("global::System.Threading.Tasks.Task<");
-        if (promise) typeSyntax = typeSyntax[36..];
-        var result =
-            typeSyntax.StartsWith("global::System.DateTime") ? "JSType.Date" :
-            typeSyntax.StartsWith("global::System.Int64") ? "JSType.BigInt" : "";
-        if (result == "") return "";
-        if (promise) result = $"JSType.Promise<{result}>";
-        result = $"JSMarshalAs<{result}>";
-        if (@return) result = $"return: {result}";
-        return $"[{result}] ";
     }
 
     public static bool IsVoid (Type type)
@@ -64,9 +34,9 @@ internal static class TypeUtilities
 
     public static bool IsDictionary (Type type)
     {
-        return IsDict(type) || type.GetInterfaces().Any(IsDict);
+        return IsGenericDictionary(type) || type.GetInterfaces().Any(IsGenericDictionary);
 
-        bool IsDict (Type type) =>
+        bool IsGenericDictionary (Type type) =>
             type.IsGenericType &&
             (type.GetGenericTypeDefinition().FullName == typeof(IDictionary<,>).FullName ||
              type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyDictionary<,>).FullName);
@@ -77,6 +47,16 @@ internal static class TypeUtilities
         return arrayType.IsArray
             ? arrayType.GetElementType()!
             : arrayType.GenericTypeArguments[0];
+    }
+
+    public static Type GetDictionaryKeyType (Type dictType)
+    {
+        return dictType.GenericTypeArguments[0];
+    }
+
+    public static Type GetDictionaryValueType (Type dictType)
+    {
+        return dictType.GenericTypeArguments[1];
     }
 
     public static NullabilityInfo GetNullability (PropertyInfo property)
@@ -128,25 +108,6 @@ internal static class TypeUtilities
         return backingField != null;
     }
 
-    public static MetadataLoadContext CreateLoadContext (string directory)
-    {
-        var assemblyPaths = Directory.GetFiles(RuntimeEnvironment.GetRuntimeDirectory(), "*.dll").ToList();
-        foreach (var path in Directory.GetFiles(directory, "*.dll"))
-            if (assemblyPaths.All(p => Path.GetFileName(p) != Path.GetFileName(path)))
-                assemblyPaths.Add(path);
-        var resolver = new PathAssemblyResolver(assemblyPaths);
-        return new MetadataLoadContext(resolver);
-    }
-
-    public static bool ShouldIgnoreAssembly (string filePath)
-    {
-        var assemblyName = Path.GetFileName(filePath);
-        return assemblyName.StartsWith("System.") ||
-               assemblyName.StartsWith("Microsoft.") ||
-               assemblyName.StartsWith("netstandard") ||
-               assemblyName.StartsWith("mscorlib");
-    }
-
     public static string GetGenericNameWithoutArgs (string typeName)
     {
         var delimiterIndex = typeName.IndexOf('`');
@@ -161,21 +122,6 @@ internal static class TypeUtilities
         if (!type.IsInterface) return false;
         if (string.IsNullOrEmpty(type.Namespace)) return true;
         return !type.Namespace.StartsWith("System.", StringComparison.Ordinal);
-    }
-
-    // https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop
-    public static bool ShouldSerialize (Type type)
-    {
-        if (IsVoid(type)) return false;
-        if (IsInstancedInteropInterface(type, out _)) return false;
-        if (IsTaskWithResult(type, out var result))
-            // TODO: Remove 'IsList(result)' when resolved: https://github.com/elringus/bootsharp/issues/138
-            return IsList(result) || ShouldSerialize(result);
-        var array = type.IsArray;
-        if (array) type = type.GetElementType()!;
-        if (IsNullable(type)) type = GetNullableUnderlyingType(type);
-        if (array) return !arrayNative.Contains(type.FullName!);
-        return !native.Contains(type.FullName!);
     }
 
     public static string BuildJSSpace (Type type, Preferences prefs)
@@ -223,14 +169,6 @@ internal static class TypeUtilities
     public static string BuildJSInteropInstanceClassName (InterfaceMeta inter)
     {
         return inter.FullName.Replace("Bootsharp.Generated.Exports.", "").Replace(".", "_");
-    }
-
-    public static string WithPrefs (IReadOnlyCollection<Preference> prefs, string input, string @default)
-    {
-        foreach (var pref in prefs)
-            if (Regex.IsMatch(input, pref.Pattern))
-                return Regex.Replace(input, pref.Pattern, pref.Replacement);
-        return @default;
     }
 
     public static string BuildSyntax (Type type) => BuildSyntax(type, null, false);

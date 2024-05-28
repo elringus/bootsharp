@@ -49,7 +49,7 @@ internal sealed class InteropGenerator
     private void AddExportMethod (MethodMeta inv)
     {
         var instanced = TryInstanced(inv, out var instance);
-        var marshalAs = MarshalAmbiguous(inv.ReturnValue.TypeSyntax, true);
+        var marshalAs = MarshalAmbiguous(inv.ReturnValue, true);
         var wait = ShouldWait(inv.ReturnValue);
         var attr = $"[System.Runtime.InteropServices.JavaScript.JSExport] {marshalAs}";
         methods.Add($"{attr}internal static {BuildSignature()} => {BuildBody()};");
@@ -131,7 +131,7 @@ internal sealed class InteropGenerator
         var @return = BuildReturnValue(method.ReturnValue);
         var endpoint = $"{method.JSSpace}.{method.JSName}Serialized";
         var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{endpoint}", "Bootsharp")]""";
-        var date = MarshalAmbiguous(method.ReturnValue.TypeSyntax, true);
+        var date = MarshalAmbiguous(method.ReturnValue, true);
         methods.Add($"{attr} {date}internal static partial {@return} {BuildMethodName(method)} ({args});");
     }
 
@@ -147,7 +147,7 @@ internal sealed class InteropGenerator
     private string BuildSignatureArg (ArgumentMeta arg)
     {
         var type = BuildValueType(arg.Value);
-        return $"{MarshalAmbiguous(arg.Value.TypeSyntax, false)}{type} {arg.Name}";
+        return $"{MarshalAmbiguous(arg.Value, false)}{type} {arg.Name}";
     }
 
     private string BuildReturnValue (ValueMeta value)

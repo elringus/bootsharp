@@ -45,6 +45,8 @@ internal sealed class TypeConverter (Preferences prefs)
             TypeCode.UInt32 => "Uint32Array",
             TypeCode.Int32 => "Int32Array",
             TypeCode.Int64 => "BigInt64Array",
+            TypeCode.Single => "Float32Array",
+            TypeCode.Double => "Float64Array",
             _ => $"Array<{Convert(elementType)}>"
         };
     }

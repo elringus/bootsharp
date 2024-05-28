@@ -11,7 +11,7 @@ namespace Bootsharp.Publish;
 /// Shouldn't be disposed to keep C# reflection APIs usable on the inspected types.
 /// Dispose to remove file lock on the inspected assemblies.
 /// </param>
-internal class SolutionInspection (MetadataLoadContext ctx) : IDisposable
+internal sealed class SolutionInspection (MetadataLoadContext ctx) : IDisposable
 {
     /// <summary>
     /// Interop interfaces specified under <see cref="JSImportAttribute"/> or
