@@ -53,7 +53,6 @@ internal sealed class SerializerGenerator
             // Passing just the result may conflict with a type inferred by
             // .NET's generator from other types (it throws on duplicates).
             syntax = $"({BuildSyntax(result)}, byte)";
-        AddProxies(type);
         attributes.Add(BuildAttribute(syntax));
     }
 
@@ -71,35 +70,4 @@ internal sealed class SerializerGenerator
         var hint = $"X{syntax.GetHashCode():X}";
         return $"[JsonSerializable(typeof({syntax}), TypeInfoPropertyName = \"{hint}\")]";
     }
-
-    private void AddProxies (Type type)
-    {
-        if (IsTaskWithResult(type, out var result)) type = result;
-        if (IsListInterface(type)) AddListProxies(type);
-        if (IsDictInterface(type)) AddDictProxies(type);
-    }
-
-    private void AddListProxies (Type list)
-    {
-        var element = BuildSyntax(list.GenericTypeArguments[0]);
-        attributes.Add(BuildAttribute($"{element}[]"));
-        attributes.Add(BuildAttribute($"global::System.Collections.Generic.List<{element}>"));
-    }
-
-    private void AddDictProxies (Type dict)
-    {
-        var key = BuildSyntax(dict.GenericTypeArguments[0]);
-        var value = BuildSyntax(dict.GenericTypeArguments[1]);
-        attributes.Add(BuildAttribute($"global::System.Collections.Generic.Dictionary<{key}, {value}>"));
-    }
-
-    private static bool IsListInterface (Type type) =>
-        type.IsInterface && type.IsGenericType &&
-        (type.GetGenericTypeDefinition().FullName == typeof(IList<>).FullName ||
-         type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyList<>).FullName);
-
-    private static bool IsDictInterface (Type type) =>
-        type.IsInterface && type.IsGenericType &&
-        (type.GetGenericTypeDefinition().FullName == typeof(IDictionary<,>).FullName ||
-         type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyDictionary<,>).FullName);
 }

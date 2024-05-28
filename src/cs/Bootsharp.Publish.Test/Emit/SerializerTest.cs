@@ -19,7 +19,7 @@ public class SerializerTest : EmitTest
             WithClass("[JSInvokable] public static byte[] Bar (int[] a, double[] b, string[] c) => default;")
         );
         Execute();
-        Assert.DoesNotContain("JsonSerializable", TestedContent);
+        DoesNotContain("JsonSerializable");
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class SerializerTest : EmitTest
             }
             """));
         Execute();
-        Assert.DoesNotContain("JsonSerializable", TestedContent);
+        DoesNotContain("JsonSerializable");
     }
 
     [Fact] // .NET's generator indexes types by short names (w/o namespace) and fails on duplicates.
@@ -64,65 +64,5 @@ public class SerializerTest : EmitTest
         Assert.Equal(2, Matches("JsonSerializable").Count);
         Contains("[JsonSerializable(typeof(global::n.Baz)");
         Contains("[JsonSerializable(typeof(global::y.Struct)");
-    }
-
-    [Fact]
-    public void AddsProxiesForListInterface ()
-    {
-        AddAssembly(WithClass("[JSInvokable] public static void Foo (IList<string> a) {}"));
-        Execute();
-        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.IList<global::System.String>)");
-        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.List<global::System.String>)");
-        Contains("[JsonSerializable(typeof(global::System.String[])");
-    }
-
-    [Fact]
-    public void AddsProxiesForReadOnlyListInterface ()
-    {
-        AddAssembly(WithClass("[JSInvokable] public static void Foo (IReadOnlyList<string> a) {}"));
-        Execute();
-        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.IReadOnlyList<global::System.String>)");
-        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.List<global::System.String>)");
-        Contains("[JsonSerializable(typeof(global::System.String[])");
-    }
-
-    [Fact]
-    public void AddsProxiesForDictInterface ()
-    {
-        AddAssembly(WithClass("[JSInvokable] public static void Foo (IDictionary<string, int> a) {}"));
-        Execute();
-        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.IDictionary<global::System.String, global::System.Int32>)");
-        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.Dictionary<global::System.String, global::System.Int32>)");
-    }
-
-    [Fact]
-    public void AddsProxiesForReadOnlyDictInterface ()
-    {
-        AddAssembly(WithClass("[JSInvokable] public static void Foo (IReadOnlyDictionary<string, int[]> a) {}"));
-        Execute();
-        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.IReadOnlyDictionary<global::System.String, global::System.Int32[]>)");
-        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.Dictionary<global::System.String, global::System.Int32[]>)");
-    }
-
-    [Fact]
-    public void DoesntAddProxiesForTaskWithoutResult ()
-    {
-        AddAssembly(WithClass("[JSInvokable] public static Task Foo (Task bar) => default;"));
-        Execute();
-        Assert.DoesNotContain("JsonSerializable", TestedContent);
-    }
-
-    [Fact]
-    public void AddsProxiesForTaskWithResult ()
-    {
-        AddAssembly(
-            With("public record Info;"),
-            WithClass("[JSInvokable] public static Task<Info> Foo () => default;"),
-            WithClass("[JSInvokable] public static Task<IReadOnlyList<bool>> Bar () => default;"));
-        Execute();
-        Contains("[JsonSerializable(typeof((global::Info, byte))");
-        Contains("[JsonSerializable(typeof((global::System.Collections.Generic.IReadOnlyList<global::System.Boolean>, byte))");
-        Contains("[JsonSerializable(typeof(global::System.Collections.Generic.List<global::System.Boolean>)");
-        Contains("[JsonSerializable(typeof(global::System.Boolean[])");
     }
 }

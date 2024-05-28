@@ -288,7 +288,9 @@ public class DeclarationTest : PackTest
             WithClass("[JSInvokable] public static void Int16 (short[] foo) {}"),
             WithClass("[JSInvokable] public static void Uint32 (uint[] foo) {}"),
             WithClass("[JSInvokable] public static void Int32 (int[] foo) {}"),
-            WithClass("[JSInvokable] public static void BigInt64 (long[] foo) {}"));
+            WithClass("[JSInvokable] public static void BigInt64 (long[] foo) {}"),
+            WithClass("[JSInvokable] public static void Float32 (float[] foo) {}"),
+            WithClass("[JSInvokable] public static void Float64 (double[] foo) {}"));
         Execute();
         Contains("uint8(foo: Uint8Array): void");
         Contains("int8(foo: Int8Array): void");
@@ -297,6 +299,8 @@ public class DeclarationTest : PackTest
         Contains("uint32(foo: Uint32Array): void");
         Contains("int32(foo: Int32Array): void");
         Contains("bigInt64(foo: BigInt64Array): void");
+        Contains("float32(foo: Float32Array): void");
+        Contains("float64(foo: Float64Array): void");
     }
 
     [Fact]
@@ -856,9 +860,9 @@ public class DeclarationTest : PackTest
             public static class Imports { [JSFunction] public static void Fun () {} }
             """));
         Execute();
-        Assert.DoesNotContain("Record", TestedContent);
-        Assert.DoesNotContain("export function inv", TestedContent);
-        Assert.DoesNotContain("export let fun", TestedContent);
+        DoesNotContain("Record");
+        DoesNotContain("export function inv");
+        DoesNotContain("export let fun");
     }
 
     [Fact]
@@ -1044,6 +1048,6 @@ public class DeclarationTest : PackTest
             }
             """));
         Execute();
-        Assert.DoesNotContain("Foo", TestedContent, StringComparison.OrdinalIgnoreCase);
+        DoesNotContain("Foo");
     }
 }

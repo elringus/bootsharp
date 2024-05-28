@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bootsharp;
 
@@ -26,4 +27,44 @@ public static partial class Functions
 
     [JSFunction]
     public static partial byte[] GetBytes ();
+
+    [JSInvokable]
+    public static async Task<byte[]> EchoBytesAsync (byte[] arr)
+    {
+        await Task.Delay(1);
+        return arr;
+    }
+
+    [JSInvokable]
+    public static IReadOnlyList<string> EchoColExprString (IReadOnlyList<string> list)
+    {
+        return [..list];
+    }
+
+    [JSInvokable]
+    public static IReadOnlyList<double> EchoColExprDouble (IReadOnlyList<double> list)
+    {
+        return [..list];
+    }
+
+    [JSInvokable]
+    public static IReadOnlyList<int> EchoColExprInt (IReadOnlyList<int> list)
+    {
+        return [..list];
+    }
+
+    [JSInvokable]
+    public static IReadOnlyList<byte> EchoColExprByte (IReadOnlyList<byte> list)
+    {
+        return [..list];
+    }
+
+    [JSInvokable]
+    public static string[] EchoStringArray (string[] arr) => arr;
+    [JSInvokable]
+    public static double[] EchoDoubleArray (double[] arr) => arr;
+    [JSInvokable]
+    public static int[] EchoIntArray (int[] arr) => arr;
+    [JSInvokable]
+    public static byte[] EchoByteArray (byte[] arr) => arr;
 }

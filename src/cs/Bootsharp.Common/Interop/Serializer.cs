@@ -17,12 +17,12 @@ public static class Serializer
     };
 
     /// <summary>
-    /// Serializes specified object to JSON string.
+    /// Serializes specified object to JSON string using specified serialization context type.
     /// </summary>
-    public static string Serialize (object? @object)
+    public static string Serialize (object? @object, Type type)
     {
         if (@object is null) return "null";
-        return JsonSerializer.Serialize(@object, GetInfo(@object.GetType()));
+        return JsonSerializer.Serialize(@object, GetInfo(type));
     }
 
     /// <summary>

@@ -1,8 +1,8 @@
-﻿global using static Bootsharp.Publish.TextUtilities;
+﻿global using static Bootsharp.Publish.GlobalText;
 
 namespace Bootsharp.Publish;
 
-internal static class TextUtilities
+internal static class GlobalText
 {
     public static string JoinLines (IEnumerable<string?> values, int indent = 1, string separator = "\n")
     {

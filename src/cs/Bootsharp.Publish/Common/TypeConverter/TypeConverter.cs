@@ -37,6 +37,7 @@ internal sealed class TypeConverter (Preferences prefs)
     {
         var elementType = GetListElementType(type);
         if (EnterNullability()) return $"Array<{Convert(elementType)} | null>";
+        if (!type.IsArray) return $"Array<{Convert(elementType)}>";
         return Type.GetTypeCode(elementType) switch {
             TypeCode.Byte => "Uint8Array",
             TypeCode.SByte => "Int8Array",
@@ -45,6 +46,8 @@ internal sealed class TypeConverter (Preferences prefs)
             TypeCode.UInt32 => "Uint32Array",
             TypeCode.Int32 => "Int32Array",
             TypeCode.Int64 => "BigInt64Array",
+            TypeCode.Single => "Float32Array",
+            TypeCode.Double => "Float64Array",
             _ => $"Array<{Convert(elementType)}>"
         };
     }
