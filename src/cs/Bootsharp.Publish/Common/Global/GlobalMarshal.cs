@@ -55,6 +55,7 @@ internal static class GlobalMarshal
         .Replace('.', '_').Replace('+', '_')
         .Replace('<', '_').Replace(">", "").Replace(',', '_')
         .Replace("[", "_Array").Replace("]", "")
+        .Replace("?", "")
         .Replace("global::", "").Replace(" ", "");
 
     public static PropertyInfo[] GetMarshaledProperties (Type type)
