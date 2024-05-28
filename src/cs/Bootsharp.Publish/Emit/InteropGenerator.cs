@@ -72,7 +72,7 @@ internal sealed class InteropGenerator
                 : $"global::{inv.Space}.{inv.Name}({args})";
             if (wait) body = $"await {body}";
             if (inv.ReturnValue.Instance) body = $"global::Bootsharp.Instances.Register({body})";
-            else if (inv.ReturnValue.Serialized) body = $"Serialize({body})";
+            else if (inv.ReturnValue.Serialized) body = $"Serialize({body}, {BuildSerdeType(inv.ReturnValue)})";
             return body;
         }
 
@@ -110,16 +110,13 @@ internal sealed class InteropGenerator
                 return $"({BuildSyntax(method.ReturnValue.InstanceType)})new global::{full}({body})";
             }
             if (!method.ReturnValue.Serialized) return body;
-            var type = method.ReturnValue.Async
-                ? method.ReturnValue.TypeSyntax[36..^1]
-                : method.ReturnValue.TypeSyntax;
-            return $"Deserialize<{type}>({body})";
+            return $"Deserialize<{StripTaskSyntax(method.ReturnValue)}>({body})";
         }
 
         string BuildBodyArg (ArgumentMeta arg)
         {
             if (arg.Value.Instance) return $"global::Bootsharp.Instances.Register({arg.Name})";
-            if (arg.Value.Serialized) return $"Serialize({arg.Name})";
+            if (arg.Value.Serialized) return $"Serialize({arg.Name}, {BuildSerdeType(arg.Value)})";
             return arg.Name;
         }
     }
@@ -131,16 +128,16 @@ internal sealed class InteropGenerator
         var @return = BuildReturnValue(method.ReturnValue);
         var endpoint = $"{method.JSSpace}.{method.JSName}Serialized";
         var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{endpoint}", "Bootsharp")]""";
-        var date = MarshalAmbiguous(method.ReturnValue, true);
-        methods.Add($"{attr} {date}internal static partial {@return} {BuildMethodName(method)} ({args});");
+        var marsh = MarshalAmbiguous(method.ReturnValue, true);
+        methods.Add($"{attr} {marsh}internal static partial {@return} {BuildMethodName(method)} ({args});");
     }
 
     private string BuildValueType (ValueMeta value)
     {
         if (value.Void) return "void";
         var nil = value.Nullable ? "?" : "";
-        if (value.Instance) return $"global::System.Int32{(nil)}";
-        if (value.Serialized) return $"global::System.String{(nil)}";
+        if (value.Instance) return $"global::System.Int32{nil}";
+        if (value.Serialized) return $"global::System.String{nil}";
         return value.TypeSyntax;
     }
 
@@ -152,9 +149,8 @@ internal sealed class InteropGenerator
 
     private string BuildReturnValue (ValueMeta value)
     {
-        var syntax = BuildValueType(value);
-        if (ShouldWait(value))
-            syntax = $"global::System.Threading.Tasks.Task<{syntax}>";
+        var syntax = ShouldMarshalAsAny(value.Type) ? "object" : BuildValueType(value);
+        if (ShouldWait(value)) syntax = $"global::System.Threading.Tasks.Task<{syntax}>";
         return syntax;
     }
 
@@ -171,6 +167,18 @@ internal sealed class InteropGenerator
 
     private bool ShouldWait (ValueMeta value)
     {
-        return value.Async && (value.Serialized || value.Instance);
+        return value.Async && (value.Serialized || ShouldMarshalAsAny(value.Type) || value.Instance);
+    }
+
+    private string BuildSerdeType (ValueMeta value)
+    {
+        return $"typeof({StripTaskSyntax(value)})".Replace("?", "");
+    }
+
+    private string StripTaskSyntax (ValueMeta value)
+    {
+        return value.Async
+            ? value.TypeSyntax[36..^1]
+            : value.TypeSyntax;
     }
 }

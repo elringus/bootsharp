@@ -26,12 +26,6 @@ describe("while bootsharp is booted", () => {
         Test.Functions.getString = () => "foo";
         expect(Test.Functions.echoString()).toStrictEqual("foo");
     });
-    it("can transfer collection expressions", () => {
-        expect(Test.Functions.echoColExprString(["foo", "bar"])).toStrictEqual(["foo", "bar"]);
-        expect(Test.Functions.echoColExprDouble(new Float64Array([0.5, -1.9]))).toStrictEqual(new Float64Array([0.5, -1.9]));
-        expect(Test.Functions.echoColExprInt(new Int32Array([1, 2]))).toStrictEqual(new Int32Array([1, 2]));
-        expect(Test.Functions.echoColExprByte(new Uint8Array([1, 2]))).toStrictEqual(new Uint8Array([1, 2]));
-    });
     it("can transfer decimals", () => {
         expect(Test.Invokable.sumDoubles(-1, 2.75)).toStrictEqual(1.75);
     });
@@ -111,6 +105,22 @@ describe("while bootsharp is booted", () => {
             foo: { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] },
             bar: { wheeled: [{ id: "bar", maxSpeed: 15, wheelCount: 5 }] }
         });
+    });
+    it("can transfer raw arrays", () => {
+        expect(Test.Functions.echoStringArray(["foo", "bar"]))
+            .toStrictEqual(["foo", "bar"]);
+        expect(Test.Functions.echoDoubleArray(new Float64Array([0.5, -1.9])))
+            .toStrictEqual(new Float64Array([0.5, -1.9]));
+        expect(Test.Functions.echoIntArray(new Int32Array([1, 2])))
+            .toStrictEqual(new Int32Array([1, 2]));
+        expect(Test.Functions.echoByteArray(new Uint8Array([1, 2])))
+            .toStrictEqual(new Uint8Array([1, 2]));
+    });
+    it("can transfer collection expressions", () => {
+        expect(Test.Functions.echoColExprString(["foo", "bar"])).toStrictEqual(["foo", "bar"]);
+        expect(Test.Functions.echoColExprDouble([0.5, -1.9])).toStrictEqual([0.5, -1.9]);
+        expect(Test.Functions.echoColExprInt([1, 2])).toStrictEqual([1, 2]);
+        expect(Test.Functions.echoColExprByte([1, 2])).toStrictEqual([1, 2]);
     });
     it("can invoke assigned JS functions in C#", () => {
         Test.Types.Registry.getRegistry = () => ({

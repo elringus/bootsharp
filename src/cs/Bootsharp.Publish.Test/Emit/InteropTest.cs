@@ -206,17 +206,17 @@ public class InteropTest : EmitTest
             }
             """));
         Execute();
-        Contains("""Proxies.Set("Space.Class.FunA", (global::Space.Record a) => Deserialize<global::Space.Record>(Space_Class_FunA(Serialize(a))));""");
-        Contains("""Proxies.Set("Space.Class.FunB", async (global::Space.Record?[]? a) => Deserialize<global::Space.Record?[]?>(await Space_Class_FunB(Serialize(a))));""");
-        Contains("JSExport] internal static global::System.String Space_Class_InvA (global::System.String a) => Serialize(global::Space.Class.InvA(Deserialize<global::Space.Record>(a)));");
-        Contains("JSExport] internal static async global::System.Threading.Tasks.Task<global::System.String?> Space_Class_InvB (global::System.String? a) => Serialize(await global::Space.Class.InvB(Deserialize<global::Space.Record?[]?>(a)));");
+        Contains("""Proxies.Set("Space.Class.FunA", (global::Space.Record a) => Deserialize<global::Space.Record>(Space_Class_FunA(Serialize(a, typeof(global::Space.Record)))));""");
+        Contains("""Proxies.Set("Space.Class.FunB", async (global::Space.Record?[]? a) => Deserialize<global::Space.Record?[]?>(await Space_Class_FunB(Serialize(a, typeof(global::Space.Record[])))));""");
+        Contains("JSExport] internal static global::System.String Space_Class_InvA (global::System.String a) => Serialize(global::Space.Class.InvA(Deserialize<global::Space.Record>(a)), typeof(global::Space.Record));");
+        Contains("JSExport] internal static async global::System.Threading.Tasks.Task<global::System.String?> Space_Class_InvB (global::System.String? a) => Serialize(await global::Space.Class.InvB(Deserialize<global::Space.Record?[]?>(a)), typeof(global::Space.Record[]));");
         Contains("""JSImport("Space.Class.funASerialized", "Bootsharp")] internal static partial global::System.String Space_Class_FunA (global::System.String a);""");
         Contains("""JSImport("Space.Class.funBSerialized", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.String?> Space_Class_FunB (global::System.String? a);""");
 
         // TODO: Remove when resolved: https://github.com/elringus/bootsharp/issues/138
-        Contains("""Proxies.Set("Space.Class.FunAsyncBytes", async () => Deserialize<global::System.Byte[]>(await Space_Class_FunAsyncBytes()));""");
-        Contains("JSExport] internal static async global::System.Threading.Tasks.Task<global::System.String> Space_Class_InvAsyncBytes () => Serialize(await global::Space.Class.InvAsyncBytes());");
-        Contains("""JSImport("Space.Class.funAsyncBytesSerialized", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.String> Space_Class_FunAsyncBytes ();""");
+        Contains("""Proxies.Set("Space.Class.FunAsyncBytes", async () => await Space_Class_FunAsyncBytes());""");
+        Contains("JSExport] [return: JSMarshalAs<JSType.Promise<JSType.Any>>] internal static async global::System.Threading.Tasks.Task<object> Space_Class_InvAsyncBytes () => await global::Space.Class.InvAsyncBytes();");
+        Contains("""JSImport("Space.Class.funAsyncBytesSerialized", "Bootsharp")] [return: JSMarshalAs<JSType.Promise<JSType.Any>>] internal static partial global::System.Threading.Tasks.Task<object> Space_Class_FunAsyncBytes ();""");
     }
 
     [Fact]

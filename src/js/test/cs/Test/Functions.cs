@@ -58,4 +58,13 @@ public static partial class Functions
     {
         return [..list];
     }
+
+    [JSInvokable]
+    public static string[] EchoStringArray (string[] arr) => arr;
+    [JSInvokable]
+    public static double[] EchoDoubleArray (double[] arr) => arr;
+    [JSInvokable]
+    public static int[] EchoIntArray (int[] arr) => arr;
+    [JSInvokable]
+    public static byte[] EchoByteArray (byte[] arr) => arr;
 }

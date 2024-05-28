@@ -21,11 +21,12 @@ internal static class GlobalSerialization
     public static string MarshalAmbiguous (ValueMeta meta, bool @return)
     {
         var typeSyntax = meta.TypeSyntax;
-        var promise = typeSyntax.StartsWith("global::System.Threading.Tasks.Task<");
-        if (promise) typeSyntax = typeSyntax[36..];
-        var result =
-            typeSyntax.StartsWith("global::System.DateTime") ? "JSType.Date" :
-            typeSyntax.StartsWith("global::System.Int64") ? "JSType.BigInt" : "";
+        var promise = meta.TypeSyntax.StartsWith("global::System.Threading.Tasks.Task<");
+        if (promise) typeSyntax = meta.TypeSyntax[36..];
+        var result = "";
+        if (ShouldMarshalAsAny(meta.Type)) result = "JSType.Any";
+        else if (typeSyntax.StartsWith("global::System.DateTime")) result = "JSType.Date";
+        else if (typeSyntax.StartsWith("global::System.Int64")) result = "JSType.BigInt";
         if (result == "") return "";
         if (promise) result = $"JSType.Promise<{result}>";
         result = $"JSMarshalAs<{result}>";
@@ -39,13 +40,16 @@ internal static class GlobalSerialization
         if (type.IsEnum) return true;
         if (IsVoid(type)) return false;
         if (IsInstancedInteropInterface(type, out _)) return false;
-        if (IsTaskWithResult(type, out var result))
-            // TODO: Remove 'IsList(result)' when resolved: https://github.com/elringus/bootsharp/issues/138
-            return IsList(result) || ShouldSerialize(result);
+        if (IsTaskWithResult(type, out var result)) return ShouldSerialize(result);
         var array = type.IsArray;
         if (array) type = type.GetElementType()!;
         if (IsNullable(type)) type = GetNullableUnderlyingType(type);
         if (array) return !arrayNative.Contains(type.FullName!);
         return !native.Contains(type.FullName!);
     }
+
+    // TODO: Remove once solved https://github.com/elringus/bootsharp/issues/138.
+    public static bool ShouldMarshalAsAny (Type type) =>
+        IsTaskWithResult(type, out var result) &&
+        result.IsArray && !ShouldSerialize(result.GetElementType()!);
 }

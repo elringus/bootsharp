@@ -21,7 +21,7 @@ public class SerializerTest
             TypeInfoResolver = null
         };
         Assert.Contains("Serializer info resolver is not assigned",
-            Assert.Throws<Error>(() => Serialize("")).Message);
+            Assert.Throws<Error>(() => Serialize("", null)).Message);
     }
 
     [Fact]
@@ -31,20 +31,20 @@ public class SerializerTest
             TypeInfoResolver = new MockResolver()
         };
         Assert.Contains("Failed to resolve serializer info",
-            Assert.Throws<Error>(() => Serialize("")).Message);
+            Assert.Throws<Error>(() => Serialize("", null)).Message);
     }
 
     [Fact]
     public void CanSerialize ()
     {
         Assert.Equal("""{"items":[{"id":"foo"},{"id":"bar"}]}""",
-            Serialize(new MockRecord(new MockItem[] { new("foo"), new("bar") })));
+            Serialize(new MockRecord(new MockItem[] { new("foo"), new("bar") }), typeof(MockRecord)));
     }
 
     [Fact]
     public void SerializesNullAsNull ()
     {
-        Assert.Equal("null", Serialize(null));
+        Assert.Equal("null", Serialize(null, null));
     }
 
     [Fact]
@@ -77,8 +77,8 @@ public class SerializerTest
     [Fact]
     public void RespectsOptions ()
     {
-        Assert.Equal("{\"enum\":0}", Serialize(new MockItemWithEnum(MockEnum.Foo)));
-        Assert.Equal("{\"enum\":null}", Serialize(new MockItemWithEnum(null)));
+        Assert.Equal("{\"enum\":0}", Serialize(new MockItemWithEnum(MockEnum.Foo), typeof(MockItemWithEnum)));
+        Assert.Equal("{\"enum\":null}", Serialize(new MockItemWithEnum(null), typeof(MockItemWithEnum)));
         Assert.Equal(MockEnum.Foo, Deserialize<MockItemWithEnum>("{\"enum\":0}").Enum);
         Assert.Null((Deserialize<MockItemWithEnum>("{\"enum\":null}")).Enum);
         Options = new JsonSerializerOptions(JsonSerializerDefaults.Web) {
@@ -86,8 +86,8 @@ public class SerializerTest
             Converters = { new JsonStringEnumConverter() },
             TypeInfoResolver = new DefaultJsonTypeInfoResolver()
         };
-        Assert.Equal("{\"enum\":\"Foo\"}", Serialize(new MockItemWithEnum(MockEnum.Foo)));
-        Assert.Equal("{}", Serialize(new MockItemWithEnum(null)));
+        Assert.Equal("{\"enum\":\"Foo\"}", Serialize(new MockItemWithEnum(MockEnum.Foo), typeof(MockItemWithEnum)));
+        Assert.Equal("{}", Serialize(new MockItemWithEnum(null), typeof(MockItemWithEnum)));
         Assert.Equal(MockEnum.Foo, (Deserialize<MockItemWithEnum>("{\"enum\":\"Foo\"}")).Enum);
         Assert.Null((Deserialize<MockItemWithEnum>("{}")).Enum);
     }
