@@ -8,7 +8,7 @@ internal sealed class InteropMarshaler
     {
         if (IsTaskWithResult(type, out var result)) type = result;
         if (ShouldMarshalPassThrough(type)) return "";
-        var methodName = $"Marshal_{GetMarshalId(type)}";
+        var methodName = BuildMarshalMethodName(type);
         if (generatedByName.ContainsKey(methodName)) return methodName;
         generatedByName[methodName] = GenerateMarshalMethod(methodName, type);
         return methodName;
@@ -18,13 +18,23 @@ internal sealed class InteropMarshaler
     {
         if (IsTaskWithResult(type, out var result)) type = result;
         if (ShouldMarshalPassThrough(type)) return "";
-        var methodName = $"Unmarshal_{GetMarshalId(type)}";
+        var methodName = BuildUnmarshalMethodName(type);
         if (generatedByName.ContainsKey(methodName)) return methodName;
         generatedByName[methodName] = GenerateUnmarshalMethod(methodName, type);
         return methodName;
     }
 
     public IReadOnlyCollection<string> GetGenerated () => generatedByName.Values;
+
+    private string BuildMarshalMethodName (Type type)
+    {
+        return $"Marshal_{GetMarshalId(type)}";
+    }
+
+    private string BuildUnmarshalMethodName (Type type)
+    {
+        return $"Unmarshal_{GetMarshalId(type)}";
+    }
 
     private string GenerateMarshalMethod (string methodName, Type marshaledType)
     {
@@ -33,6 +43,9 @@ internal sealed class InteropMarshaler
 
         string MarshalValue (string name, Type valueType)
         {
+            if (IsRecursive(valueType))
+                return $"{BuildMarshalMethodName(valueType)}({name})";
+
             var nullable = IsNullable(valueType) || !valueType.IsValueType;
             var template = nullable ? $"{name} is null ? null : ##" : "##";
             if (!ShouldMarshal(valueType)) return BuildTemplate(name);
@@ -64,7 +77,9 @@ internal sealed class InteropMarshaler
         {
             if (structType != marshaledType) return $"{Marshal(structType)}({name})";
             var props = GetMarshaledProperties(structType)
-                .Select(p => MarshalValue($"{name}.{p.Name}", p.PropertyType));
+                .Select(p => {
+                    return MarshalValue($"{name}.{p.Name}", p.PropertyType);
+                });
             return $"new object[] {{ {string.Join(", ", props)} }}";
         }
     }
@@ -76,6 +91,9 @@ internal sealed class InteropMarshaler
 
         string UnmarshalValue (string name, Type valueType)
         {
+            if (IsRecursive(valueType))
+                return $"{BuildUnmarshalMethodName(valueType)}({name})";
+
             var nullable = IsNullable(valueType) || !valueType.IsValueType;
             var template = nullable ? $"{name} is null ? null : ##" : "##";
             if (valueType.IsEnum) return BuildTemplate($"({BuildSyntax(valueType)})({BuildSyntax(Enum.GetUnderlyingType(valueType))})(double){name}");
@@ -118,8 +136,10 @@ internal sealed class InteropMarshaler
             if (structType != marshaledType) return $"{Unmarshal(structType)}({name})";
             var arr = $"((object[]){name})";
             var ctor = structType.GetConstructors().Any(c => c.GetParameters().Length > 0);
-            var args = string.Join(", ", GetMarshaledProperties(structType).Select((p, idx) =>
-                (ctor ? "" : $"{p.Name} = ") + UnmarshalValue($"{arr}[{idx}]", p.PropertyType)));
+            var args = string.Join(", ", GetMarshaledProperties(structType).Select((p, idx) => {
+                var assign = ctor ? "" : $"{p.Name} = ";
+                return assign + UnmarshalValue($"{arr}[{idx}]", p.PropertyType);
+            }));
             return $"new {BuildSyntax(structType)}" + (ctor ? $"({args})" : $" {{ {args} }}");
         }
 

@@ -282,6 +282,24 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
+    public void CanMarshalRecursiveTypes ()
+    {
+        AddAssembly(With(
+            """
+            public record Record { public Record R { get; init; } public Other O { get; init; } }
+            public record Other { public List<Record> Records { get; init; } }
+
+            public class Class
+            {
+                [JSInvokable] public static Record Inv (Record r) => default;
+            }
+            """));
+        Execute();
+        Contains("private static object Marshal_Record (global::Record obj) => obj is null ? null : new object[] { Marshal_Record(obj.R) };");
+        Contains("private static global::Record Unmarshal_Record (object raw) => raw is null ? null : new global::Record { R = Unmarshal_Record(((object[])raw)[0]) }");
+    }
+
+    [Fact]
     public void RespectsSpacePreference ()
     {
         AddAssembly(With(

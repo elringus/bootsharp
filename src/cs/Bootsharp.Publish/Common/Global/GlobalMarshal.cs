@@ -70,4 +70,13 @@ internal static class GlobalMarshal
     // TODO: Remove once solved https://github.com/elringus/bootsharp/issues/138.
     public static bool ShouldMarshalPassThrough (Type type) =>
         type.IsArray && !ShouldMarshal(type.GetElementType()!);
+
+    public static bool IsRecursive (Type type)
+    {
+        var declaring = type.DeclaringType;
+        while (declaring is not null)
+            if (declaring == type) return true;
+            else declaring = type.DeclaringType;
+        return false;
+    }
 }

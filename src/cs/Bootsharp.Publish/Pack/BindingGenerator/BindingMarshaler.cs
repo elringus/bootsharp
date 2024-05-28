@@ -8,7 +8,7 @@ internal sealed class BindingMarshaler
     {
         if (IsTaskWithResult(type, out var result)) type = result;
         if (ShouldMarshalPassThrough(type)) return "";
-        var fnName = $"marshal_{GetMarshalId(type)}";
+        var fnName = BuildMarshalFunctionName(type);
         if (generatedByName.ContainsKey(fnName)) return fnName;
         generatedByName[fnName] = GenerateMarshalFunction(fnName, type);
         return fnName;
@@ -18,7 +18,7 @@ internal sealed class BindingMarshaler
     {
         if (IsTaskWithResult(type, out var result)) type = result;
         if (ShouldMarshalPassThrough(type)) return "";
-        var fnName = $"unmarshal_{GetMarshalId(type)}";
+        var fnName = BuildUnmarshalFunctionName(type);
         if (generatedByName.ContainsKey(fnName)) return fnName;
         generatedByName[fnName] = GenerateUnmarshalFunction(fnName, type);
         return fnName;
@@ -26,12 +26,25 @@ internal sealed class BindingMarshaler
 
     public IReadOnlyCollection<string> GetGenerated () => generatedByName.Values;
 
+    private string BuildMarshalFunctionName (Type type)
+    {
+        return $"marshal_{GetMarshalId(type)}";
+    }
+
+    private string BuildUnmarshalFunctionName (Type type)
+    {
+        return $"unmarshal_{GetMarshalId(type)}";
+    }
+
     private string GenerateMarshalFunction (string fnName, Type marshaledType)
     {
         return $"function {fnName}(obj) {{ return {MarshalValue("obj", marshaledType)}; }}";
 
         string MarshalValue (string name, Type valueType)
         {
+            if (IsRecursive(valueType))
+                return $"{BuildMarshalFunctionName(valueType)}({name})";
+
             var nullable = IsNullable(valueType) || !valueType.IsValueType;
             var template = nullable ? $"{name} == null ? null : ##" : "##";
             if (!ShouldMarshal(valueType)) return BuildTemplate(name);
@@ -74,6 +87,9 @@ internal sealed class BindingMarshaler
 
         string UnmarshalValue (string name, Type valueType)
         {
+            if (IsRecursive(valueType))
+                return $"{BuildUnmarshalFunctionName(valueType)}({name})";
+
             var nullable = IsNullable(valueType) || !valueType.IsValueType;
             var template = nullable ? $"{name} == null ? undefined : ##" : "##";
             if (valueType.IsEnum) return BuildTemplate(name);

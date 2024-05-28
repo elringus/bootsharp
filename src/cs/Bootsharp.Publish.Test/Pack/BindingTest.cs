@@ -581,7 +581,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void GeneratesMarshalMethods ()
+    public void GeneratesMarshalFunctions ()
     {
         AddAssembly(With(
             """
@@ -604,7 +604,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void GeneratesUnmarshalMethods ()
+    public void GeneratesUnmarshalFunctions ()
     {
         AddAssembly(With(
             """
@@ -624,5 +624,23 @@ public class BindingTest : PackTest
         Execute();
         Contains("function unmarshal_Space_Struct(raw) { return { int: raw[0], enum: raw[1] }; }");
         Contains("function unmarshal_Space_Record(raw) { return raw == null ? undefined : { string: raw[0] == null ? undefined : raw[0], int: raw[1], nullInt: raw[2] == null ? undefined : raw[2], byteArr: raw[3] == null ? undefined : raw[3], struct: unmarshal_Space_Struct(raw[4]), byteList: raw[5] == null ? undefined : raw[5], structList: raw[6] == null ? undefined : raw[6].map(unmarshal_Space_Struct), dict: raw[7] == null ? undefined : new Map(raw[7].slice(0, raw[7].length / 2).map((obj, idx) => [obj, raw[7][idx + raw[7].length / 2] == null ? undefined : raw[7][idx + raw[7].length / 2]])), structDict: raw[8] == null ? undefined : new Map(raw[8].slice(0, raw[8].length / 2).map((obj, idx) => [unmarshal_Space_Struct(obj), unmarshal_Space_Struct(raw[8][idx + raw[8].length / 2])])), stringList: raw[9] == null ? undefined : raw[9], stringArray: raw[10] == null ? undefined : raw[10] }; }");
+    }
+
+    [Fact]
+    public void CanMarshalRecursiveTypes ()
+    {
+        AddAssembly(With(
+            """
+            public record Record { public Record R { get; init; } public Other O { get; init; } }
+            public record Other { public List<Record> Records { get; init; } }
+
+            public class Class
+            {
+                [JSInvokable] public static Record Inv (Record r) => default;
+            }
+            """));
+        Execute();
+        Contains("x");
+        Contains("x");
     }
 }
