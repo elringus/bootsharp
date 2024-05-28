@@ -44,6 +44,8 @@ internal sealed class BindingGenerator (Preferences prefs)
         import { registerInstance, getInstance, disposeOnFinalize } from "./instances";
 
         function getExports() { if (exports == null) throw Error("Boot the runtime before invoking C# APIs."); return exports; }
+        function serialize(obj) { return JSON.stringify(obj); }
+        function deserialize(json) { const result = JSON.parse(json); if (result === null) return undefined; return result; }
 
         /* v8 ignore start */
         """
