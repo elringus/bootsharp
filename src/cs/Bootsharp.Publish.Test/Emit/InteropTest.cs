@@ -158,7 +158,7 @@ public class InteropTest : EmitTest
             }
             """));
         Execute();
-        Assert.DoesNotContain("Foo", TestedContent, StringComparison.OrdinalIgnoreCase);
+        DoesNotContain("Foo");
     }
 
     [Fact]
@@ -200,7 +200,7 @@ public class InteropTest : EmitTest
                 [JSInvokable] public static Task<Record?[]?> InvB (Record?[]? a) => default;
                 [JSFunction] public static Record FunA (Record a) => Proxies.Get<Func<Record, Record>>("Space.Class.FunA")(a);
                 [JSFunction] public static Task<Record?[]?> FunB (Record?[]? a) => Proxies.Get<Func<Record?[]?, Task<Record?[]?>>>("Space.Class.FunB")(a);
-
+            
                 [JSInvokable] public static Task<byte[]> InvAsyncBytes () => default;
                 [JSFunction] public static Task<byte[]> FunAsyncBytes () => Proxies.Get<Func<Task<byte[]>>>("Space.Class.funAsyncBytes")();
             }

@@ -19,7 +19,7 @@ public class SerializerTest : EmitTest
             WithClass("[JSInvokable] public static byte[] Bar (int[] a, double[] b, string[] c) => default;")
         );
         Execute();
-        Assert.DoesNotContain("JsonSerializable", TestedContent);
+        DoesNotContain("JsonSerializable");
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class SerializerTest : EmitTest
             }
             """));
         Execute();
-        Assert.DoesNotContain("JsonSerializable", TestedContent);
+        DoesNotContain("JsonSerializable");
     }
 
     [Fact] // .NET's generator indexes types by short names (w/o namespace) and fails on duplicates.
@@ -109,7 +109,7 @@ public class SerializerTest : EmitTest
     {
         AddAssembly(WithClass("[JSInvokable] public static Task Foo (Task bar) => default;"));
         Execute();
-        Assert.DoesNotContain("JsonSerializable", TestedContent);
+        DoesNotContain("JsonSerializable");
     }
 
     [Fact]

@@ -12,15 +12,6 @@ public class TypesTest
     private readonly CustomAttributeData import = GetMockImportAttribute();
 
     [Fact]
-    public void Records ()
-    {
-        // TODO: Remove when coverlet bug is resolved: https://github.com/coverlet-coverage/coverlet/issues/1561
-        _ = new MockItem("") with { Id = "foo" };
-        _ = new MockItemWithEnum(default) with { Enum = MockEnum.Bar };
-        _ = new MockRecord(default) with { Items = new[] { new MockItem("") } };
-    }
-
-    [Fact]
     public void TypesAreAssigned ()
     {
         Assert.Equal([typeof(IBackend)], new JSExportAttribute(typeof(IBackend)).Types);

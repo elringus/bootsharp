@@ -856,9 +856,9 @@ public class DeclarationTest : PackTest
             public static class Imports { [JSFunction] public static void Fun () {} }
             """));
         Execute();
-        Assert.DoesNotContain("Record", TestedContent);
-        Assert.DoesNotContain("export function inv", TestedContent);
-        Assert.DoesNotContain("export let fun", TestedContent);
+        DoesNotContain("Record");
+        DoesNotContain("export function inv");
+        DoesNotContain("export let fun");
     }
 
     [Fact]
@@ -1044,6 +1044,6 @@ public class DeclarationTest : PackTest
             }
             """));
         Execute();
-        Assert.DoesNotContain("Foo", TestedContent, StringComparison.OrdinalIgnoreCase);
+        DoesNotContain("Foo");
     }
 }

@@ -431,8 +431,8 @@ public class BindingTest : PackTest
             public static class Imports { [JSFunction] public static void Fun () {} }
             """));
         Execute();
-        Assert.DoesNotContain("inv: () =>", TestedContent);
-        Assert.DoesNotContain("get fun()", TestedContent);
+        DoesNotContain("inv: () =>");
+        DoesNotContain("get fun()");
     }
 
     [Fact]
@@ -579,6 +579,6 @@ public class BindingTest : PackTest
             }
             """));
         Execute();
-        Assert.DoesNotContain("Foo", TestedContent, StringComparison.OrdinalIgnoreCase);
+        DoesNotContain("Foo");
     }
 }
