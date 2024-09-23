@@ -40,7 +40,7 @@ internal sealed class TypeCrawler
     private Type GetUnderlyingType (Type type)
     {
         if (IsNullable(type)) return GetNullableUnderlyingType(type);
-        if (IsList(type)) return GetUnderlyingType(GetListElementType(type));
+        if (IsList(type) || IsCollection(type)) return GetUnderlyingType(GetListElementType(type));
         return type;
     }
 }

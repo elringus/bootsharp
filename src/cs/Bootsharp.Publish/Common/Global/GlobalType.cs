@@ -42,6 +42,13 @@ internal static class GlobalType
              type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyDictionary<,>).FullName);
     }
 
+    public static bool IsCollection (Type type)
+    {
+        return type.IsInterface && type.IsGenericType &&
+               (type.GetGenericTypeDefinition().FullName == typeof(ICollection<>).FullName ||
+                type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyCollection<>).FullName);
+    }
+
     public static Type GetListElementType (Type arrayType)
     {
         return arrayType.IsArray
