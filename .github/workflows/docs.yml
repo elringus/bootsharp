@@ -16,8 +16,8 @@ jobs:
       name: github-pages
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: fetch tags
+        run: git fetch --prune --unshallow --tags
       - uses: actions/setup-node@v4
       - name: build
         run: |
