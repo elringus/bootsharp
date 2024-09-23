@@ -482,6 +482,54 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
+    public void DefinitionIsGeneratedForTypeWithCollectionProperty ()
+    {
+        AddAssembly(
+            With("n", "public interface Item { }"),
+            With("n", "public class Container { public ICollection<Item> Items { get; } }"),
+            WithClass("n", "[JSInvokable] public static Container Combine (ICollection<Item> items) => default;"));
+        Execute();
+        Contains(
+            """
+            export namespace n {
+                export interface Item {
+                }
+                export interface Container {
+                    items: Array<n.Item>;
+                }
+            }
+
+            export namespace n.Class {
+                export function combine(items: Array<n.Item>): n.Container;
+            }
+            """);
+    }
+
+    [Fact]
+    public void DefinitionIsGeneratedForTypeWithReadOnlyCollectionProperty ()
+    {
+        AddAssembly(
+            With("n", "public interface Item { }"),
+            With("n", "public class Container { public IReadOnlyCollection<Item> Items { get; } }"),
+            WithClass("n", "[JSInvokable] public static Container Combine (IReadOnlyCollection<Item> items) => default;"));
+        Execute();
+        Contains(
+            """
+            export namespace n {
+                export interface Item {
+                }
+                export interface Container {
+                    items: Array<n.Item>;
+                }
+            }
+
+            export namespace n.Class {
+                export function combine(items: Array<n.Item>): n.Container;
+            }
+            """);
+    }
+
+    [Fact]
     public void DefinitionIsGeneratedForGenericClass ()
     {
         AddAssembly(
