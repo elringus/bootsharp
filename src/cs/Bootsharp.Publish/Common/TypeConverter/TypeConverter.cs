@@ -21,8 +21,8 @@ internal sealed class TypeConverter (Preferences prefs)
     {
         crawler.Crawl(type);
         if (IsNullable(type)) return ConvertNullable(type);
-        if (IsList(type)) return ConvertList(type);
         if (IsDictionary(type)) return ConvertDictionary(type);
+        if (IsList(type) || IsCollection(type)) return ConvertList(type);
         if (IsTaskLike(type)) return ConvertAwaitable(type);
         if (type.IsGenericType && CrawledTypes.Contains(type)) return ConvertGeneric(type);
         return ConvertFinal(type);
