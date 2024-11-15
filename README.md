@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://bootsharp.com" target="_blank" rel="noopener noreferrer">
+  <a href="https://sharp.elringus.com" target="_blank" rel="noopener noreferrer">
     <img width="200" src="https://raw.githubusercontent.com/elringus/bootsharp/main/docs/public/favicon.svg" alt="Bootsharp">
   </a>
 </p>
@@ -37,7 +37,7 @@ Bootsharp streamlines consuming .NET C# apps and libraries in web projects. It's
 
 ## 🎬 Get Started
 
-https://bootsharp.com/guide/getting-started
+https://sharp.elringus.com/guide/getting-started
 
 ### Why not Blazor?
 

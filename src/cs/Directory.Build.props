@@ -3,7 +3,7 @@
         <Version>0.3.3</Version>
         <Authors>Elringus</Authors>
         <PackageTags>javascript typescript ts js wasm node deno bun interop codegen</PackageTags>
-        <PackageProjectUrl>https://bootsharp.com</PackageProjectUrl>
+        <PackageProjectUrl>https://sharp.elringus.com</PackageProjectUrl>
         <RepositoryUrl>https://github.com/elringus/bootsharp.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageIcon>logo.png</PackageIcon>
