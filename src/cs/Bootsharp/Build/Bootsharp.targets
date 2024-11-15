@@ -84,7 +84,7 @@
         <RemoveDir Directories="$(BootsharpIntermediateDirectory)"/>
     </Target>
 
-    <Target Name="BootsharpPack" AfterTargets="_AfterWasmBuildApp"
+    <Target Name="BootsharpPack" AfterTargets="_EmitWasmAssembliesFinal"
             Condition="Exists('$(PublishDir)') And Exists('$(WasmAppDir)')">
 
         <PropertyGroup>
@@ -105,8 +105,6 @@
             <BootsharpSourceFiles Include="$(BootsharpSourceDirectory)/*.*"/>
         </ItemGroup>
         <Copy SourceFiles="@(BootsharpSourceFiles)" DestinationFolder="$(BootsharpBuildDirectory)"/>
-        <Move SourceFiles="$(BootsharpBuildDirectory)/index.d.ts"
-              DestinationFiles="$(BootsharpBuildDirectory)/index.d.ts"/>
 
         <!-- Generate bindings, type declarations and (optionally) embed binaries. -->
         <BootsharpPack BuildDirectory="$(BootsharpBuildDirectory)"
