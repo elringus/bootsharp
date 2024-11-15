@@ -6,11 +6,11 @@
         "build": "sh scripts/build.sh"
     },
     "devDependencies": {
-        "typescript": "^5.4.5",
-        "@types/node": "^20.12.12",
-        "@types/ws": "^8.5.10",
-        "vitest": "^1.6.0",
-        "@vitest/coverage-v8": "^1.6.0",
-        "ws": "^8.17.0"
+        "typescript": "5.6.3",
+        "@types/node": "22.9.0",
+        "@types/ws": "8.5.13",
+        "vitest": "2.1.5",
+        "@vitest/coverage-v8": "2.1.5",
+        "ws": "8.18.0"
     }
 }
