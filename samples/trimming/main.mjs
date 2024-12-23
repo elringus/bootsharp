@@ -1,7 +1,9 @@
 import bootsharp, { Program } from "./cs/bin/bootsharp/index.mjs";
+import { pathToFileURL } from "node:url";
+import fs from "node:fs/promises";
 import zlib from "node:zlib";
 import util from "node:util";
-import fs from "node:fs/promises";
+import path from "node:path";
 
 console.log(`Binary size: ${await measure("./cs/bin/bootsharp/bin")}KB`);
 console.log(`Brotli size: ${await measure("./cs/bin/bootsharp/bro")}KB`);
@@ -13,13 +15,13 @@ await Promise.all([
 ]);
 
 Program.log = console.log;
-await bootsharp.boot({ root: "./bin", resources });
+const root = pathToFileURL(path.resolve("./cs/bin/bootsharp/bin"));
+await bootsharp.boot({ root, resources });
 
 async function measure(dir) {
     let size = 0;
-    for await (const entry of await fs.opendir(dir)) {
+    for await (const entry of await fs.opendir(dir))
         size += (await fs.stat(`${entry.path}/${entry.name}`)).size;
-    }
     return Math.ceil(size / 1024);
 }
 

@@ -84,7 +84,7 @@
         <RemoveDir Directories="$(BootsharpIntermediateDirectory)"/>
     </Target>
 
-    <Target Name="BootsharpPack" AfterTargets="_EmitWasmAssembliesFinal"
+    <Target Name="BootsharpPack" AfterTargets="WasmNestedPublishApp"
             Condition="Exists('$(PublishDir)') And Exists('$(WasmAppDir)')">
 
         <PropertyGroup>

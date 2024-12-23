@@ -16,7 +16,7 @@ export enum BootStatus {
 
 /** Boot process configuration. */
 export type BootOptions = {
-    /** Path to directory where boot resources are hosted (eg, <code>/bin</code>). */
+    /** Absolute path to the directory where boot resources are hosted (eg, <code>/bin</code>). */
     readonly root?: string;
     /** Resources required to boot .NET runtime. */
     readonly resources?: BootResources;
@@ -50,8 +50,6 @@ export async function boot(options?: BootOptions): Promise<RuntimeAPI> {
     main = await getMain(options?.root);
     const config = options?.config ?? await buildConfig(options?.resources ?? resources, options?.root);
     const runtime = await options?.create?.(config) || await main.dotnet.withConfig(config).create();
-    // TODO: Remove once https://github.com/dotnet/runtime/issues/92713 fix is merged.
-    (<{ runtimeKeepalivePush: () => void }><unknown>runtime.Module).runtimeKeepalivePush();
     await options?.import?.(runtime) || bindImports(runtime);
     await options?.run?.(runtime) || await runtime.runMain(config.mainAssemblyName!, []);
     await options?.export?.(runtime) || await bindExports(runtime, config.mainAssemblyName!);
