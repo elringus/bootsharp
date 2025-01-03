@@ -33,6 +33,13 @@ export async function buildConfig(resources: BootResources, root?: string): Prom
     async function resolveBuffer(res: BinaryResource): Promise<ArrayBuffer> {
         if (typeof res.content === "string") return decodeBase64(res.content);
         if (res.content !== undefined) return <never>res.content.buffer;
-        return (await fetch(`${root}/${res.name}`)).arrayBuffer();
+        const fullPath = `${root}/${res.name}`;
+        if (typeof window !== "undefined") {
+            return (await fetch(fullPath)).arrayBuffer();
+        } else {
+            const { readFile } = await import("fs/promises");
+            const bin = await readFile(fullPath);
+            return <never>bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.byteLength);
+        }
     }
 }

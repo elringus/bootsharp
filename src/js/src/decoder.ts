@@ -2,7 +2,7 @@ const lookup = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 export function decodeBase64(source: string): ArrayBuffer {
     if (typeof window === "object") return decodeWithBrowser(source);
-    if (typeof Buffer === "function") return decodeWithNodeJS(source);
+    if (typeof process !== "undefined") return decodeWithNode(source);
     return decodeNaive(source);
 }
 
@@ -16,7 +16,7 @@ function decodeWithBrowser(source: string): ArrayBuffer {
     return buffer;
 }
 
-function decodeWithNodeJS(source: string): ArrayBuffer {
+function decodeWithNode(source: string): ArrayBuffer {
     const buffer = Buffer.from(source, "base64");
     return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 }
