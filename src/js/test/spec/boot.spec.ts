@@ -34,16 +34,6 @@ describe("boot", () => {
         expect(config.assets![1].moduleExports).toBeDefined();
         expect(config.assets![2].moduleExports).toBeDefined();
     });
-    // it("overrides name to url in multithreading mode", async () => {
-    //     const { bootsharp, root } = await setup();
-    //     vi.doMock("../cs/Test/bin/sideload/dotnet.g", () => ({ mt: true }));
-    //     const module = await import("../cs/Test/bin/sideload");
-    //     const config = await module.default.dotnet.buildConfig(bootsharp.resources, root);
-    //     expect(config.assets![0].name.endsWith("/bin/dotnet.js")).toBeTruthy();
-    //     expect(config.assets![1].name.endsWith("/bin/dotnet.native.js")).toBeTruthy();
-    //     expect(config.assets![2].name.endsWith("/bin/dotnet.runtime.js")).toBeTruthy();
-    //     vi.doUnmock("../cs/Test/bin/sideload/dotnet.g");
-    // });
     it("can boot in embedded mode", async () => {
         vi.resetModules();
         const cs = await import("../cs");

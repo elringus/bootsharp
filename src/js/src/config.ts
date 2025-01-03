@@ -10,28 +10,29 @@ export async function buildConfig(resources: BootResources, root?: string): Prom
     const main = embed ? await getMain() : undefined;
     const native = embed ? await getNative() : undefined;
     const runtime = embed ? await getRuntime() : undefined;
-    // const mt = !embed && (await import("./dotnet.g")).mt;
-    return {
-        mainAssemblyName: resources.entryAssemblyName,
-        assets: [
-            buildAsset({ name: "dotnet.js" }, "js-module-dotnet", main, false),
-            buildAsset({ name: "dotnet.native.js" }, "js-module-native", native, false),
-            buildAsset({ name: "dotnet.runtime.js" }, "js-module-runtime", runtime, false),
-            buildAsset({ name: "dotnet.native.worker.js" }, "js-module-threads", undefined, true),
-            buildAsset(resources.wasm, "dotnetwasm", undefined, false),
-            ...resources.assemblies.map(a => buildAsset(a, "assembly"))
-        ]
-    };
+    const mt = !embed && (await import("./dotnet.g")).mt;
+    const assets: AssetEntry[] = [
+        buildAsset({ name: "dotnet.js" }, "js-module-dotnet", main),
+        buildAsset({ name: "dotnet.native.js" }, "js-module-native", native),
+        buildAsset({ name: "dotnet.runtime.js" }, "js-module-runtime", runtime),
+        buildAsset(resources.wasm, "dotnetwasm", undefined),
+        ...resources.assemblies.map(a => buildAsset(a, "assembly"))
+    ];
+    if (mt) assets.push(buildAsset({ name: "dotnet.native.worker.js" }, "js-module-threads", undefined));
+    return { mainAssemblyName: resources.entryAssemblyName, assets };
 
-    function buildAsset(res: BinaryResource, behavior: AssetBehaviors,
-        module?: unknown, optional?: boolean): AssetEntry {
+    function buildAsset(res: BinaryResource, behavior: AssetBehaviors, module?: unknown): AssetEntry {
         return {
             name: res.name,
-            resolvedUrl: (res.content || !root) ? undefined : `${root}/${res.name}`,
-            buffer: typeof res.content === "string" ? decodeBase64(res.content) : <never>res.content?.buffer,
+            buffer: module ? undefined : resolveBuffer(res),
             moduleExports: module,
-            isOptional: optional,
             behavior
         };
+    }
+
+    async function resolveBuffer(res: BinaryResource): Promise<ArrayBuffer> {
+        if (typeof res.content === "string") return decodeBase64(res.content);
+        if (res.content !== undefined) return <never>res.content.buffer;
+        return (await fetch(`${root}/${res.name}`)).arrayBuffer();
     }
 }
