@@ -97,7 +97,7 @@ describe("boot", () => {
         const { bins, any } = await setup();
         const win = any(global).window;
         any(global).window = { atob: vi.fn(src => Buffer.from(src, "base64").toString("binary")) };
-        // @ts-expect-error
+        // @ts-expect-error: white-boxing because mocking window breaks other stuff in boot
         const { decodeBase64 } = await import("../cs/Test/bin/sideload/decoder.mjs");
         try { decodeBase64(bins.assemblies[0].content.toString("base64")); }
         catch {}
@@ -110,7 +110,7 @@ describe("boot", () => {
         const proc = any(global).process;
         any(global).window = undefined;
         any(global).process = undefined;
-        // @ts-expect-error
+        // @ts-expect-error: white-boxing because mocking proc and window breaks other stuff in boot
         const { decodeBase64 } = await import("../cs/Test/bin/sideload/decoder.mjs");
         for (const ass of bins.assemblies)
             expect(decodeBase64(ass.content.toString("base64")).byteLength)
