@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from "vitest";
 import { resolve } from "node:path";
 import { Buffer } from "node:buffer";
 import type { BootOptions } from "../cs/Test/bin/sideload";
-import { arrayBuffer } from "node:stream/consumers";
 
 async function setup() {
     // dotnet merges with the host node process, so it's not possible
@@ -60,7 +59,7 @@ describe("boot", () => {
         const win = any(global).window;
         const fetch = global.fetch;
         any(global).window = {};
-        any(global).fetch = vi.fn(_ => ({ arrayBuffer: () => bins.wasm }));
+        any(global).fetch = vi.fn(() => ({ arrayBuffer: () => bins.wasm }));
         await bootsharp.dotnet.buildConfig(bootsharp.resources, root);
         expect(global.fetch).toHaveBeenCalled();
         any(global).window = win;
@@ -98,7 +97,7 @@ describe("boot", () => {
         const { bins, any } = await setup();
         const win = any(global).window;
         any(global).window = { atob: vi.fn(src => Buffer.from(src, "base64").toString("binary")) };
-        // @ts-ignore
+        // @ts-expect-error
         const { decodeBase64 } = await import("../cs/Test/bin/sideload/decoder.mjs");
         try { decodeBase64(bins.assemblies[0].content.toString("base64")); }
         catch {}
@@ -111,7 +110,7 @@ describe("boot", () => {
         const proc = any(global).process;
         any(global).window = undefined;
         any(global).process = undefined;
-        // @ts-ignore
+        // @ts-expect-error
         const { decodeBase64 } = await import("../cs/Test/bin/sideload/decoder.mjs");
         for (const ass of bins.assemblies)
             expect(decodeBase64(ass.content.toString("base64")).byteLength)

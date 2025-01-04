@@ -48,11 +48,7 @@ export async function boot(options?: BootOptions): Promise<RuntimeAPI> {
     if (status === BootStatus.Booting) throw Error("Failed to boot .NET runtime: already booting.");
     status = BootStatus.Booting;
     main = await getMain(options?.root);
-    const config = options?.config ?? await buildConfig(options?.resources ?? resources, options?.root);
-    const runtime = await options?.create?.(config) || await main.dotnet.withConfig(config).create();
-    await options?.import?.(runtime) || bindImports(runtime);
-    await options?.run?.(runtime) || await runtime.runMain(config.mainAssemblyName!, []);
-    await options?.export?.(runtime) || await bindExports(runtime, config.mainAssemblyName!);
+    const runtime = await createRuntime(main, options);
     status = BootStatus.Booted;
     return runtime;
 }
@@ -65,4 +61,13 @@ export async function exit(code?: number, reason?: string): Promise<void> {
     try { main?.exit(code ?? 0, reason); }
     catch { }
     finally { status = BootStatus.Standby; }
+}
+
+async function createRuntime(main: ModuleAPI, opt?: BootOptions) {
+    const cfg = opt?.config ?? await buildConfig(opt?.resources ?? resources, opt?.root);
+    const runtime = await opt?.create?.(cfg) || await main.dotnet.withConfig(cfg).create();
+    if (opt?.import) await opt.import(runtime); else bindImports(runtime);
+    if (opt?.run) await opt.run(runtime); else await runtime.runMain(cfg.mainAssemblyName!, []);
+    if (opt?.export) await opt.export(runtime); else await bindExports(runtime, cfg.mainAssemblyName!);
+    return runtime;
 }
