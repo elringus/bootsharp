@@ -1,1 +1,1 @@
-node --expose-gc ./node_modules/vitest/vitest.mjs run --silent
+node ./node_modules/vitest/vitest.mjs run
