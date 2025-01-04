@@ -62,6 +62,7 @@ export async function boot(options?: BootOptions): Promise<RuntimeAPI> {
  *  @param reason Exit reason description (optional). */
 export async function exit(code?: number, reason?: string): Promise<void> {
     if (status !== BootStatus.Booted) throw Error("Failed to exit .NET runtime: not booted.");
-    main!.exit(code ?? 0, reason);
-    status = BootStatus.Standby;
+    try { main?.exit(code ?? 0, reason); }
+    catch { }
+    finally { status = BootStatus.Standby; }
 }

@@ -2,7 +2,7 @@ const lookup = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 export function decodeBase64(source: string): ArrayBuffer {
     if (typeof window === "object") return decodeWithBrowser(source);
-    if (typeof process !== "undefined") return decodeWithNode(source);
+    if (typeof process === "object") return decodeWithNode(source);
     return decodeNaive(source);
 }
 
