@@ -13,7 +13,7 @@ Install the NuGet package to C# project:
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     </PropertyGroup>
 

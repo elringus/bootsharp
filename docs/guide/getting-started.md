@@ -9,7 +9,7 @@ In `.csproj` file, set wasm runtime identifier and reference Bootsharp package:
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     </PropertyGroup>
 
