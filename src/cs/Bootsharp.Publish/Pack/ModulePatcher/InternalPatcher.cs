@@ -20,7 +20,6 @@ internal sealed class InternalPatcher (string dotnet, string runtime, string nat
             .Replace("import(", "import(/*@vite-ignore*//*webpackIgnore:true*/"), Encoding.UTF8);
 
         File.WriteAllText(runtime, File.ReadAllText(runtime, Encoding.UTF8)
-            .Replace("pt('WebAssembly resource does not have the expected content type \"application/wasm\", so falling back to slower ArrayBuffer instantiation.')", "true")
             .Replace("import(", "import(/*@vite-ignore*//*webpackIgnore:true*/"), Encoding.UTF8);
 
         File.WriteAllText(native, File.ReadAllText(native, Encoding.UTF8)

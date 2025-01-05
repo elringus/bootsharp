@@ -16,7 +16,16 @@ internal sealed class ModulePatcher (string buildDir, bool thread, bool embed, b
         if (thread) PatchThreading();
         if (embed) new InternalPatcher(dotnet, runtime, native).Patch();
         if (trim) RemoveMaps();
+        RemoveWasmNag();
         CopyInternals();
+    }
+
+    private void RemoveWasmNag ()
+    {
+        // Removes "WebAssembly resource does not have the expected content type..." warning.
+
+        File.WriteAllText(dotnet, File.ReadAllText(dotnet, Encoding.UTF8)
+            .Replace("w('WebAssembly resource does not have the expected content type \"application/wasm\", so falling back to slower ArrayBuffer instantiation.')", "true"));
     }
 
     private void PatchThreading ()

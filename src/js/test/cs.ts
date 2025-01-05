@@ -3,13 +3,12 @@ import sid, { Test as SidTest } from "./cs/Test/bin/sideload";
 import assert from "node:assert";
 import { resolve, parse, basename } from "node:path";
 import { readdirSync, readFileSync, existsSync } from "node:fs";
-import { pathToFileURL } from "node:url";
 
 export const embedded = emb;
 export const sideload = sid;
 export const EmbeddedTest = EmbTest;
 export const SideloadTest = SidTest;
-export const root = pathToFileURL("./test/cs/Test/bin/sideload/bin").toString();
+export const root = "./test/cs/Test/bin/sideload/bin";
 
 export * from "./cs/Test/bin/sideload";
 

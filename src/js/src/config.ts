@@ -7,36 +7,58 @@ import { decodeBase64 } from "./decoder";
  *  @param root When specified, assumes boot resources are side-loaded from the specified root. */
 export async function buildConfig(resources: BootResources, root?: string): Promise<RuntimeConfig> {
     const embed = root == null;
-    const main = embed ? await getMain() : undefined;
-    const native = embed ? await getNative() : undefined;
-    const runtime = embed ? await getRuntime() : undefined;
+    const assets: AssetEntry[] = await Promise.all([
+        resolveWasm(),
+        resolveModule("dotnet.js", "js-module-dotnet", embed ? getMain : undefined),
+        resolveModule("dotnet.native.js", "js-module-native", embed ? getNative : undefined),
+        resolveModule("dotnet.runtime.js", "js-module-runtime", embed ? getRuntime : undefined),
+        ...resources.assemblies.map(resolveAssembly)
+    ]);
     const mt = !embed && (await import("./dotnet.g")).mt;
-    return {
-        mainAssemblyName: resources.entryAssemblyName,
-        assets: [
-            buildAsset({ name: "dotnet.js" }, "js-module-dotnet", main, false),
-            buildAsset({ name: "dotnet.native.js" }, "js-module-native", native, false),
-            buildAsset({ name: "dotnet.runtime.js" }, "js-module-runtime", runtime, false),
-            buildAsset({ name: "dotnet.native.worker.js" }, "js-module-threads", undefined, true),
-            buildAsset(resources.wasm, "dotnetwasm", undefined, false),
-            ...resources.assemblies.map(a => buildAsset(a, "assembly"))
-        ]
-    };
+    if (mt) assets.push(await resolveModule("dotnet.native.worker.mjs", "js-module-threads"));
+    return { assets, mainAssemblyName: resources.entryAssemblyName };
 
-    function buildAsset(res: BinaryResource, behavior: AssetBehaviors,
-        module?: unknown, optional?: boolean): AssetEntry {
-        const url = `${root}/${res.name}`;
+    async function resolveWasm(): Promise<AssetEntry> {
         return {
-            // Due to dotnet bug resolvedUrl is not transferred to worker before the runtime
-            // is initialized, hence we're assigning URL to the name for the JS and WASM modules
-            // (assemblies are not affected). This is only relevant for multithreading mode.
-            // TODO: Revise after dotnet fix https://github.com/dotnet/runtime/issues/93133.
-            name: (!mt || res.content || behavior === "assembly") ? res.name : url,
-            resolvedUrl: (res.content || !root) ? undefined : url,
-            buffer: typeof res.content === "string" ? decodeBase64(res.content) : res.content,
-            moduleExports: module,
-            isOptional: optional,
+            name: resources.wasm.name,
+            buffer: await resolveBuffer(resources.wasm),
+            behavior: "dotnetwasm"
+        };
+    }
+
+    async function resolveModule(name: string, behavior: AssetBehaviors,
+        embed?: () => Promise<unknown>): Promise<AssetEntry> {
+        return {
+            name,
+            moduleExports: embed ? await embed() : undefined,
             behavior
         };
+    }
+
+    async function resolveAssembly(res: BinaryResource): Promise<AssetEntry> {
+        return {
+            name: res.name,
+            buffer: await resolveBuffer(res),
+            behavior: "assembly"
+        };
+    }
+
+    async function resolveBuffer(res: BinaryResource): Promise<ArrayBuffer> {
+        if (typeof res.content === "string") return decodeBase64(res.content);
+        if (res.content !== undefined) return <never>res.content.buffer;
+        if (!embed) return fetchBuffer(res);
+        throw Error(`Failed to resolve '${res.name}' boot resource.`);
+    }
+
+    async function fetchBuffer(res: BinaryResource): Promise<ArrayBuffer> {
+        const path = `${root}/${res.name}`;
+        if (typeof window === "object")
+            return (await fetch(path)).arrayBuffer();
+        if (typeof process === "object") {
+            const { readFile } = await import("fs/promises");
+            const bin = await readFile(path);
+            return <ArrayBuffer>bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.byteLength);
+        }
+        throw Error(`Failed to fetch '${path}' boot resource: unsupported runtime.`);
     }
 }

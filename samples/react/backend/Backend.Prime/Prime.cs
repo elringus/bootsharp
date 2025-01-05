@@ -5,7 +5,7 @@ namespace Backend.Prime;
 // Implementation of the computer service that compute prime numbers.
 // Injected in the application entry point assembly (Backend.WASM).
 
-public class Prime(IPrimeUI ui) : IComputer
+public class Prime (IPrimeUI ui) : IComputer
 {
     private static readonly SemaphoreSlim semaphore = new(0);
     private readonly Stopwatch watch = new();

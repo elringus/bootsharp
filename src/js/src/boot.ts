@@ -16,7 +16,7 @@ export enum BootStatus {
 
 /** Boot process configuration. */
 export type BootOptions = {
-    /** Path to directory where boot resources are hosted (eg, <code>/bin</code>). */
+    /** Absolute path to the directory where boot resources are hosted (eg, <code>/bin</code>). */
     readonly root?: string;
     /** Resources required to boot .NET runtime. */
     readonly resources?: BootResources;
@@ -48,13 +48,7 @@ export async function boot(options?: BootOptions): Promise<RuntimeAPI> {
     if (status === BootStatus.Booting) throw Error("Failed to boot .NET runtime: already booting.");
     status = BootStatus.Booting;
     main = await getMain(options?.root);
-    const config = options?.config ?? await buildConfig(options?.resources ?? resources, options?.root);
-    const runtime = await options?.create?.(config) || await main.dotnet.withConfig(config).create();
-    // TODO: Remove once https://github.com/dotnet/runtime/issues/92713 fix is merged.
-    (<{ runtimeKeepalivePush: () => void }><unknown>runtime.Module).runtimeKeepalivePush();
-    await options?.import?.(runtime) || bindImports(runtime);
-    await options?.run?.(runtime) || await runtime.runMain(config.mainAssemblyName!, []);
-    await options?.export?.(runtime) || await bindExports(runtime, config.mainAssemblyName!);
+    const runtime = await createRuntime(main, options);
     status = BootStatus.Booted;
     return runtime;
 }
@@ -64,6 +58,16 @@ export async function boot(options?: BootOptions): Promise<RuntimeAPI> {
  *  @param reason Exit reason description (optional). */
 export async function exit(code?: number, reason?: string): Promise<void> {
     if (status !== BootStatus.Booted) throw Error("Failed to exit .NET runtime: not booted.");
-    main!.exit(code ?? 0, reason);
-    status = BootStatus.Standby;
+    try { main?.exit(code ?? 0, reason); }
+    catch { }
+    finally { status = BootStatus.Standby; }
+}
+
+async function createRuntime(main: ModuleAPI, opt?: BootOptions) {
+    const cfg = opt?.config ?? await buildConfig(opt?.resources ?? resources, opt?.root);
+    const runtime = await opt?.create?.(cfg) || await main.dotnet.withConfig(cfg).create();
+    if (opt?.import) await opt.import(runtime); else bindImports(runtime);
+    if (opt?.run) await opt.run(runtime); else await runtime.runMain(cfg.mainAssemblyName!, []);
+    if (opt?.export) await opt.export(runtime); else await bindExports(runtime, cfg.mainAssemblyName!);
+    return runtime;
 }

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
@@ -9,14 +9,13 @@
         <TrimmerSingleWarn>false</TrimmerSingleWarn>
         <BootsharpBundleCommand>npx rollup index.js -d ./ -f es -g process,module --output.preserveModules --entryFileNames [name].mjs</BootsharpBundleCommand>
         <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
-        <RunAOTCompilation>true</RunAOTCompilation>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="../Test.Types/Test.Types.csproj"/>
         <PackageReference Include="Bootsharp" Version="*-*"/>
         <PackageReference Include="Bootsharp.Inject" Version="*-*"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0"/>
     </ItemGroup>
 
 </Project>
