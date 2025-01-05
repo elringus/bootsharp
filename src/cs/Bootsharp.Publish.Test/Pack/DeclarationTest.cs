@@ -447,12 +447,12 @@ public class DeclarationTest : PackTest
                 export interface Item {
                 }
                 export interface Container {
-                    items: Map<string, n.Item>;
+                    items: Record<string, n.Item>;
                 }
             }
 
             export namespace n.Class {
-                export function combine(items: Map<string, n.Item>): n.Container;
+                export function combine(items: Record<string, n.Item>): n.Container;
             }
             """);
     }
@@ -471,12 +471,12 @@ public class DeclarationTest : PackTest
                 export interface Item {
                 }
                 export interface Container {
-                    items: Map<string, n.Item>;
+                    items: Record<string, n.Item>;
                 }
             }
 
             export namespace n.Class {
-                export function combine(items: Map<string, n.Item>): n.Container;
+                export function combine(items: Record<string, n.Item>): n.Container;
             }
             """);
     }
