@@ -15,8 +15,8 @@ export async function buildConfig(resources: BootResources, root?: string): Prom
         ...resources.assemblies.map(resolveAssembly)
     ]);
     const mt = !embed && (await import("./dotnet.g")).mt;
-    if (mt) assets.push(await resolveModule("dotnet.native.worker.js", "js-module-threads"));
-    return { mainAssemblyName: resources.entryAssemblyName, assets };
+    if (mt) assets.push(await resolveModule("dotnet.native.worker.mjs", "js-module-threads"));
+    return { assets, mainAssemblyName: resources.entryAssemblyName };
 
     async function resolveWasm(): Promise<AssetEntry> {
         return {

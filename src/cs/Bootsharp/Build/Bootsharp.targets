@@ -127,7 +127,7 @@
             <BootsharpDotNetFile Include="$(BootsharpBuildDirectory)/dotnet.js"/>
             <BootsharpRuntimeFile Include="$(BootsharpBuildDirectory)/dotnet.runtime.js"/>
             <BootsharpNativeFile Include="$(BootsharpBuildDirectory)/dotnet.native.js"/>
-            <BootsharpWorkerFile Include="$(BootsharpBuildDirectory)/dotnet.native.worker.js"/>
+            <BootsharpWorkerFile Include="$(BootsharpBuildDirectory)/dotnet.native.worker.mjs"/>
         </ItemGroup>
         <RemoveDir Directories="$(BootsharpBinariesDirectory);$(BootsharpTypesDirectory)"/>
         <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'" SourceFiles="@(BootsharpWasmFiles)"

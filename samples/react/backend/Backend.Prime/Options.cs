@@ -1,3 +1,3 @@
 namespace Backend.Prime;
 
-public record Options(int Complexity, bool Multithreading);
+public record Options (int Complexity, bool Multithreading);
