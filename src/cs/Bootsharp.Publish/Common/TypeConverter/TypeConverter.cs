@@ -56,7 +56,7 @@ internal sealed class TypeConverter (Preferences prefs)
     {
         var keyType = type.GenericTypeArguments[0];
         var valueType = type.GenericTypeArguments[1];
-        return $"Map<{Convert(keyType)}, {Convert(valueType)}>";
+        return $"Record<{Convert(keyType)}, {Convert(valueType)}>";
     }
 
     private string ConvertAwaitable (Type type)
