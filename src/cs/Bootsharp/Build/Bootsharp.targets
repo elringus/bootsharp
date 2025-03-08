@@ -45,6 +45,8 @@
                 <DisableDependencyInjectionDynamicEngine>true</DisableDependencyInjectionDynamicEngine>
                 <NullabilityInfoContextSupport>false</NullabilityInfoContextSupport>
                 <DynamicCodeSupport>false</DynamicCodeSupport>
+                <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
+                <StackTraceSupport>false</StackTraceSupport>
             </PropertyGroup>
         </When>
     </Choose>
