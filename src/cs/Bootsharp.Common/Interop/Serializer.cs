@@ -41,7 +41,7 @@ public static class Serializer
     {
         if (Options.TypeInfoResolver is null)
             throw new Error("Serializer info resolver is not assigned.");
-        return Options.TypeInfoResolver.GetTypeInfo(type, Options) ??
+        return Options.GetTypeInfo(type) ??
                throw new Error($"Failed to resolve serializer info for '{type}'.");
     }
 }

@@ -21,7 +21,7 @@ public class SerializerTest
             TypeInfoResolver = null
         };
         Assert.Contains("Serializer info resolver is not assigned",
-            Assert.Throws<Error>(() => Serialize("", null)).Message);
+            Assert.Throws<Error>(() => Serialize(new MockRecord([new("foo"), new("bar")]), typeof(MockRecord))).Message);
     }
 
     [Fact]
@@ -30,15 +30,15 @@ public class SerializerTest
         Options = new JsonSerializerOptions(JsonSerializerDefaults.Web) {
             TypeInfoResolver = new MockResolver()
         };
-        Assert.Contains("Failed to resolve serializer info",
-            Assert.Throws<Error>(() => Serialize("", null)).Message);
+        Assert.Contains("JsonTypeInfo metadata for type 'Bootsharp.Common.Test.Mocks+MockRecord' was not provided",
+            Assert.Throws<NotSupportedException>(() => Serialize(new MockRecord([new("foo"), new("bar")]), typeof(MockRecord))).Message);
     }
 
     [Fact]
     public void CanSerialize ()
     {
         Assert.Equal("""{"items":[{"id":"foo"},{"id":"bar"}]}""",
-            Serialize(new MockRecord(new MockItem[] { new("foo"), new("bar") }), typeof(MockRecord)));
+            Serialize(new MockRecord([new("foo"), new("bar")]), typeof(MockRecord)));
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class SerializerTest
     [Fact]
     public void CanDeserialize ()
     {
-        Assert.Equal(new MockItem[] { new("foo"), new("bar") },
+        Assert.Equal([new("foo"), new("bar")],
             Deserialize<MockRecord>("""{"items":[{"id":"foo"},{"id":"bar"}]}""").Items);
     }
 
