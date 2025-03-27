@@ -28,7 +28,7 @@
 /// </remarks>
 public static class Proxies
 {
-    private static readonly Dictionary<string, Delegate> map = new();
+    private static readonly Dictionary<string, Delegate> map = new(StringComparer.Ordinal);
 
     /// <summary>
     /// Maps specified interop delegate to the specified ID.
