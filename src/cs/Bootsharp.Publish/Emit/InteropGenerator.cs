@@ -72,7 +72,7 @@ internal sealed class InteropGenerator
                 : $"global::{inv.Space}.{inv.Name}({args})";
             if (wait) body = $"await {body}";
             if (inv.ReturnValue.Instance) body = $"global::Bootsharp.Instances.Register({body})";
-            else if (inv.ReturnValue.Serialized) body = $"Serialize({body}, {BuildSerdeType(inv.ReturnValue)})";
+            else if (inv.ReturnValue.Serialized) body = $"Serialize({body}, {BuildTypeInfo(inv.ReturnValue)})";
             return body;
         }
 
@@ -83,7 +83,7 @@ internal sealed class InteropGenerator
                 var (_, _, full) = BuildInteropInterfaceImplementationName(arg.Value.InstanceType, InterfaceKind.Import);
                 return $"new global::{full}({arg.Name})";
             }
-            if (arg.Value.Serialized) return $"Deserialize<{arg.Value.TypeSyntax}>({arg.Name})";
+            if (arg.Value.Serialized) return $"Deserialize({arg.Name}, {BuildTypeInfo(arg.Value)})";
             return arg.Name;
         }
     }
@@ -110,13 +110,13 @@ internal sealed class InteropGenerator
                 return $"({BuildSyntax(method.ReturnValue.InstanceType)})new global::{full}({body})";
             }
             if (!method.ReturnValue.Serialized) return body;
-            return $"Deserialize<{StripTaskSyntax(method.ReturnValue)}>({body})";
+            return $"Deserialize({body}, {BuildTypeInfo(method.ReturnValue)})";
         }
 
         string BuildBodyArg (ArgumentMeta arg)
         {
             if (arg.Value.Instance) return $"global::Bootsharp.Instances.Register({arg.Name})";
-            if (arg.Value.Serialized) return $"Serialize({arg.Name}, {BuildSerdeType(arg.Value)})";
+            if (arg.Value.Serialized) return $"Serialize({arg.Name}, {BuildTypeInfo(arg.Value)})";
             return arg.Name;
         }
     }
@@ -170,15 +170,8 @@ internal sealed class InteropGenerator
         return value.Async && (value.Serialized || ShouldMarshalAsAny(value.Type) || value.Instance);
     }
 
-    private string BuildSerdeType (ValueMeta value)
+    private static string BuildTypeInfo (ValueMeta meta)
     {
-        return $"typeof({StripTaskSyntax(value)})".Replace("?", "");
-    }
-
-    private string StripTaskSyntax (ValueMeta value)
-    {
-        return value.Async
-            ? value.TypeSyntax[36..^1]
-            : value.TypeSyntax;
+        return $"SerializerContext.Default.{meta.TypeInfo}";
     }
 }

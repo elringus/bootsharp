@@ -62,7 +62,7 @@ public class SerializerTest : EmitTest
             WithClass("n", "[JSInvokable] public static Baz? GetBaz () => default;"));
         Execute();
         Assert.Equal(2, Matches("JsonSerializable").Count);
-        Contains("[JsonSerializable(typeof(global::n.Baz)");
+        Contains("[JsonSerializable(typeof(global::n.Baz?)");
         Contains("[JsonSerializable(typeof(global::y.Struct)");
     }
 }

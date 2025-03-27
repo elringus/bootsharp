@@ -168,6 +168,12 @@ internal static class GlobalType
         return inter.FullName.Replace("Bootsharp.Generated.Exports.", "").Replace(".", "_");
     }
 
+    public static string BuildTypeInfo (Type type)
+    {
+        var syntax = IsTaskWithResult(type, out var result) ? BuildSyntax(result) : BuildSyntax(type);
+        return $"X{HashStable(syntax):X}";
+    }
+
     public static string BuildSyntax (Type type) => BuildSyntax(type, null, false);
 
     public static string BuildSyntax (Type type, ParameterInfo info) => BuildSyntax(type, GetNullability(info));
@@ -192,6 +198,17 @@ internal static class GlobalType
         {
             if (type.Namespace is null) return type.Name;
             return $"{type.Namespace}.{type.Name}";
+        }
+    }
+
+    private static int HashStable (this string str)
+    {
+        unchecked
+        {
+            var hash = 17;
+            foreach (char c in str)
+                hash = (hash * 31) + c;
+            return hash;
         }
     }
 }

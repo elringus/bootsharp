@@ -206,10 +206,10 @@ public class InteropTest : EmitTest
             }
             """));
         Execute();
-        Contains("""Proxies.Set("Space.Class.FunA", (global::Space.Record a) => Deserialize<global::Space.Record>(Space_Class_FunA(Serialize(a, typeof(global::Space.Record)))));""");
-        Contains("""Proxies.Set("Space.Class.FunB", async (global::Space.Record?[]? a) => Deserialize<global::Space.Record?[]?>(await Space_Class_FunB(Serialize(a, typeof(global::Space.Record[])))));""");
-        Contains("JSExport] internal static global::System.String Space_Class_InvA (global::System.String a) => Serialize(global::Space.Class.InvA(Deserialize<global::Space.Record>(a)), typeof(global::Space.Record));");
-        Contains("JSExport] internal static async global::System.Threading.Tasks.Task<global::System.String?> Space_Class_InvB (global::System.String? a) => Serialize(await global::Space.Class.InvB(Deserialize<global::Space.Record?[]?>(a)), typeof(global::Space.Record[]));");
+        Contains("""Proxies.Set("Space.Class.FunA", (global::Space.Record a) => Deserialize(Space_Class_FunA(Serialize(a, SerializerContext.Default.X17062DAD)), SerializerContext.Default.X17062DAD));""");
+        Contains("""Proxies.Set("Space.Class.FunB", async (global::Space.Record?[]? a) => Deserialize(await Space_Class_FunB(Serialize(a, SerializerContext.Default.X6E3181CF)), SerializerContext.Default.X6E3181CF));""");
+        Contains("JSExport] internal static global::System.String Space_Class_InvA (global::System.String a) => Serialize(global::Space.Class.InvA(Deserialize(a, SerializerContext.Default.X17062DAD)), SerializerContext.Default.X17062DAD);");
+        Contains("JSExport] internal static async global::System.Threading.Tasks.Task<global::System.String?> Space_Class_InvB (global::System.String? a) => Serialize(await global::Space.Class.InvB(Deserialize(a, SerializerContext.Default.X6E3181CF)), SerializerContext.Default.X6E3181CF);");
         Contains("""JSImport("Space.Class.funASerialized", "Bootsharp")] internal static partial global::System.String Space_Class_FunA (global::System.String a);""");
         Contains("""JSImport("Space.Class.funBSerialized", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.String?> Space_Class_FunB (global::System.String? a);""");
 

@@ -9,8 +9,6 @@ public static class Mocks
     public class Backend : IBackend;
     public class Frontend : IFrontend;
 
-    public enum MockEnum { Foo, Bar }
     public record MockItem (string Id);
-    public record MockItemWithEnum (MockEnum? Enum);
     public record MockRecord (IReadOnlyList<MockItem> Items);
 }

@@ -20,6 +20,10 @@ internal sealed record ValueMeta
     /// </summary>
     public required string JSTypeSyntax { get; init; }
     /// <summary>
+    /// Serialization info handle for the type.
+    /// </summary>
+    public required string TypeInfo { get; init; }
+    /// <summary>
     /// Whether the value is optional/nullable.
     /// </summary>
     public required bool Nullable { get; init; }
