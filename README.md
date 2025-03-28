@@ -47,6 +47,60 @@ In contrast to solutions like Blazor, which attempt to bring the entire web plat
 
 Bootsharp itself is built on top of [System.Runtime.InteropServices.JavaScript](https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop?view=aspnetcore-8.0) introduced in .NET 7.
 
-If you're looking to expose simple library API to JavaScript and don't need type declarations, Bootsharp would probably be an overkill. However, .NET's interop is low-level, doesn't support passing custom types by value and requires lots of boilerplate to author the bindings. It's impractical for large API surfaces.
+If you need to expose a simple library API to JavaScript and don't require type declarations, Bootsharp is probably overkill. However, .NET's interop is low-level, lacks support for passing custom types by value, and requires extensive boilerplate to define bindings, making it impractical for large API surfaces.
 
-With Bootsharp, you'll be able to just feed it your domain-specific interfaces and use them seamlessly from the other side, as if they were originally authored in TypeScript (and vice-versa). Additionally, Bootsharp provides an option to bundle all the binaries into single-file ES module and patches .NET's internal JavaScript code to make it compatible with constrained runtime environments, such as VS Code [web extensions](https://code.visualstudio.com/api/extension-guides/web-extensions).
+With Bootsharp, you can simply provide your domain-specific interfaces and use them seamlessly on the other side, as if they were originally authored in TypeScript (and vice versa). This ensures a clear separation of concerns: your domain codebase won't be aware of the JavaScript environment—no need to annotate methods for interop or specify marshalling hints for arguments.
+
+For example, consider the following abstract domain code:
+
+```cs
+public record Data (string Info, IReadOnlyList<Item> Items);
+public record Result (View Header, View Content);
+public interface IProvider { Data GetData (); }
+public interface IGenerator { Result Generate (); }
+
+public class Generator (IProvider provider) : IGenerator
+{
+    public Result Generate ()
+    {
+        var data = provider.GetData();
+        // Process the data and generate result.
+        return result;
+    }
+}
+```
+— the code doesn't use any JavaScript-specific APIs, making it fully testable and reusable. To expose it to JavaScript, all we need to do is add the following to `Program.cs` in a separate project for the WASM target:
+
+```cs
+using Bootsharp;
+using Bootsharp.Inject;
+using Microsoft.Extensions.DependencyInjection;
+
+[assembly: JSImport(typeof(IProvider))]
+[assembly: JSExport(typeof(IGenerator))]
+
+// Bootsharp auto-injects implementation for 'IProvider'
+// from JS and exposes 'Generator' APIs to JS.
+new ServiceCollection()
+    .AddBootsharp()
+    .AddSingleton<IGenerator, Generator>()
+    .BuildServiceProvider()
+    .RunBootsharp();
+```
+
+— we can now provide implementation for `IProvider` and use `Generator` in JavaScript/TypeScript:
+
+```ts
+import bootsharp, { Provider, Generator } from "bootsharp";
+
+// Implement 'IProvider'.
+Provider.getData = () => ({
+    info: "...",
+    items: []
+});
+
+await bootsharp.boot();
+
+// Use 'Generator'.
+const result = Generator.generate();
+```
