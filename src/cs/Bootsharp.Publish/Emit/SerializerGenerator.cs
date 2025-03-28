@@ -50,7 +50,7 @@ internal sealed class SerializerGenerator
 
     private void CollectFromValue (ValueMeta meta)
     {
-        attributes.Add(BuildAttribute(meta.TypeSyntax, meta.TypeInfo));
+        attributes.Add(BuildAttribute(meta.Type));
     }
 
     private void CollectDuplicates (SolutionInspection inspection)
@@ -58,11 +58,13 @@ internal sealed class SerializerGenerator
         var names = new HashSet<string>();
         foreach (var type in inspection.Crawled.DistinctBy(t => t.FullName))
             if (ShouldSerialize(type) && !names.Add(type.Name))
-                attributes.Add(BuildAttribute(BuildSyntax(type), BuildTypeInfo(type)));
+                attributes.Add(BuildAttribute(type));
     }
 
-    private static string BuildAttribute (string typeSyntax, string typeInfo)
+    private static string BuildAttribute (Type type)
     {
-        return $"[JsonSerializable(typeof({typeSyntax}), TypeInfoPropertyName = \"{typeInfo}\")]";
+        var syntax = IsTaskWithResult(type, out var result) ? BuildSyntax(result) : BuildSyntax(type);
+        var info = BuildTypeInfo(type);
+        return $"[JsonSerializable(typeof({syntax}), TypeInfoPropertyName = \"{info}\")]";
     }
 }
