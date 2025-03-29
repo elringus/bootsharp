@@ -35,6 +35,7 @@ internal sealed class MethodInspector (Preferences prefs, TypeConverter converte
         Type = param.ParameterType,
         TypeSyntax = BuildSyntax(param.ParameterType, param),
         JSTypeSyntax = converter.ToTypeScript(param.ParameterType, GetNullability(param)),
+        TypeInfo = BuildTypeInfo(param.ParameterType),
         Nullable = @return ? IsNullable(method) : IsNullable(param),
         Async = @return && IsTaskLike(param.ParameterType),
         Void = @return && IsVoid(param.ParameterType),

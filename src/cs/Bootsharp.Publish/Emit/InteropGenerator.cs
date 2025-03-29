@@ -7,7 +7,6 @@ namespace Bootsharp.Publish;
 /// </summary>
 internal sealed class InteropGenerator
 {
-    private readonly HashSet<string> proxies = [];
     private readonly HashSet<string> methods = [];
     private IReadOnlyCollection<InterfaceMeta> instanced = [];
 
@@ -19,7 +18,7 @@ internal sealed class InteropGenerator
             .Concat(inspection.InstancedInterfaces.SelectMany(i => i.Methods));
         foreach (var meta in @static) // @formatter:off
             if (meta.Kind == MethodKind.Invokable) AddExportMethod(meta);
-            else { AddProxy(meta); AddImportMethod(meta); } // @formatter:on
+            else { AddImportMethod(meta); AddImportProxy(meta); } // @formatter:on
         return
             $$"""
               #nullable enable
@@ -32,12 +31,6 @@ internal sealed class InteropGenerator
 
               public static partial class Interop
               {
-                  [System.Runtime.CompilerServices.ModuleInitializer]
-                  internal static void RegisterProxies ()
-                  {
-                      {{JoinLines(proxies, 2)}}
-                  }
-
                   [System.Runtime.InteropServices.JavaScript.JSExport] internal static void DisposeExportedInstance (int id) => global::Bootsharp.Instances.Dispose(id);
                   [System.Runtime.InteropServices.JavaScript.JSImport("disposeInstance", "Bootsharp")] internal static partial void DisposeImportedInstance (int id);
 
@@ -72,7 +65,7 @@ internal sealed class InteropGenerator
                 : $"global::{inv.Space}.{inv.Name}({args})";
             if (wait) body = $"await {body}";
             if (inv.ReturnValue.Instance) body = $"global::Bootsharp.Instances.Register({body})";
-            else if (inv.ReturnValue.Serialized) body = $"Serialize({body}, {BuildSerdeType(inv.ReturnValue)})";
+            else if (inv.ReturnValue.Serialized) body = $"Serialize({body}, {BuildTypeInfo(inv.ReturnValue)})";
             return body;
         }
 
@@ -83,40 +76,7 @@ internal sealed class InteropGenerator
                 var (_, _, full) = BuildInteropInterfaceImplementationName(arg.Value.InstanceType, InterfaceKind.Import);
                 return $"new global::{full}({arg.Name})";
             }
-            if (arg.Value.Serialized) return $"Deserialize<{arg.Value.TypeSyntax}>({arg.Name})";
-            return arg.Name;
-        }
-    }
-
-    private void AddProxy (MethodMeta method)
-    {
-        var instanced = TryInstanced(method, out _);
-        var id = $"{method.Space}.{method.Name}";
-        var args = string.Join(", ", method.Arguments.Select(arg => $"{arg.Value.TypeSyntax} {arg.Name}"));
-        if (instanced) args = args = PrependInstanceIdArgTypeAndName(args);
-        var wait = ShouldWait(method.ReturnValue);
-        var async = wait ? "async " : "";
-        proxies.Add($"""Proxies.Set("{id}", {async}({args}) => {BuildBody()});""");
-
-        string BuildBody ()
-        {
-            var args = string.Join(", ", method.Arguments.Select(BuildBodyArg));
-            if (instanced) args = PrependInstanceIdArgName(args);
-            var body = $"{BuildMethodName(method)}({args})";
-            if (wait) body = $"await {body}";
-            if (method.ReturnValue.Instance)
-            {
-                var (_, _, full) = BuildInteropInterfaceImplementationName(method.ReturnValue.InstanceType, InterfaceKind.Import);
-                return $"({BuildSyntax(method.ReturnValue.InstanceType)})new global::{full}({body})";
-            }
-            if (!method.ReturnValue.Serialized) return body;
-            return $"Deserialize<{StripTaskSyntax(method.ReturnValue)}>({body})";
-        }
-
-        string BuildBodyArg (ArgumentMeta arg)
-        {
-            if (arg.Value.Instance) return $"global::Bootsharp.Instances.Register({arg.Name})";
-            if (arg.Value.Serialized) return $"Serialize({arg.Name}, {BuildSerdeType(arg.Value)})";
+            if (arg.Value.Serialized) return $"Deserialize({arg.Name}, {BuildTypeInfo(arg.Value)})";
             return arg.Name;
         }
     }
@@ -130,6 +90,40 @@ internal sealed class InteropGenerator
         var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{endpoint}", "Bootsharp")]""";
         var marsh = MarshalAmbiguous(method.ReturnValue, true);
         methods.Add($"{attr} {marsh}internal static partial {@return} {BuildMethodName(method)} ({args});");
+    }
+
+    private void AddImportProxy (MethodMeta method)
+    {
+        var instanced = TryInstanced(method, out _);
+        var name = $"Proxy_{BuildMethodName(method)}";
+        var @return = method.ReturnValue.TypeSyntax;
+        var args = string.Join(", ", method.Arguments.Select(arg => $"{arg.Value.TypeSyntax} {arg.Name}"));
+        if (instanced) args = args = PrependInstanceIdArgTypeAndName(args);
+        var wait = ShouldWait(method.ReturnValue);
+        var async = wait ? "async " : "";
+        methods.Add($"public static {async}{@return} {name}({args}) => {BuildBody()};");
+
+        string BuildBody ()
+        {
+            var args = string.Join(", ", method.Arguments.Select(BuildBodyArg));
+            if (instanced) args = PrependInstanceIdArgName(args);
+            var body = $"{BuildMethodName(method)}({args})";
+            if (wait) body = $"await {body}";
+            if (method.ReturnValue.Instance)
+            {
+                var (_, _, full) = BuildInteropInterfaceImplementationName(method.ReturnValue.InstanceType, InterfaceKind.Import);
+                return $"({BuildSyntax(method.ReturnValue.InstanceType)})new global::{full}({body})";
+            }
+            if (!method.ReturnValue.Serialized) return body;
+            return $"Deserialize({body}, {BuildTypeInfo(method.ReturnValue)})";
+        }
+
+        string BuildBodyArg (ArgumentMeta arg)
+        {
+            if (arg.Value.Instance) return $"global::Bootsharp.Instances.Register({arg.Name})";
+            if (arg.Value.Serialized) return $"Serialize({arg.Name}, {BuildTypeInfo(arg.Value)})";
+            return arg.Name;
+        }
     }
 
     private string BuildValueType (ValueMeta value)
@@ -170,15 +164,8 @@ internal sealed class InteropGenerator
         return value.Async && (value.Serialized || ShouldMarshalAsAny(value.Type) || value.Instance);
     }
 
-    private string BuildSerdeType (ValueMeta value)
+    private static string BuildTypeInfo (ValueMeta meta)
     {
-        return $"typeof({StripTaskSyntax(value)})".Replace("?", "");
-    }
-
-    private string StripTaskSyntax (ValueMeta value)
-    {
-        return value.Async
-            ? value.TypeSyntax[36..^1]
-            : value.TypeSyntax;
+        return $"global::Bootsharp.Generated.SerializerContext.Default.{meta.TypeInfo}";
     }
 }

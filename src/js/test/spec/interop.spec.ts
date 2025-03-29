@@ -76,7 +76,7 @@ describe("while bootsharp is booted", () => {
         expect(actual).toStrictEqual(expected);
     });
     it("can transfer lists as arrays", async () => {
-        Test.Types.Registry.getRegistries = () => [{
+        Test.Types.RegistryProvider.getRegistries = () => [{
             wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }],
             tracked: []
         }];
@@ -93,7 +93,7 @@ describe("while bootsharp is booted", () => {
     it("can transfer dictionaries as maps", async () => {
         // ES6 Map doesn't natively support JSON serialization, so using plain objects.
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
-        Test.Types.Registry.getRegistryMap = () => (<never>{
+        Test.Types.RegistryProvider.getRegistryMap = () => (<never>{
             foo: { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] },
             bar: { wheeled: [{ id: "bar", maxSpeed: 15, wheelCount: 5 }] }
         });
@@ -123,7 +123,7 @@ describe("while bootsharp is booted", () => {
         expect(Test.Functions.echoColExprByte([1, 2])).toStrictEqual([1, 2]);
     });
     it("can invoke assigned JS functions in C#", () => {
-        Test.Types.Registry.getRegistry = () => ({
+        Test.Types.RegistryProvider.getRegistry = () => ({
             wheeled: [{ id: "", maxSpeed: 1, wheelCount: 0 }],
             tracked: [{ id: "", maxSpeed: 2, trackType: TrackType.Chain }]
         });

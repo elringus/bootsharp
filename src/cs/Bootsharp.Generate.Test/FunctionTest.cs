@@ -14,7 +14,12 @@ public static class FunctionTest
             """
             partial class Foo
             {
-                partial void Bar () => global::Bootsharp.Proxies.Get<global::System.Action>("Foo.Bar")();
+                partial void Bar () =>
+                #if BOOTSHARP_EMITTED
+                global::Bootsharp.Generated.Interop.Proxy_Foo_Bar();
+                #else
+                throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
+                #endif
             }
             """
         ],
@@ -37,7 +42,12 @@ public static class FunctionTest
 
             public static partial class Foo
             {
-                private static partial global::System.Threading.Tasks.Task BarAsync (global::System.String[] a, global::System.Int32? b) => global::Bootsharp.Proxies.Get<global::System.Func<global::System.String[], global::System.Int32?, global::System.Threading.Tasks.Task>>("File.Scoped.Foo.BarAsync")(a, b);
+                private static partial global::System.Threading.Tasks.Task BarAsync (global::System.String[] a, global::System.Int32? b) =>
+                #if BOOTSHARP_EMITTED
+                global::Bootsharp.Generated.Interop.Proxy_File_Scoped_Foo_BarAsync(a, b);
+                #else
+                throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
+                #endif
             }
             """
         ],
@@ -60,7 +70,12 @@ public static class FunctionTest
 
             public static partial class Foo
             {
-                private static partial global::System.Threading.Tasks.Task<global::System.String?> BarAsync () => global::Bootsharp.Proxies.Get<global::System.Func<global::System.Threading.Tasks.Task<global::System.String?>>>("File.Scoped.Foo.BarAsync")();
+                private static partial global::System.Threading.Tasks.Task<global::System.String?> BarAsync () =>
+                #if BOOTSHARP_EMITTED
+                global::Bootsharp.Generated.Interop.Proxy_File_Scoped_Foo_BarAsync();
+                #else
+                throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
+                #endif
             }
             """
         ],
@@ -77,7 +92,12 @@ public static class FunctionTest
             """
             partial class Foo
             {
-                partial void Bar (global::Record a) => global::Bootsharp.Proxies.Get<global::System.Action<global::Record>>("Foo.Bar")(a);
+                partial void Bar (global::Record a) =>
+                #if BOOTSHARP_EMITTED
+                global::Bootsharp.Generated.Interop.Proxy_Foo_Bar(a);
+                #else
+                throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
+                #endif
             }
             """
         ],
@@ -104,8 +124,18 @@ public static class FunctionTest
             {
                 partial class Foo
                 {
-                    public partial global::System.DateTime GetTime (global::System.DateTime time) => global::Bootsharp.Proxies.Get<global::System.Func<global::System.DateTime, global::System.DateTime>>("Classic.Foo.GetTime")(time);
-                    public partial global::System.Threading.Tasks.Task<global::System.DateTime> GetTimeAsync (global::System.DateTime time) => global::Bootsharp.Proxies.Get<global::System.Func<global::System.DateTime, global::System.Threading.Tasks.Task<global::System.DateTime>>>("Classic.Foo.GetTimeAsync")(time);
+                    public partial global::System.DateTime GetTime (global::System.DateTime time) =>
+                    #if BOOTSHARP_EMITTED
+                    global::Bootsharp.Generated.Interop.Proxy_Classic_Foo_GetTime(time);
+                    #else
+                    throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
+                    #endif
+                    public partial global::System.Threading.Tasks.Task<global::System.DateTime> GetTimeAsync (global::System.DateTime time) =>
+                    #if BOOTSHARP_EMITTED
+                    global::Bootsharp.Generated.Interop.Proxy_Classic_Foo_GetTimeAsync(time);
+                    #else
+                    throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
+                    #endif
                 }
             }
             """
@@ -125,7 +155,12 @@ public static class FunctionTest
 
             partial class Foo
             {
-                partial void Bar () => global::Bootsharp.Proxies.Get<global::System.Action>("Foo.Bar")();
+                partial void Bar () =>
+                #if BOOTSHARP_EMITTED
+                global::Bootsharp.Generated.Interop.Proxy_Foo_Bar();
+                #else
+                throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
+                #endif
             }
             """
         ]

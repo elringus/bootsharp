@@ -111,7 +111,8 @@ internal sealed class InterfaceGenerator
         var sig = $"public static {method.ReturnValue.TypeSyntax} {method.Name} ({sigArgs})";
         var args = string.Join(", ", method.Arguments.Select(a => a.Name));
         if (instanced.Contains(i)) args = PrependInstanceIdArgName(args);
-        return $"[{attr}] {sig} => {EmitProxyGetter(i, method)}({args});";
+        var name = $"Proxy_{method.Space.Replace('.', '_')}_{method.Name}";
+        return $"[{attr}] {sig} => global::Bootsharp.Generated.Interop.{name}({args});";
     }
 
     private string EmitImportMethodImplementation (InterfaceMeta i, MethodMeta method)
@@ -120,15 +121,5 @@ internal sealed class InterfaceGenerator
         var args = string.Join(", ", method.Arguments.Select(a => a.Name));
         if (instanced.Contains(i)) args = PrependInstanceIdArgName(args);
         return $"{method.ReturnValue.TypeSyntax} {i.TypeSyntax}.{method.InterfaceName} ({sigArgs}) => {method.Name}({args});";
-    }
-
-    private string EmitProxyGetter (InterfaceMeta i, MethodMeta method)
-    {
-        var func = method.ReturnValue.Void ? "global::System.Action" : "global::System.Func";
-        var syntax = method.Arguments.Select(a => a.Value.TypeSyntax).ToList();
-        if (instanced.Contains(i)) syntax.Insert(0, BuildSyntax(typeof(int)));
-        if (!method.ReturnValue.Void) syntax.Add(method.ReturnValue.TypeSyntax);
-        if (syntax.Count > 0) func = $"{func}<{string.Join(", ", syntax)}>";
-        return $"Proxies.Get<{func}>(\"{method.Space}.{method.Name}\")";
     }
 }

@@ -5,8 +5,8 @@ using Bootsharp.Inject;
 using Microsoft.Extensions.DependencyInjection;
 using Test.Types;
 
-[assembly: JSExport([typeof(IExportedStatic)])]
-[assembly: JSImport([typeof(IImportedStatic)])]
+[assembly: JSExport(typeof(IExportedStatic))]
+[assembly: JSImport(typeof(IImportedStatic), typeof(IRegistryProvider))]
 
 namespace Test;
 
@@ -21,6 +21,7 @@ public static partial class Program
             .AddBootsharp()
             .BuildServiceProvider()
             .RunBootsharp();
+        Registry.Provider = services.GetRequiredService<IRegistryProvider>();
         OnMainInvoked();
     }
 

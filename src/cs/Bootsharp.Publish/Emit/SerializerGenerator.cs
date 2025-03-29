@@ -11,49 +11,46 @@ internal sealed class SerializerGenerator
 
     public string Generate (SolutionInspection inspection)
     {
+        CollectAttributes(inspection);
+        CollectDuplicates(inspection);
+        if (attributes.Count == 0) return "";
+        return
+            $"""
+             using System.Text.Json.Serialization;
+
+             namespace Bootsharp.Generated;
+
+             {JoinLines(attributes, 0)}
+             [JsonSourceGenerationOptions(
+                 PropertyNameCaseInsensitive = true,
+                 PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+             )]
+             internal partial class SerializerContext : JsonSerializerContext;
+             """;
+    }
+
+    private void CollectAttributes (SolutionInspection inspection)
+    {
         var metas = inspection.StaticMethods
             .Concat(inspection.StaticInterfaces.SelectMany(i => i.Methods))
             .Concat(inspection.InstancedInterfaces.SelectMany(i => i.Methods));
         foreach (var meta in metas)
-            CollectAttributes(meta);
-        CollectDuplicates(inspection);
-        if (attributes.Count == 0) return "";
-        return
-            $$"""
-              using System.Text.Json;
-              using System.Text.Json.Serialization;
-
-              namespace Bootsharp.Generated;
-
-              {{JoinLines(attributes, 0)}}
-              internal partial class SerializerContext : JsonSerializerContext
-              {
-                  [System.Runtime.CompilerServices.ModuleInitializer]
-                  internal static void InjectTypeInfoResolver ()
-                  {
-                      Serializer.Options.TypeInfoResolverChain.Add(SerializerContext.Default);
-                  }
-              }
-              """;
+            CollectFromMethod(meta);
     }
 
-    private void CollectAttributes (MethodMeta method)
+    private void CollectFromMethod (MethodMeta method)
     {
         if (method.ReturnValue.Serialized)
-            CollectAttributes(method.ReturnValue.TypeSyntax, method.ReturnValue.Type);
+            CollectFromValue(method.ReturnValue);
         foreach (var arg in method.Arguments)
             if (arg.Value.Serialized)
-                CollectAttributes(arg.Value.TypeSyntax, arg.Value.Type);
+                CollectFromValue(arg.Value);
     }
 
-    private void CollectAttributes (string syntax, Type type)
+    private void CollectFromValue (ValueMeta meta)
     {
-        if (IsTaskWithResult(type, out var result))
-            // Task<> produces trim warnings, so hacking with a proxy tuple.
-            // Passing just the result may conflict with a type inferred by
-            // .NET's generator from other types (it throws on duplicates).
-            syntax = $"({BuildSyntax(result)}, byte)";
-        attributes.Add(BuildAttribute(syntax));
+        attributes.Add(BuildAttribute(meta.Type));
     }
 
     private void CollectDuplicates (SolutionInspection inspection)
@@ -61,13 +58,13 @@ internal sealed class SerializerGenerator
         var names = new HashSet<string>();
         foreach (var type in inspection.Crawled.DistinctBy(t => t.FullName))
             if (ShouldSerialize(type) && !names.Add(type.Name))
-                CollectAttributes(BuildSyntax(type), type);
+                attributes.Add(BuildAttribute(type));
     }
 
-    private static string BuildAttribute (string syntax)
+    private static string BuildAttribute (Type type)
     {
-        syntax = syntax.Replace("?", "");
-        var hint = $"X{syntax.GetHashCode():X}";
-        return $"[JsonSerializable(typeof({syntax}), TypeInfoPropertyName = \"{hint}\")]";
+        var syntax = IsTaskWithResult(type, out var result) ? BuildSyntax(result) : BuildSyntax(type);
+        var info = BuildTypeInfo(type);
+        return $"[JsonSerializable(typeof({syntax}), TypeInfoPropertyName = \"{info}\")]";
     }
 }

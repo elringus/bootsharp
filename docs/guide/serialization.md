@@ -96,23 +96,3 @@ import { Program } from "bootsharp";
 const map = Program.map(["foo", "bar"], [0, 7]);
 console.log(map.bar); // 7
 ```
-
-## Configuring Serialization Behaviour
-
-To override default JSON serializer options used for marshalling the interop data, use `Bootsharp.Serializer.Options` property before the program entry point is invoked:
-
-```csharp
-static class Program
-{
-    static Program () // Static constructor is invoked before 'Main'
-    {
-        // Make enums serialize as strings.
-        var converter = new JsonStringEnumConverter();
-        Bootsharp.Serializer.Options.Converters.Add(converter);
-    }
-
-    public static void Main () { }
-}
-```
-
-Refere to .NET docs for the available serialization options: https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/overview.

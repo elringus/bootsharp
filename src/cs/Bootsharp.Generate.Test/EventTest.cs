@@ -14,7 +14,12 @@ public static class EventTest
             """
             partial class Foo
             {
-                partial void OnBar () => global::Bootsharp.Proxies.Get<global::System.Action>("Foo.OnBar")();
+                partial void OnBar () =>
+                #if BOOTSHARP_EMITTED
+                global::Bootsharp.Generated.Interop.Proxy_Foo_OnBar();
+                #else
+                throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
+                #endif
             }
             """
         ],
@@ -33,7 +38,12 @@ public static class EventTest
 
             public static partial class Foo
             {
-                public static partial void OnBar (global::System.String a, global::System.Int32 b) => global::Bootsharp.Proxies.Get<global::System.Action<global::System.String, global::System.Int32>>("Space.Foo.OnBar")(a, b);
+                public static partial void OnBar (global::System.String a, global::System.Int32 b) =>
+                #if BOOTSHARP_EMITTED
+                global::Bootsharp.Generated.Interop.Proxy_Space_Foo_OnBar(a, b);
+                #else
+                throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
+                #endif
             }
             """
         ]

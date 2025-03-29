@@ -42,7 +42,7 @@ public class MockCompiler
         var tree = CSharpSyntaxTree.ParseText(text);
         var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
         var refs = GatherReferences(Path.GetDirectoryName(assemblyPath));
-        return CSharpCompilation.Create(assemblyName, new[] { tree }, refs, options);
+        return CSharpCompilation.Create(assemblyName, [tree], refs, options);
     }
 
     private static PortableExecutableReference[] GatherReferences (string directory)
