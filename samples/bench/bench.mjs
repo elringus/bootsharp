@@ -1,5 +1,6 @@
 import { init as initBootsharp } from "./bootsharp/init.mjs";
 import { init as initDotNet } from "./dotnet/init.mjs";
+import { init as initDotNetLLVM } from "./dotnet-llvm/init.mjs";
 import { init as initGo } from "./go/init.mjs";
 import { init as initRust } from "./rust/init.mjs";
 
@@ -11,9 +12,12 @@ import { init as initRust } from "./rust/init.mjs";
  */
 
 const lang = process.argv[2];
+const baseline = [];
 
 if (!lang || lang.toLowerCase() === "rust")
     await run("Rust", await initRust());
+if (!lang || lang.toLowerCase() === "llvm")
+    await run(".NET LLVM", await initDotNetLLVM());
 if (!lang || lang.toLowerCase() === "net")
     await run(".NET", await initDotNet());
 if (!lang || lang.toLowerCase() === "boot")
@@ -25,12 +29,12 @@ if (!lang || lang.toLowerCase() === "go")
  *  @param {Exports} exports */
 async function run(lang, exports) {
     console.log(`\n\nBenching ${lang}...\n`);
-    console.log(`Echo number: ${iterate(exports.echoNumber, 100, 3, 1000)}`);
-    console.log(`Echo struct: ${iterate(exports.echoStruct, 100, 3, 1000)}`);
-    console.log(`Fibonacci: ${iterate(() => exports.fi(33), 100, 3, 1)}`);
+    console.log(`Echo number: ${iterate(0, exports.echoNumber, 100, 3, 1000)}`);
+    console.log(`Echo struct: ${iterate(1, exports.echoStruct, 100, 3, 100)}`);
+    console.log(`Fibonacci: ${iterate(2, () => exports.fi(33), 100, 3, 1)}`);
 }
 
-function iterate(fn, iterations, warms, loops) {
+function iterate(idx, fn, iterations, warms, loops) {
     const results = [];
     warms *= -1;
     for (let i = warms; i < iterations; i++) {
@@ -38,7 +42,10 @@ function iterate(fn, iterations, warms, loops) {
         for (let l = 0; l < loops; l++) fn();
         if (i >= 0) results.push(performance.now() - start);
     }
-    return `${median(results).toFixed(2)} ms`;
+    let media = median(results);
+    if (baseline[idx]) return `${(media / baseline[idx]).toFixed(1)}`;
+    else baseline[idx] = media;
+    return `${media.toFixed(3)} ms`;
 }
 
 function median(numbers) {

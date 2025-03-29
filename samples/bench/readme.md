@@ -2,7 +2,7 @@
 
 1. Build each sub-dir (readme inside)
 2. Run `npm bench.mjs` to bench all
-3. Or `npm bench.mjs rust|net|boot|go`
+3. Or `npm bench.mjs rust|llvm|net|boot|go`
 
 ## Benches
 
@@ -10,12 +10,12 @@
 - `Echo Struct` — interop with JSON-serialized structs
 - `Fibonacci` — compute performance
 
-All results are in milliseconds; lower is better.
+All results are relative to the Rust baseline (lower is better).
 
 ## 2024 (.NET 9)
 
-|             | Rust    | .NET    | Bootsharp | Go      |
-|-------------|---------|---------|-----------|---------|
-| Echo Number | `00.02` | `00.42` | `00.47`   | `15.38` |
-| Echo Struct | `02.45` | `10.77` | `11.43`   | `52.84` |
-| Fibonacci   | `15.11` | `24.57` | `24.45`   | `66.38` |
+|             | Rust  | .NET LLVM | .NET   | Bootsharp | Go      |
+|-------------|-------|-----------|--------|-----------|---------|
+| Echo Number | `1.0` | `14.4`    | `21.1` | `25.7`    | `718.7` |
+| Echo Struct | `1.0` | `1.5`     | `4.3`  | `4.9`     | `20.8`  |
+| Fibonacci   | `1.0` | `1.1`     | `1.5`  | `1.6`     | `3.8`   |
