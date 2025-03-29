@@ -5,7 +5,7 @@ import { getNumber, getStruct } from "../fixtures.mjs";
 /** @returns {Promise<import("../bench.mjs").Exports>} */
 export async function init() {
     global.getNumber = getNumber;
-    global.getStruct = getStruct;
+    global.getStruct = () => JSON.stringify(getStruct());
 
     const bin = await WebAssembly.compile(fs.readFileSync("./go/main.wasm"));
     const go = new Go();
