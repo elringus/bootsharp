@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Configuration>Release</Configuration>
+        <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <RunAOTCompilation>true</RunAOTCompilation>
+        <OptimizationPreference>Speed</OptimizationPreference>
+        <WasmEnableSIMD>true</WasmEnableSIMD>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatform">
+            <_Parameter1>browser</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
+</Project>

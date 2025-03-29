@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Configuration>Release</Configuration>
+        <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+        <RunAOTCompilation>true</RunAOTCompilation>
+        <OptimizationPreference>Speed</OptimizationPreference>
+        <WasmEnableSIMD>true</WasmEnableSIMD>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bootsharp" Version="0.5.0-alpha.32"/>
+        <PackageReference Include="Bootsharp.Inject" Version="*-*"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="*"/>
+    </ItemGroup>
+
+</Project>
