@@ -1,0 +1,70 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0-browser</TargetFramework>
+        <Configuration>Release</Configuration>
+        <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+        <OutputType>Exe</OutputType>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <PublishTrimmed>true</PublishTrimmed>
+        <DotNetJsApi>true</DotNetJsApi>
+        <UseAppHost>false</UseAppHost>
+        <EmccFlags>$(EmccFlags) -O3</EmccFlags>
+        <UsingBrowserRuntimeWorkload>false</UsingBrowserRuntimeWorkload>
+        <UsingWasiRuntimeWorkload>false</UsingWasiRuntimeWorkload>
+        <UsingEmscriptenWorkload>true</UsingEmscriptenWorkload>
+        <ExecutableExtensionName Condition="'$([MSBuild]::IsOSPlatform(&quot;Windows&quot;))' == 'true'">.exe</ExecutableExtensionName>
+        <IlcHostPackagePath Condition="'$([MSBuild]::IsOSPlatform(&quot;Windows&quot;))' == 'true'">$(Pkgruntime_win-x64_Microsoft_DotNet_ILCompiler_LLVM)</IlcHostPackagePath>
+        <IlcHostPackagePath Condition="'$([MSBuild]::IsOSPlatform(&quot;Windows&quot;))' == 'false'">$(Pkgruntime_linux-x64_Microsoft_DotNet_ILCompiler_LLVM)</IlcHostPackagePath>
+        <RestoreAdditionalProjectSources>
+            https://api.nuget.org/v3/index.json;
+            https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-experimental/nuget/v3/index.json;
+        </RestoreAdditionalProjectSources>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.DotNet.ILCompiler.LLVM" Version="10.0.0-*"/>
+        <PackageReference Condition="'$([MSBuild]::IsOSPlatform(&quot;Windows&quot;))' == 'true'" Include="runtime.win-x64.Microsoft.DotNet.ILCompiler.LLVM" Version="10.0.0-*"/>
+        <PackageReference Condition="'$([MSBuild]::IsOSPlatform(&quot;Windows&quot;))' == 'false'" Include="runtime.linux-x64.Microsoft.DotNet.ILCompiler.LLVM" Version="10.0.0-*"/>
+        <EmscriptenEnvVars Include="DOTNET_EMSCRIPTEN_LLVM_ROOT=$(EmscriptenUpstreamBinPath)"/>
+        <EmscriptenEnvVars Include="DOTNET_EMSCRIPTEN_BINARYEN_ROOT=$(EmscriptenSdkToolsPath)"/>
+        <EmscriptenEnvVars Include="DOTNET_EMSCRIPTEN_NODE_JS=$(EmscriptenNodeBinPath)node$(ExecutableExtensionName)"/>
+        <EmscriptenEnvVars Include="EM_CACHE=$(EmscriptenCacheSdkCacheDir)"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <InvariantTimezone>true</InvariantTimezone>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <WasmEnableLegacyJsInterop>false</WasmEnableLegacyJsInterop>
+        <TrimMode>full</TrimMode>
+        <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
+        <_AggressiveAttributeTrimming>true</_AggressiveAttributeTrimming>
+        <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
+        <DebuggerSupport>false</DebuggerSupport>
+        <EnableCppCLIHostActivation>false</EnableCppCLIHostActivation>
+        <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+        <EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>false</EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>
+        <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
+        <_EnableConsumingManagedCodeFromNativeHosting>false</_EnableConsumingManagedCodeFromNativeHosting>
+        <EventSourceSupport>false</EventSourceSupport>
+        <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+        <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+        <UseNativeHttpHandler>true</UseNativeHttpHandler>
+        <UseSystemResourceKeys>true</UseSystemResourceKeys>
+        <StartupHookSupport>false</StartupHookSupport>
+        <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
+        <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+        <WasmEmitSourceMap>false</WasmEmitSourceMap>
+        <WasmNativeDebugSymbols>false</WasmNativeDebugSymbols>
+        <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+        <PredefinedCulturesOnly>true</PredefinedCulturesOnly>
+        <MetricsSupport>false</MetricsSupport>
+        <DisableDependencyInjectionDynamicEngine>true</DisableDependencyInjectionDynamicEngine>
+        <NullabilityInfoContextSupport>false</NullabilityInfoContextSupport>
+        <DynamicCodeSupport>false</DynamicCodeSupport>
+        <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
+        <StackTraceSupport>false</StackTraceSupport>
+        <DebugType>none</DebugType>
+    </PropertyGroup>
+
+</Project>
