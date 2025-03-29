@@ -62,7 +62,7 @@
         <PropertyGroup>
             <DefineConstants>$(DefineConstants);BOOTSHARP_EMITTED</DefineConstants>
         </PropertyGroup>
-        
+
         <!-- Pre-compile the solution, as we'll need to inspect the assemblies in the next step. -->
         <MSBuild Projects="$(MSBuildProjectFile)" Targets="BuildCompile" Properties="BootsharpSkip=true"/>
 
