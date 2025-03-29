@@ -12,7 +12,14 @@ internal sealed class PartialMethod (MethodDeclarationSyntax syntax)
     public string EmitSource (Compilation compilation)
     {
         method = compilation.GetSemanticModel(syntax.SyntaxTree).GetDeclaredSymbol(syntax)!;
-        return $"{syntax.Modifiers} {EmitSignature()} => {EmitBody()};";
+        return $"""
+                {syntax.Modifiers} {EmitSignature()} =>
+                    #if BOOTSHARP_EMITTED
+                    {EmitBody()};
+                    #else
+                    throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
+                    #endif
+                """;
     }
 
     private string EmitSignature ()
@@ -23,22 +30,15 @@ internal sealed class PartialMethod (MethodDeclarationSyntax syntax)
 
     private string EmitBody ()
     {
-        return $"""global::Bootsharp.Proxies.Get<{BuildGetterType()}>("{BuildId()}")({BuildArgs()})""";
+        return $"global::Bootsharp.Generated.Interop.{BuildName()}({BuildArgs()})";
     }
 
-    private string BuildId ()
+    private string BuildName ()
     {
-        if (method.ContainingNamespace.IsGlobalNamespace) return $"{method.ContainingType.Name}.{method.Name}";
-        return string.Join(".", [..method.ContainingNamespace.ConstituentNamespaces, method.ContainingType.Name, method.Name]);
-    }
-
-    private string BuildGetterType ()
-    {
-        if (method.ReturnsVoid && method.Parameters.Length == 0) return "global::System.Action";
-        var basename = method.ReturnsVoid ? "global::System.Action" : "global::System.Func";
-        var args = method.Parameters.Select(p => BuildSyntax(p.Type));
-        if (!method.ReturnsVoid) args = args.Append(BuildSyntax(method.ReturnType));
-        return $"{basename}<{string.Join(", ", args)}>";
+        var name = method.ContainingNamespace.IsGlobalNamespace
+            ? $"{method.ContainingType.Name}_{method.Name}"
+            : string.Join("_", [..method.ContainingNamespace.ConstituentNamespaces, method.ContainingType.Name, method.Name]);
+        return $"Proxy_{name.Replace(".", "_")}";
     }
 
     private string BuildArgs ()

@@ -5,8 +5,9 @@ using Bootsharp;
 
 namespace Test.Types;
 
-public partial class Registry
+public class Registry
 {
+    public static IRegistryProvider Provider { get; set; }
     public List<Wheeled> Wheeled { get; set; }
     public List<Tracked> Tracked { get; set; }
 
@@ -16,7 +17,7 @@ public partial class Registry
     [JSInvokable]
     public static float CountTotalSpeed ()
     {
-        var registry = GetRegistry();
+        var registry = Provider.GetRegistry();
         return registry.Tracked.Sum(t => t.MaxSpeed) +
                registry.Wheeled.Sum(t => t.MaxSpeed);
     }
@@ -25,24 +26,15 @@ public partial class Registry
     public static async Task<IReadOnlyList<Registry>> ConcatRegistriesAsync (IReadOnlyList<Registry> registries)
     {
         await Task.Delay(1);
-        return registries.Concat(GetRegistries()).ToArray();
+        return registries.Concat(Provider.GetRegistries()).ToArray();
     }
 
     [JSInvokable]
     public static async Task<IReadOnlyDictionary<string, Registry>> MapRegistriesAsync (IReadOnlyDictionary<string, Registry> map)
     {
         await Task.Delay(1);
-        return map.Concat(GetRegistryMap()).ToDictionary(kv => kv.Key, kv => kv.Value);
+        return map.Concat(Provider.GetRegistryMap()).ToDictionary(kv => kv.Key, kv => kv.Value);
     }
-
-    [JSFunction]
-    public static partial Registry GetRegistry ();
-
-    [JSFunction]
-    public static partial IReadOnlyList<Registry> GetRegistries ();
-
-    [JSFunction]
-    public static partial IReadOnlyDictionary<string, Registry> GetRegistryMap ();
 
     [JSInvokable]
     public static Vehicle GetWithEmptyId () => new() { Id = "" };

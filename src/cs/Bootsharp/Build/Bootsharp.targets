@@ -47,6 +47,7 @@
                 <DynamicCodeSupport>false</DynamicCodeSupport>
                 <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
                 <StackTraceSupport>false</StackTraceSupport>
+                <DebugType>none</DebugType>
             </PropertyGroup>
         </When>
     </Choose>
@@ -54,10 +55,14 @@
     <UsingTask TaskName="Bootsharp.Publish.BootsharpEmit" AssemblyFile="$(BootsharpPublishAssembly)"/>
     <UsingTask TaskName="Bootsharp.Publish.BootsharpPack" AssemblyFile="$(BootsharpPublishAssembly)"/>
 
-    <!-- A hack due to source generator compositing not possible. (https://github.com/dotnet/roslyn/issues/57239) -->
+    <!-- A hack due to source generator compositing not possible. (https://github.com/dotnet/roslyn/issues/57239#issuecomment-1585235740) -->
     <Target Name="BootsharpEmit" BeforeTargets="GenerateAdditionalSources"
             Condition="'$(BootsharpSkip)' != 'true' And Exists('$(OutputPath)')">
 
+        <PropertyGroup>
+            <DefineConstants>$(DefineConstants);BOOTSHARP_EMITTED</DefineConstants>
+        </PropertyGroup>
+        
         <!-- Pre-compile the solution, as we'll need to inspect the assemblies in the next step. -->
         <MSBuild Projects="$(MSBuildProjectFile)" Targets="BuildCompile" Properties="BootsharpSkip=true"/>
 

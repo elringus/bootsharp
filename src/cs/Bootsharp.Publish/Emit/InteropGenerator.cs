@@ -7,7 +7,6 @@ namespace Bootsharp.Publish;
 /// </summary>
 internal sealed class InteropGenerator
 {
-    private readonly HashSet<string> proxies = [];
     private readonly HashSet<string> methods = [];
     private IReadOnlyCollection<InterfaceMeta> instanced = [];
 
@@ -19,7 +18,7 @@ internal sealed class InteropGenerator
             .Concat(inspection.InstancedInterfaces.SelectMany(i => i.Methods));
         foreach (var meta in @static) // @formatter:off
             if (meta.Kind == MethodKind.Invokable) AddExportMethod(meta);
-            else { AddProxy(meta); AddImportMethod(meta); } // @formatter:on
+            else { AddImportMethod(meta); AddImportProxy(meta); } // @formatter:on
         return
             $$"""
               #nullable enable
@@ -32,12 +31,6 @@ internal sealed class InteropGenerator
 
               public static partial class Interop
               {
-                  [System.Runtime.CompilerServices.ModuleInitializer]
-                  internal static void RegisterProxies ()
-                  {
-                      {{JoinLines(proxies, 2)}}
-                  }
-
                   [System.Runtime.InteropServices.JavaScript.JSExport] internal static void DisposeExportedInstance (int id) => global::Bootsharp.Instances.Dispose(id);
                   [System.Runtime.InteropServices.JavaScript.JSImport("disposeInstance", "Bootsharp")] internal static partial void DisposeImportedInstance (int id);
 
@@ -88,15 +81,27 @@ internal sealed class InteropGenerator
         }
     }
 
-    private void AddProxy (MethodMeta method)
+    private void AddImportMethod (MethodMeta method)
+    {
+        var args = string.Join(", ", method.Arguments.Select(BuildSignatureArg));
+        if (TryInstanced(method, out _)) args = PrependInstanceIdArgTypeAndName(args);
+        var @return = BuildReturnValue(method.ReturnValue);
+        var endpoint = $"{method.JSSpace}.{method.JSName}Serialized";
+        var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{endpoint}", "Bootsharp")]""";
+        var marsh = MarshalAmbiguous(method.ReturnValue, true);
+        methods.Add($"{attr} {marsh}internal static partial {@return} {BuildMethodName(method)} ({args});");
+    }
+
+    private void AddImportProxy (MethodMeta method)
     {
         var instanced = TryInstanced(method, out _);
-        var id = $"{method.Space}.{method.Name}";
+        var name = $"Proxy_{BuildMethodName(method)}";
+        var @return = method.ReturnValue.TypeSyntax;
         var args = string.Join(", ", method.Arguments.Select(arg => $"{arg.Value.TypeSyntax} {arg.Name}"));
         if (instanced) args = args = PrependInstanceIdArgTypeAndName(args);
         var wait = ShouldWait(method.ReturnValue);
         var async = wait ? "async " : "";
-        proxies.Add($"""Proxies.Set("{id}", {async}({args}) => {BuildBody()});""");
+        methods.Add($"public static {async}{@return} {name}({args}) => {BuildBody()};");
 
         string BuildBody ()
         {
@@ -119,17 +124,6 @@ internal sealed class InteropGenerator
             if (arg.Value.Serialized) return $"Serialize({arg.Name}, {BuildTypeInfo(arg.Value)})";
             return arg.Name;
         }
-    }
-
-    private void AddImportMethod (MethodMeta method)
-    {
-        var args = string.Join(", ", method.Arguments.Select(BuildSignatureArg));
-        if (TryInstanced(method, out _)) args = PrependInstanceIdArgTypeAndName(args);
-        var @return = BuildReturnValue(method.ReturnValue);
-        var endpoint = $"{method.JSSpace}.{method.JSName}Serialized";
-        var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{endpoint}", "Bootsharp")]""";
-        var marsh = MarshalAmbiguous(method.ReturnValue, true);
-        methods.Add($"{attr} {marsh}internal static partial {@return} {BuildMethodName(method)} ({args});");
     }
 
     private string BuildValueType (ValueMeta value)
@@ -172,6 +166,6 @@ internal sealed class InteropGenerator
 
     private static string BuildTypeInfo (ValueMeta meta)
     {
-        return $"SerializerContext.Default.{meta.TypeInfo}";
+        return $"global::Bootsharp.Generated.SerializerContext.Default.{meta.TypeInfo}";
     }
 }

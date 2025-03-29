@@ -85,11 +85,11 @@ public class InterfacesTest : EmitTest
             {
                 public class JSImported : global::IImported
                 {
-                    [JSFunction] public static void Inv (global::System.String? a) => Proxies.Get<global::System.Action<global::System.String?>>("Bootsharp.Generated.Imports.JSImported.Inv")(a);
-                    [JSFunction] public static global::System.Threading.Tasks.Task InvAsync () => Proxies.Get<global::System.Func<global::System.Threading.Tasks.Task>>("Bootsharp.Generated.Imports.JSImported.InvAsync")();
-                    [JSFunction] public static global::Record? InvRecord () => Proxies.Get<global::System.Func<global::Record?>>("Bootsharp.Generated.Imports.JSImported.InvRecord")();
-                    [JSFunction] public static global::System.Threading.Tasks.Task<global::System.String> InvAsyncResult () => Proxies.Get<global::System.Func<global::System.Threading.Tasks.Task<global::System.String>>>("Bootsharp.Generated.Imports.JSImported.InvAsyncResult")();
-                    [JSFunction] public static global::System.String[] InvArray (global::System.Int32[] a) => Proxies.Get<global::System.Func<global::System.Int32[], global::System.String[]>>("Bootsharp.Generated.Imports.JSImported.InvArray")(a);
+                    [JSFunction] public static void Inv (global::System.String? a) => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_Inv(a);
+                    [JSFunction] public static global::System.Threading.Tasks.Task InvAsync () => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_InvAsync();
+                    [JSFunction] public static global::Record? InvRecord () => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_InvRecord();
+                    [JSFunction] public static global::System.Threading.Tasks.Task<global::System.String> InvAsyncResult () => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_InvAsyncResult();
+                    [JSFunction] public static global::System.String[] InvArray (global::System.Int32[] a) => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_InvArray(a);
 
                     void global::IImported.Inv (global::System.String? a) => Inv(a);
                     global::System.Threading.Tasks.Task global::IImported.InvAsync () => InvAsync();
@@ -138,8 +138,8 @@ public class InterfacesTest : EmitTest
                 {
                     ~JSImported() => global::Bootsharp.Generated.Interop.DisposeImportedInstance(_id);
 
-                    [JSFunction] public static void Fun (global::System.Int32 _id, global::System.String arg) => Proxies.Get<global::System.Action<global::System.Int32, global::System.String>>("Bootsharp.Generated.Imports.JSImported.Fun")(_id, arg);
-                    [JSEvent] public static void OnEvt (global::System.Int32 _id, global::System.String arg) => Proxies.Get<global::System.Action<global::System.Int32, global::System.String>>("Bootsharp.Generated.Imports.JSImported.OnEvt")(_id, arg);
+                    [JSFunction] public static void Fun (global::System.Int32 _id, global::System.String arg) => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_Fun(_id, arg);
+                    [JSEvent] public static void OnEvt (global::System.Int32 _id, global::System.String arg) => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_OnEvt(_id, arg);
 
                     void global::IImported.Fun (global::System.String arg) => Fun(_id, arg);
                     void global::IImported.NotifyEvt (global::System.String arg) => OnEvt(_id, arg);
@@ -185,7 +185,7 @@ public class InterfacesTest : EmitTest
             {
                 public class JSImported : global::Space.IImported
                 {
-                    [JSFunction] public static void Fun (global::Space.Record a) => Proxies.Get<global::System.Action<global::Space.Record>>("Bootsharp.Generated.Imports.Space.JSImported.Fun")(a);
+                    [JSFunction] public static void Fun (global::Space.Record a) => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_Space_JSImported_Fun(a);
 
                     void global::Space.IImported.Fun (global::Space.Record a) => Fun(a);
                 }
@@ -224,7 +224,7 @@ public class InterfacesTest : EmitTest
             {
                 public class JSImported : global::IImported
                 {
-                    [JSEvent] public static void OnFoo () => Proxies.Get<global::System.Action>("Bootsharp.Generated.Imports.JSImported.OnFoo")();
+                    [JSEvent] public static void OnFoo () => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_OnFoo();
 
                     void global::IImported.NotifyFoo () => OnFoo();
                 }
@@ -253,8 +253,8 @@ public class InterfacesTest : EmitTest
             {
                 public class JSImported : global::IImported
                 {
-                    [JSFunction] public static void NotifyFoo () => Proxies.Get<global::System.Action>("Bootsharp.Generated.Imports.JSImported.NotifyFoo")();
-                    [JSEvent] public static void OnBar () => Proxies.Get<global::System.Action>("Bootsharp.Generated.Imports.JSImported.OnBar")();
+                    [JSFunction] public static void NotifyFoo () => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_NotifyFoo();
+                    [JSEvent] public static void OnBar () => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_OnBar();
 
                     void global::IImported.NotifyFoo () => NotifyFoo();
                     void global::IImported.BroadcastBar () => OnBar();
