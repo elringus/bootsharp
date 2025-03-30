@@ -45,6 +45,7 @@ public class PackTest : TaskTest
         BuildEngine = Engine,
         TrimmingEnabled = false,
         EmbedBinaries = false,
-        Threading = false
+        Threading = false,
+        LLVM = Task.LLVM
     };
 }

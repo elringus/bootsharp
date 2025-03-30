@@ -19,7 +19,7 @@ if (!lang || lang.toLowerCase() === "rust")
 if (!lang || lang.toLowerCase() === "llvm")
     await run(".NET LLVM", await initDotNetLLVM());
 if (!lang || lang.toLowerCase() === "net")
-    await run(".NET", await initDotNet());
+    await run(".NET AOT", await initDotNet());
 if (!lang || lang.toLowerCase() === "boot")
     await run("Bootsharp", await initBootsharp());
 if (!lang || lang.toLowerCase() === "go")

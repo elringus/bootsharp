@@ -11,6 +11,7 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
     public required bool TrimmingEnabled { get; set; }
     public required bool EmbedBinaries { get; set; }
     public required bool Threading { get; set; }
+    public required bool LLVM { get; set; }
 
     public override bool Execute ()
     {
@@ -32,13 +33,18 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
     private SolutionInspection InspectSolution (Preferences prefs)
     {
         var inspector = new SolutionInspector(prefs, EntryAssemblyName);
-        // Assemblies in publish dir are trimmed and don't contain some data (eg, method arg names).
-        // While the inspected dir contains extra assemblies we don't need in build. Hence the filtering.
-        var included = Directory.GetFiles(BuildDirectory, "*.wasm").Select(Path.GetFileNameWithoutExtension).ToHashSet();
-        var inspected = Directory.GetFiles(InspectedDirectory, "*.dll").Where(p => included.Contains(Path.GetFileNameWithoutExtension(p)));
-        var inspection = inspector.Inspect(InspectedDirectory, inspected);
+        var inspection = inspector.Inspect(InspectedDirectory, GetFiles());
         new InspectionReporter(Log).Report(inspection);
         return inspection;
+
+        IEnumerable<string> GetFiles ()
+        {
+            if (LLVM) return Directory.GetFiles(InspectedDirectory, "*.dll");
+            // Assemblies in publish dir are trimmed and don't contain some data (eg, method arg names).
+            // While the inspected dir contains extra assemblies we don't need in build. Hence the filtering.
+            var included = Directory.GetFiles(BuildDirectory, "*.wasm").Select(Path.GetFileNameWithoutExtension).ToHashSet();
+            return Directory.GetFiles(InspectedDirectory, "*.dll").Where(p => included.Contains(Path.GetFileNameWithoutExtension(p)));
+        }
     }
 
     private void GenerateBindings (Preferences prefs, SolutionInspection inspection)
