@@ -7,6 +7,7 @@ Build and publish related options are configured in `.csproj` file via MSBuild p
 | BootsharpName               | bootsharp  | Name of the generated JavaScript module.                     |
 | BootsharpEmbedBinaries      | true       | Whether to embed binaries to the JavaScript module file.     |
 | BootsharpAggressiveTrimming | false      | Whether to disable some .NET features to reduce binary size. |
+| BootsharpLLVM               | false      | Enable experimental [NativeAOT-LLVM](/guide/llvm) backend.   |
 | BootsharpBundleCommand      | npx rollup | The command to bundle generated JavaScrip solution.          |
 | BootsharpPublishDirectory   | /bin       | Directory to publish generated JavaScript module.            |
 | BootsharpTypesDirectory     | /types     | Directory to publish type declarations.                      |
