@@ -10,7 +10,6 @@ public struct Data
     public string[] Messages;
 }
 
-
 [JsonSerializable(typeof(Data))]
 internal partial class SourceGenerationContext : JsonSerializerContext;
 

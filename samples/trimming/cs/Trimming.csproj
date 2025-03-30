@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net9.0-browser</TargetFramework>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
         <!-- Not embedding binaries to source module reduces build size by ~30%. -->
         <BootsharpEmbedBinaries>false</BootsharpEmbedBinaries>
@@ -18,5 +18,29 @@
         <Exec Command="npx gzipper compress bin bro --brotli"
               WorkingDirectory="$(BootsharpPublishDirectory)"/>
     </Target>
+
+    <!-- Using experimental NativeAOT-LLM backend, which yeilds a smaller WASM binary. -->
+
+    <PropertyGroup>
+        <BootsharpLLVM>true</BootsharpLLVM>
+        <PublishTrimmed>true</PublishTrimmed>
+        <DotNetJsApi>true</DotNetJsApi>
+        <DebugType>none</DebugType>
+        <EmccFlags>$(EmccFlags) -Oz</EmccFlags> <!-- optimize for smaller binary -->
+        <UsingBrowserRuntimeWorkload>false</UsingBrowserRuntimeWorkload>
+        <RestoreAdditionalProjectSources>
+            https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-experimental/nuget/v3/index.json;
+        </RestoreAdditionalProjectSources>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.DotNet.ILCompiler.LLVM" Version="10.0.0-*"/>
+        <PackageReference Condition="'$([MSBuild]::IsOSPlatform(&quot;Windows&quot;))' == 'true'" Include="runtime.win-x64.Microsoft.DotNet.ILCompiler.LLVM" Version="10.0.0-*"/>
+        <PackageReference Condition="'$([MSBuild]::IsOSPlatform(&quot;Windows&quot;))' == 'false'" Include="runtime.linux-x64.Microsoft.DotNet.ILCompiler.LLVM" Version="10.0.0-*"/>
+        <EmscriptenEnvVars Include="DOTNET_EMSCRIPTEN_LLVM_ROOT=$(EmscriptenUpstreamBinPath)"/>
+        <EmscriptenEnvVars Include="DOTNET_EMSCRIPTEN_BINARYEN_ROOT=$(EmscriptenSdkToolsPath)"/>
+        <EmscriptenEnvVars Include="DOTNET_EMSCRIPTEN_NODE_JS=$(EmscriptenNodeBinPath)node$(ExecutableExtensionName)"/>
+        <EmscriptenEnvVars Include="EM_CACHE=$(EmscriptenCacheSdkCacheDir)"/>
+    </ItemGroup>
 
 </Project>

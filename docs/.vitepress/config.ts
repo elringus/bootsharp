@@ -60,7 +60,8 @@ export default defineConfig({
                         { text: "Interop Instances", link: "/guide/interop-instances" },
                         { text: "Emit Preferences", link: "/guide/emit-prefs" },
                         { text: "Build Configuration", link: "/guide/build-config" },
-                        { text: "Sideloading Binaries", link: "/guide/sideloading" }
+                        { text: "Sideloading Binaries", link: "/guide/sideloading" },
+                        { text: "NativeAOT-LLVM", link: "/guide/llvm" }
                     ]
                 },
                 {

@@ -10,6 +10,8 @@
         <BootsharpSerializerFilePath>$(BootsharpIntermediateDirectory)/Serializer.g.cs</BootsharpSerializerFilePath>
         <BootsharpInteropFilePath>$(BootsharpIntermediateDirectory)/Interop.g.cs</BootsharpInteropFilePath>
         <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
+        <BootsharpPackAfter Condition="$(BootsharpLLVM)">CopyNativeBinary</BootsharpPackAfter>
+        <BootsharpPackAfter Condition="!$(BootsharpLLVM)">WasmNestedPublishApp</BootsharpPackAfter>
     </PropertyGroup>
 
     <Choose>
@@ -39,6 +41,7 @@
                 <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
                 <WasmEmitSourceMap>false</WasmEmitSourceMap>
                 <WasmNativeDebugSymbols>false</WasmNativeDebugSymbols>
+                <NativeDebugSymbols>false</NativeDebugSymbols>
                 <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
                 <PredefinedCulturesOnly>true</PredefinedCulturesOnly>
                 <MetricsSupport>false</MetricsSupport>
@@ -91,11 +94,12 @@
         <RemoveDir Directories="$(BootsharpIntermediateDirectory)"/>
     </Target>
 
-    <Target Name="BootsharpPack" AfterTargets="WasmNestedPublishApp"
-            Condition="Exists('$(PublishDir)') And Exists('$(WasmAppDir)')">
+    <Target Name="BootsharpPack" AfterTargets="$(BootsharpPackAfter)"
+            Condition="Exists('$(PublishDir)')">
 
         <PropertyGroup>
-            <BootsharpBuildDirectory>$(WasmAppDir)/$(WasmRuntimeAssetsLocation)</BootsharpBuildDirectory>
+            <BootsharpBuildDirectory Condition="$(BootsharpLLVM)">$(PublishDir)</BootsharpBuildDirectory>
+            <BootsharpBuildDirectory Condition="!$(BootsharpLLVM)">$(WasmAppDir)/$(WasmRuntimeAssetsLocation)</BootsharpBuildDirectory>
             <BootSharpBaseOutputPath>$(BaseOutputPath.Replace('\', '/'))</BootSharpBaseOutputPath>
             <BootsharpPublishDirectory Condition="'$(BootsharpPublishDirectory)' == ''">$(BootSharpBaseOutputPath)$(BootsharpName)</BootsharpPublishDirectory>
             <BootsharpTypesDirectory Condition="'$(BootsharpTypesDirectory)' == ''">$(BootsharpPublishDirectory)/types</BootsharpTypesDirectory>
@@ -119,7 +123,8 @@
                        EntryAssemblyName="$(BootsharpEntryAssemblyName)"
                        TrimmingEnabled="$(BootsharpAggressiveTrimming)"
                        EmbedBinaries="$(BootsharpEmbedBinaries)"
-                       Threading="$(BootsharpThreading)"/>
+                       Threading="$(BootsharpThreading)"
+                       LLVM="$(BootsharpLLVM)"/>
 
         <!-- Compile generated JavaScript solution. -->
         <Exec Command="$(BootsharpBundleCommand)"

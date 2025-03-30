@@ -1,6 +1,7 @@
 <Project>
+
     <PropertyGroup>
-        <Version>0.5.0</Version>
+        <Version>0.6.0</Version>
         <Authors>Elringus</Authors>
         <PackageTags>javascript typescript ts js wasm node deno bun interop codegen</PackageTags>
         <PackageProjectUrl>https://sharp.elringus.com</PackageProjectUrl>
@@ -17,4 +18,5 @@
         <None Include="$(MSBuildThisFileDirectory)../../README.md" Pack="true" PackagePath="/" Visible="false"/>
         <None Include="$(MSBuildThisFileDirectory)../../docs/public/img/logo.png" Pack="true" PackagePath="/" Visible="false"/>
     </ItemGroup>
+
 </Project>
