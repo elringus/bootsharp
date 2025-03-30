@@ -6,7 +6,7 @@ public static partial class Program
     {
         Log("Hello from .NET!");
     }
-    
+
     [JSFunction]
     public static partial void Log (string message);
 }
