@@ -6,7 +6,7 @@ By default, when targeting `browser-wasm`, .NET is using the Mono runtime, even 
 
 Below is a benchmark comparing interop and compute performance of various languages and .NET versions compiled to WASM to give you a rough idea on the differences:
 
-![](/img/llvm-bench.webp)
+![](/img/llvm-bench.png)
 
 — sources of the benchmark are here: https://github.com/elringus/bootsharp/tree/main/samples/bench.
 
