@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>net9.0-browser</TargetFramework>
-        <Configuration>Release</Configuration>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
         <OutputType>Exe</OutputType>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -11,8 +10,6 @@
         <UseAppHost>false</UseAppHost>
         <EmccFlags>$(EmccFlags) -O3</EmccFlags>
         <UsingBrowserRuntimeWorkload>false</UsingBrowserRuntimeWorkload>
-        <UsingWasiRuntimeWorkload>false</UsingWasiRuntimeWorkload>
-        <UsingEmscriptenWorkload>true</UsingEmscriptenWorkload>
         <ExecutableExtensionName Condition="'$([MSBuild]::IsOSPlatform(&quot;Windows&quot;))' == 'true'">.exe</ExecutableExtensionName>
         <IlcHostPackagePath Condition="'$([MSBuild]::IsOSPlatform(&quot;Windows&quot;))' == 'true'">$(Pkgruntime_win-x64_Microsoft_DotNet_ILCompiler_LLVM)</IlcHostPackagePath>
         <IlcHostPackagePath Condition="'$([MSBuild]::IsOSPlatform(&quot;Windows&quot;))' == 'false'">$(Pkgruntime_linux-x64_Microsoft_DotNet_ILCompiler_LLVM)</IlcHostPackagePath>
@@ -21,6 +18,12 @@
             https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-experimental/nuget/v3/index.json;
         </RestoreAdditionalProjectSources>
     </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Required for importing JS functions; ref: https://github.com/dotnet/runtimelab/blob/feature/NativeAOT-LLVM/src/tests/nativeaot/SmokeTests/HelloWasm/HelloWasm.csproj -->
+        <LinkerArg Include="--js-library &quot;$(MSBuildProjectDirectory)/imports.js&quot;"/>
+        <DirectPInvoke Include="x"/>
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.DotNet.ILCompiler.LLVM" Version="10.0.0-*"/>

@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -17,7 +18,7 @@ public static partial class Program
 {
     public static void Main () { }
 
-    [JSExport]
+    [UnmanagedCallersOnly(EntryPoint = "echoNumber")]
     public static int EchoNumber () => GetNumber();
 
     [JSExport]
@@ -31,8 +32,8 @@ public static partial class Program
     [JSExport]
     public static int Fi (int n) => n <= 1 ? n : Fi(n - 1) + Fi(n - 2);
 
-    [JSImport("getNumber", "x")]
-    private static partial int GetNumber ();
+    [DllImport("x", EntryPoint = "getNumber")]
+    private static extern int GetNumber ();
 
     [JSImport("getStruct", "x")]
     private static partial string GetStruct ();
