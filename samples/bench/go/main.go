@@ -6,10 +6,10 @@ import (
 )
 
 type Data struct {
-  Info     string   `json:"Info"`
-  Ok       bool     `json:"Ok"`
-  Revision int      `json:"Revision"`
-  Messages []string `json:"Messages"`
+  Info     string   `json:"info"`
+  Ok       bool     `json:"ok"`
+  Revision int      `json:"revision"`
+  Messages []string `json:"messages"`
 }
 
 func main() {

@@ -1,6 +1,4 @@
-using System;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -16,7 +14,7 @@ public struct Data
 [JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
 internal partial class SourceGenerationContext : JsonSerializerContext;
 
-public static unsafe partial class Program
+public static unsafe class Program
 {
     public static void Main () { }
 
@@ -26,12 +24,16 @@ public static unsafe partial class Program
     [UnmanagedCallersOnly(EntryPoint = "echoNumber")]
     public static int EchoNumber () => GetNumber();
 
-    [JSExport]
-    public static string EchoStruct ()
+    [UnmanagedCallersOnly(EntryPoint = "echoStruct")]
+    public static byte* EchoStruct ()
     {
-        var span = MemoryMarshal.CreateReadOnlySpanFromNullTerminated(GetStruct());
-        var data = JsonSerializer.Deserialize(span, SourceGenerationContext.Default.Data);
-        return JsonSerializer.Serialize(data, SourceGenerationContext.Default.Data);
+        var inSpan = MemoryMarshal.CreateReadOnlySpanFromNullTerminated(GetStruct());
+        var inData = JsonSerializer.Deserialize(inSpan, SourceGenerationContext.Default.Data);
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(inData, SourceGenerationContext.Default.Data);
+        var ptr = Marshal.AllocHGlobal(bytes.Length + 1);
+        Marshal.Copy(bytes, 0, ptr, bytes.Length);
+        ((byte*)ptr)![bytes.Length] = 0; // add null terminator to the string
+        return (byte*)ptr;
     }
 
     [UnmanagedCallersOnly(EntryPoint = "fi")]

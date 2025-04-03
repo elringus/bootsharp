@@ -3,6 +3,7 @@ import { init as initDotNet } from "./dotnet/init.mjs";
 import { init as initDotNetLLVM } from "./dotnet-llvm/init.mjs";
 import { init as initGo } from "./go/init.mjs";
 import { init as initRust } from "./rust/init.mjs";
+import * as fixtures from "./fixtures.mjs";
 
 /**
  * @typedef {Object} Exports
@@ -12,7 +13,7 @@ import { init as initRust } from "./rust/init.mjs";
  */
 
 const lang = process.argv[2];
-const baseline = [];
+const baseline = new Map;
 
 if (!lang || lang.toLowerCase() === "rust")
     await run("Rust", await initRust());
@@ -29,23 +30,37 @@ if (!lang || lang.toLowerCase() === "go")
  *  @param {Exports} exports */
 async function run(lang, exports) {
     console.log(`\n\nBenching ${lang}...\n`);
-    console.log(`Echo number: ${iterate(0, exports.echoNumber, 100, 3, 1000)}`);
-    console.log(`Echo struct: ${iterate(1, exports.echoStruct, 100, 3, 100)}`);
-    console.log(`Fibonacci: ${iterate(2, () => exports.fi(33), 100, 3, 1)}`);
+    await new Promise(r => setTimeout(r, 100));
+    bench("Echo number", exports.echoNumber, 100, 3, 1000, fixtures.getNumber());
+    bench("Echo struct", exports.echoStruct, 100, 3, 100, fixtures.getStruct());
+    bench("Fibonacci", () => exports.fi(33), 100, 3, 1);
 }
 
-function iterate(idx, fn, iterations, warms, loops) {
+function bench(name, fn, iters, warms, loops, expected = undefined) {
+    if (expected) {
+        expected = JSON.stringify(expected);
+        const actual = JSON.stringify(fn());
+        if (actual !== expected) {
+            console.error(`Wrong result of '${name}'. Expected: ${expected} Actual: ${actual}`);
+            return;
+        }
+    }
+
     const results = [];
     warms *= -1;
-    for (let i = warms; i < iterations; i++) {
+    for (let i = warms; i < iters; i++) {
         const start = performance.now();
         for (let l = 0; l < loops; l++) fn();
         if (i >= 0) results.push(performance.now() - start);
     }
     let media = median(results);
-    if (baseline[idx]) return `${(media / baseline[idx]).toFixed(1)}`;
-    else baseline[idx] = media;
-    return `${media.toFixed(3)} ms`;
+
+    if (baseline.has(name)) {
+        console.log(`${name}: ${(media / baseline.get(name)).toFixed(1)}`);
+    } else {
+        baseline.set(name, media);
+        console.log(`${name}: ${media.toFixed(3)} ms`);
+    }
 }
 
 function median(numbers) {
