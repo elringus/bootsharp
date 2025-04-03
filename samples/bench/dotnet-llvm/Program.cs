@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json;
@@ -5,18 +6,22 @@ using System.Text.Json.Serialization;
 
 public struct Data
 {
-    public string Info;
-    public bool Ok;
-    public int Revision;
-    public string[] Messages;
+    public string Info { get; set; }
+    public bool Ok { get; set; }
+    public int Revision { get; set; }
+    public string[] Messages { get; set; }
 }
 
 [JsonSerializable(typeof(Data))]
+[JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
 internal partial class SourceGenerationContext : JsonSerializerContext;
 
-public static partial class Program
+public static unsafe partial class Program
 {
     public static void Main () { }
+
+    [UnmanagedCallersOnly(EntryPoint = "NativeLibrary_Free")]
+    public static void Free (void* p) => NativeMemory.Free(p);
 
     [UnmanagedCallersOnly(EntryPoint = "echoNumber")]
     public static int EchoNumber () => GetNumber();
@@ -24,8 +29,8 @@ public static partial class Program
     [JSExport]
     public static string EchoStruct ()
     {
-        var json = GetStruct();
-        var data = JsonSerializer.Deserialize(json, SourceGenerationContext.Default.Data);
+        var span = MemoryMarshal.CreateReadOnlySpanFromNullTerminated(GetStruct());
+        var data = JsonSerializer.Deserialize(span, SourceGenerationContext.Default.Data);
         return JsonSerializer.Serialize(data, SourceGenerationContext.Default.Data);
     }
 
@@ -36,6 +41,6 @@ public static partial class Program
     [DllImport("x", EntryPoint = "getNumber")]
     private static extern int GetNumber ();
 
-    [JSImport("getStruct", "x")]
-    private static partial string GetStruct ();
+    [DllImport("x", EntryPoint = "getStruct")]
+    private static extern byte* GetStruct ();
 }
