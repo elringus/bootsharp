@@ -13,10 +13,10 @@ new ServiceCollection()
 
 public struct Data
 {
-    public string Info;
-    public bool Ok;
-    public int Revision;
-    public string[] Messages;
+    public string Info { get; set; }
+    public bool Ok { get; set; }
+    public int Revision { get; set; }
+    public string[] Messages { get; set; }
 }
 
 public interface IImport
