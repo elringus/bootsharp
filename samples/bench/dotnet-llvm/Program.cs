@@ -29,8 +29,9 @@ public static partial class Program
         return JsonSerializer.Serialize(data, SourceGenerationContext.Default.Data);
     }
 
-    [JSExport]
-    public static int Fi (int n) => n <= 1 ? n : Fi(n - 1) + Fi(n - 2);
+    [UnmanagedCallersOnly(EntryPoint = "fi")]
+    public static int FiExport (int n) => Fi(n);
+    private static int Fi (int n) => n <= 1 ? n : Fi(n - 1) + Fi(n - 2);
 
     [DllImport("x", EntryPoint = "getNumber")]
     private static extern int GetNumber ();

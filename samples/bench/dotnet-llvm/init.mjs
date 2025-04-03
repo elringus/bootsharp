@@ -16,6 +16,6 @@ export async function init() {
     return {
         echoNumber: runtime.Module._echoNumber,
         echoStruct: exports.Program.EchoStruct,
-        fi: exports.Program.Fi
+        fi: runtime.Module._fi
     };
 }
