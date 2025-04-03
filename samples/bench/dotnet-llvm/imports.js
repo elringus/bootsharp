@@ -10,9 +10,9 @@ mergeInto(LibraryManager.library, {
             messages: ["foo", "bar", "baz", "nya", "far"]
         };
         const json = JSON.stringify(data);
-        const size = lengthBytesUTF8(json) + 1;
+        const size = lengthBytesUTF16(json) + 1;
         const ptr = _malloc(size);
-        stringToUTF8(json, ptr, size);
-        return ptr;
+        stringToUTF16(json, ptr, size);
+        return ptr; // has to be freed after use in real use cases
     }
 });

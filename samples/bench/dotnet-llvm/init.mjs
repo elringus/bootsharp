@@ -7,7 +7,7 @@ export async function init() {
 
     return {
         echoNumber: runtime.Module._echoNumber,
-        echoStruct: () => JSON.parse(runtime.Module.UTF8ToString(runtime.Module._echoStruct())),
+        echoStruct: () => JSON.parse(runtime.Module.UTF16ToString(runtime.Module._echoStruct())),
         fi: runtime.Module._fi
     };
 }

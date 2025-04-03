@@ -21,7 +21,8 @@
 
     <ItemGroup>
         <!-- Required for importing JS functions; ref: https://github.com/dotnet/runtimelab/blob/feature/NativeAOT-LLVM/src/tests/nativeaot/SmokeTests/HelloWasm/HelloWasm.csproj -->
-        <LinkerArg Include="--js-library &quot;$(MSBuildProjectDirectory)/imports.js&quot;"/>
+        <!-- TODO: Find a way to export 'UTF16ToString','stringToUTF16','lengthBytesUTF16' in a way that won't cause warning on build. -->
+        <LinkerArg Include="--js-library &quot;$(MSBuildProjectDirectory)/imports.js&quot; -sEXPORTED_RUNTIME_METHODS=['FS','out','err','ccall','cwrap','setValue','getValue','addRunDependency','addFunction','UTF8ToString','UTF8ArrayToString','lengthBytesUTF8','stringToUTF8Array','FS_createPath','FS_createDataFile','removeRunDependency','safeSetTimeout','runtimeKeepalivePush','runtimeKeepalivePop','UTF16ToString','stringToUTF16','lengthBytesUTF16']"/>
         <DirectPInvoke Include="x"/>
     </ItemGroup>
 

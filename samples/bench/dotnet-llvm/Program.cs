@@ -25,15 +25,12 @@ public static unsafe class Program
     public static int EchoNumber () => GetNumber();
 
     [UnmanagedCallersOnly(EntryPoint = "echoStruct")]
-    public static byte* EchoStruct ()
+    public static char* EchoStruct ()
     {
-        var inSpan = MemoryMarshal.CreateReadOnlySpanFromNullTerminated(GetStruct());
-        var inData = JsonSerializer.Deserialize(inSpan, SourceGenerationContext.Default.Data);
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(inData, SourceGenerationContext.Default.Data);
-        var ptr = Marshal.AllocHGlobal(bytes.Length + 1);
-        Marshal.Copy(bytes, 0, ptr, bytes.Length);
-        ((byte*)ptr)![bytes.Length] = 0; // add null terminator to the string
-        return (byte*)ptr;
+        var span = MemoryMarshal.CreateReadOnlySpanFromNullTerminated(GetStruct());
+        var data = JsonSerializer.Deserialize(span, SourceGenerationContext.Default.Data);
+        var json = JsonSerializer.Serialize(data, SourceGenerationContext.Default.Data);
+        fixed (char* ptr = json) return ptr; // has to be pinned and freed after use in real use cases
     }
 
     [UnmanagedCallersOnly(EntryPoint = "fi")]
@@ -44,5 +41,5 @@ public static unsafe class Program
     private static extern int GetNumber ();
 
     [DllImport("x", EntryPoint = "getStruct")]
-    private static extern byte* GetStruct ();
+    private static extern char* GetStruct ();
 }
