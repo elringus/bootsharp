@@ -5,9 +5,9 @@ import { getNumber, getStruct } from "../fixtures.mjs";
 export async function init() {
     global.getNumber = getNumber;
     global.getStruct = () => JSON.stringify(getStruct());
-    return { 
-        echoNumber, 
-        echoStruct: () => JSON.parse(echoStruct()), 
-        fi 
+    return {
+        echoNumber,
+        echoStruct: () => JSON.parse(echoStruct()),
+        fi
     };
 }

@@ -43,3 +43,7 @@ public static unsafe class Program
     [DllImport("x", EntryPoint = "getStruct")]
     private static extern char* GetStruct ();
 }
+
+// NOTE: 95% of degradation compared to Rust is in the JSON de-/serialization.
+// GenerationMode = JsonSourceGenerationMode.Serialization is only implemented for serialization
+// and throws when used for de-serialization: https://github.com/dotnet/runtime/issues/55043.
