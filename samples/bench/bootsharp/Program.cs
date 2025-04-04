@@ -36,5 +36,8 @@ public class Export (IImport import) : IExport
 {
     public int EchoNumber () => import.GetNumber();
     public Data EchoStruct () => import.GetStruct();
-    public int Fi (int n) => n <= 1 ? n : Fi(n - 1) + Fi(n - 2);
+    public int Fi (int n) => F(n);
+    // Due to heavy recursion, a significant degradation accumulates due to constant
+    // dereferencing of the instance on each iteration, hence using the static version.
+    private static int F (int n) => n <= 1 ? n : F(n - 1) + F(n - 2);
 }
