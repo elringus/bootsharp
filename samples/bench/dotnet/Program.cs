@@ -4,13 +4,14 @@ using System.Text.Json.Serialization;
 
 public struct Data
 {
-    public string Info;
-    public bool Ok;
-    public int Revision;
-    public string[] Messages;
+    public string Info { get; set; }
+    public bool Ok { get; set; }
+    public int Revision { get; set; }
+    public string[] Messages { get; set; }
 }
 
 [JsonSerializable(typeof(Data))]
+[JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
 internal partial class SourceGenerationContext : JsonSerializerContext;
 
 public static partial class Program

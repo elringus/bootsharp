@@ -16,7 +16,7 @@ export async function init() {
     const exports = await runtime.getAssemblyExports(asm);
     return {
         echoNumber: exports.Program.EchoNumber,
-        echoStruct: exports.Program.EchoStruct,
+        echoStruct: () => JSON.parse(exports.Program.EchoStruct()),
         fi: exports.Program.Fi
     };
 }

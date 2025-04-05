@@ -7,7 +7,7 @@ titleTemplate: Bootsharp • :title
 hero:
   name: Bootsharp
   text: Use C# in web apps with comfort
-  tagline: Author domain in C#, while taking full advantage of the modern JavaScript frontend ecosystem.
+  tagline: Author the domain in C#, while fully leveraging the modern JavaScript frontend ecosystem.
   actions:
     - theme: brand
       text: Get Started
@@ -31,7 +31,7 @@ hero:
                                 <div class="icon">✨</div>
                                 <h2 class="title">High-level Interoperation</h2>
                             </div>
-                            <p class="details">Generates JavaScript bindings and type declarations for your C# APIs facilitating seamless interop between the domain and UI.</p></article>
+                            <p class="details">Generates JavaScript bindings and type declarations for your C# APIs, enabling seamless interop between domain and UI.</p></article>
                     </div>
                 </div>
                 <div class="grid-3 item">
@@ -41,7 +41,7 @@ hero:
                                 <div class="icon">📦</div>
                                 <h2 class="title">Embed or Sideload</h2>
                             </div>
-                            <p class="details">Choose between embedding all the C# binaries into single-file ES module for portability or sideload for best performance and build size.</p></article>
+                            <p class="details">Choose between embedding all C# binaries into a single-file ES module for portability or sideloading for performance and size.</p></article>
                     </div>
                 </div>
                 <div class="grid-3 item">
@@ -51,7 +51,7 @@ hero:
                                 <div class="icon">🗺️</div>
                                 <h2 class="title">Runs Everywhere</h2>
                             </div>
-                            <p class="details">Node, Deno, Bun, web browsers and even constrained environments, such as VS Code extensions — your app will work everywhere.</p></article>
+                            <p class="details">Node, Deno, Bun, web browsers—even constrained environments like VS Code extensions—your app runs everywhere.</p></article>
                     </div>
                 </div>
             </div>
@@ -63,7 +63,7 @@ hero:
                                 <div class="icon">⚡</div>
                                 <h2 class="title">Interop Interfaces</h2>
                             </div>
-                            <p class="details">Manually author interop APIs via static C# methods or simply feed Bootsharp your domain-specific interfaces — it'll figure the rest.</p></article>
+                            <p class="details">Manually author interop APIs via static C# methods or feed Bootsharp your domain-specific interfaces—it'll handle the rest.</p></article>
                     </div>
                 </div>
                 <div class="grid-4 item">
@@ -73,7 +73,7 @@ hero:
                                 <div class="icon">🏷️</div>
                                 <h2 class="title">Instance Bindings</h2>
                             </div>
-                            <p class="details">When an interface value is specified in interop API, instance binding is generated allowing to interoperate on stateful objects.</p></article>
+                            <p class="details">When an interface value is used in interop, instance binding is generated to interoperate with stateful objects.</p></article>
                     </div>
                 </div>
                 <div class="grid-4 item">
@@ -83,7 +83,7 @@ hero:
                                 <div class="icon">🛠️</div>
                                 <h2 class="title">Customizable</h2>
                             </div>
-                            <p class="details">Configure namespaces for emitted bindings, function and event names, C# -> TypeScript type mappings and more.</p></article>
+                            <p class="details">Configure namespaces for emitted bindings, function and event names, C# -> TypeScript type mappings, and more.</p></article>
                     </div>
                 </div>
                 <div class="grid-4 item">
@@ -93,7 +93,7 @@ hero:
                                 <div class="icon">🔥</div>
                                 <h2 class="title">Modern .NET</h2>
                             </div>
-                            <p class="details">Supports latest runtime features: WASM multi-threading, AOT compilation, assembly trimming, streaming module instantiation.</p></article>
+                            <p class="details">Supports latest runtime features: WASM multi-threading, assembly trimming, NativeAOT-LLVM, streaming instantiation.</p></article>
                     </div>
                 </div>
             </div>

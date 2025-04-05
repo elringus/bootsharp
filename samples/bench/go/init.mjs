@@ -14,7 +14,7 @@ export async function init() {
 
     return {
         echoNumber: global.echoNumber,
-        echoStruct: global.echoStruct,
+        echoStruct: () => JSON.parse(global.echoStruct()),
         fi: global.fi
     };
 }

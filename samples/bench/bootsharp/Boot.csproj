@@ -3,6 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net9.0-browser</TargetFramework>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+        <!-- NOTE: Embedding doesn't affect runtime performance, leaving it for future reference. -->
+        <BootsharpEmbedBinaries>false</BootsharpEmbedBinaries>
     </PropertyGroup>
 
     <ItemGroup>
@@ -10,8 +12,6 @@
         <PackageReference Include="Bootsharp.Inject" Version="*-*"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="*"/>
     </ItemGroup>
-
-    <!-- https://github.com/dotnet/runtime/issues/113979#issuecomment-2759220563 -->
 
     <PropertyGroup>
         <BootsharpLLVM>true</BootsharpLLVM>
