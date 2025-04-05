@@ -8,7 +8,7 @@
     ],
     "publisher": "Elringus",
     "repository": "https://github.com/Elringus/Bootsharp",
-    "homepage": "https://sharp.elringus.com",
+    "homepage": "https://bootsharp.com",
     "icon": "assets/package-icon.png",
     "engines": {
         "vscode": "^1.81.1"

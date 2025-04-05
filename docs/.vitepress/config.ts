@@ -75,5 +75,5 @@ export default defineConfig({
             "/api/": [{ text: "Reference", items: (await import("./../api/typedoc-sidebar.json")).default }]
         }
     },
-    sitemap: { hostname: "https://sharp.elringus.com" }
+    sitemap: { hostname: "https://bootsharp.com" }
 });
