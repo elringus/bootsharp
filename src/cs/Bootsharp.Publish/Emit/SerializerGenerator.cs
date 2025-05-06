@@ -11,8 +11,8 @@ internal sealed class SerializerGenerator
 
     public string Generate (SolutionInspection inspection)
     {
-        CollectAttributes(inspection);
-        CollectDuplicates(inspection);
+        CollectTopLevel(inspection);
+        CollectCrawled(inspection);
         if (attributes.Count == 0) return "";
         return
             $"""
@@ -30,7 +30,7 @@ internal sealed class SerializerGenerator
              """;
     }
 
-    private void CollectAttributes (SolutionInspection inspection)
+    private void CollectTopLevel (SolutionInspection inspection)
     {
         var metas = inspection.StaticMethods
             .Concat(inspection.StaticInterfaces.SelectMany(i => i.Methods))
@@ -53,11 +53,10 @@ internal sealed class SerializerGenerator
         attributes.Add(BuildAttribute(meta.Type));
     }
 
-    private void CollectDuplicates (SolutionInspection inspection)
+    private void CollectCrawled (SolutionInspection inspection)
     {
-        var names = new HashSet<string>();
-        foreach (var type in inspection.Crawled.DistinctBy(t => t.FullName))
-            if (ShouldSerialize(type) && !names.Add(type.Name))
+        foreach (var type in inspection.Crawled)
+            if (ShouldSerialize(type))
                 attributes.Add(BuildAttribute(type));
     }
 

@@ -20,7 +20,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     public string Generate (SolutionInspection inspection)
     {
         instanced = [..inspection.InstancedInterfaces];
-        types = inspection.Crawled.OrderBy(GetNamespace).ToArray();
+        types = inspection.Crawled.Where(FilterCrawled).OrderBy(GetNamespace).ToArray();
         for (index = 0; index < types.Length; index++)
             DeclareType();
         return builder.ToString();
@@ -30,6 +30,11 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     {
         var type = types[index];
         return type.IsGenericType ? type.GetGenericTypeDefinition() : type;
+    }
+
+    private bool FilterCrawled (Type type)
+    {
+        return !IsList(type) && !IsCollection(type) && !IsNullable(type);
     }
 
     private void DeclareType ()
