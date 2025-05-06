@@ -9,10 +9,11 @@ internal sealed class TypeCrawler
     public void Crawl (Type type)
     {
         if (!ShouldCrawl(type)) return;
-        type = GetUnderlyingType(type);
-        if (!crawled.Add(type)) return;
-        CrawlProperties(type);
-        CrawlBaseType(type);
+        var underlyingType = GetUnderlyingType(type);
+        if (!crawled.Add(underlyingType)) return;
+        CrawlProperties(underlyingType);
+        CrawlBaseType(underlyingType);
+        crawled.Add(type);
     }
 
     private bool ShouldCrawl (Type type)
