@@ -1,7 +1,6 @@
 import { defineConfig } from "vitepress";
 import proc from "node:child_process";
 import imgit from "imgit/vite";
-import md from "./md";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -11,7 +10,6 @@ export default defineConfig({
     appearance: "dark",
     cleanUrls: true,
     lastUpdated: true,
-    markdown: md,
     vite: { plugins: [imgit({ width: 688 })] },
     head: [
         ["link", { rel: "icon", href: "/favicon.svg" }],
@@ -23,6 +21,7 @@ export default defineConfig({
     themeConfig: {
         logo: { src: "/favicon.svg" },
         logoLink: "/",
+        externalLinkIcon: true,
         socialLinks: [{ icon: "github", link: "https://github.com/elringus/bootsharp" }],
         search: { provider: "local", options: { detailedView: true } },
         lastUpdated: { text: "Updated", formatOptions: { dateStyle: "medium" } },
