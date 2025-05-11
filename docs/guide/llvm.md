@@ -58,8 +58,8 @@ Use following `.csproj` as a reference for enabling NativeAOT-LLVM with Bootshar
 
 ## Binaryen
 
-Optionally, after publishing with NativeAOT-LLVM, you can further optimize the produced WASM using Binaryen:
+Optionally, you can further optimize the produced WASM using Binaryen:
 
 1. Install the tool https://github.com/WebAssembly/binaryen
-2. Run `wasm-opt bin/bootsharp/bin/dotnet.native.wasm -O3 -o bin/bootsharp/bin/dotnet.native.wasm --all-features --strip-dwarf --strip-debug --vacuum`
-3. To optimize for size instead of speed, replace `-O3` with `-Oz`
+2. Make sure `wasm-opt` is in the system path
+3. Add `<BootsharpOptimize>speed</BootsharpOptimize>` to the project config to optimize for speed; replace `speed` with `size` to instead optimize for size
