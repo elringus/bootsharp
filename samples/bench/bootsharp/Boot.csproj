@@ -5,6 +5,7 @@
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
         <!-- NOTE: Embedding doesn't affect runtime performance, leaving it for future reference. -->
         <BootsharpEmbedBinaries>false</BootsharpEmbedBinaries>
+        <BootsharpOptimize>speed</BootsharpOptimize>
     </PropertyGroup>
 
     <ItemGroup>
