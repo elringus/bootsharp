@@ -18,6 +18,8 @@
         <BootsharpEmbedBinaries>true</BootsharpEmbedBinaries>
         <!-- Whether to disable some .NET features to reduce binary size (true or false); false by default. -->
         <BootsharpAggressiveTrimming>false</BootsharpAggressiveTrimming>
+        <!-- Whether to optimize the WASM for speed or size (requires Binaryen's wasm-opt in system path); disabled by default. -->
+        <BootsharpOptimize>none</BootsharpOptimize>
         <!-- Whether to app is built with the new experimental NativeAOT-LLVM backend; false by default. -->
         <BootsharpLLVM>false</BootsharpLLVM>
         <!-- The command to run when compiling/bundling generated JavaScrip solution. -->
