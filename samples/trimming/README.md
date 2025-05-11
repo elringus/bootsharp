@@ -9,4 +9,4 @@ To test and measure build size:
 |             | Raw   | Brotli |
 |-------------|-------|--------|
 | .NET 8      | 2,298 | 739    |
-| .NET 9 LLVM | 1,749 | 520    |
+| .NET 9 LLVM | 1,737 | 518    |

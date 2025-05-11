@@ -7,6 +7,8 @@
         <BootsharpEmbedBinaries>false</BootsharpEmbedBinaries>
         <!-- Disabling non-essential .NET features reduces minimal build size by ~35%. -->
         <BootsharpAggressiveTrimming>true</BootsharpAggressiveTrimming>
+        <!-- Optimize the compiled WASM binary for size. -->
+        <BootsharpOptimize>size</BootsharpOptimize>
     </PropertyGroup>
 
     <ItemGroup>
