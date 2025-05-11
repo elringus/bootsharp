@@ -109,6 +109,8 @@
             <BootsharpThreading Condition="'$(WasmEnableThreads)' == 'true'">true</BootsharpThreading>
             <BootsharpThreading Condition="'$(WasmEnableThreads)' != 'true'">false</BootsharpThreading>
             <BootsharpEmbedBinaries Condition="$(BootsharpThreading)">false</BootsharpEmbedBinaries>
+            <BootsharpOptimizeFlag Condition="'$(BootsharpOptimize)' == 'speed'">-O3</BootsharpOptimizeFlag>
+            <BootsharpOptimizeFlag Condition="'$(BootsharpOptimize)' == 'size'">-Oz</BootsharpOptimizeFlag>
         </PropertyGroup>
 
         <!-- Copy bootsharp source files to the build directory. -->
@@ -116,6 +118,12 @@
             <BootsharpSourceFiles Include="$(BootsharpSourceDirectory)/*.*"/>
         </ItemGroup>
         <Copy SourceFiles="@(BootsharpSourceFiles)" DestinationFolder="$(BootsharpBuildDirectory)"/>
+
+        <!-- Optimize the dotnet WASM with Binaryen. -->
+        <Exec Condition="'$(BootsharpOptimize)' != 'none'"
+              Command="wasm-opt dotnet.native.wasm $(BootsharpOptimizeFlag) -o dotnet.native.wasm --all-features --strip-dwarf --strip-debug --vacuum"
+              WorkingDirectory="$(BootsharpBuildDirectory)"
+              StdOutEncoding="utf-8" StdErrEncoding="utf-8"/>
 
         <!-- Generate bindings, type declarations and (optionally) embed binaries. -->
         <BootsharpPack BuildDirectory="$(BootsharpBuildDirectory)"
