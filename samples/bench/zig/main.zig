@@ -7,9 +7,6 @@ const opt = .{
     .parse = std.json.ParseOptions{
         .ignore_unknown_fields = true,
     },
-    .stringify = std.json.StringifyOptions{
-        .whitespace = .minified,
-    },
 };
 
 pub const Data = struct {
@@ -27,12 +24,11 @@ export fn echoNumber() i32 {
 }
 
 export fn echoStruct() u64 {
-    _ = arena.reset(.retain_capacity);
+    _ = arena.reset(.{ .retain_with_limit = std.math.maxInt(usize) });
     const input = decodeString(getStruct());
     const json = std.json.parseFromSlice(Data, ally, input, opt.parse) catch unreachable;
-    var output = std.ArrayList(u8).init(ally);
-    std.json.stringify(json.value, opt.stringify, output.writer()) catch unreachable;
-    return encodeString(output.items);
+    const output = std.json.Stringify.valueAlloc(ally, json.value, .{}) catch unreachable;
+    return encodeString(output);
 }
 
 export fn fi(n: i32) i32 {
