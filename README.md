@@ -16,7 +16,7 @@
 
 Bootsharp streamlines the integration of .NET C# apps and libraries into web projects. It's ideal for building applications where the domain (backend) is authored in .NET C#, while the UI (frontend) is a standalone TypeScript or JavaScript project. Think of it as [Embind](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html) for C++ or [wasm-bindgen](https://github.com/rustwasm/wasm-bindgen) for Rust.
 
-![](https://raw.githubusercontent.com/elringus/bootsharp/main/docs/public/img/banner.png)
+![](https://raw.githubusercontent.com/elringus/bootsharp/main/docs/public/imgit/encoded/img-banner.png@dense.avif)
 
 Facilitating high-level interoperation between C# and TypeScript, Bootsharp lets you build the UI layer within its natural ecosystem using industry-standard tooling and frameworks, such as [React](https://react.dev) and [Svelte](https://svelte.dev). The project can then be published to the web or bundled as a native desktop or mobile application with [Electron](https://electronjs.org) or [Tauri](https://tauri.app).
 
