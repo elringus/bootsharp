@@ -1,4 +1,4 @@
-﻿namespace Bootsharp.Publish;
+namespace Bootsharp.Publish;
 
 internal sealed class TypeCrawler
 {

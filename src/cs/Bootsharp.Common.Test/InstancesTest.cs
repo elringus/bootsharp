@@ -1,4 +1,4 @@
-﻿using static Bootsharp.Instances;
+using static Bootsharp.Instances;
 
 namespace Bootsharp.Common.Test;
 

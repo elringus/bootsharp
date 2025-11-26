@@ -1,4 +1,4 @@
-﻿global using static Bootsharp.Publish.GlobalText;
+global using static Bootsharp.Publish.GlobalText;
 
 namespace Bootsharp.Publish;
 

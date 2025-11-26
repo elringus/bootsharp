@@ -1,4 +1,4 @@
-﻿global using static Bootsharp.Publish.GlobalSerialization;
+global using static Bootsharp.Publish.GlobalSerialization;
 using System.Collections.Frozen;
 
 namespace Bootsharp.Publish;

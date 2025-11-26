@@ -1,4 +1,4 @@
-﻿namespace Bootsharp;
+namespace Bootsharp;
 
 /// <summary>
 /// Metadata about generated interop class for an interface supplied

@@ -1,4 +1,4 @@
-﻿# Build Configuration
+# Build Configuration
 
 Build and publish related options are configured in `.csproj` file via MSBuild properties.
 

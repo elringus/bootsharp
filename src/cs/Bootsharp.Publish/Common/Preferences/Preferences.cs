@@ -1,4 +1,4 @@
-﻿namespace Bootsharp.Publish;
+namespace Bootsharp.Publish;
 
 /// <inheritdoc cref="JSPreferencesAttribute"/>
 internal sealed record Preferences

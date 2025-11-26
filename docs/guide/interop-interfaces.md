@@ -1,4 +1,4 @@
-﻿# Interop Interfaces
+# Interop Interfaces
 
 Instead of manually authoring a binding for each method, let Bootsharp generate them automatically using the `[JSImport]` and `[JSExport]` assembly attributes.
 

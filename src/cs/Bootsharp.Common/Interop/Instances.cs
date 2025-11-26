@@ -1,4 +1,4 @@
-﻿namespace Bootsharp;
+namespace Bootsharp;
 
 /// <summary>
 /// Manages exported (C# -> JavaScript) instanced interop interfaces.

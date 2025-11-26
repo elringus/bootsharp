@@ -1,4 +1,4 @@
-﻿namespace Bootsharp.Generate.Test;
+namespace Bootsharp.Generate.Test;
 
 public static class EventTest
 {

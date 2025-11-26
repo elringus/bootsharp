@@ -1,4 +1,4 @@
-﻿# Namespaces
+# Namespaces
 
 Bootsharp maps generated binding APIs based on the name of the associated C# types. The rules are a bit different for static interop methods, interop interfaces and types.
 

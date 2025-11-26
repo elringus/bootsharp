@@ -1,4 +1,4 @@
-﻿global using static Bootsharp.Publish.GlobalType;
+global using static Bootsharp.Publish.GlobalType;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 

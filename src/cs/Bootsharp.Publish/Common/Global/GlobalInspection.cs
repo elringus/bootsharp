@@ -1,4 +1,4 @@
-﻿global using static Bootsharp.Publish.GlobalInspection;
+global using static Bootsharp.Publish.GlobalInspection;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;

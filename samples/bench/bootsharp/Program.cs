@@ -1,4 +1,4 @@
-﻿using Bootsharp;
+using Bootsharp;
 using Bootsharp.Inject;
 using Microsoft.Extensions.DependencyInjection;
 

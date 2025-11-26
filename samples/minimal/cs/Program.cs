@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Bootsharp;
 
 public static partial class Program

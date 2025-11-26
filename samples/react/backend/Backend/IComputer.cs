@@ -1,4 +1,4 @@
-﻿namespace Backend;
+namespace Backend;
 
 // In the domain assembly we outline the contract of a computer service.
 // The specific implementation is in other assembly, so that

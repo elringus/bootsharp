@@ -1,4 +1,4 @@
-﻿using Bootsharp;
+using Bootsharp;
 
 public static partial class Program
 {

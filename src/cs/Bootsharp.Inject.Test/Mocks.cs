@@ -1,4 +1,4 @@
-﻿global using static Bootsharp.Inject.Test.Mocks;
+global using static Bootsharp.Inject.Test.Mocks;
 
 namespace Bootsharp.Inject.Test;
 

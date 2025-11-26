@@ -1,4 +1,4 @@
-﻿# Interop Instances
+# Interop Instances
 
 When an interface is supplied as argument or return type of an interop method, instead of serializing it as value, Bootsharp will instead generate an instance binding, eg:
 

@@ -1,4 +1,4 @@
-﻿# Events
+# Events
 
 To make a C# method act as event broadcaster for JavaScript consumers, annotate it with `[JSEvent]` attribute:
 

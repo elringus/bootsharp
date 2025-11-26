@@ -1,4 +1,4 @@
-﻿# Emit Preferences
+# Emit Preferences
 
 Use `[JSPreferences]` assembly attribute to customize Bootsharp behaviour at build time when the interop code is emitted. It has several properties that takes array of `(pattern, replacement)` strings, which are feed to [Regex.Replace](https://docs.microsoft.com/en-us/dotnet/api/system.text.regularexpressions.regex.replace?view=net-6.0#system-text-regularexpressions-regex-replace(system-string-system-string-system-string)) when emitted associated code. Each consequent pair is tested in order; on first match the result replaces the default.
 

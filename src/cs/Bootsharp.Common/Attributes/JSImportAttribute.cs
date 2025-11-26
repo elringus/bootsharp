@@ -1,4 +1,4 @@
-﻿namespace Bootsharp;
+namespace Bootsharp;
 
 /// <summary>
 /// When applied to WASM entry point assembly, JavaScript bindings for the specified interfaces

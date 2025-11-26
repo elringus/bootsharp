@@ -1,4 +1,4 @@
-﻿namespace Bootsharp;
+namespace Bootsharp;
 
 /// <summary>
 /// Metadata about generated implementation for interface supplied

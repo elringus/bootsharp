@@ -1,4 +1,4 @@
-﻿namespace Bootsharp.Publish;
+namespace Bootsharp.Publish;
 
 /// <summary>
 /// Interface supplied by user under either <see cref="JSExportAttribute"/>

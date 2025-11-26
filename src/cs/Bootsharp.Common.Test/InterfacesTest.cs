@@ -1,4 +1,4 @@
-﻿namespace Bootsharp.Common.Test;
+namespace Bootsharp.Common.Test;
 
 public class InterfacesTest
 {

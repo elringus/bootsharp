@@ -1,4 +1,4 @@
-﻿namespace Bootsharp;
+namespace Bootsharp;
 
 /// <summary>
 /// When applied to WASM entry point assembly, configures Bootsharp behaviour at build time.

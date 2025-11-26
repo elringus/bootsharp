@@ -1,4 +1,4 @@
-﻿# NativeAOT-LLVM
+# NativeAOT-LLVM
 
 Starting with v0.6.0 Bootsharp supports .NET's experimental [NativeAOT-LLVM](https://github.com/dotnet/runtimelab/tree/feature/NativeAOT-LLVM) backend.
 

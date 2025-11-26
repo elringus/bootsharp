@@ -1,4 +1,4 @@
-﻿namespace Test.Types;
+namespace Test.Types;
 
 public class Tracked : Vehicle
 {

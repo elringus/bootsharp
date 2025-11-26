@@ -1,4 +1,4 @@
-﻿namespace Bootsharp.Publish.Test;
+namespace Bootsharp.Publish.Test;
 
 public class InterfacesTest : EmitTest
 {

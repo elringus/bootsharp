@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using Microsoft.Build.Utilities.ProjectCreation;
 
 namespace Bootsharp.Publish.Test;

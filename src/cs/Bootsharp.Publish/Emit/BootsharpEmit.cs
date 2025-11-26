@@ -1,4 +1,4 @@
-﻿namespace Bootsharp.Publish;
+namespace Bootsharp.Publish;
 
 /// <summary>
 /// First pass: emits C# sources to be picked by .NET's source generators.

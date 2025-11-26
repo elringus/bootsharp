@@ -1,4 +1,4 @@
-﻿# Sideloading Binaries
+# Sideloading Binaries
 
 By default, Bootsharp build task will embed project's DLLs and .NET WASM runtime to the generated JavaScript module. While convenient and even required in some cases (eg, for VS Code web extensions), this also adds about 30% of extra size due to binary -> base64 conversion of the embedded files.
 

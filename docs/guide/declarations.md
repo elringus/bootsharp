@@ -1,4 +1,4 @@
-﻿# Type Declarations
+# Type Declarations
 
 Bootsharp will automatically generate [type declarations](https://www.typescriptlang.org/docs/handbook/2/type-declarations) for interop APIs when building the solution. The files are emitted under "types" directory of the compiled module package.
 

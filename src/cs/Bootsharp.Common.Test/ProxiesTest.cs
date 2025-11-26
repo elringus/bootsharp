@@ -1,4 +1,4 @@
-﻿using static Bootsharp.Proxies;
+using static Bootsharp.Proxies;
 
 namespace Bootsharp.Common.Test;
 
