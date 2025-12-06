@@ -12,7 +12,7 @@
 
 All results are relative to the Rust baseline (lower is better).
 
-## 2024 (.NET 9)
+## 2024 (.NET 9, Node.js 22)
 
 |             | Rust  | Zig   | .NET LLVM | Bootsharp | .NET AOT | Go      |
 |-------------|-------|-------|-----------|-----------|----------|---------|

@@ -4,10 +4,10 @@ import { getNumber, getStruct } from "../fixtures.mjs";
 /** @returns {Promise<import("../bench.mjs").Exports>} */
 export async function init() {
     global.getNumber = getNumber;
-    global.getStruct = () => JSON.stringify(getStruct());
+    global.getStruct = getStruct;
     return {
         echoNumber,
-        echoStruct: () => JSON.parse(echoStruct()),
+        echoStruct,
         fi
     };
 }

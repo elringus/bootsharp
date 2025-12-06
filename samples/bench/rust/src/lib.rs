@@ -14,7 +14,7 @@ extern "C" {
     #[wasm_bindgen(js_name = getNumber)]
     fn get_number() -> i32;
     #[wasm_bindgen(js_name = getStruct)]
-    fn get_struct() -> String;
+    fn get_struct() -> JsValue;
 }
 
 #[wasm_bindgen(js_name = echoNumber)]
@@ -23,10 +23,10 @@ pub fn echo_number() -> i32 {
 }
 
 #[wasm_bindgen(js_name = echoStruct)]
-pub fn echo_struct() -> String {
-    let json = get_struct();
-    let data: Data = serde_json::from_str(&json).unwrap();
-    serde_json::to_string(&data).unwrap()
+pub fn echo_struct() -> Result<JsValue, JsValue> {
+    let js_data = get_struct();
+    let data: Data = serde_wasm_bindgen::from_value(js_data)?;
+    Ok(serde_wasm_bindgen::to_value(&data)?)
 }
 
 #[wasm_bindgen]
