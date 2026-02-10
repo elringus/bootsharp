@@ -1,4 +1,4 @@
-import { dotnet } from "./bin/Release/net9.0/browser-wasm/AppBundle/_framework/dotnet.js";
+import { dotnet } from "./bin/Release/net10.0/browser-wasm/AppBundle/_framework/dotnet.js";
 import { getNumber, getStruct } from "../fixtures.mjs";
 
 /** @returns {Promise<import("../bench.mjs").Exports>} */
