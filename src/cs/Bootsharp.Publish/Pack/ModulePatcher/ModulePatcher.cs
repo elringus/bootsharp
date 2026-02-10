@@ -25,7 +25,7 @@ internal sealed class ModulePatcher (string buildDir, bool thread, bool embed, b
         // Removes "WebAssembly resource does not have the expected content type..." warning.
 
         File.WriteAllText(dotnet, File.ReadAllText(dotnet, Encoding.UTF8)
-            .Replace("w('WebAssembly resource does not have the expected content type \"application/wasm\", so falling back to slower ArrayBuffer instantiation.')", "true"));
+            .Replace("E('WebAssembly resource does not have the expected content type \"application/wasm\", so falling back to slower ArrayBuffer instantiation.')", "true"));
     }
 
     private void PatchThreading ()
