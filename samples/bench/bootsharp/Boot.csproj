@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0-browser</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
         <!-- NOTE: Embedding doesn't affect runtime performance, leaving it for future reference. -->
         <BootsharpEmbedBinaries>false</BootsharpEmbedBinaries>

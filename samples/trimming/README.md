@@ -6,7 +6,8 @@ To test and measure build size:
 
 ### Measurements (KB)
 
-|             | Raw   | Brotli |
-|-------------|-------|--------|
-| .NET 8      | 2,298 | 739    |
-| .NET 9 LLVM | 1,737 | 518    |
+|              | Raw   | Brotli |
+|--------------|-------|--------|
+| .NET 8       | 2,298 | 739    |
+| .NET 9 LLVM  | 1,737 | 518    |
+| .NET 10 LLVM | 1,610 | 482    |

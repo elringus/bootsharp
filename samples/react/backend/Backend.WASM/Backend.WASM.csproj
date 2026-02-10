@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
         <ImplicitUsings>enable</ImplicitUsings>
         <!-- Specify custom name for the generated JavaScript module. -->
@@ -21,9 +21,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bootsharp" Version="*-*"/>
-        <PackageReference Include="Bootsharp.Inject" Version="*-*"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0"/>
+        <PackageReference Include="Bootsharp" Version="0.6.3"/>
+        <PackageReference Include="Bootsharp.Inject" Version="0.6.3"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2"/>
     </ItemGroup>
 
     <ItemGroup>

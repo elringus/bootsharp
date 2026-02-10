@@ -1,4 +1,4 @@
-import { dotnet } from "./bin/Release/net9.0-browser/browser-wasm/publish/dotnet.js";
+import { dotnet } from "./bin/Release/net10.0/browser-wasm/publish/dotnet.js";
 
 /** @returns {Promise<import("../bench.mjs").Exports>} */
 export async function init() {
