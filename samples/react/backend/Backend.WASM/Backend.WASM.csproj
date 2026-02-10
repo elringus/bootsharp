@@ -21,8 +21,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bootsharp" Version="0.6.3"/>
-        <PackageReference Include="Bootsharp.Inject" Version="0.6.3"/>
+        <PackageReference Include="Bootsharp" Version="*-*"/>
+        <PackageReference Include="Bootsharp.Inject" Version="*-*"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2"/>
     </ItemGroup>
 
