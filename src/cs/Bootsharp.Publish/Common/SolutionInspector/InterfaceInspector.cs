@@ -2,10 +2,8 @@ using System.Reflection;
 
 namespace Bootsharp.Publish;
 
-internal sealed class InterfaceInspector (Preferences prefs, TypeConverter converter, string entryAssemblyName)
+internal sealed class InterfaceInspector (Preferences prefs, MethodInspector methods, string entryAssemblyName)
 {
-    private readonly MethodInspector methodInspector = new(prefs, converter);
-
     public InterfaceMeta Inspect (Type interfaceType, InterfaceKind kind)
     {
         var impl = BuildInteropInterfaceImplementationName(interfaceType, kind);
@@ -24,7 +22,7 @@ internal sealed class InterfaceInspector (Preferences prefs, TypeConverter conve
     private MethodMeta CreateMethod (MethodInfo info, InterfaceKind kind, string space)
     {
         var name = WithPrefs(prefs.Event, info.Name, info.Name);
-        return methodInspector.Inspect(info, ResolveMethodKind(kind, info, name)) with {
+        return methods.Inspect(info, ResolveMethodKind(kind, info, name)) with {
             Assembly = entryAssemblyName,
             Space = space,
             Name = name,

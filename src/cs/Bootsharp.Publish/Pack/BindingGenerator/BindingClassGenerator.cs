@@ -20,7 +20,7 @@ internal sealed class BindingClassGenerator
     {
         var sigArgs = string.Join(", ", inv.Arguments.Select(a => a.Name));
         var args = "this._id" + (sigArgs.Length > 0 ? $", {sigArgs}" : "");
-        var @return = inv.ReturnValue.Void ? "" : "return ";
+        var @return = inv.Void ? "" : "return ";
         return $"{inv.JSName}({sigArgs}) {{ {@return}{inv.JSSpace}.{inv.JSName}({args}); }}";
     }
 }

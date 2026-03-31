@@ -447,12 +447,12 @@ public class DeclarationTest : PackTest
                 export interface Item {
                 }
                 export interface Container {
-                    items: Record<string, n.Item>;
+                    items: Map<string, n.Item>;
                 }
             }
 
             export namespace n.Class {
-                export function combine(items: Record<string, n.Item>): n.Container;
+                export function combine(items: Map<string, n.Item>): n.Container;
             }
             """);
     }
@@ -471,12 +471,12 @@ public class DeclarationTest : PackTest
                 export interface Item {
                 }
                 export interface Container {
-                    items: Record<string, n.Item>;
+                    items: Map<string, n.Item>;
                 }
             }
 
             export namespace n.Class {
-                export function combine(items: Record<string, n.Item>): n.Container;
+                export function combine(items: Map<string, n.Item>): n.Container;
             }
             """);
     }
@@ -736,11 +736,15 @@ public class DeclarationTest : PackTest
     {
         AddAssembly(
             WithClass("[JSInvokable] public static string? Foo () => default;"),
-            WithClass("[JSInvokable] public static Task<byte[]?> Bar () => default;"),
+            WithClass("[JSInvokable] public static Task? Bar () => default;"),
+            WithClass("[JSInvokable] public static Task<byte[]?> Baz () => default;"),
+            WithClass("[JSInvokable] public static Task<byte[]?>? Quz () => default;"),
             WithClass("[JSFunction] public static ValueTask<List<string>?> Nya () => default;"));
         Execute();
         Contains("export function foo(): string | null;");
-        Contains("export function bar(): Promise<Uint8Array | null>;");
+        Contains("export function bar(): Promise<void> | null;");
+        Contains("export function baz(): Promise<Uint8Array | null>;");
+        Contains("export function quz(): Promise<Uint8Array | null> | null;");
         Contains("export let nya: () => Promise<Array<string> | null>;");
     }
 
@@ -772,6 +776,15 @@ public class DeclarationTest : PackTest
         Execute();
         Contains("bar?: Array<Array<IFoo<string> | null> | null>;");
         Contains("nya?: Array<Array<IFoo<number> | null> | null>;");
+    }
+
+    [Fact]
+    public void NullableDictionaryValueTypesUnionWithNull ()
+    {
+        AddAssembly(
+            WithClass("[JSFunction] public static Dictionary<string, int?>? Fun (Dictionary<string, string?>? bar) => default;"));
+        Execute();
+        Contains("export let fun: (bar: Map<string, string | null> | undefined) => Map<string, number | null> | null;");
     }
 
     [Fact]
@@ -836,9 +849,9 @@ public class DeclarationTest : PackTest
             WithClass("[JSInvokable] public static Foo TakeBarGiveFoo (Bar b) => default;"),
             WithClass("[JSInvokable] public static Far TakeAllGiveFar (Foo f, Bar b, Far ff) => default;"));
         Execute();
-        Assert.Single(Matches("export interface Foo"));
-        Assert.Single(Matches("export interface Bar"));
-        Assert.Single(Matches("export interface Far"));
+        Once("export interface Foo");
+        Once("export interface Bar");
+        Once("export interface Far");
     }
 
     [Fact]
@@ -988,8 +1001,8 @@ public class DeclarationTest : PackTest
         AddAssembly(With(
             """
             public enum Enum { A, B }
-            public interface IExportedInstancedA { void Inv (string s, Enum e); }
-            public interface IExportedInstancedB { Enum Inv (); }
+            public interface IExportedInstancedA { void Inv (string? s, Enum e); }
+            public interface IExportedInstancedB { Enum? Inv (); }
             public interface IImportedInstancedA { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }
             public interface IImportedInstancedB { Enum Fun (); void NotifyEvt (); }
 
@@ -1007,14 +1020,14 @@ public class DeclarationTest : PackTest
                 onEvt: Event<[]>;
             }
             export interface IExportedInstancedA {
-                inv(s: string, e: Enum): void;
+                inv(s: string | undefined, e: Enum): void;
             }
             export enum Enum {
                 A,
                 B
             }
             export interface IExportedInstancedB {
-                inv(): Enum;
+                inv(): Enum | null;
             }
             export interface IImportedInstancedA {
                 fun(s: string, e: Enum): void;

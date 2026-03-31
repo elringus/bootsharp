@@ -21,7 +21,7 @@ await bootsharp.boot({ root, resources });
 async function measure(dir) {
     let size = 0;
     for await (const entry of await fs.opendir(dir))
-        size += (await fs.stat(`${entry.path}/${entry.name}`)).size;
+        size += (await fs.stat(path.join(dir, entry.name))).size;
     return Math.ceil(size / 1024);
 }
 

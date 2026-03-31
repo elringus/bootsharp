@@ -2,7 +2,7 @@ namespace Bootsharp.Publish;
 
 internal sealed class DeclarationGenerator (Preferences prefs)
 {
-    private readonly MethodDeclarationGenerator methodsGenerator = new();
+    private readonly MethodDeclarationGenerator methodsGenerator = new(prefs);
     private readonly TypeDeclarationGenerator typesGenerator = new(prefs);
 
     public string Generate (SolutionInspection inspection) => JoinLines(0,

@@ -65,6 +65,11 @@ public abstract class TaskTest : IDisposable
         return Regex.Matches(TestedContent, pattern);
     }
 
+    protected void Once (string pattern)
+    {
+        Assert.Single(Matches(pattern));
+    }
+
     protected string ReadProjectFile (string fileName)
     {
         var filePath = Path.Combine(Project.Root, fileName);

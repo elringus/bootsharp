@@ -1,5 +1,5 @@
 import { describe, it, beforeAll, expect } from "vitest";
-import { Test, bootSideload, any, to } from "../cs";
+import { Test, bootSideload } from "../cs";
 
 const TrackType = Test.Types.TrackType;
 
@@ -11,10 +11,24 @@ describe("while bootsharp is not booted", () => {
 
 describe("while bootsharp is booted", () => {
     beforeAll(bootSideload);
-    it("throws when invoking un-assigned JS function from C#", () => {
-        const error = /Failed to invoke '.+' from C#. Make sure to assign function in JavaScript/;
-        any(Test.Program).onMainInvoked = undefined;
-        expect(() => to<() => void>(Test.Program).onMainInvokedSerialized()).throw(error);
+    it("JS functions are unassigned by default", () => {
+        expect(Test.Functions.jSFunction).toBeUndefined();
+        expect(Test.Functions.getString).toBeUndefined();
+        expect(Test.Functions.getStringAsync).toBeUndefined();
+        expect(Test.Functions.getBytes).toBeUndefined();
+        expect(Test.Platform.throwJS).toBeUndefined();
+        expect(Test.Types.RegistryProvider.getRegistry).toBeUndefined();
+        expect(Test.Types.RegistryProvider.getRegistries).toBeUndefined();
+        expect(Test.Types.RegistryProvider.getRegistryMap).toBeUndefined();
+        expect(Test.Types.ImportedStatic.getInstanceAsync).toBeUndefined();
+    });
+    it("errs when invoking unassigned JS function", () => {
+        expect(() => Test.Functions.invokeJSFunction())
+            .throw(/Failed to invoke '.+' from C#. Make sure to assign the function in JavaScript/);
+    });
+    it("doesn't err when invoking assigned JS function", () => {
+        Test.Functions.jSFunction = () => {};
+        Test.Functions.invokeJSFunction();
     });
     it("can invoke C# method", async () => {
         expect(Test.Invokable.joinStrings("foo", "bar")).toStrictEqual("foobar");
@@ -68,8 +82,8 @@ describe("while bootsharp is booted", () => {
                 { id: "bicycle", wheelCount: 2, maxSpeed: 30.5 }
             ],
             tracked: [
-                { id: "tank", trackType: TrackType.Chain, maxSpeed: 20.005 },
-                { id: "tractor", trackType: TrackType.Rubber, maxSpeed: 15.9 }
+                { id: "tank", trackType: TrackType.Chain, maxSpeed: Math.fround(20.005) },
+                { id: "tractor", trackType: TrackType.Rubber, maxSpeed: Math.fround(15.9) }
             ]
         };
         const actual = Test.Types.Registry.echoRegistry(expected);
@@ -91,20 +105,18 @@ describe("while bootsharp is booted", () => {
         ]);
     });
     it("can transfer dictionaries as maps", async () => {
-        // ES6 Map doesn't natively support JSON serialization, so using plain objects.
-        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
-        Test.Types.RegistryProvider.getRegistryMap = () => (<never>{
-            foo: { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] },
-            bar: { wheeled: [{ id: "bar", maxSpeed: 15, wheelCount: 5 }] }
-        });
-        const result = await Test.Types.Registry.mapRegistriesAsync(<never>{
-            baz: { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }] }
-        });
-        expect(result).toStrictEqual({
-            baz: { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }] },
-            foo: { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }] },
-            bar: { wheeled: [{ id: "bar", maxSpeed: 15, wheelCount: 5 }] }
-        });
+        Test.Types.RegistryProvider.getRegistryMap = () => new Map([
+            ["foo", { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }], tracked: [] }],
+            ["bar", { wheeled: [{ id: "bar", maxSpeed: 15, wheelCount: 5 }], tracked: [] }]
+        ]);
+        const result = await Test.Types.Registry.mapRegistriesAsync(new Map([
+            ["baz", { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }], wheeled: [] }]
+        ]));
+        expect(result).toStrictEqual(new Map([
+            ["baz", { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }], wheeled: [] }],
+            ["foo", { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }], tracked: [] }],
+            ["bar", { wheeled: [{ id: "bar", maxSpeed: 15, wheelCount: 5 }], tracked: [] }]
+        ]));
     });
     it("can transfer raw arrays", () => {
         expect(Test.Functions.echoStringArray(["foo", "bar"]))
@@ -143,7 +155,7 @@ describe("while bootsharp is booted", () => {
         expect(multipleArg1).toStrictEqual(1);
         expect(multipleArg2).toStrictEqual({ id: "foo", maxSpeed: 50 });
         expect(multipleArg3).toStrictEqual(TrackType.Rubber);
-        Test.Event.broadcastEventMultiple(255, <never>undefined, TrackType.Chain);
+        Test.Event.broadcastEventMultiple(255, undefined, TrackType.Chain);
         expect(multipleArg1).toStrictEqual(255);
         expect(multipleArg2).toBeUndefined();
         expect(multipleArg3).toStrictEqual(TrackType.Chain);
@@ -181,10 +193,6 @@ describe("while bootsharp is booted", () => {
         expect(Test.Invokable.getIdxEnumOne() === Test.IdxEnum.One).toBeTruthy();
         expect(Test.Invokable.getIdxEnumOne() === Test.IdxEnum.Two).not.toBeTruthy();
     });
-    it("can interop with exported interfaces", async () => {
-        const result = await Test.Program.getExportedArgAndVehicleIdAsync({ id: "foo", maxSpeed: 0 }, "bar");
-        expect(result).toStrictEqual("foobar");
-    });
     it("can interop with imported interfaces", async () => {
         class Imported {
             constructor(private arg: string) { }
@@ -202,6 +210,25 @@ describe("while bootsharp is booted", () => {
         const result2 = await Test.Program.getImportedArgAndVehicleIdAsync({ id: "baz", maxSpeed: 0 }, "nya");
         expect(result1).toStrictEqual("foobar");
         expect(result2).toStrictEqual("baznya");
+    });
+    it("can interop with exported interfaces", async () => {
+        const exported = await Test.Types.ExportedStatic.getInstanceAsync("bar");
+        expect(exported.getInstanceArg()).toStrictEqual("bar");
+        expect(await exported.getVehicleIdAsync({ id: "foo", maxSpeed: 0 })).toStrictEqual("foo");
+        expect(await Test.Program.getExportedArgAndVehicleIdAsync({ id: "foo", maxSpeed: 0 }, "bar")).toStrictEqual("foobar");
+    });
+    it("releases interface instances after use", async () => {
+        class Imported {
+            constructor(private arg: string) { }
+            getInstanceArg() { return this.arg; }
+            async getVehicleIdAsync(vehicle: Test.Types.Vehicle) {
+                await new Promise(res => setTimeout(res, 1));
+                return vehicle.id;
+            }
+        }
+        Test.Types.ImportedStatic.getInstanceAsync = async (arg) => new Imported(arg);
+        expect(await Test.Program.getImportedArgsAndFinalize("qux", "fox")).toStrictEqual(["qux", "fox"]);
+        expect(await Test.Program.getImportedArgsAndFinalize("zip", "zap")).toStrictEqual(["zip", "zap"]);
     });
     it("empty string of a struct is transferred correctly", () => {
         const id = Test.Types.Registry.getWithEmptyId().id;

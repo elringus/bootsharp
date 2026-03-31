@@ -17,6 +17,4 @@ internal sealed record ArgumentMeta
     /// Metadata of the argument's value.
     /// </summary>
     public required ValueMeta Value { get; init; }
-
-    public override string ToString () => $"{Name}: {Value.JSTypeSyntax}";
 }

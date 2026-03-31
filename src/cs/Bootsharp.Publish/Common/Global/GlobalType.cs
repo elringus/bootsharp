@@ -1,6 +1,7 @@
 global using static Bootsharp.Publish.GlobalType;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Text;
 
 namespace Bootsharp.Publish;
 
@@ -22,38 +23,37 @@ internal static class GlobalType
         return type.FullName == "System.Void";
     }
 
-    public static bool IsList (Type type)
+    public static bool IsList (Type type, [NotNullWhen(true)] out Type? element)
     {
-        return type.IsArray || IsGenericList(type) || type.GetInterfaces().Any(IsGenericList);
+        if (type.IsArray) element = type.GetElementType()!;
+        else if (IsList(type)) element = type.GenericTypeArguments[0];
+        else element = null;
+        return element != null;
 
-        bool IsGenericList (Type type) =>
+        static bool IsList (Type type) =>
             type.IsGenericType &&
-            (type.GetGenericTypeDefinition().FullName == typeof(IList<>).FullName ||
-             type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyList<>).FullName);
+            (type.GetGenericTypeDefinition().FullName == typeof(List<>).FullName ||
+             type.GetGenericTypeDefinition().FullName == typeof(IList<>).FullName ||
+             type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyList<>).FullName ||
+             type.GetGenericTypeDefinition().FullName == typeof(ICollection<>).FullName ||
+             type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyCollection<>).FullName);
     }
 
-    public static bool IsDictionary (Type type)
+    public static bool IsDictionary (Type type, [NotNullWhen(true)] out Type? key, [NotNullWhen(true)] out Type? value)
     {
-        return IsGenericDictionary(type) || type.GetInterfaces().Any(IsGenericDictionary);
+        if (IsDictionary(type))
+        {
+            key = type.GenericTypeArguments[0];
+            value = type.GenericTypeArguments[1];
+        }
+        else key = value = null;
+        return key != null;
 
-        bool IsGenericDictionary (Type type) =>
+        static bool IsDictionary (Type type) =>
             type.IsGenericType &&
-            (type.GetGenericTypeDefinition().FullName == typeof(IDictionary<,>).FullName ||
+            (type.GetGenericTypeDefinition().FullName == typeof(Dictionary<,>).FullName ||
+             type.GetGenericTypeDefinition().FullName == typeof(IDictionary<,>).FullName ||
              type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyDictionary<,>).FullName);
-    }
-
-    public static bool IsCollection (Type type)
-    {
-        return type.IsInterface && type.IsGenericType &&
-               (type.GetGenericTypeDefinition().FullName == typeof(ICollection<>).FullName ||
-                type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyCollection<>).FullName);
-    }
-
-    public static Type GetListElementType (Type arrayType)
-    {
-        return arrayType.IsArray
-            ? arrayType.GetElementType()!
-            : arrayType.GenericTypeArguments[0];
     }
 
     public static NullabilityInfo GetNullability (PropertyInfo property)
@@ -66,42 +66,23 @@ internal static class GlobalType
         return new NullabilityInfoContext().Create(parameter);
     }
 
-    public static bool IsNullable (PropertyInfo property)
+    public static bool IsNullable (Type type) => IsNullable(type, out _);
+    public static bool IsNullable (Type type, NullabilityInfo? info) => IsNullable(type, info, out _);
+    public static bool IsNullable (Type type, [NotNullWhen(true)] out Type? value) => IsNullable(type, null, out value);
+    public static bool IsNullable (Type type, NullabilityInfo? info, [NotNullWhen(true)] out Type? value)
     {
-        if (IsNullable(property.PropertyType)) return true;
-        return GetNullability(property).ReadState == NullabilityState.Nullable;
-    }
-
-    public static bool IsNullable (ParameterInfo parameter)
-    {
-        if (IsNullable(parameter.ParameterType)) return true;
-        return GetNullability(parameter).ReadState == NullabilityState.Nullable;
-    }
-
-    public static bool IsNullable (MethodInfo method)
-    {
-        if (IsNullable(method.ReturnParameter)) return true;
-        if (!IsTaskLike(method.ReturnType)) return false;
-        return GetNullability(method.ReturnParameter).GenericTypeArguments
-            .FirstOrDefault()?.ReadState == NullabilityState.Nullable;
-    }
-
-    public static bool IsNullable (Type type)
-    {
-        return type.IsGenericType &&
-               type.Name.Contains("Nullable`") &&
-               type.GenericTypeArguments.Length == 1;
-    }
-
-    public static Type GetNullableUnderlyingType (Type type)
-    {
-        return type.GenericTypeArguments[0];
+        if (info?.ReadState == NullabilityState.Nullable) value = type;
+        else if (type.IsGenericType && type.Name.Contains("Nullable`") && type.GenericTypeArguments.Length == 1)
+            value = type.GenericTypeArguments[0];
+        else value = null;
+        return value != null;
     }
 
     public static bool IsAutoProperty (PropertyInfo property)
     {
         var backingFieldName = $"<{property.Name}>k__BackingField";
-        var backingField = property.DeclaringType!.GetField(backingFieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+        var backingField = property.DeclaringType!.GetField(backingFieldName,
+            BindingFlags.NonPublic | BindingFlags.Instance);
         return backingField != null;
     }
 
@@ -114,11 +95,8 @@ internal static class GlobalType
     public static bool IsInstancedInteropInterface (Type type, [NotNullWhen(true)] out Type? instanceType)
     {
         if (IsTaskWithResult(type, out instanceType))
-            return IsInstancedInteropInterface(instanceType, out _);
-        instanceType = type;
-        if (!type.IsInterface) return false;
-        if (string.IsNullOrEmpty(type.Namespace)) return true;
-        return !type.Namespace.StartsWith("System.", StringComparison.Ordinal);
+            return IsInstancedInteropInterface(instanceType, out instanceType);
+        return (instanceType = type.IsInterface && IsUserType(type) ? type : null) != null;
     }
 
     public static string BuildJSSpace (Type type, Preferences prefs)
@@ -144,7 +122,8 @@ internal static class GlobalType
         return string.IsNullOrEmpty(space) ? name : $"{space}.{name}";
     }
 
-    public static (string space, string name, string full) BuildInteropInterfaceImplementationName (Type instanceType, InterfaceKind kind)
+    public static (string space, string name, string full) BuildInteropInterfaceImplementationName
+        (Type instanceType, InterfaceKind kind)
     {
         var space = "Bootsharp.Generated." + (kind == InterfaceKind.Export ? "Exports" : "Imports");
         if (instanceType.Namespace != null) space += $".{instanceType.Namespace}";
@@ -168,27 +147,30 @@ internal static class GlobalType
         return inter.FullName.Replace("Bootsharp.Generated.Exports.", "").Replace(".", "_");
     }
 
-    public static string BuildTypeInfo (Type type)
+    public static string BuildSerializedId (Type type)
     {
-        var syntax = IsTaskWithResult(type, out var result) ? BuildSyntax(result) : BuildSyntax(type);
-        return $"X{HashStable(syntax):X}";
+        var builder = new StringBuilder();
+        foreach (var c in BuildSyntax(type).Replace("global::", ""))
+            if (char.IsLetterOrDigit(c) || c == '_') builder.Append(c);
+            else if (c == '.') builder.Append('_');
+            else if (c == '?') builder.Append("OrNull");
+            else if (c == '[') builder.Append("Array");
+            else if (c == '<') builder.Append("_Of_");
+            else if (c == ',') builder.Append("_And_");
+        return builder.ToString();
     }
 
-    public static string BuildSyntax (Type type) => BuildSyntax(type, null, false);
-
-    public static string BuildSyntax (Type type, ParameterInfo info) => BuildSyntax(type, GetNullability(info));
-
-    private static string BuildSyntax (Type type, NullabilityInfo? nul, bool forceNil = false)
+    public static string BuildSyntax (Type type, NullabilityInfo? nul = null, bool forceNil = false)
     {
         var nil = (forceNil || nul?.ReadState == NullabilityState.Nullable) ? "?" : "";
         if (IsVoid(type)) return "void";
-        if (type.IsArray) return $"{BuildSyntax(GetListElementType(type), nul?.ElementType)}[]{nil}";
+        if (type.IsArray) return $"{BuildSyntax(type.GetElementType()!, nul?.ElementType)}[]{nil}";
         if (type.IsGenericType) return BuildGeneric(type, type.GenericTypeArguments);
         return $"global::{ResolveTypeName(type)}{nil}";
 
         string BuildGeneric (Type type, Type[] args)
         {
-            if (IsNullable(type)) return BuildSyntax(args[0], nul, true);
+            if (IsNullable(type, out var value)) return BuildSyntax(value, nul, true);
             var name = GetGenericNameWithoutArgs(ResolveTypeName(type));
             var typeArgs = string.Join(", ", args.Select((a, i) => BuildSyntax(a, nul?.GenericTypeArguments[i])));
             return $"global::{name}<{typeArgs}>";
@@ -198,17 +180,6 @@ internal static class GlobalType
         {
             if (type.Namespace is null) return type.Name;
             return $"{type.Namespace}.{type.Name}";
-        }
-    }
-
-    private static int HashStable (this string str)
-    {
-        unchecked
-        {
-            var hash = 17;
-            foreach (char c in str)
-                hash = (hash * 31) + c;
-            return hash;
         }
     }
 }

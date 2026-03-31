@@ -8,15 +8,15 @@ internal sealed class SolutionInspector
     private readonly List<InterfaceMeta> instancedInterfaces = [];
     private readonly List<MethodMeta> staticMethods = [];
     private readonly List<string> warnings = [];
-    private readonly TypeConverter converter;
+    private readonly TypeInspector typeInspector = new();
+    private readonly SerializedInspector serdeInspector = new();
     private readonly MethodInspector methodInspector;
     private readonly InterfaceInspector interfaceInspector;
 
     public SolutionInspector (Preferences prefs, string entryAssemblyName)
     {
-        converter = new(prefs);
-        methodInspector = new(prefs, converter);
-        interfaceInspector = new(prefs, converter, entryAssemblyName);
+        methodInspector = new(prefs, typeInspector, serdeInspector);
+        interfaceInspector = new(prefs, methodInspector, entryAssemblyName);
     }
 
     /// <summary>
@@ -35,24 +35,26 @@ internal sealed class SolutionInspector
 
     private void InspectAssemblyFile (string assemblyPath, MetadataLoadContext ctx)
     {
-        if (!ShouldIgnoreAssembly(assemblyPath))
+        var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
+        if (IsUserAssembly(assemblyName))
             InspectAssembly(ctx.LoadFromAssemblyPath(assemblyPath));
     }
 
     private void AddSkippedAssemblyWarning (string assemblyPath, Exception exception)
     {
-        var assemblyName = Path.GetFileName(assemblyPath);
-        var message = $"Failed to inspect '{assemblyName}' assembly; " +
+        var fileName = Path.GetFileName(assemblyPath);
+        var message = $"Failed to inspect '{fileName}' assembly; " +
                       $"affected methods won't be available in JavaScript. Error: {exception.Message}";
         warnings.Add(message);
     }
 
     private SolutionInspection CreateInspection (MetadataLoadContext ctx) => new(ctx) {
-        StaticInterfaces = [..staticInterfaces.DistinctBy(i => i.FullName)],
-        InstancedInterfaces = [..instancedInterfaces.DistinctBy(i => i.FullName)],
-        StaticMethods = [..staticMethods],
-        Crawled = [..converter.CrawledTypes],
-        Warnings = [..warnings]
+        StaticInterfaces = staticInterfaces.DistinctBy(i => i.FullName).ToArray(),
+        InstancedInterfaces = instancedInterfaces.DistinctBy(i => i.FullName).ToArray(),
+        StaticMethods = staticMethods.ToArray(),
+        Types = typeInspector.Collect(),
+        Serialized = serdeInspector.Collect(),
+        Warnings = warnings.ToArray()
     };
 
     private void InspectAssembly (Assembly assembly)
@@ -114,12 +116,11 @@ internal sealed class SolutionInspector
 
     private void InspectMethodParameters (MethodMeta meta, InterfaceKind kind)
     {
-        // When interop instance is an argument of exported method, it's imported (JS) API and vice-versa.
+        // When interop instance is an argument of exported method, it's imported (JS) API and vice versa.
         var argKind = kind == InterfaceKind.Export ? InterfaceKind.Import : InterfaceKind.Export;
         foreach (var arg in meta.Arguments)
-            InspectMethodParameter(arg.Value.Type, argKind);
-        if (!meta.ReturnValue.Void)
-            InspectMethodParameter(meta.ReturnValue.Type, kind);
+            InspectMethodParameter(arg.Value.Type.Clr, argKind);
+        if (!meta.Void) InspectMethodParameter(meta.ReturnValue.Type.Clr, kind);
     }
 
     private void InspectMethodParameter (Type paramType, InterfaceKind kind)
