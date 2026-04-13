@@ -21,10 +21,6 @@ public class BindingTest : PackTest
             import { exports } from "./exports";
             import { Event } from "./event";
             import { registerInstance, getInstance, disposeOnFinalize } from "./instances";
-
-            function getExports() { if (exports == null) throw Error("Boot the runtime before invoking C# APIs."); return exports; }
-            function serialize(obj) { return JSON.stringify(obj); }
-            function deserialize(json) { const result = JSON.parse(json); if (result === null) return undefined; return result; }
             """);
     }
 
@@ -57,7 +53,7 @@ public class BindingTest : PackTest
                     Class: {
                         get fun() { return this.funHandler; },
                         set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                        get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Foo.Bar.Class.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
+                        get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "Foo.Bar.Class.fun"); }
                     }
                 }
             };
@@ -133,7 +129,7 @@ public class BindingTest : PackTest
                     Class: {
                         get fun() { return this.funHandler; },
                         set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                        get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Bar.Nya.Class.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
+                        get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "Bar.Nya.Class.fun"); }
                     }
                 }
             };
@@ -151,13 +147,13 @@ public class BindingTest : PackTest
         AddAssembly(WithClass("Foo", "[JSInvokable] public static void Bar () {}"));
         AddAssembly(WithClass("Foo", "[JSFunction] public static void Fun () {}"));
         Execute();
-        Assert.Single(Matches("export const Foo"));
+        Once("export const Foo");
         Contains("bar: () => getExports().Foo_Class_Bar()");
         Contains(
             """
                     get fun() { return this.funHandler; },
                     set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                    get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Foo.Class.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
+                    get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "Foo.Class.fun"); }
             """);
     }
 
@@ -175,7 +171,7 @@ public class BindingTest : PackTest
                     Class: {
                         get fun() { return this.funHandler; },
                         set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                        get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Nya.Bar.Class.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
+                        get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "Nya.Bar.Class.fun"); }
                     }
                 },
                 Foo: {
@@ -225,7 +221,7 @@ public class BindingTest : PackTest
                     Class: {
                         get fun() { return this.funHandler; },
                         set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                        get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Bar.Nya.Class.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
+                        get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "Bar.Nya.Class.fun"); }
                     }
                 }
             };
@@ -252,7 +248,7 @@ public class BindingTest : PackTest
             export const ClassB = {
                 get fun() { return this.funHandler; },
                 set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'ClassB.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
+                get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "ClassB.fun"); }
             };
             """);
     }
@@ -270,7 +266,7 @@ public class BindingTest : PackTest
                 nya: () => getExports().Class_Nya(),
                 get fun() { return this.funHandler; },
                 set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Class.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; }
+                get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "Class.fun"); }
             };
             """);
     }
@@ -289,27 +285,109 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void SerializesCustomType ()
+    public void SerializesUserType ()
     {
         AddAssembly(
-            With("public record Info;"),
+            With("public record Info (DateTimeOffset Date, nint Ptr, Info? Self);"),
             WithClass("[JSInvokable] public static Info Foo (Info i) => default;"),
             WithClass("[JSFunction] public static Info? Bar (Info? i) => default;"),
-            WithClass("[JSEvent] public static void Baz (Info?[] i) {}"),
+            WithClass("[JSEvent] public static void Baz (Info?[]? i) {}"),
             WithClass("[JSEvent] public static void Yaz (int a, Info i) {}"));
         Execute();
         Contains(
             """
             export const Class = {
-                foo: (i) => deserialize(getExports().Class_Foo(serialize(i))),
+                foo: (i) => deserialize(getExports().Class_Foo(serialize(i, Info)), Info),
                 get bar() { return this.barHandler; },
-                set bar(handler) { this.barHandler = handler; this.barSerializedHandler = (i) => serialize(this.barHandler(deserialize(i))); },
-                get barSerialized() { if (typeof this.barHandler !== "function") throw Error("Failed to invoke 'Class.bar' from C#. Make sure to assign function in JavaScript."); return this.barSerializedHandler; },
+                set bar(handler) { this.barHandler = handler; this.barSerializedHandler = (i) => serialize(this.barHandler(deserialize(i, Info)), Info); },
+                get barSerialized() { return getImport(this.barHandler, this.barSerializedHandler, "Class.bar"); },
                 baz: new Event(),
-                bazSerialized: (i) => Class.baz.broadcast(deserialize(i)),
+                bazSerialized: (i) => Class.baz.broadcast(deserialize(i, InfoArray) ?? undefined),
                 yaz: new Event(),
-                yazSerialized: (a, i) => Class.yaz.broadcast(a, deserialize(i))
+                yazSerialized: (a, i) => Class.yaz.broadcast(a, deserialize(i, Info))
             };
+            """);
+    }
+
+    [Fact]
+    public void SerializesPrimitivesUnderUserType ()
+    {
+        AddAssembly(With(
+            """
+            namespace Space;
+
+            public struct Structure;
+            public enum Enumeration { A, B }
+
+            public record Node(
+                bool Boolean,
+                byte Byte,
+                sbyte SByte,
+                short Int16,
+                ushort UInt16,
+                uint UInt32,
+                long Int64,
+                ulong UInt64,
+                float Single,
+                decimal Decimal,
+                char Char,
+                string String,
+                DateTime DateTime,
+                DateTimeOffset DateTimeOffset,
+                nint NInt,
+                int Int,
+                int? NullableInt,
+                Structure Struct,
+                Structure? NullableStruct,
+                Enumeration Enum,
+                Enumeration? NullableEnum);
+
+            public class Class
+            {
+                [JSInvokable] public static Node Echo (Node node) => node;
+            }
+            """));
+        Execute();
+        Contains("const System_Boolean = types.Boolean;");
+        Contains("const System_Byte = types.Byte;");
+        Contains("const System_SByte = types.SByte;");
+        Contains("const System_Int16 = types.Int16;");
+        Contains("const System_UInt16 = types.UInt16;");
+        Contains("const System_UInt32 = types.UInt32;");
+        Contains("const System_Int64 = types.Int64;");
+        Contains("const System_UInt64 = types.UInt64;");
+        Contains("const System_Single = types.Single;");
+        Contains("const System_Decimal = types.Decimal;");
+        Contains("const System_Char = types.Char;");
+        Contains("const System_String = types.String;");
+        Contains("const System_DateTime = types.DateTime;");
+        Contains("const System_DateTimeOffset = types.DateTimeOffset;");
+        Contains("const System_IntPtr = types.IntPtr;");
+        Contains("const System_Int32 = types.Int32;");
+        Contains("const System_Int32OrNull = types.Nullable(System_Int32);");
+        Contains("const Space_Structure = binary(write_Space_Structure, read_Space_Structure);");
+        Contains("const Space_StructureOrNull = types.Nullable(Space_Structure);");
+        Contains("const Space_Enumeration = types.Int32;");
+        Contains("const Space_EnumerationOrNull = types.Nullable(Space_Enumeration);");
+    }
+
+    [Fact]
+    public void OrdersSelfReferencedElementBeforeCollection ()
+    {
+        AddAssembly(With(
+            """
+            public record Node (List<Node>? Children);
+
+            public class Class
+            {
+                [JSInvokable] public static Node Echo (Node node) => node;
+            }
+            """));
+        Execute();
+        Contains(
+            """
+            const Node = binary(write_Node, read_Node);
+            const System_Collections_Generic_List_Of_Node = types.List(Node);
             """);
     }
 
@@ -326,14 +404,14 @@ public class BindingTest : PackTest
         Contains(
             """
             export const Class = {
-                foo: async (i) => deserialize(await getExports().Class_Foo(serialize(i))),
+                foo: async (i) => deserialize(await getExports().Class_Foo(serialize(i, Info)), Info),
                 get bar() { return this.barHandler; },
-                set bar(handler) { this.barHandler = handler; this.barSerializedHandler = async (i) => serialize(await this.barHandler(deserialize(i))); },
-                get barSerialized() { if (typeof this.barHandler !== "function") throw Error("Failed to invoke 'Class.bar' from C#. Make sure to assign function in JavaScript."); return this.barSerializedHandler; },
-                baz: async () => deserialize(await getExports().Class_Baz()),
+                set bar(handler) { this.barHandler = handler; this.barSerializedHandler = async (i) => serialize(await this.barHandler(deserialize(i, Info)), Info); },
+                get barSerialized() { return getImport(this.barHandler, this.barSerializedHandler, "Class.bar"); },
+                baz: async () => deserialize(await getExports().Class_Baz(), System_Collections_Generic_IReadOnlyList_Of_Info),
                 get yaz() { return this.yazHandler; },
-                set yaz(handler) { this.yazHandler = handler; this.yazSerializedHandler = async () => serialize(await this.yazHandler()); },
-                get yazSerialized() { if (typeof this.yazHandler !== "function") throw Error("Failed to invoke 'Class.yaz' from C#. Make sure to assign function in JavaScript."); return this.yazSerializedHandler; }
+                set yaz(handler) { this.yazHandler = handler; this.yazSerializedHandler = async () => serialize(await this.yazHandler(), System_Collections_Generic_IReadOnlyList_Of_Info); },
+                get yazSerialized() { return getImport(this.yazHandler, this.yazSerializedHandler, "Class.yaz"); }
             };
             """);
     }
@@ -349,11 +427,25 @@ public class BindingTest : PackTest
             """
             export const n = {
                 Class: {
-                    getFoo: () => deserialize(getExports().n_Class_GetFoo()),
+                    getFoo: () => deserialize(getExports().n_Class_GetFoo(), n_Foo),
                     Foo: { "0": "A", "1": "B", "A": 0, "B": 1 }
                 }
             };
             """);
+    }
+
+    [Fact]
+    public void DoesntDeclareSystemEnums ()
+    {
+        AddAssembly(
+            WithClass("n", "public enum Foo { A, B }"),
+            WithClass("n", "[JSInvokable] public static Task<Foo> GetFoo () => default;"));
+        Execute();
+        Contains("Foo");
+        DoesNotContain("LayoutKind");
+        DoesNotContain("SecurityRuleSet");
+        DoesNotContain("MethodAttributes");
+        DoesNotContain("MethodImplAttributes");
     }
 
     [Fact]
@@ -368,7 +460,7 @@ public class BindingTest : PackTest
             export const n = {
                 Foo: { "1": "A", "6": "B", "A": 1, "B": 6 },
                 Class: {
-                    getFoo: () => deserialize(getExports().n_Class_GetFoo())
+                    getFoo: () => deserialize(getExports().n_Class_GetFoo(), n_Foo)
                 }
             };
             """);
@@ -393,7 +485,7 @@ public class BindingTest : PackTest
                 Class: {
                     get onFun() { return this.onFunHandler; },
                     set onFun(handler) { this.onFunHandler = handler; this.onFunSerializedHandler = () => this.onFunHandler(); },
-                    get onFunSerialized() { if (typeof this.onFunHandler !== "function") throw Error("Failed to invoke 'Fun.Class.onFun' from C#. Make sure to assign function in JavaScript."); return this.onFunSerializedHandler; }
+                    get onFunSerialized() { return getImport(this.onFunHandler, this.onFunSerializedHandler, "Fun.Class.onFun"); }
                 }
             };
             export const Nya = {
@@ -456,14 +548,14 @@ public class BindingTest : PackTest
             export const Space = {
                 Enum: { "0": "A", "1": "B", "A": 0, "B": 1 },
                 Exported: {
-                    inv: (s, e) => getExports().Bootsharp_Generated_Exports_Space_JSExported_Inv(s, serialize(e))
+                    inv: (s, e) => getExports().Bootsharp_Generated_Exports_Space_JSExported_Inv(s, serialize(e, Space_Enum))
                 },
                 Imported: {
                     get fun() { return this.funHandler; },
-                    set fun(handler) { this.funHandler = handler; this.funSerializedHandler = (s, e) => this.funHandler(s, deserialize(e)); },
-                    get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Space.Imported.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; },
+                    set fun(handler) { this.funHandler = handler; this.funSerializedHandler = (s, e) => this.funHandler(s, deserialize(e, Space_Enum)); },
+                    get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "Space.Imported.fun"); },
                     onEvt: new Event(),
-                    onEvtSerialized: (s, e) => Space.Imported.onEvt.broadcast(s, deserialize(e))
+                    onEvtSerialized: (s, e) => Space.Imported.onEvt.broadcast(s, deserialize(e, Space_Enum))
                 }
             };
             """);
@@ -489,12 +581,12 @@ public class BindingTest : PackTest
         Contains(
             """
             export const Foo = {
-                inv: (s, e) => getExports().Bootsharp_Generated_Exports_Space_JSExported_Inv(s, serialize(e)),
+                inv: (s, e) => getExports().Bootsharp_Generated_Exports_Space_JSExported_Inv(s, serialize(e, Space_Enum)),
                 get fun() { return this.funHandler; },
-                set fun(handler) { this.funHandler = handler; this.funSerializedHandler = (s, e) => this.funHandler(s, deserialize(e)); },
-                get funSerialized() { if (typeof this.funHandler !== "function") throw Error("Failed to invoke 'Foo.fun' from C#. Make sure to assign function in JavaScript."); return this.funSerializedHandler; },
+                set fun(handler) { this.funHandler = handler; this.funSerializedHandler = (s, e) => this.funHandler(s, deserialize(e, Space_Enum)); },
+                get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "Foo.fun"); },
                 onEvt: new Event(),
-                onEvtSerialized: (s, e) => Foo.onEvt.broadcast(s, deserialize(e)),
+                onEvtSerialized: (s, e) => Foo.onEvt.broadcast(s, deserialize(e, Space_Enum)),
                 Enum: { "0": "A", "1": "B", "A": 0, "B": 1 }
             };
             """);
@@ -540,20 +632,20 @@ public class BindingTest : PackTest
                 getExported: async (inst) => new Space_JSExported(await getExports().Class_GetExported(registerInstance(inst))),
                 get getImported() { return this.getImportedHandler; },
                 set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = async (inst) => registerInstance(await this.getImportedHandler(new JSExported(inst))); },
-                get getImportedSerialized() { if (typeof this.getImportedHandler !== "function") throw Error("Failed to invoke 'Class.getImported' from C#. Make sure to assign function in JavaScript."); return this.getImportedSerializedHandler; }
+                get getImportedSerialized() { return getImport(this.getImportedHandler, this.getImportedSerializedHandler, "Class.getImported"); }
             };
             export const Exported = {
-                inv: (_id, str) => deserialize(getExports().Bootsharp_Generated_Exports_JSExported_Inv(_id, str))
+                inv: (_id, str) => deserialize(getExports().Bootsharp_Generated_Exports_JSExported_Inv(_id, str), Enum)
             };
             export const Imported = {
                 onEvtSerialized: (_id, str) => getInstance(_id).onEvt.broadcast(str)
             };
             export const Space = {
                 Exported: {
-                    inv: (_id, en) => getExports().Bootsharp_Generated_Exports_Space_JSExported_Inv(_id, serialize(en))
+                    inv: (_id, en) => getExports().Bootsharp_Generated_Exports_Space_JSExported_Inv(_id, serialize(en, Enum))
                 },
                 Imported: {
-                    funSerialized: (_id, en) => serialize(getInstance(_id).fun(deserialize(en)))
+                    funSerialized: (_id, en) => serialize(getInstance(_id).fun(deserialize(en, Enum)), Enum)
                 }
             };
             """);

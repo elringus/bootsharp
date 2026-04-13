@@ -19,8 +19,8 @@ internal sealed class SolutionInspection (MetadataLoadContext ctx) : IDisposable
     /// </summary>
     public required IReadOnlyCollection<InterfaceMeta> StaticInterfaces { get; init; }
     /// <summary>
-    /// Interop interfaces found in interop method arguments or return values. Such
-    /// interfaces are considered instanced interop APIs, ie stateful objects with
+    /// Interop interfaces found in interop method arguments or return values.
+    /// Such interfaces are considered instanced interop APIs, ie stateful objects with
     /// interop methods/functions. Both methods of <see cref="StaticInterfaces"/> and
     /// <see cref="StaticMethods"/> can be sources of the instanced interfaces.
     /// </summary>
@@ -31,13 +31,15 @@ internal sealed class SolutionInspection (MetadataLoadContext ctx) : IDisposable
     /// </summary>
     public required IReadOnlyCollection<MethodMeta> StaticMethods { get; init; }
     /// <summary>
-    /// Types referenced on the interop methods (both static and on interfaces),
-    /// as well as types they depend on (ie, implemented interfaces).
-    /// Basically, all the types that have to pass interop boundary.
+    /// All the types that cross the interop boundary or referenced by them.
     /// </summary>
-    public required IReadOnlyCollection<Type> Crawled { get; init; }
+    public required IReadOnlyCollection<TypeMeta> Types { get; init; }
     /// <summary>
-    /// Warnings logged while inspecting solution.
+    /// All the types that require serialization to cross the interop boundary.
+    /// </summary>
+    public required IReadOnlyCollection<SerializedMeta> Serialized { get; init; }
+    /// <summary>
+    /// Warnings logged while inspecting the solution.
     /// </summary>
     public required IReadOnlyCollection<string> Warnings { get; init; }
 

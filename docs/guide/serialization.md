@@ -13,6 +13,8 @@ Most simple types, such as numbers, booleans, strings, arrays (lists) and promis
 | float    | Number     |   ✔️    |    ❌     |
 | DateTime | Date       |   ✔️    |    ❌     |
 
+When serializing nullable inputs from JavaScript, Bootsharp accepts both `null` and `undefined`. Generated TypeScript declarations then use a contextual convention for emitted APIs, such as `| undefined` for nullable method arguments and `| null` for nullable return values and collection elements. Refer to the [nullability guide](/guide/nullability) for the exact rules and examples.
+
 When a value of non-natively supported type is specified in an interop API, Bootsharp will attempt to de-/serialize it with [System.Text.JSON](https://learn.microsoft.com/en-us/dotnet/api/system.text.json) using fast source-generation mode. The whole process is encapsulated under the hood on both the C# and JavaScript sides, so you don't have to manually author generator hints or specify `[MarshallAs]` attributes for each value:
 
 ```csharp
@@ -62,7 +64,7 @@ console.log(Program.Options[1]); // "Bar"
 
 ## Dictionary Serialization
 
-ES6 [Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) doesn't natively support JSON serialization, hence Bootsharp will use plain objects when serializing C# dictionaries:
+Bootsharp marshals C# dictionaries as ES6 [Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map):
 
 ```csharp
 [JSInvokable]
@@ -70,14 +72,14 @@ public static Dictionary<string, bool> GetMap () =>
     new () { ["foo"] = true, ["bar"] = false };
 ```
 
-— the dictionary can be accessed via keys as usual JavaScript object:
+— the dictionary can be accessed with standard `Map` APIs:
 
 ```ts
 import { Program } from "bootsharp";
 
 const map = Program.getMap();
-console.log(map.foo); // true
-console.log(map["bar"]); // false
+console.log(map.get("foo")); // true
+console.log(map.get("bar")); // false
 ```
 
 ## Collection Interfaces
@@ -94,5 +96,5 @@ public static IReadOnlyDictionary<string, float> Map (
 import { Program } from "bootsharp";
 
 const map = Program.map(["foo", "bar"], [0, 7]);
-console.log(map.bar); // 7
+console.log(map.get("bar")); // 7
 ```

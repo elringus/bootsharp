@@ -43,4 +43,19 @@ public static partial class Program
         var instance = await imported.GetInstanceAsync(arg);
         return await instance.GetVehicleIdAsync(vehicle) + instance.GetInstanceArg();
     }
+
+    [JSInvokable]
+    public static async Task<string[]> GetImportedArgsAndFinalize (string arg1, string arg2)
+    {
+        var imported = services.GetService<IImportedStatic>()!;
+        var instance1 = await imported.GetInstanceAsync(arg1);
+        var instance2 = await imported.GetInstanceAsync(arg2);
+        var result = new[] { instance1.GetInstanceArg(), instance2.GetInstanceArg() };
+        instance1 = null!;
+        instance2 = null!;
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        return result;
+    }
 }

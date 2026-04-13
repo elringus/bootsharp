@@ -45,10 +45,34 @@ internal sealed record MethodMeta
     /// Metadata of the value returned by the method.
     /// </summary>
     public required ValueMeta ReturnValue { get; init; }
+    /// <summary>
+    /// Whether the <see cref="ReturnValue"/> is void.
+    /// </summary>
+    public required bool Void { get; init; }
+    /// <summary>
+    /// Whether the <see cref="ReturnValue"/> is task-like (can be awaited).
+    /// </summary>
+    public required bool Async { get; init; }
+}
 
-    public override string ToString ()
-    {
-        var args = string.Join(", ", Arguments.Select(a => a.ToString()));
-        return $"[{Kind}] {Assembly}.{Space}.{Name} ({args}) => {ReturnValue}";
-    }
+/// <summary>
+/// Type of interop method.
+/// </summary>
+internal enum MethodKind
+{
+    /// <summary>
+    /// The method is implemented in C# and invoked from JavaScript;
+    /// implementation has <see cref="JSInvokableAttribute"/>.
+    /// </summary>
+    Invokable,
+    /// <summary>
+    /// The method is implemented in JavaScript and invoked from C#;
+    /// implementation has <see cref="JSFunctionAttribute"/>.
+    /// </summary>
+    Function,
+    /// <summary>
+    /// The method is invoked from C# to notify subscribers in JavaScript;
+    /// implementation has <see cref="JSEventAttribute"/>.
+    /// </summary>
+    Event
 }

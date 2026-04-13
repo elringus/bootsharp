@@ -10,19 +10,19 @@ jobs:
   cover:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: setup dotnet
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 9
-      - uses: actions/setup-node@v4
+          dotnet-version: 10
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
       - name: cover
         run: |
           cd src/js
           npm install
-          bash scripts/build.sh
+          npm run build
           cd ../cs
           dotnet workload restore
           mkdir .nuget
@@ -39,7 +39,7 @@ jobs:
           cd ../..
           npm run cover
       - name: upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v6
         with:
           fail_ci_if_error: true
         env:

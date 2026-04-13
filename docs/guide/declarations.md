@@ -81,10 +81,21 @@ export namespace Foo {
 ```ts [main.ts]
 import { Foo } from "bootsharp";
 
-Foo.onBar.subscribe(pyaload => {});
+Foo.onBar.subscribe(payload => {});
 ```
 
 :::
+
+## Nullability
+
+Bootsharp uses different TypeScript nullish forms depending on where a nullable C# value appears:
+
+- nullable method arguments become `| undefined`
+- nullable properties become optional with `?`
+- nullable return values become `| null`
+- nullable collection elements and dictionary values become `| null`
+
+This is intentional and optimized for TypeScript ergonomics. Refer to the dedicated [nullability guide](/guide/nullability) for the full convention and examples.
 
 ## Type Crawling
 

@@ -2,9 +2,10 @@ using System.Text;
 
 namespace Bootsharp.Publish;
 
-internal sealed class MethodDeclarationGenerator
+internal sealed class MethodDeclarationGenerator (Preferences prefs)
 {
     private readonly StringBuilder builder = new();
+    private readonly TypeSyntaxBuilder typeBuilder = new(prefs);
 
     private MethodMeta method => methods[index];
     private MethodMeta? prevMethod => index == 0 ? null : methods[index - 1];
@@ -57,34 +58,21 @@ internal sealed class MethodDeclarationGenerator
     private void DeclareInvokable ()
     {
         builder.Append($"\n    export function {method.JSName}(");
-        builder.AppendJoin(", ", method.Arguments.Select(BuildArgumentDeclaration));
-        builder.Append($"): {BuildReturnDeclaration(method)};");
+        builder.AppendJoin(", ", method.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
+        builder.Append($"): {typeBuilder.BuildReturn(method)};");
     }
 
     private void DeclareFunction ()
     {
         builder.Append($"\n    export let {method.JSName}: (");
-        builder.AppendJoin(", ", method.Arguments.Select(BuildArgumentDeclaration));
-        builder.Append($") => {BuildReturnDeclaration(method)};");
+        builder.AppendJoin(", ", method.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
+        builder.Append($") => {typeBuilder.BuildReturn(method)};");
     }
 
     private void DeclareEvent ()
     {
         builder.Append($"\n    export const {method.JSName}: Event<[");
-        builder.AppendJoin(", ", method.Arguments.Select(BuildArgumentDeclaration));
+        builder.AppendJoin(", ", method.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
         builder.Append("]>;");
-    }
-
-    private string BuildArgumentDeclaration (ArgumentMeta arg)
-    {
-        return $"{arg.JSName}: {arg.Value.JSTypeSyntax}{(arg.Value.Nullable ? " | undefined" : "")}";
-    }
-
-    private string BuildReturnDeclaration (MethodMeta method)
-    {
-        if (!method.ReturnValue.Nullable) return method.ReturnValue.JSTypeSyntax;
-        if (!method.ReturnValue.Async) return $"{method.ReturnValue.JSTypeSyntax} | null";
-        var insertIndex = method.ReturnValue.JSTypeSyntax.Length - 1;
-        return method.ReturnValue.JSTypeSyntax.Insert(insertIndex, " | null");
     }
 }

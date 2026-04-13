@@ -6,6 +6,12 @@ namespace Test;
 
 public static partial class Functions
 {
+    [JSFunction]
+    public static partial void JSFunction ();
+
+    [JSInvokable]
+    public static void InvokeJSFunction () => JSFunction();
+
     [JSInvokable]
     public static string EchoString () => GetString();
 

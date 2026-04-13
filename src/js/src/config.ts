@@ -55,7 +55,7 @@ export async function buildConfig(resources: BootResources, root?: string): Prom
         if (typeof window === "object")
             return (await fetch(path)).arrayBuffer();
         if (typeof process === "object") {
-            const { readFile } = await import("fs/promises");
+            const { readFile } = await import(/*@vite-ignore*//*webpackIgnore:true*/"fs/promises");
             const bin = await readFile(path);
             return <ArrayBuffer>bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.byteLength);
         }

@@ -17,13 +17,16 @@ internal static class GlobalInspection
         return new MetadataLoadContext(resolver);
     }
 
-    public static bool ShouldIgnoreAssembly (string filePath)
+    public static bool IsUserAssembly (string assemblyName) =>
+        !assemblyName.StartsWith("System.", StringComparison.OrdinalIgnoreCase) &&
+        !assemblyName.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase) &&
+        !assemblyName.StartsWith("netstandard", StringComparison.OrdinalIgnoreCase) &&
+        !assemblyName.StartsWith("mscorlib", StringComparison.OrdinalIgnoreCase);
+
+    public static bool IsUserType (Type type)
     {
-        var assemblyName = Path.GetFileName(filePath);
-        return assemblyName.StartsWith("System.") ||
-               assemblyName.StartsWith("Microsoft.") ||
-               assemblyName.StartsWith("netstandard") ||
-               assemblyName.StartsWith("mscorlib");
+        if (type.IsArray) return false;
+        return IsUserAssembly(type.Assembly.FullName!);
     }
 
     public static string WithPrefs (IReadOnlyCollection<Preference> prefs, string input, string @default)

@@ -3,6 +3,7 @@ import { BootResources, resources } from "./resources";
 import { buildConfig } from "./config";
 import { bindImports } from "./imports";
 import { bindExports } from "./exports";
+import { setRuntime } from "./runtime";
 
 /** Lifecycle status of the runtime module. */
 export enum BootStatus {
@@ -66,6 +67,7 @@ export async function exit(code?: number, reason?: string): Promise<void> {
 async function createRuntime(main: ModuleAPI, opt?: BootOptions) {
     const cfg = opt?.config ?? await buildConfig(opt?.resources ?? resources, opt?.root);
     const runtime = await opt?.create?.(cfg) || await main.dotnet.withConfig(cfg).create();
+    setRuntime(runtime);
     if (opt?.import) await opt.import(runtime); else bindImports(runtime);
     if (opt?.run) await opt.run(runtime); else await runtime.runMain(cfg.mainAssemblyName!, []);
     if (opt?.export) await opt.export(runtime); else await bindExports(runtime, cfg.mainAssemblyName!);

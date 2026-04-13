@@ -6,7 +6,7 @@ namespace Bootsharp.Publish;
 internal sealed class TypeDeclarationGenerator (Preferences prefs)
 {
     private readonly StringBuilder builder = new();
-    private readonly TypeConverter converter = new(prefs);
+    private readonly TypeSyntaxBuilder typeBuilder = new(prefs);
 
     private Type type => GetTypeAt(index);
     private Type? prevType => index == 0 ? null : GetTypeAt(index - 1);
@@ -20,7 +20,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     public string Generate (SolutionInspection inspection)
     {
         instanced = [..inspection.InstancedInterfaces];
-        types = inspection.Crawled.Where(FilterCrawled).OrderBy(GetNamespace).ToArray();
+        types = inspection.Types.Select(t => t.Clr).Where(IsUserType).OrderBy(GetNamespace).ToArray();
         for (index = 0; index < types.Length; index++)
             DeclareType();
         return builder.ToString();
@@ -30,11 +30,6 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     {
         var type = types[index];
         return type.IsGenericType ? type.GetGenericTypeDefinition() : type;
-    }
-
-    private bool FilterCrawled (Type type)
-    {
-        return !IsList(type) && !IsCollection(type) && !IsNullable(type);
     }
 
     private void DeclareType ()
@@ -102,7 +97,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         if (type.BaseType is { } baseType && types.Contains(baseType))
             extTypes.Insert(0, baseType);
         if (extTypes.Count > 0)
-            builder.Append(" extends ").AppendJoin(", ", extTypes.Select(t => converter.ToTypeScript(t, null)));
+            builder.Append(" extends ").AppendJoin(", ", extTypes.Select(t => typeBuilder.Build(t, null)));
     }
 
     private void AppendProperties ()
@@ -116,10 +111,11 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     private void AppendProperty (PropertyInfo property)
     {
         AppendLine(ToFirstLower(property.Name), indent + 1);
-        if (IsNullable(property)) builder.Append('?');
+        var nullability = GetNullability(property);
+        if (IsNullable(property.PropertyType, nullability)) builder.Append('?');
         builder.Append(": ");
         if (property.PropertyType.IsGenericTypeParameter) builder.Append(property.PropertyType.Name);
-        else builder.Append(converter.ToTypeScript(property.PropertyType, GetNullability(property)));
+        else builder.Append(typeBuilder.Build(property.PropertyType, nullability));
         builder.Append(';');
     }
 
@@ -135,7 +131,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     {
         AppendLine(meta.JSName, indent + 1);
         builder.Append(": Event<[");
-        builder.AppendJoin(", ", meta.Arguments.Select(a => $"{a.JSName}: {a.Value.JSTypeSyntax}"));
+        builder.AppendJoin(", ", meta.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
         builder.Append("]>;");
     }
 
@@ -143,9 +139,9 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     {
         AppendLine(meta.JSName, indent + 1);
         builder.Append('(');
-        builder.AppendJoin(", ", meta.Arguments.Select(a => $"{a.JSName}: {a.Value.JSTypeSyntax}"));
+        builder.AppendJoin(", ", meta.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
         builder.Append("): ");
-        builder.Append(meta.ReturnValue.JSTypeSyntax);
+        builder.Append(typeBuilder.BuildReturn(meta));
         builder.Append(';');
     }
 

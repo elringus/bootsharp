@@ -7,23 +7,26 @@ namespace Test.Types;
 
 public class Registry
 {
-    public static IRegistryProvider Provider { get; set; }
-    public List<Wheeled> Wheeled { get; set; }
-    public List<Tracked> Tracked { get; set; }
+    public static IRegistryProvider Provider { get; set; } = null!;
+    public List<Wheeled?> Wheeled { get; set; } = null!;
+    public List<Tracked?> Tracked { get; set; } = null!;
 
     [JSInvokable]
     public static Registry EchoRegistry (Registry registry) => registry;
 
     [JSInvokable]
+    public static Vehicle?[]? EchoVehicles (Vehicle?[]? value) => value;
+
+    [JSInvokable]
     public static float CountTotalSpeed ()
     {
         var registry = Provider.GetRegistry();
-        return registry.Tracked.Sum(t => t.MaxSpeed) +
-               registry.Wheeled.Sum(t => t.MaxSpeed);
+        return registry.Tracked.Sum(t => t?.MaxSpeed ?? 0) +
+               registry.Wheeled.Sum(t => t?.MaxSpeed ?? 0);
     }
 
     [JSInvokable]
-    public static async Task<IReadOnlyList<Registry>> ConcatRegistriesAsync (IReadOnlyList<Registry> registries)
+    public static async Task<IReadOnlyList<Registry?>> ConcatRegistriesAsync (IReadOnlyList<Registry?> registries)
     {
         await Task.Delay(1);
         return registries.Concat(Provider.GetRegistries()).ToArray();

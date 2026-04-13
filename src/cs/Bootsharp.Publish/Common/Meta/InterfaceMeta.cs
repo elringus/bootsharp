@@ -9,7 +9,7 @@ internal sealed record InterfaceMeta
 {
     /// <summary>
     /// Whether the interface represents C# API consumed in
-    /// JavaScript (export) or vice-versa (import).
+    /// JavaScript (export) or vice versa (import).
     /// </summary>
     public required InterfaceKind Kind { get; init; }
     /// <summary>
@@ -36,4 +36,19 @@ internal sealed record InterfaceMeta
     /// Methods declared on the interface, representing the interop API.
     /// </summary>
     public required IReadOnlyCollection<MethodMeta> Methods { get; init; }
+}
+
+/// <summary>
+/// The type of API interop interface represents.
+/// </summary>
+internal enum InterfaceKind
+{
+    /// <summary>
+    /// The interface represents C# API consumed in JavaScript.
+    /// </summary>
+    Export,
+    /// <summary>
+    /// The interface represents JavaScript API consumed in C#.
+    /// </summary>
+    Import
 }

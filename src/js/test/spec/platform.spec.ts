@@ -15,9 +15,11 @@ describe("platform", () => {
         // .NET requires ws package when running on node:
         // https://github.com/dotnet/runtime/blob/main/src/mono/wasm/features.md#websocket
         any(global).WebSocket = WebSocket;
-        const wss = new WebSocketServer({ port: 8877 });
+        const wss = new WebSocketServer({ port: 0 });
         wss.on("connection", socket => socket.on("message", socket.send));
-        expect(await Test.Platform.echoWebSocket("ws://localhost:8877", "foo", 3000)).toStrictEqual("foo");
+        await new Promise<void>(resolve => wss.once("listening", resolve));
+        const port = (wss.address() as { port: number }).port;
+        expect(await Test.Platform.echoWebSocket(`ws://localhost:${port}`, "foo", 3000)).toStrictEqual("foo");
         wss.close();
     });
 });

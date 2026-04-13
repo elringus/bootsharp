@@ -4,6 +4,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <AssemblyTitle>Bootsharp.Common</AssemblyTitle>
         <PackageId>Bootsharp.Common</PackageId>
         <Description>Platform-agnostic common Bootsharp APIs.</Description>

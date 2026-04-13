@@ -4,6 +4,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>

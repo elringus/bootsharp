@@ -20,11 +20,11 @@ jobs:
         language: [ "csharp", "javascript" ]
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: setup dotnet
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 9
+          dotnet-version: 10
       - name: initialize codeql
         uses: github/codeql-action/init@v2
         with:
@@ -41,6 +41,6 @@ jobs:
           dotnet pack Bootsharp -o .nuget
           cd ../js
           npm install
-          bash scripts/build.sh
+          npm run build
       - name: analyze
         uses: github/codeql-action/analyze@v2

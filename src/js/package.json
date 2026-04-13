@@ -1,6 +1,6 @@
 {
     "scripts": {
-        "compile": "sh scripts/compile-test.sh",
+        "compile-test": "sh scripts/compile-test.sh",
         "test": "sh scripts/test.sh",
         "cover": "sh scripts/cover.sh",
         "build": "sh scripts/build.sh"
