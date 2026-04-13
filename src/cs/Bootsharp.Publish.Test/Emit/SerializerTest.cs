@@ -284,7 +284,7 @@ public class SerializerTest : EmitTest
             public class RecordB
             {
                 public string Id { get; set; }
-                
+
                 public RecordB (string id) => Id = id;
             }
 

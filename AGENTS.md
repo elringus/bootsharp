@@ -13,8 +13,8 @@ Follow these steps exactly and sequentially whenever the Bootsharp package consu
 
 1. Build the JS package with `npm run build` under `src/js`.
 2. Bump the Bootsharp library alpha version in `src/cs/Directory.Build.props`
-	1. If the current version does not already use an `-alpha.X` suffix, add one.
-	2. Example: `0.8.0` -> `0.8.0-alpha.0` -> `0.8.0-alpha.1`.
+   - If the current version does not already use an `-alpha.X` suffix, add one.
+   - Example: `0.8.0` -> `0.8.0-alpha.0` -> `0.8.0-alpha.1`.
 3. Package the C# library with `src/cs/.scripts/pack.ps1` under `src/cs`.
 4. Compile the end-to-end C# test projects with `npm run compile-test` under `src/js`.
 5. Run the end-to-end JS tests with `npm run test` under `src/js`.
