@@ -1,13 +1,11 @@
-using System.Text;
-
 namespace Bootsharp.Publish;
 
 internal sealed class SerializerGenerator
 {
     public string Generate (SolutionInspection inspection)
     {
-        var meta = inspection.Serialized;
-        if (meta.Count == 0) return "";
+        var serialized = inspection.Serialized;
+        if (serialized.Count == 0) return "";
         return $$"""
                  using System.Runtime.CompilerServices;
 
@@ -15,34 +13,26 @@ internal sealed class SerializerGenerator
 
                  internal static class SerializerContext
                  {
-                     {{JoinLines(meta.Select(EmitType))}}
+                     {{JoinLines(serialized.Select(EmitFactory))}}
 
-                     {{JoinLines(meta.OfType<SerializedObjectMeta>().SelectMany(EmitObject), separator: "\n\n")}}
+                     {{JoinLines(serialized.SelectMany(EmitHelpers), separator: "\n\n")}}
                  }
                  """;
     }
 
-    private static string EmitType (SerializedMeta meta)
+    private string EmitFactory (SerializedMeta meta)
     {
-        return $"internal static readonly Binary<{meta.Syntax}> {meta.Id} = {EmitFactory(meta)};";
-
-        static string EmitFactory (SerializedMeta meta) => meta switch {
+        return $"internal static readonly Binary<{meta.Syntax}> {meta.Id} = {meta switch {
             SerializedEnumMeta => $"Serializer.Enum<{meta.Syntax}>()",
             SerializedNullableMeta nullable => $"Serializer.Nullable({nullable.Value.Id})",
             SerializedArrayMeta arr => $"Serializer.Array({arr.Element.Id})",
-            SerializedListMeta list => $"Serializer.{GetGeneric(list)}({list.Element.Id})",
-            SerializedDictionaryMeta dic => $"Serializer.{GetGeneric(dic)}({dic.Key.Id}, {dic.Value.Id})",
+            SerializedListMeta list => $"Serializer.{TrimGenericArgs(list.Type.Name)}({list.Element.Id})",
+            SerializedDictionaryMeta dic => $"Serializer.{TrimGenericArgs(dic.Type.Name)}({dic.Key.Id}, {dic.Value.Id})",
             SerializedObjectMeta => $"new(Write_{meta.Id}, Read_{meta.Id})",
-            _ => EmitPrimitive(meta.Type)
-        };
+            _ => ResolvePrimitive(meta.Type)
+        }};";
 
-        static string GetGeneric (SerializedMeta meta)
-        {
-            var name = meta.Type.Name;
-            return name[..name.IndexOf('`')];
-        }
-
-        static string EmitPrimitive (Type type)
+        static string ResolvePrimitive (Type type)
         {
             if (type.FullName == typeof(nint).FullName) return "Serializer.IntPtr";
             if (type.FullName == typeof(DateTimeOffset).FullName) return "Serializer.DateTimeOffset";
@@ -50,92 +40,89 @@ internal sealed class SerializerGenerator
         }
     }
 
-    private static IEnumerable<string> EmitObject (SerializedObjectMeta obj)
+    private IEnumerable<string> EmitHelpers (SerializedMeta meta)
     {
-        yield return EmitObjectWriter(obj);
-        yield return EmitObjectReader(obj);
-        foreach (var property in obj.Properties.Where(p => p.Kind == SerializedPropertyKind.Field))
-            yield return EmitFieldAccessor(obj, property);
+        if (meta is not SerializedObjectMeta obj) yield break;
+        yield return $$"""
+                       private static void Write_{{obj.Id}} (ref Writer writer, {{obj.Syntax}} value)
+                       {
+                           {{JoinLines(EmitObjectWrite(obj))}}
+                       }
+                       """;
+        yield return $$"""
+                       private static {{obj.Syntax}} Read_{{obj.Id}} (ref Reader reader)
+                       {
+                           {{JoinLines(EmitObjectRead(obj))}}
+                       }
+                       """;
+        foreach (var prop in obj.Properties.Where(p => p.Kind == SerializedPropertyKind.Field))
+            yield return EmitFieldAccessor(obj, prop);
     }
 
-    private static string EmitObjectWriter (SerializedObjectMeta obj)
+    private IEnumerable<string> EmitObjectWrite (SerializedObjectMeta obj)
     {
-        var body = new StringBuilder();
-        body.AppendLine($"private static void Write_{obj.Id} (ref Writer writer, {obj.Syntax} value)");
-        body.AppendLine("{");
         if (!obj.Type.IsValueType)
         {
-            body.AppendLine("    writer.WriteBool(value is not null);");
-            body.AppendLine("    if (value is null) return;");
+            yield return "writer.WriteBool(value is not null);";
+            yield return "if (value is null) return;";
         }
-        foreach (var property in obj.Properties)
-        {
-            if (property.OmitWhenNull)
+        foreach (var p in obj.Properties)
+            if (p.OmitWhenNull)
             {
-                body.AppendLine($"    writer.WriteBool(value.{property.Name} is not null);");
-                body.AppendLine($"    if (value.{property.Name} is not null) {property.Id}.Write(ref writer, value.{property.Name});");
+                yield return $"writer.WriteBool(value.{p.Name} is not null);";
+                yield return $"if (value.{p.Name} is not null) {p.Id}.Write(ref writer, value.{p.Name});";
             }
-            else body.AppendLine($"    {property.Id}.Write(ref writer, value.{property.Name});");
-        }
-        body.Append('}');
-        return body.ToString();
+            else yield return $"{p.Id}.Write(ref writer, value.{p.Name});";
     }
 
-    private static string EmitObjectReader (SerializedObjectMeta obj)
+    private IEnumerable<string> EmitObjectRead (SerializedObjectMeta obj)
     {
-        var body = new StringBuilder();
-        body.AppendLine($"private static {obj.Syntax} Read_{obj.Id} (ref Reader reader)");
-        body.AppendLine("{");
-        if (!obj.Type.IsValueType)
+        if (!obj.Type.IsValueType) yield return "if (!reader.ReadBool()) return null!;";
+        foreach (var p in obj.Properties)
         {
-            body.AppendLine("    if (!reader.ReadBool()) return null!;");
+            var var = MangleLocal(p.Name);
+            if (p.OmitWhenNull) yield return $"var {var} = reader.ReadBool() ? {p.Id}.Read(ref reader) : default;";
+            else yield return $"var {var} = {p.Id}.Read(ref reader);";
         }
-        foreach (var prop in obj.Properties)
+        yield return $"var _value_ = {EmitObjectConstruction(obj)};";
+        foreach (var p in obj.Properties.Where(p => !p.ConstructorParameter && !ShouldInitializeInConstruction(p)))
         {
-            var local = MangleLocal(prop.Name);
-            if (prop.OmitWhenNull)
-                body.AppendLine($"    var {local} = reader.ReadBool() ? {prop.Id}.Read(ref reader) : default;");
-            else body.AppendLine($"    var {local} = {prop.Id}.Read(ref reader);");
+            var var = MangleLocal(p.Name);
+            if (p.Kind == SerializedPropertyKind.Set) yield return $"_value_.{p.Name} = {var};";
+            else if (p.Kind == SerializedPropertyKind.Field) yield return EmitFieldAssign(obj, p);
         }
-        body.AppendLine($"    var _value_ = {BuildObjectConstruction(obj)};");
-        foreach (var property in obj.Properties.Where(p => !p.ConstructorParameter && !ShouldInitializeInConstruction(p)))
-        {
-            var local = MangleLocal(property.Name);
-            if (property.Kind == SerializedPropertyKind.Set) body.AppendLine($"    _value_.{property.Name} = {local};");
-            else if (property.Kind == SerializedPropertyKind.Field)
-                body.AppendLine(obj.Type.IsValueType
-                    ? $"    {property.FieldAccessorName}(ref _value_) = {local};"
-                    : $"    {property.FieldAccessorName}(_value_) = {local};");
-        }
-        body.AppendLine("    return _value_;");
-        body.Append('}');
-        return body.ToString();
+        yield return "return _value_;";
     }
 
-    private static string BuildObjectConstruction (SerializedObjectMeta obj)
+    private string EmitObjectConstruction (SerializedObjectMeta obj)
     {
         var ctorArgs = obj.Properties.Where(p => p.ConstructorParameter);
         var ctor = $"new {obj.Syntax}({string.Join(", ", ctorArgs.Select(p => MangleLocal(p.Name)))})";
-        var props = obj.Properties
-            .Where(p => !p.ConstructorParameter && ShouldInitializeInConstruction(p))
+        var props = obj.Properties.Where(p => !p.ConstructorParameter && ShouldInitializeInConstruction(p))
             .Select(p => $"{p.Name} = {MangleLocal(p.Name)}").ToArray();
         if (props.Length == 0) return ctor;
         return $"{ctor} {{ {string.Join(", ", props)} }}";
     }
 
-    private static string EmitFieldAccessor (SerializedObjectMeta obj, SerializedPropertyMeta property)
+    private static string EmitFieldAccessor (SerializedObjectMeta obj, SerializedPropertyMeta prop)
     {
-        var receiver = obj.Type.IsValueType ? $"ref {obj.Syntax} value" : $"{obj.Syntax} value";
+        var value = obj.Type.IsValueType ? $"ref {obj.Syntax} value" : $"{obj.Syntax} value";
         return $"""
-                [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "<{property.Name}>k__BackingField")]
-                private static extern ref {property.Syntax} {property.FieldAccessorName} ({receiver});
+                [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "<{prop.Name}>k__BackingField")]
+                private static extern ref {prop.Syntax} {prop.FieldAccessorName} ({value});
                 """;
     }
 
-    private static bool ShouldInitializeInConstruction (SerializedPropertyMeta property)
+    private static string EmitFieldAssign (SerializedObjectMeta obj, SerializedPropertyMeta prop)
     {
-        return property.Kind == SerializedPropertyKind.Init ||
-               property.Required && property.Kind == SerializedPropertyKind.Set;
+        var value = obj.Type.IsValueType ? "ref _value_" : "_value_";
+        return $"{prop.FieldAccessorName}({value}) = {MangleLocal(prop.Name)};";
+    }
+
+    private static bool ShouldInitializeInConstruction (SerializedPropertyMeta prop)
+    {
+        return prop.Kind == SerializedPropertyKind.Init ||
+               prop.Required && prop.Kind == SerializedPropertyKind.Set;
     }
 
     private static string MangleLocal (string name)

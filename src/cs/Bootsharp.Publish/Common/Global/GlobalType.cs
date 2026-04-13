@@ -86,12 +86,6 @@ internal static class GlobalType
         return backingField != null;
     }
 
-    public static string GetGenericNameWithoutArgs (string typeName)
-    {
-        var delimiterIndex = typeName.IndexOf('`');
-        return typeName[..delimiterIndex];
-    }
-
     public static bool IsInstancedInteropInterface (Type type, [NotNullWhen(true)] out Type? instanceType)
     {
         if (IsTaskWithResult(type, out instanceType))
@@ -112,7 +106,7 @@ internal static class GlobalType
 
     public static string BuildJSSpaceName (Type type)
     {
-        return type.IsGenericType ? GetGenericNameWithoutArgs(type.Name) : type.Name;
+        return type.IsGenericType ? TrimGenericArgs(type.Name) : type.Name;
     }
 
     public static string BuildJSSpaceFullName (Type type, Preferences prefs)
@@ -171,7 +165,7 @@ internal static class GlobalType
         string BuildGeneric (Type type, Type[] args)
         {
             if (IsNullable(type, out var value)) return BuildSyntax(value, nul, true);
-            var name = GetGenericNameWithoutArgs(ResolveTypeName(type));
+            var name = TrimGenericArgs(ResolveTypeName(type));
             var typeArgs = string.Join(", ", args.Select((a, i) => BuildSyntax(a, nul?.GenericTypeArguments[i])));
             return $"global::{name}<{typeArgs}>";
         }
@@ -181,5 +175,11 @@ internal static class GlobalType
             if (type.Namespace is null) return type.Name;
             return $"{type.Namespace}.{type.Name}";
         }
+    }
+
+    public static string TrimGenericArgs (string typeName)
+    {
+        var delimiterIndex = typeName.IndexOf('`');
+        return typeName[..delimiterIndex];
     }
 }

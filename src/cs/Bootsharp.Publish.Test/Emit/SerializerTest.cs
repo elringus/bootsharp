@@ -215,8 +215,6 @@ public class SerializerTest : EmitTest
     {
         AddAssembly(With(
             """
-            namespace Space;
-
             public class Node
             {
                 public Node (string id) => Id = id;
@@ -229,7 +227,7 @@ public class SerializerTest : EmitTest
             }
             """));
         Execute();
-        Contains("new global::Space.Node(@id);");
+        Contains("new global::Node(@id);");
     }
 
     [Fact]
@@ -237,8 +235,6 @@ public class SerializerTest : EmitTest
     {
         AddAssembly(With(
             """
-            namespace Space;
-
             public class Node
             {
                 public Node () { }
@@ -252,7 +248,7 @@ public class SerializerTest : EmitTest
             }
             """));
         Execute();
-        Contains("var _value_ = new global::Space.Node();");
+        Contains("var _value_ = new global::Node();");
         Contains("_value_.Id = @id;");
     }
 
@@ -261,8 +257,6 @@ public class SerializerTest : EmitTest
     {
         AddAssembly(With(
             """
-            namespace Space;
-
             public class Node
             {
                 public string Id { get; init; } = string.Empty;
@@ -274,7 +268,37 @@ public class SerializerTest : EmitTest
             }
             """));
         Execute();
-        Contains("new global::Space.Node() { Id = @id };");
+        Contains("new global::Node() { Id = @id };");
+    }
+
+    [Fact]
+    public void DoesNotAssignConstructorBoundPropertiesTwice ()
+    {
+        AddAssembly(With(
+            """
+            public class RecordA (string Id)
+            {
+                public string Id { get; init; } = Id;
+            }
+
+            public class RecordB
+            {
+                public string Id { get; set; }
+                
+                public RecordB (string id) => Id = id;
+            }
+
+            public class Class
+            {
+                [JSInvokable] public static RecordA A (RecordA a) => a;
+                [JSInvokable] public static RecordB B (RecordB b) => b;
+            }
+            """));
+        Execute();
+        Contains("new global::RecordA(@id);");
+        Contains("new global::RecordB(@id);");
+        DoesNotContain("{ Id = @id }");
+        DoesNotContain("_value_.Id = @id;");
     }
 
     [Fact]
@@ -282,8 +306,6 @@ public class SerializerTest : EmitTest
     {
         AddAssembly(With(
             """
-            namespace Space;
-
             public readonly record struct CompletionItem
             {
                 public required string Label { get; init; }
@@ -296,7 +318,7 @@ public class SerializerTest : EmitTest
             }
             """));
         Execute();
-        Contains("new global::Space.CompletionItem() { Label = @label, Detail = @detail };");
+        Contains("new global::CompletionItem() { Label = @label, Detail = @detail };");
     }
 
     [Fact]
@@ -304,8 +326,6 @@ public class SerializerTest : EmitTest
     {
         AddAssembly(With(
             """
-            namespace Space;
-
             public class CompletionItem
             {
                 public CompletionItem () { }
@@ -318,7 +338,7 @@ public class SerializerTest : EmitTest
             }
             """));
         Execute();
-        Contains("new global::Space.CompletionItem() { Label = @label }");
+        Contains("new global::CompletionItem() { Label = @label }");
     }
 
     [Fact]
@@ -326,8 +346,6 @@ public class SerializerTest : EmitTest
     {
         AddAssembly(With(
             """
-            namespace Space;
-
             public struct Node
             {
                 public Node (string other) => Id = other;
@@ -348,8 +366,6 @@ public class SerializerTest : EmitTest
     {
         AddAssembly(With(
             """
-            namespace Space;
-
             public struct Node
             {
                 public Node (int id) => Id = id.ToString();
@@ -370,8 +386,6 @@ public class SerializerTest : EmitTest
     {
         AddAssembly(With(
             """
-            namespace Space;
-
             public class Node
             {
                 public string Id { get; set; } = string.Empty;

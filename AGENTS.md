@@ -6,11 +6,10 @@
 - Follow the existing code style, architecture, project structure, naming, and formatting strictly.
 - Do not stop at analysis or a partial fix. If the task requires code or verification, carry it through to the expected result.
 - If clarification is required, use the question tool instead of guessing.
-- Before finishing a task, always run C# tests and the `Packaging Bootsharp` instructions below.
 
 # Packaging Bootsharp
 
-Follow these steps exactly and sequentially whenever the Bootsharp package consumed by other projects must be actualized, or when running the JS end-to-end tests against a fresh package.
+Follow these steps exactly and sequentially whenever the Bootsharp package consumed by other projects must be actualized, or when running the JS end-to-end tests against an updated C# package.
 
 1. Build the JS package with `npm run build` under `src/js`.
 2. Bump the Bootsharp library alpha version in `src/cs/Directory.Build.props`

@@ -15,8 +15,8 @@ internal sealed class BindingSerializerGenerator
     private string EmitFactory (SerializedMeta meta)
     {
         return $"const {meta.Id} = {meta switch {
-            SerializedNullableMeta nullable => $"types.Nullable({nullable.Value.Id})",
             SerializedEnumMeta => "types.Int32",
+            SerializedNullableMeta nullable => $"types.Nullable({nullable.Value.Id})",
             SerializedArrayMeta arr => $"types.Array({arr.Element.Id})",
             SerializedListMeta list => $"types.List({list.Element.Id})",
             SerializedDictionaryMeta dic => $"types.Dictionary({dic.Key.Id}, {dic.Value.Id})",

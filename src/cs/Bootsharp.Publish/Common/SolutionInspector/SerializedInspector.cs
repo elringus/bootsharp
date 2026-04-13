@@ -74,12 +74,12 @@ internal sealed class SerializedInspector
     {
         var ctor = ResolveConstructor(type);
         var ctorParams = ctor?.GetParameters() ?? [];
-        var parameterOrders = ctorParams
+        var paramOrders = ctorParams
             .Select((p, i) => (p.Name!, i))
             .ToDictionary(p => p.Item1, p => p.i, StringComparer.OrdinalIgnoreCase);
         var properties = GetSerializableProperties(type)
-            .OrderBy(p => parameterOrders.GetValueOrDefault(p.Name, int.MaxValue))
-            .Select(p => BuildProperty(p, parameterOrders.ContainsKey(p.Name)))
+            .OrderBy(p => paramOrders.GetValueOrDefault(p.Name, int.MaxValue))
+            .Select(p => BuildProperty(p, paramOrders.ContainsKey(p.Name)))
             .ToArray();
         return new(type, properties);
     }
