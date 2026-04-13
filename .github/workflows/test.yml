@@ -21,7 +21,7 @@ jobs:
       - name: cover
         run: |
           cd src/js
-          npm ci
+          npm install
           npm run build
           cd ../cs
           dotnet workload restore
