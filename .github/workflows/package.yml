@@ -8,16 +8,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: setup dotnet
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 9
+          dotnet-version: 10
       - name: package
         run: |
           cd src/js
-          npm install
-          bash scripts/build.sh
+          npm ci
+          npm run build
           cd ../cs
           dotnet workload restore
           mkdir .nuget
