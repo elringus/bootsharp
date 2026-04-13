@@ -121,8 +121,8 @@ internal sealed class SerializerGenerator
 
     private static bool ShouldInitializeInConstruction (SerializedPropertyMeta prop)
     {
-        return prop.Kind == SerializedPropertyKind.Init ||
-               prop.Required && prop.Kind == SerializedPropertyKind.Set;
+        if (prop.Kind == SerializedPropertyKind.Init) return true;
+        return prop.Required && prop.Kind == SerializedPropertyKind.Set;
     }
 
     private static string MangleLocal (string name)

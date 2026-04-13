@@ -63,12 +63,12 @@ internal sealed class SerializedInspector
             BuildObject(type);
         cycle.Remove(type);
         return meta;
-
-        static bool IsPrimitive (Type type) =>
-            Type.GetTypeCode(type) != TypeCode.Object ||
-            type.FullName == typeof(DateTimeOffset).FullName ||
-            type.FullName == typeof(nint).FullName;
     }
+
+    private static bool IsPrimitive (Type type) =>
+        Type.GetTypeCode(type) != TypeCode.Object ||
+        type.FullName == typeof(DateTimeOffset).FullName ||
+        type.FullName == typeof(nint).FullName;
 
     private SerializedObjectMeta BuildObject (Type type)
     {
