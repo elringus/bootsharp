@@ -27,8 +27,8 @@ internal sealed class BindingGenerator (Preferences prefs)
             .ToArray();
         bindings = methods
             .Select(m => new Binding(m, null, m.JSSpace))
-            .Concat(inspection.Types.Where(t => t.Clr.IsEnum)
-                .Select(t => new Binding(null, t.Clr, BuildJSSpace(t.Clr, prefs))))
+            .Concat(inspection.Serialized.Where(t => t.Type.IsEnum)
+                .Select(t => new Binding(null, t.Type, BuildJSSpace(t.Type, prefs))))
             .OrderBy(m => m.Namespace).ToArray();
         if (bindings.Length == 0) return "";
 

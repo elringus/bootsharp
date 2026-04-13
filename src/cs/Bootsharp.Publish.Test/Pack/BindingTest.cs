@@ -435,6 +435,20 @@ public class BindingTest : PackTest
     }
 
     [Fact]
+    public void DoesntDeclareSystemEnums ()
+    {
+        AddAssembly(
+            WithClass("n", "public enum Foo { A, B }"),
+            WithClass("n", "[JSInvokable] public static Task<Foo> GetFoo () => default;"));
+        Execute();
+        Contains("Foo");
+        DoesNotContain("LayoutKind");
+        DoesNotContain("SecurityRuleSet");
+        DoesNotContain("MethodAttributes");
+        DoesNotContain("MethodImplAttributes");
+    }
+
+    [Fact]
     public void CustomEnumIndexesArePreservedInJS ()
     {
         AddAssembly(
