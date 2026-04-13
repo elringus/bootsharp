@@ -9,7 +9,7 @@
 
 # Packaging Bootsharp
 
-Follow these steps exactly and sequentially whenever the Bootsharp package consumed by other projects must be actualized, or when running the JS end-to-end tests against an updated C# package.
+Follow these steps exactly and sequentially whenever the Bootsharp package consumed by other projects must be actualized, or when running the JS end-to-end tests after updating JS or C# code.
 
 1. Build the JS package with `npm run build` under `src/js`.
 2. Bump the Bootsharp library alpha version in `src/cs/Directory.Build.props`
