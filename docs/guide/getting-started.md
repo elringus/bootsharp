@@ -9,7 +9,7 @@ In `.csproj` file, set wasm runtime identifier and reference Bootsharp package:
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     </PropertyGroup>
 
@@ -65,6 +65,12 @@ dotnet publish
 | types        | folder | Contains type declarations for the authored interop APIs. |
 | index.mjs    | file   | The compiled ES module with embedded binaries.            |
 | package.json | file   | NPM package manifest for convenient importing.            |
+
+::: tip
+When publishing in `Release` (default for `dotnet publish`), Bootsharp automatically enables the [NativeAOT-LLVM](/guide/llvm) compiler, speed-focused WASM optimization, aggressive trimming, and an extra Binaryen pass when `wasm-opt` is available.
+
+Use the debug configuration (`dotnet publish -c Debug`) to disable optimizations and use the default .NET compiler for a better debugging experience and faster build times, at the cost of significantly increased bundle size and degraded runtime performance.
+:::
 
 ## Consume C# APIs in JavaScript
 

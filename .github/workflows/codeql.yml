@@ -32,11 +32,13 @@ jobs:
       - name: build
         run: |
           cd src/cs
+          bash ./.scripts/llvm.sh
           dotnet workload restore
           mkdir .nuget
           dotnet build Bootsharp.Generate -c Release
           dotnet build Bootsharp.Common -c Release
           dotnet pack Bootsharp.Common -o .nuget
+          dotnet pack Bootsharp.Inject -o .nuget
           dotnet build -c Release
           dotnet pack Bootsharp -o .nuget
           cd ../js

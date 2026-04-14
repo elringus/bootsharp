@@ -19,6 +19,7 @@ jobs:
           npm install
           npm run build
           cd ../cs
+          bash ./.scripts/llvm.sh
           dotnet workload restore
           mkdir .nuget
           dotnet build Bootsharp.Generate -c Release

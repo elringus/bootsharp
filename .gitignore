@@ -3,6 +3,7 @@
 node_modules
 coverage
 .cover
+.llvm
 cache
 dist
 bin

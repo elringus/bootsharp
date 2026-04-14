@@ -14,6 +14,7 @@
 
     <ItemGroup>
         <Content Include="Build/**" Pack="true" PackagePath="build/"/>
+        <Content Include="../.llvm/**" Pack="true" PackagePath="llvm/" Visible="false"/>
         <Content Include="../../../src/js/dist/**" Pack="true" PackagePath="js/" Visible="false"/>
     </ItemGroup>
 
