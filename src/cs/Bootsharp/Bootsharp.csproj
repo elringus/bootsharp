@@ -18,7 +18,7 @@
     </ItemGroup>
 
     <Target Name="PackPublisher" BeforeTargets="CoreCompile">
-        <MSBuild Projects="../Bootsharp.Publish/Bootsharp.Publish.csproj" Targets="Publish;PublishItemsOutputGroup">
+        <MSBuild Projects="../Bootsharp.Publish/Bootsharp.Publish.csproj" Targets="Restore;Publish;PublishItemsOutputGroup">
             <Output TaskParameter="TargetOutputs" ItemName="_TasksProjectOutputs"/>
         </MSBuild>
         <ItemGroup>
