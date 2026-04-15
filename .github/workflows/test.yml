@@ -27,8 +27,9 @@ jobs:
           bash ./.scripts/llvm.sh
           bash ./.scripts/pack.sh
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:ExcludeByAttribute=GeneratedCodeAttribute
-          cd ../js
+          cd ../js/test/cs
           dotnet workload restore
+          cd ../..
           npm run compile-test
           npm run cover
       - name: upload coverage reports to Codecov
