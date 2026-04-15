@@ -24,15 +24,9 @@ jobs:
           npm install
           npm run build
           cd ../cs
-          bash ./.scripts/llvm.sh
           dotnet workload restore
-          mkdir .nuget
-          dotnet build Bootsharp.Generate -c Release
-          dotnet build Bootsharp.Common -c Release
-          dotnet pack Bootsharp.Common -o .nuget
-          dotnet pack Bootsharp.Inject -o .nuget
-          dotnet build -c Release
-          dotnet pack Bootsharp -o .nuget
+          bash ./.scripts/llvm.sh
+          bash ./.scripts/pack.sh
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:ExcludeByAttribute=GeneratedCodeAttribute
           cd ../js
           dotnet workload restore

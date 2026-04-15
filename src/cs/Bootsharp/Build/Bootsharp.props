@@ -9,6 +9,10 @@
         <WasmEnableLegacyJsInterop>false</WasmEnableLegacyJsInterop>
         <WasmEnableSIMD>true</WasmEnableSIMD>
 
+        <!-- These inflate bundle size and require additional wiring on the JS side — not supported for now. -->
+        <InvariantTimezone>true</InvariantTimezone>
+        <InvariantGlobalization>true</InvariantGlobalization>
+
         <!-- User Preferences -->
         <!-- Name of the generated JavaScript module; 'bootsharp' by default. -->
         <BootsharpName>bootsharp</BootsharpName>
@@ -42,8 +46,6 @@
         <!-- https://github.com/dotnet/runtime/issues/94805 -->
         <DebugType>none</DebugType>
         <StackTraceSupport>false</StackTraceSupport>
-        <InvariantTimezone>true</InvariantTimezone>
-        <InvariantGlobalization>true</InvariantGlobalization>
         <PublishTrimmed>true</PublishTrimmed>
         <TrimMode>full</TrimMode>
         <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
