@@ -19,7 +19,6 @@ jobs:
           npm install
           npm run build
           cd ../cs
-          dotnet workload restore
           bash ./.scripts/llvm.sh
           bash ./.scripts/pack.sh
       - name: publish to nuget

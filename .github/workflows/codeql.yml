@@ -32,7 +32,6 @@ jobs:
       - name: build
         run: |
           cd src/cs
-          dotnet workload restore
           bash ./.scripts/llvm.sh
           bash ./.scripts/pack.sh
           cd ../js
