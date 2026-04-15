@@ -34,7 +34,7 @@ jobs:
           dotnet build -c Release
           dotnet pack Bootsharp -o .nuget
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:ExcludeByAttribute=GeneratedCodeAttribute
-          cd src/js
+          cd ../js
           npm run compile-test
           npm run cover
       - name: upload coverage reports to Codecov
