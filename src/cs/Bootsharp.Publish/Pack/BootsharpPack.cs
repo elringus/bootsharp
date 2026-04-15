@@ -70,7 +70,7 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
 
     private void PatchModules ()
     {
-        var patcher = new ModulePatcher(BuildDirectory, Threading, EmbedBinaries, TrimmingEnabled);
+        var patcher = new ModulePatcher(BuildDirectory, Threading, EmbedBinaries);
         patcher.Patch();
     }
 }
