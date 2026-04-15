@@ -96,13 +96,16 @@ describe("boot", () => {
     it("uses atob when window is defined in global", async () => {
         const { bins, any } = await setup();
         const win = any(global).window;
+        const proc = any(global).process;
         any(global).window = { atob: vi.fn(src => Buffer.from(src, "base64").toString("binary")) };
+        any(global).process = undefined;
         // @ts-expect-error: white-boxing because mocking window breaks other stuff in boot
         const { decodeBase64 } = await import("../cs/Test/bin/sideload/decoder.mjs");
-        try { decodeBase64(bins.assemblies[0].content.toString("base64")); }
+        try { decodeBase64(bins.wasm.toString("base64")); }
         catch {}
         expect(global.window.atob).toHaveBeenCalled();
         any(global).window = win;
+        any(global).process = proc;
     });
     it("uses naive decoder when neither window nor process are defined", async () => {
         const { bins, any } = await setup();

@@ -1,27 +1,23 @@
 <Project>
 
     <PropertyGroup>
-
         <OutputType>Exe</OutputType>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <TargetArchitecture>wasm</TargetArchitecture>
         <TargetOS>browser</TargetOS>
-        <InvariantTimezone>true</InvariantTimezone>
-        <InvariantGlobalization>true</InvariantGlobalization>
         <WasmGenerateAppBundle>true</WasmGenerateAppBundle>
         <WasmEnableLegacyJsInterop>false</WasmEnableLegacyJsInterop>
         <WasmEnableSIMD>true</WasmEnableSIMD>
 
+        <!-- These inflate bundle size and require additional wiring on the JS side — not supported for now. -->
+        <InvariantTimezone>true</InvariantTimezone>
+        <InvariantGlobalization>true</InvariantGlobalization>
+
+        <!-- User Preferences -->
         <!-- Name of the generated JavaScript module; 'bootsharp' by default. -->
         <BootsharpName>bootsharp</BootsharpName>
         <!-- Whether to embed binaries to the JavaScript module file (true or false); true by default. -->
         <BootsharpEmbedBinaries>true</BootsharpEmbedBinaries>
-        <!-- Whether to disable some .NET features to reduce binary size (true or false); false by default. -->
-        <BootsharpAggressiveTrimming>false</BootsharpAggressiveTrimming>
-        <!-- Whether to optimize the WASM for speed or size (requires Binaryen's wasm-opt in system path); disabled by default. -->
-        <BootsharpOptimize>none</BootsharpOptimize>
-        <!-- Whether to app is built with the new experimental NativeAOT-LLVM backend; false by default. -->
-        <BootsharpLLVM>false</BootsharpLLVM>
         <!-- The command to run when compiling/bundling generated JavaScrip solution. -->
         <BootsharpBundleCommand/>
         <!-- Directory to publish generated JavaScript module; 'base-output/module-name' by default. -->
@@ -33,12 +29,71 @@
         <!-- Directory to publish 'package.json' file; same as publish directory by default. -->
         <BootsharpPackageDirectory/>
 
+        <!-- Internal Properties -->
+        <!-- Whether to use NativeAOT-LLVM compiler (enabled by default for release builds). -->
+        <BootsharpLlvm>$([MSBuild]::ValueOrDefault('$(Configuration)', '').Equals('Release'))</BootsharpLlvm>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(BootsharpLlvm)">
+        <!-- NativeAOT-LLVM specific knobs. -->
+        <DotNetJsApi>true</DotNetJsApi>
+        <EmccFlags>$(EmccFlags) -O3</EmccFlags>
+        <UsingBrowserRuntimeWorkload>false</UsingBrowserRuntimeWorkload>
+
+        <!-- Various knobs that reduce the generated bundle size or improve performance. -->
+        <!-- https://learn.microsoft.com/en-us/aspnet/core/blazor/performance?#minimize-app-download-size -->
+        <!-- https://raw.githubusercontent.com/dotnet/runtime/main/docs/workflow/trimming/feature-switches.md -->
+        <!-- https://github.com/dotnet/runtime/issues/94805 -->
+        <DebugType>none</DebugType>
+        <StackTraceSupport>false</StackTraceSupport>
+        <PublishTrimmed>true</PublishTrimmed>
+        <TrimMode>full</TrimMode>
+        <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
+        <_AggressiveAttributeTrimming>true</_AggressiveAttributeTrimming>
+        <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
+        <DebuggerSupport>false</DebuggerSupport>
+        <EnableCppCLIHostActivation>false</EnableCppCLIHostActivation>
+        <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+        <EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>false</EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>
+        <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
+        <_EnableConsumingManagedCodeFromNativeHosting>false</_EnableConsumingManagedCodeFromNativeHosting>
+        <EventSourceSupport>false</EventSourceSupport>
+        <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+        <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+        <UseNativeHttpHandler>true</UseNativeHttpHandler>
+        <UseSystemResourceKeys>true</UseSystemResourceKeys>
+        <StartupHookSupport>false</StartupHookSupport>
+        <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
+        <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+        <WasmEmitSourceMap>false</WasmEmitSourceMap>
+        <WasmNativeDebugSymbols>false</WasmNativeDebugSymbols>
+        <NativeDebugSymbols>false</NativeDebugSymbols>
+        <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+        <PredefinedCulturesOnly>true</PredefinedCulturesOnly>
+        <MetricsSupport>false</MetricsSupport>
+        <DisableDependencyInjectionDynamicEngine>true</DisableDependencyInjectionDynamicEngine>
+        <NullabilityInfoContextSupport>false</NullabilityInfoContextSupport>
+        <DynamicCodeSupport>false</DynamicCodeSupport>
+        <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="!$(BootsharpLlvm)">
+        <!-- Various knobs that improve debugging and compile times. -->
+        <WasmRunWasmOpt>false</WasmRunWasmOpt>
+        <WasmNativeStrip>false</WasmNativeStrip>
+        <WasmEmitSourceMap>true</WasmEmitSourceMap>
+        <WasmNativeDebugSymbols>true</WasmNativeDebugSymbols>
+        <NativeDebugSymbols>true</NativeDebugSymbols>
     </PropertyGroup>
 
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatform">
-            <_Parameter1>browser</_Parameter1>
+            <_Parameter1>browser</_Parameter1> <!-- Enable browser target for the entry assembly. -->
         </AssemblyAttribute>
     </ItemGroup>
+
+    <!-- Include NativeAOT-LLVM properties when enabled. -->
+    <Import Project="$(MSBuildThisFileDirectory)../llvm/microsoft.dotnet.ilcompiler.llvm/build/Microsoft.DotNet.ILCompiler.LLVM.props"
+            Condition="$(BootsharpLlvm)"/>
 
 </Project>

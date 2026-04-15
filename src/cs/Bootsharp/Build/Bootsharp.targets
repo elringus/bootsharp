@@ -3,6 +3,7 @@
     <PropertyGroup>
         <BootsharpRoot>$(MSBuildThisFileDirectory)../</BootsharpRoot>
         <BootsharpSourceDirectory>$(BootsharpRoot)/js</BootsharpSourceDirectory>
+        <BootsharpLlvmDirectory>$(BootsharpRoot)/llvm</BootsharpLlvmDirectory>
         <BootsharpPublishAssembly>$(BootsharpRoot)/tasks/Bootsharp.Publish.dll</BootsharpPublishAssembly>
         <BootsharpIntermediateDirectory>$(IntermediateOutputPath)bootsharp</BootsharpIntermediateDirectory>
         <BootsharpInterfacesFilePath>$(BootsharpIntermediateDirectory)/Interfaces.g.cs</BootsharpInterfacesFilePath>
@@ -10,50 +11,33 @@
         <BootsharpSerializerFilePath>$(BootsharpIntermediateDirectory)/Serializer.g.cs</BootsharpSerializerFilePath>
         <BootsharpInteropFilePath>$(BootsharpIntermediateDirectory)/Interop.g.cs</BootsharpInteropFilePath>
         <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
-        <BootsharpPackAfter Condition="$(BootsharpLLVM)">CopyNativeBinary</BootsharpPackAfter>
-        <BootsharpPackAfter Condition="!$(BootsharpLLVM)">WasmNestedPublishApp</BootsharpPackAfter>
+        <BootsharpPackAfter Condition="$(BootsharpLlvm)">CopyNativeBinary</BootsharpPackAfter>
+        <BootsharpPackAfter Condition="!$(BootsharpLlvm)">WasmNestedPublishApp</BootsharpPackAfter>
     </PropertyGroup>
 
-    <Choose>
-        <When Condition="$(BootsharpAggressiveTrimming)">
-            <PropertyGroup>
-                <!-- https://learn.microsoft.com/en-us/aspnet/core/blazor/performance?#minimize-app-download-size -->
-                <!-- https://raw.githubusercontent.com/dotnet/runtime/main/docs/workflow/trimming/feature-switches.md -->
-                <!-- https://github.com/dotnet/runtime/issues/94805 -->
-                <PublishTrimmed>true</PublishTrimmed>
-                <TrimMode>full</TrimMode>
-                <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
-                <_AggressiveAttributeTrimming>true</_AggressiveAttributeTrimming>
-                <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
-                <DebuggerSupport>false</DebuggerSupport>
-                <EnableCppCLIHostActivation>false</EnableCppCLIHostActivation>
-                <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
-                <EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>false</EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>
-                <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
-                <_EnableConsumingManagedCodeFromNativeHosting>false</_EnableConsumingManagedCodeFromNativeHosting>
-                <EventSourceSupport>false</EventSourceSupport>
-                <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
-                <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
-                <UseNativeHttpHandler>true</UseNativeHttpHandler>
-                <UseSystemResourceKeys>true</UseSystemResourceKeys>
-                <StartupHookSupport>false</StartupHookSupport>
-                <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
-                <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
-                <WasmEmitSourceMap>false</WasmEmitSourceMap>
-                <WasmNativeDebugSymbols>false</WasmNativeDebugSymbols>
-                <NativeDebugSymbols>false</NativeDebugSymbols>
-                <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
-                <PredefinedCulturesOnly>true</PredefinedCulturesOnly>
-                <MetricsSupport>false</MetricsSupport>
-                <DisableDependencyInjectionDynamicEngine>true</DisableDependencyInjectionDynamicEngine>
-                <NullabilityInfoContextSupport>false</NullabilityInfoContextSupport>
-                <DynamicCodeSupport>false</DynamicCodeSupport>
-                <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
-                <StackTraceSupport>false</StackTraceSupport>
-                <DebugType>none</DebugType>
-            </PropertyGroup>
-        </When>
-    </Choose>
+    <!-- Include NativeAOT-LLVM compiler infrastructure when enabled. -->
+    <Import Project="$(BootsharpLlvmDirectory)/microsoft.dotnet.ilcompiler.llvm/build/Microsoft.DotNet.ILCompiler.LLVM.targets"
+            Condition="$(BootsharpLlvm)"/>
+    <ItemGroup Condition="$(BootsharpLlvm)">
+        <PackageDefinitions Condition="'$([MSBuild]::IsOSPlatform(`Windows`))' == 'true'"
+                            Include="$(BootsharpLlvmDirectory)/runtime.win-x64.microsoft.dotnet.ilcompiler.llvm">
+            <Name>runtime.win-x64.Microsoft.DotNet.ILCompiler.LLVM</Name>
+            <ResolvedPath>$(BootsharpLlvmDirectory)/runtime.win-x64.microsoft.dotnet.ilcompiler.llvm</ResolvedPath>
+        </PackageDefinitions>
+        <PackageDefinitions Condition="'$([MSBuild]::IsOSPlatform(`Linux`))' == 'true'"
+                            Include="$(BootsharpLlvmDirectory)/runtime.linux-x64.microsoft.dotnet.ilcompiler.llvm">
+            <Name>runtime.linux-x64.Microsoft.DotNet.ILCompiler.LLVM</Name>
+            <ResolvedPath>$(BootsharpLlvmDirectory)/runtime.linux-x64.microsoft.dotnet.ilcompiler.llvm</ResolvedPath>
+        </PackageDefinitions>
+        <PackageDefinitions Include="$(BootsharpLlvmDirectory)/runtime.browser-wasm.microsoft.dotnet.ilcompiler.llvm">
+            <Name>runtime.browser-wasm.Microsoft.DotNet.ILCompiler.LLVM</Name>
+            <ResolvedPath>$(BootsharpLlvmDirectory)/runtime.browser-wasm.microsoft.dotnet.ilcompiler.llvm</ResolvedPath>
+        </PackageDefinitions>
+        <EmscriptenEnvVars Include="DOTNET_EMSCRIPTEN_LLVM_ROOT=$(EmscriptenUpstreamBinPath)"/>
+        <EmscriptenEnvVars Include="DOTNET_EMSCRIPTEN_BINARYEN_ROOT=$(EmscriptenSdkToolsPath)"/>
+        <EmscriptenEnvVars Include="DOTNET_EMSCRIPTEN_NODE_JS=$(EmscriptenNodeBinPath)node$(ExecutableExtensionName)"/>
+        <EmscriptenEnvVars Include="EM_CACHE=$(EmscriptenCacheSdkCacheDir)"/>
+    </ItemGroup>
 
     <UsingTask TaskName="Bootsharp.Publish.BootsharpEmit" AssemblyFile="$(BootsharpPublishAssembly)"/>
     <UsingTask TaskName="Bootsharp.Publish.BootsharpPack" AssemblyFile="$(BootsharpPublishAssembly)"/>
@@ -98,8 +82,8 @@
             Condition="Exists('$(PublishDir)')">
 
         <PropertyGroup>
-            <BootsharpBuildDirectory Condition="$(BootsharpLLVM)">$(PublishDir)</BootsharpBuildDirectory>
-            <BootsharpBuildDirectory Condition="!$(BootsharpLLVM)">$(WasmAppDir)/$(WasmRuntimeAssetsLocation)</BootsharpBuildDirectory>
+            <BootsharpBuildDirectory Condition="$(BootsharpLlvm)">$(PublishDir)</BootsharpBuildDirectory>
+            <BootsharpBuildDirectory Condition="!$(BootsharpLlvm)">$(WasmAppDir)/$(WasmRuntimeAssetsLocation)</BootsharpBuildDirectory>
             <BootSharpBaseOutputPath>$(BaseOutputPath.Replace('\', '/'))</BootSharpBaseOutputPath>
             <BootsharpPublishDirectory Condition="'$(BootsharpPublishDirectory)' == ''">$(BootSharpBaseOutputPath)$(BootsharpName)</BootsharpPublishDirectory>
             <BootsharpTypesDirectory Condition="'$(BootsharpTypesDirectory)' == ''">$(BootsharpPublishDirectory)/types</BootsharpTypesDirectory>
@@ -109,8 +93,6 @@
             <BootsharpThreading Condition="'$(WasmEnableThreads)' == 'true'">true</BootsharpThreading>
             <BootsharpThreading Condition="'$(WasmEnableThreads)' != 'true'">false</BootsharpThreading>
             <BootsharpEmbedBinaries Condition="$(BootsharpThreading)">false</BootsharpEmbedBinaries>
-            <BootsharpOptimizeFlag Condition="'$(BootsharpOptimize)' == 'speed'">-O3</BootsharpOptimizeFlag>
-            <BootsharpOptimizeFlag Condition="'$(BootsharpOptimize)' == 'size'">-Oz</BootsharpOptimizeFlag>
         </PropertyGroup>
 
         <!-- Copy bootsharp source files to the build directory. -->
@@ -119,20 +101,25 @@
         </ItemGroup>
         <Copy SourceFiles="@(BootsharpSourceFiles)" DestinationFolder="$(BootsharpBuildDirectory)"/>
 
-        <!-- Optimize the dotnet WASM with Binaryen. -->
-        <Exec Condition="'$(BootsharpOptimize)' != 'none'"
-              Command="wasm-opt dotnet.native.wasm $(BootsharpOptimizeFlag) -o dotnet.native.wasm --all-features --strip-dwarf --strip-debug --vacuum"
+        <!-- Optimize the produced WASM with Binaryen when publishing release builds. -->
+        <Exec Condition="$(BootsharpLlvm)"
+              Command="wasm-opt dotnet.native.wasm -O3 -o dotnet.native.wasm --all-features --strip-dwarf --strip-debug --vacuum"
               WorkingDirectory="$(BootsharpBuildDirectory)"
-              StdOutEncoding="utf-8" StdErrEncoding="utf-8"/>
+              StdOutEncoding="utf-8" StdErrEncoding="utf-8"
+              IgnoreExitCode="true">
+            <Output TaskParameter="ExitCode" PropertyName="BootsharpBinaryenExitCode"/>
+        </Exec>
+        <Warning Condition="$(BootsharpLlvm) And '$(BootsharpBinaryenExitCode)' != '' And '$(BootsharpBinaryenExitCode)' != '0'"
+                 Text="Failed to run Binaryen optimization. Ensure Binaryen (https://github.com/WebAssembly/binaryen) is installed and 'wasm-opt' is in the system path, otherwise the build is not fully optimized."/>
 
         <!-- Generate bindings, type declarations and (optionally) embed binaries. -->
         <BootsharpPack BuildDirectory="$(BootsharpBuildDirectory)"
                        InspectedDirectory="$(OutputPath)"
                        EntryAssemblyName="$(BootsharpEntryAssemblyName)"
-                       TrimmingEnabled="$(BootsharpAggressiveTrimming)"
+                       TrimmingEnabled="$(BootsharpLlvm)"
                        EmbedBinaries="$(BootsharpEmbedBinaries)"
                        Threading="$(BootsharpThreading)"
-                       LLVM="$(BootsharpLLVM)"/>
+                       LLVM="$(BootsharpLlvm)"/>
 
         <!-- Compile generated JavaScript solution. -->
         <Exec Command="$(BootsharpBundleCommand)"
@@ -150,13 +137,13 @@
             <BootsharpWorkerFile Include="$(BootsharpBuildDirectory)/dotnet.native.worker.mjs"/>
         </ItemGroup>
         <RemoveDir Directories="$(BootsharpBinariesDirectory);$(BootsharpTypesDirectory)"/>
-        <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'" SourceFiles="@(BootsharpWasmFiles)"
+        <Copy Condition="!$(BootsharpEmbedBinaries)" SourceFiles="@(BootsharpWasmFiles)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'" SourceFiles="@(BootsharpDotNetFile)"
+        <Copy Condition="!$(BootsharpEmbedBinaries)" SourceFiles="@(BootsharpDotNetFile)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'" SourceFiles="@(BootsharpRuntimeFile)"
+        <Copy Condition="!$(BootsharpEmbedBinaries)" SourceFiles="@(BootsharpRuntimeFile)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy Condition="'$(BootsharpEmbedBinaries)' != 'true'" SourceFiles="@(BootsharpNativeFile)"
+        <Copy Condition="!$(BootsharpEmbedBinaries)" SourceFiles="@(BootsharpNativeFile)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy Condition="$(BootsharpThreading)" SourceFiles="@(BootsharpWorkerFile)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
@@ -171,11 +158,11 @@
             <BootsharpSymbols Include="$(BootsharpBuildDirectory)/*.symbols"/>
             <BootsharpPdbs Include="$(BootsharpBuildDirectory)/*.pdb"/>
         </ItemGroup>
-        <Copy Condition="'$(BootsharpAggressiveTrimming)' != 'true' And '$(BootsharpEmbedBinaries)' != 'true'"
+        <Copy Condition="!$(BootsharpLlvm) And !$(BootsharpEmbedBinaries)"
               SourceFiles="@(BootsharpMaps)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy Condition="'$(BootsharpAggressiveTrimming)' != 'true' And '$(BootsharpEmbedBinaries)' != 'true'"
+        <Copy Condition="!$(BootsharpLlvm) And !$(BootsharpEmbedBinaries)"
               SourceFiles="@(BootsharpSymbols)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy Condition="'$(BootsharpAggressiveTrimming)' != 'true' And '$(BootsharpEmbedBinaries)' != 'true'"
+        <Copy Condition="!$(BootsharpLlvm) And !$(BootsharpEmbedBinaries)"
               SourceFiles="@(BootsharpPdbs)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
 
         <!-- Publish package file. -->

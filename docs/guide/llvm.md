@@ -12,54 +12,14 @@ Below is a benchmark comparing interop and compute performance of various langua
 
 ## Setup
 
-Use following `.csproj` as a reference for enabling NativeAOT-LLVM with Bootsharp:
+Starting with Bootsharp 0.8.0 no extra project configuration is required.
 
-```xml
-<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <!-- Notice '-browser' postfix. -->
-        <TargetFramework>net9.0-browser</TargetFramework>
-        <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-        <!-- Let Bootsharp know you're using the LLVM backend. -->
-        <BootsharpLLVM>true</BootsharpLLVM>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Bootsharp" Version="*-*"/>
-    </ItemGroup>
-
-    <!-- Below are properties required to enable LLVM backend. -->
-    <!-- Due to experimental nature of the project, specifics may change over time. -->
-
-    <PropertyGroup>
-        <PublishTrimmed>true</PublishTrimmed>
-        <DotNetJsApi>true</DotNetJsApi>
-        <DebugType>none</DebugType>
-        <EmccFlags>$(EmccFlags) -O3</EmccFlags> <!-- optimize speed; use -Oz for min. size -->
-        <UsingBrowserRuntimeWorkload>false</UsingBrowserRuntimeWorkload>
-        <RestoreAdditionalProjectSources>
-            https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-experimental/nuget/v3/index.json;
-        </RestoreAdditionalProjectSources>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.DotNet.ILCompiler.LLVM" Version="10.0.0-*"/>
-        <PackageReference Condition="'$([MSBuild]::IsOSPlatform(&quot;Windows&quot;))' == 'true'" Include="runtime.win-x64.Microsoft.DotNet.ILCompiler.LLVM" Version="10.0.0-*"/>
-        <PackageReference Condition="'$([MSBuild]::IsOSPlatform(&quot;Windows&quot;))' == 'false'" Include="runtime.linux-x64.Microsoft.DotNet.ILCompiler.LLVM" Version="10.0.0-*"/>
-        <EmscriptenEnvVars Include="DOTNET_EMSCRIPTEN_LLVM_ROOT=$(EmscriptenUpstreamBinPath)"/>
-        <EmscriptenEnvVars Include="DOTNET_EMSCRIPTEN_BINARYEN_ROOT=$(EmscriptenSdkToolsPath)"/>
-        <EmscriptenEnvVars Include="DOTNET_EMSCRIPTEN_NODE_JS=$(EmscriptenNodeBinPath)node$(ExecutableExtensionName)"/>
-        <EmscriptenEnvVars Include="EM_CACHE=$(EmscriptenCacheSdkCacheDir)"/>
-    </ItemGroup>
-
-</Project>
-```
+When publishing a Bootsharp project in `Release`, Bootsharp automatically enables the NativeAOT-LLVM toolchain, speed-focused code generation, and the trimming settings required by the LLVM backend.
 
 ## Binaryen
 
-Optionally, you can further optimize the produced WASM using Binaryen:
+Bootsharp always tries to run Binaryen on release publishes with speed optimization enabled:
 
-1. Install the tool https://github.com/WebAssembly/binaryen
+1. Install Binaryen: https://github.com/WebAssembly/binaryen/releases
 2. Make sure `wasm-opt` is in the system path
-3. Add `<BootsharpOptimize>speed</BootsharpOptimize>` to the project config to optimize for speed; replace `speed` with `size` to instead optimize for size
+3. If the tool is missing, Bootsharp will log a warning and continue with a non-fully-optimized WASM binary

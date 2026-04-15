@@ -19,14 +19,8 @@ jobs:
           npm install
           npm run build
           cd ../cs
-          dotnet workload restore
-          mkdir .nuget
-          dotnet build Bootsharp.Generate -c Release
-          dotnet build Bootsharp.Common -c Release
-          dotnet pack Bootsharp.Common -o .nuget -c Release
-          dotnet pack Bootsharp.Inject -o .nuget -c Release
-          dotnet build -c Release
-          dotnet pack Bootsharp -o .nuget -c Release
+          bash ./.scripts/llvm.sh
+          bash ./.scripts/pack.sh
       - name: publish to nuget
         run: |
           dotnet nuget push "src/cs/.nuget/Bootsharp*.nupkg" -k ${{ secrets.NUGET_KEY }} -s https://www.nuget.org --skip-duplicate

@@ -24,19 +24,13 @@ jobs:
           npm install
           npm run build
           cd ../cs
-          dotnet workload restore
-          mkdir .nuget
-          dotnet build Bootsharp.Generate -c Release
-          dotnet build Bootsharp.Common -c Release
-          dotnet pack Bootsharp.Common -o .nuget
-          dotnet build -c Release
-          dotnet pack Bootsharp -o .nuget
+          bash ./.scripts/llvm.sh
+          bash ./.scripts/pack.sh
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:ExcludeByAttribute=GeneratedCodeAttribute
           cd ../js/test/cs
           dotnet workload restore
-          dotnet publish -p:BootsharpName=embedded -p:BootsharpEmbedBinaries=true
-          dotnet publish -p:BootsharpName=sideload -p:BootsharpEmbedBinaries=false
           cd ../..
+          npm run compile-test
           npm run cover
       - name: upload coverage reports to Codecov
         uses: codecov/codecov-action@v6

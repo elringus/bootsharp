@@ -1,8 +1,9 @@
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Bootsharp.Publish;
 
-internal sealed class ModulePatcher (string buildDir, bool thread, bool embed, bool trim)
+internal sealed class ModulePatcher (string buildDir, bool thread, bool embed)
 {
     private readonly string dotnet = Path.Combine(buildDir, "dotnet.js");
     private readonly string runtime = Path.Combine(buildDir, "dotnet.runtime.js");
@@ -15,7 +16,7 @@ internal sealed class ModulePatcher (string buildDir, bool thread, bool embed, b
     {
         if (thread) PatchThreading();
         if (embed) new InternalPatcher(dotnet, runtime, native).Patch();
-        if (trim) RemoveMaps();
+        RemoveMaps();
         RemoveWasmNag();
         CopyInternals();
     }
@@ -24,8 +25,9 @@ internal sealed class ModulePatcher (string buildDir, bool thread, bool embed, b
     {
         // Removes "WebAssembly resource does not have the expected content type..." warning.
 
-        File.WriteAllText(dotnet, File.ReadAllText(dotnet, Encoding.UTF8)
-            .Replace("E('WebAssembly resource does not have the expected content type \"application/wasm\", so falling back to slower ArrayBuffer instantiation.')", "true"));
+        File.WriteAllText(dotnet, new Regex("""(?:[$\w]+\.)*[$\w]+\(\s*(['"])WebAssembly resource does not have the expected content type \\?"application/wasm\\?", so falling back to slower ArrayBuffer instantiation\.\1\s*\)""",
+                RegexOptions.Compiled | RegexOptions.CultureInvariant)
+            .Replace(File.ReadAllText(dotnet, Encoding.UTF8), "true"), Encoding.UTF8);
     }
 
     private void PatchThreading ()
@@ -39,14 +41,15 @@ internal sealed class ModulePatcher (string buildDir, bool thread, bool embed, b
 
     private void RemoveMaps ()
     {
-        // Microsoft bundles .NET JavaScript sources pre-minified/uglified with source maps.
-        // When trimming enabled, we are not shipping the source maps, hence stripping the references here.
+        // Microsoft bundles .NET JavaScript sources pre-minified/uglified with source maps
+        // referencing upstream sources we don't publish with the package.
         // TODO: Raise an issue asking them to add an option to not uglify the sources.
 
-        File.WriteAllText(dotnet, File.ReadAllText(dotnet, Encoding.UTF8)
-            .Replace("//# sourceMappingURL=dotnet.js.map\n", ""), Encoding.UTF8);
-        File.WriteAllText(runtime, File.ReadAllText(runtime, Encoding.UTF8)
-            .Replace("//# sourceMappingURL=dotnet.runtime.js.map\n", ""), Encoding.UTF8);
+        var regex = new Regex(@"^\s*//# sourceMappingURL=.*?\.map\s*$\r?\n?",
+            RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.Multiline);
+        File.WriteAllText(dotnet, regex.Replace(File.ReadAllText(dotnet, Encoding.UTF8), ""), Encoding.UTF8);
+        File.WriteAllText(runtime, regex.Replace(File.ReadAllText(runtime, Encoding.UTF8), ""), Encoding.UTF8);
+        File.WriteAllText(native, regex.Replace(File.ReadAllText(native, Encoding.UTF8), ""), Encoding.UTF8);
     }
 
     private void CopyInternals ()
