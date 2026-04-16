@@ -38,4 +38,4 @@ To check JS coverage, run `npm run cover` under `src/js`.
 
 # Running Shell Scripts
 
-Always run `.sh` scripts with the `bash` command, for example: `bash script.sh`. 
+Always run `.sh` scripts with the `bash` command, for example: `bash script.sh`.
