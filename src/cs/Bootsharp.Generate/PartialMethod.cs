@@ -12,36 +12,35 @@ internal sealed class PartialMethod (MethodDeclarationSyntax syntax)
     public string EmitSource (Compilation compilation)
     {
         method = compilation.GetSemanticModel(syntax.SyntaxTree).GetDeclaredSymbol(syntax)!;
+        var ptrName = EmitPointerName();
         return $"""
-                {syntax.Modifiers} {EmitSignature()} =>
-                    #if BOOTSHARP_EMITTED
-                    {EmitBody()};
-                    #else
-                    throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
-                    #endif
+                private static delegate* managed<{EmitPointerSignature()}> {ptrName};
+                    {syntax.Modifiers} {EmitMethodSignature()} => {ptrName}({EmitArgs()});
                 """;
     }
 
-    private string EmitSignature ()
+    private string EmitPointerSignature ()
+    {
+        var args = method.Parameters.Select(p => BuildSyntax(p.Type)).ToList();
+        args.Add(BuildSyntax(method.ReturnType));
+        return string.Join(", ", args);
+    }
+
+    private string EmitPointerName ()
+    {
+        var space = method.ContainingNamespace.IsGlobalNamespace ? method.ContainingType.Name
+            : string.Join("_", [..method.ContainingNamespace.ConstituentNamespaces, method.ContainingType.Name]);
+        return string.Concat($"Proxy_{space}_{method.Name}"
+            .Select(c => char.IsLetterOrDigit(c) || c == '_' ? c : '_'));
+    }
+
+    private string EmitMethodSignature ()
     {
         var args = method.Parameters.Select(p => $"{BuildSyntax(p.Type)} {p.Name}");
         return $"{BuildSyntax(method.ReturnType)} {method.Name} ({string.Join(", ", args)})";
     }
 
-    private string EmitBody ()
-    {
-        return $"global::Bootsharp.Generated.Interop.{BuildName()}({BuildArgs()})";
-    }
-
-    private string BuildName ()
-    {
-        var name = method.ContainingNamespace.IsGlobalNamespace
-            ? $"{method.ContainingType.Name}_{method.Name}"
-            : string.Join("_", [..method.ContainingNamespace.ConstituentNamespaces, method.ContainingType.Name, method.Name]);
-        return $"Proxy_{name.Replace(".", "_")}";
-    }
-
-    private string BuildArgs ()
+    private string EmitArgs ()
     {
         if (method.Parameters.Length == 0) return "";
         return string.Join(", ", method.Parameters.Select(p => p.Name));

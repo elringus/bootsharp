@@ -12,14 +12,10 @@ public static class FunctionTest
             }
             """,
             """
-            partial class Foo
+            unsafe partial class Foo
             {
-                partial void Bar () =>
-                #if BOOTSHARP_EMITTED
-                global::Bootsharp.Generated.Interop.Proxy_Foo_Bar();
-                #else
-                throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
-                #endif
+                private static delegate* managed<void> Proxy_Foo_Bar;
+                partial void Bar () => Proxy_Foo_Bar();
             }
             """
         ],
@@ -40,14 +36,10 @@ public static class FunctionTest
 
             namespace File.Scoped;
 
-            public static partial class Foo
+            public static unsafe partial class Foo
             {
-                private static partial global::System.Threading.Tasks.Task BarAsync (global::System.String[] a, global::System.Int32? b) =>
-                #if BOOTSHARP_EMITTED
-                global::Bootsharp.Generated.Interop.Proxy_File_Scoped_Foo_BarAsync(a, b);
-                #else
-                throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
-                #endif
+                private static delegate* managed<global::System.String[], global::System.Int32?, global::System.Threading.Tasks.Task> Proxy_File_Scoped_Foo_BarAsync;
+                private static partial global::System.Threading.Tasks.Task BarAsync (global::System.String[] a, global::System.Int32? b) => Proxy_File_Scoped_Foo_BarAsync(a, b);
             }
             """
         ],
@@ -68,14 +60,10 @@ public static class FunctionTest
 
             namespace File.Scoped;
 
-            public static partial class Foo
+            public static unsafe partial class Foo
             {
-                private static partial global::System.Threading.Tasks.Task<global::System.String?> BarAsync () =>
-                #if BOOTSHARP_EMITTED
-                global::Bootsharp.Generated.Interop.Proxy_File_Scoped_Foo_BarAsync();
-                #else
-                throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
-                #endif
+                private static delegate* managed<global::System.Threading.Tasks.Task<global::System.String?>> Proxy_File_Scoped_Foo_BarAsync;
+                private static partial global::System.Threading.Tasks.Task<global::System.String?> BarAsync () => Proxy_File_Scoped_Foo_BarAsync();
             }
             """
         ],
@@ -90,14 +78,10 @@ public static class FunctionTest
             }
             """,
             """
-            partial class Foo
+            unsafe partial class Foo
             {
-                partial void Bar (global::Record a) =>
-                #if BOOTSHARP_EMITTED
-                global::Bootsharp.Generated.Interop.Proxy_Foo_Bar(a);
-                #else
-                throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
-                #endif
+                private static delegate* managed<global::Record, void> Proxy_Foo_Bar;
+                partial void Bar (global::Record a) => Proxy_Foo_Bar(a);
             }
             """
         ],
@@ -122,20 +106,12 @@ public static class FunctionTest
 
             namespace Classic
             {
-                partial class Foo
+                unsafe partial class Foo
                 {
-                    public partial global::System.DateTime GetTime (global::System.DateTime time) =>
-                    #if BOOTSHARP_EMITTED
-                    global::Bootsharp.Generated.Interop.Proxy_Classic_Foo_GetTime(time);
-                    #else
-                    throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
-                    #endif
-                    public partial global::System.Threading.Tasks.Task<global::System.DateTime> GetTimeAsync (global::System.DateTime time) =>
-                    #if BOOTSHARP_EMITTED
-                    global::Bootsharp.Generated.Interop.Proxy_Classic_Foo_GetTimeAsync(time);
-                    #else
-                    throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
-                    #endif
+                    private static delegate* managed<global::System.DateTime, global::System.DateTime> Proxy_Classic_Foo_GetTime;
+                    public partial global::System.DateTime GetTime (global::System.DateTime time) => Proxy_Classic_Foo_GetTime(time);
+                    private static delegate* managed<global::System.DateTime, global::System.Threading.Tasks.Task<global::System.DateTime>> Proxy_Classic_Foo_GetTimeAsync;
+                    public partial global::System.Threading.Tasks.Task<global::System.DateTime> GetTimeAsync (global::System.DateTime time) => Proxy_Classic_Foo_GetTimeAsync(time);
                 }
             }
             """
@@ -153,14 +129,26 @@ public static class FunctionTest
             """
             using x = (System.String, System.Boolean);
 
-            partial class Foo
+            unsafe partial class Foo
             {
-                partial void Bar () =>
-                #if BOOTSHARP_EMITTED
-                global::Bootsharp.Generated.Interop.Proxy_Foo_Bar();
-                #else
-                throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
-                #endif
+                private static delegate* managed<void> Proxy_Foo_Bar;
+                partial void Bar () => Proxy_Foo_Bar();
+            }
+            """
+        ],
+        // Doesn't add 'unsafe' class modified when it's already specified.
+        [
+            """
+            unsafe partial class Foo
+            {
+                [JSFunction] partial void Bar ();
+            }
+            """,
+            """
+            unsafe partial class Foo
+            {
+                private static delegate* managed<void> Proxy_Foo_Bar;
+                partial void Bar () => Proxy_Foo_Bar();
             }
             """
         ]

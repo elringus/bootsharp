@@ -35,3 +35,7 @@ We have a strict 100% coverage policy for both the C# and JS codebases.
 To check C# coverage, use `reportgenerator` on merged coverlet output. Example workflow reference: `src/cs/.scripts/cover.sh`. Do not run that script verbatim in automation; it is intended for interactive usage.
 
 To check JS coverage, run `npm run cover` under `src/js`.
+
+# Running Shell Scripts
+
+Always run `.sh` scripts with the `bash` command, for example: `bash script.sh`.

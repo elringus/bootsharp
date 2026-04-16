@@ -30,7 +30,12 @@ internal sealed class PartialClass (
         return string.IsNullOrEmpty(usings) ? "" : usings + "\n\n";
     }
 
-    private string EmitHeader () => $"{syntax.Modifiers} class {syntax.Identifier}\n{{";
+    private string EmitHeader ()
+    {
+        var mods = syntax.Modifiers.ToString();
+        if (!mods.Contains("unsafe")) mods = mods.Replace("partial", "unsafe partial");
+        return $"{mods} class {syntax.Identifier}{syntax.TypeParameterList}{syntax.BaseList}{syntax.ConstraintClauses}\n{{";
+    }
 
     private string EmitMethods ()
     {

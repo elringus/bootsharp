@@ -17,6 +17,7 @@ describe("while bootsharp is booted", () => {
         expect(Test.Functions.getStringAsync).toBeUndefined();
         expect(Test.Functions.getBytes).toBeUndefined();
         expect(Test.Platform.throwJS).toBeUndefined();
+        expect(Test.Types.Registry.createVehicle).toBeUndefined();
         expect(Test.Types.RegistryProvider.getRegistry).toBeUndefined();
         expect(Test.Types.RegistryProvider.getRegistries).toBeUndefined();
         expect(Test.Types.RegistryProvider.getRegistryMap).toBeUndefined();
@@ -141,6 +142,10 @@ describe("while bootsharp is booted", () => {
         });
         expect(Test.Types.Registry.countTotalSpeed()).toStrictEqual(3);
     });
+    it("can invoke assigned JS functions from library assembly", () => {
+        Test.Types.Registry.createVehicle = (id, maxSpeed) => ({ id, maxSpeed });
+        expect(Test.Types.Registry.getVehicle("foo", 42)).toStrictEqual({ id: "foo", maxSpeed: 42 });
+    });
     it("can subscribe to events", () => {
         let eventArg1, multipleArg1, multipleArg2, multipleArg3;
         Test.Event.onEvent.subscribe(v => eventArg1 = v);
@@ -159,6 +164,12 @@ describe("while bootsharp is booted", () => {
         expect(multipleArg1).toStrictEqual(255);
         expect(multipleArg2).toBeUndefined();
         expect(multipleArg3).toStrictEqual(TrackType.Chain);
+    });
+    it("can subscribe to events from library assembly", () => {
+        let result: Test.Types.Vehicle | undefined;
+        Test.Types.Registry.onVehicleBroadcast.subscribe(v => result = v);
+        Test.Types.Registry.broadcastVehicle({ id: "foo", maxSpeed: 42 });
+        expect(result).toStrictEqual({ id: "foo", maxSpeed: 42 });
     });
     it("can un-subscribe from events", () => {
         let result = "";

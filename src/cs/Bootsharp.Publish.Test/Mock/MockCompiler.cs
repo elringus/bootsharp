@@ -40,7 +40,7 @@ public class MockCompiler
     {
         var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
         var tree = CSharpSyntaxTree.ParseText(text);
-        var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+        var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true);
         var refs = GatherReferences(Path.GetDirectoryName(assemblyPath));
         return CSharpCompilation.Create(assemblyName, [tree], refs, options);
     }

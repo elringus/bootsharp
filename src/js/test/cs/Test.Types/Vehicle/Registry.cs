@@ -5,7 +5,7 @@ using Bootsharp;
 
 namespace Test.Types;
 
-public class Registry
+public partial class Registry
 {
     public static IRegistryProvider Provider { get; set; } = null!;
     public List<Wheeled?> Wheeled { get; set; } = null!;
@@ -41,4 +41,16 @@ public class Registry
 
     [JSInvokable]
     public static Vehicle GetWithEmptyId () => new() { Id = "" };
+
+    [JSFunction]
+    public static partial Vehicle CreateVehicle (string id, float maxSpeed);
+
+    [JSEvent]
+    public static partial void OnVehicleBroadcast (Vehicle vehicle);
+
+    [JSInvokable]
+    public static Vehicle GetVehicle (string id, float maxSpeed) => CreateVehicle(id, maxSpeed);
+
+    [JSInvokable]
+    public static void BroadcastVehicle (Vehicle vehicle) => OnVehicleBroadcast(vehicle);
 }

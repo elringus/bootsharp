@@ -12,14 +12,10 @@ public static class EventTest
             }
             """,
             """
-            partial class Foo
+            unsafe partial class Foo
             {
-                partial void OnBar () =>
-                #if BOOTSHARP_EMITTED
-                global::Bootsharp.Generated.Interop.Proxy_Foo_OnBar();
-                #else
-                throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
-                #endif
+                private static delegate* managed<void> Proxy_Foo_OnBar;
+                partial void OnBar () => Proxy_Foo_OnBar();
             }
             """
         ],
@@ -36,14 +32,10 @@ public static class EventTest
             """
             namespace Space;
 
-            public static partial class Foo
+            public static unsafe partial class Foo
             {
-                public static partial void OnBar (global::System.String a, global::System.Int32 b) =>
-                #if BOOTSHARP_EMITTED
-                global::Bootsharp.Generated.Interop.Proxy_Space_Foo_OnBar(a, b);
-                #else
-                throw new System.NotImplementedException("https://github.com/elringus/bootsharp/issues/173");
-                #endif
+                private static delegate* managed<global::System.String, global::System.Int32, void> Proxy_Space_Foo_OnBar;
+                public static partial void OnBar (global::System.String a, global::System.Int32 b) => Proxy_Space_Foo_OnBar(a, b);
             }
             """
         ]
