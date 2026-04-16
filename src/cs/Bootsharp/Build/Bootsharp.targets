@@ -39,8 +39,18 @@
         <EmscriptenEnvVars Include="EM_CACHE=$(EmscriptenCacheSdkCacheDir)"/>
     </ItemGroup>
 
-    <UsingTask TaskName="Bootsharp.Publish.BootsharpEmit" AssemblyFile="$(BootsharpPublishAssembly)"/>
-    <UsingTask TaskName="Bootsharp.Publish.BootsharpPack" AssemblyFile="$(BootsharpPublishAssembly)"/>
+    <!-- Register tasks for Visual Studio. (https://github.com/elringus/bootsharp/issues/137) -->
+    <UsingTask Condition="'$(MSBuildRuntimeType)' == 'Full'"
+               TaskName="Bootsharp.Publish.BootsharpEmit" AssemblyFile="$(BootsharpPublishAssembly)"
+               Runtime="NET" TaskFactory="TaskHostFactory"/>
+    <UsingTask Condition="'$(MSBuildRuntimeType)' == 'Full'"
+               TaskName="Bootsharp.Publish.BootsharpPack" AssemblyFile="$(BootsharpPublishAssembly)"
+               Runtime="NET" TaskFactory="TaskHostFactory"/>
+    <!-- Register tasks for 'dotnet publish' run from CLI. -->
+    <UsingTask Condition="'$(MSBuildRuntimeType)' != 'Full'"
+               TaskName="Bootsharp.Publish.BootsharpEmit" AssemblyFile="$(BootsharpPublishAssembly)"/>
+    <UsingTask Condition="'$(MSBuildRuntimeType)' != 'Full'"
+               TaskName="Bootsharp.Publish.BootsharpPack" AssemblyFile="$(BootsharpPublishAssembly)"/>
 
     <!-- A hack due to source generator compositing not possible. (https://github.com/dotnet/roslyn/issues/57239#issuecomment-1585235740) -->
     <Target Name="BootsharpEmit" BeforeTargets="GenerateAdditionalSources"
