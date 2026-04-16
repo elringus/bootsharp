@@ -89,7 +89,7 @@
             <BootsharpTypesDirectory Condition="'$(BootsharpTypesDirectory)' == ''">$(BootsharpPublishDirectory)/types</BootsharpTypesDirectory>
             <BootsharpBinariesDirectory Condition="'$(BootsharpBinariesDirectory)' == ''">$(BootsharpPublishDirectory)/bin</BootsharpBinariesDirectory>
             <BootsharpPackageDirectory Condition="'$(BootsharpPackageDirectory)' == ''">$(BootsharpPublishDirectory)</BootsharpPackageDirectory>
-            <BootsharpBundleCommand Condition="'$(BootsharpBundleCommand)' == ''">npx rollup index.js -o index.mjs -f es -e process,module,fs/promises --output.inlineDynamicImports</BootsharpBundleCommand>
+            <BootsharpBundleCommand Condition="'$(BootsharpBundleCommand)' == ''">npx --yes rollup index.js -o index.mjs -f es -e process,module,fs/promises --output.inlineDynamicImports</BootsharpBundleCommand>
             <BootsharpThreading Condition="'$(WasmEnableThreads)' == 'true'">true</BootsharpThreading>
             <BootsharpThreading Condition="'$(WasmEnableThreads)' != 'true'">false</BootsharpThreading>
             <BootsharpEmbedBinaries Condition="$(BootsharpThreading)">false</BootsharpEmbedBinaries>
