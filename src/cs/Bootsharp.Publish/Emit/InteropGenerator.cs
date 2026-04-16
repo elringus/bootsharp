@@ -7,6 +7,7 @@ namespace Bootsharp.Publish;
 /// </summary>
 internal sealed class InteropGenerator
 {
+    private readonly InteropInitializerGenerator initGenerator = new();
     private readonly HashSet<string> methods = [];
     private IReadOnlyCollection<InterfaceMeta> instanced = [];
 
@@ -24,6 +25,7 @@ internal sealed class InteropGenerator
               #nullable enable
               #pragma warning disable
 
+              using System.Runtime.CompilerServices;
               using System.Runtime.InteropServices.JavaScript;
 
               namespace Bootsharp.Generated;
@@ -32,6 +34,8 @@ internal sealed class InteropGenerator
               {
                   [System.Runtime.InteropServices.JavaScript.JSExport] internal static void DisposeExportedInstance (int id) => Instances.Dispose(id);
                   [System.Runtime.InteropServices.JavaScript.JSImport("disposeInstance", "Bootsharp")] internal static partial void DisposeImportedInstance (int id);
+
+                  {{initGenerator.Generate(inspection.StaticMethods)}}
 
                   {{JoinLines(methods)}}
               }

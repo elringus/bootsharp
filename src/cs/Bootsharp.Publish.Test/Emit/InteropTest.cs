@@ -26,6 +26,51 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
+    public void GeneratesInitializersForEntryAndLibraryAssemblies ()
+    {
+        AddAssembly("Library.dll",
+            With("Library",
+                """
+                public static class Registry
+                {
+                    // (the fields are emitted by the source generators)
+                    private static unsafe delegate* managed<int, string> Proxy_Library_Registry_GetLabel;
+                    private static unsafe delegate* managed<string, void> Proxy_Library_Registry_OnBroadcast;
+                    [JSFunction] public static string GetLabel (int count) => default!;
+                    [JSEvent] public static void OnBroadcast (string value) { }
+                }
+                """));
+        AddAssembly("Entry.dll",
+            With("Entry",
+                """
+                public static class App
+                {
+                    // (the field is emitted by the source generators)
+                    private static unsafe delegate* managed<string> Proxy_Entry_App_GetName;
+                    [JSFunction] public static string GetName () => default!;
+                }
+                """));
+        Execute();
+        Contains(
+            """
+                [UnsafeAccessor(UnsafeAccessorKind.StaticField, Name = "Proxy_Entry_App_GetName")]
+                private static extern unsafe ref delegate* managed<global::System.String> Get_Proxy_Entry_App_GetName ([UnsafeAccessorType("Entry.App, Entry")] object? _);
+                [UnsafeAccessor(UnsafeAccessorKind.StaticField, Name = "Proxy_Library_Registry_GetLabel")]
+                private static extern unsafe ref delegate* managed<global::System.Int32, global::System.String> Get_Proxy_Library_Registry_GetLabel ([UnsafeAccessorType("Library.Registry, Library")] object? _);
+                [UnsafeAccessor(UnsafeAccessorKind.StaticField, Name = "Proxy_Library_Registry_OnBroadcast")]
+                private static extern unsafe ref delegate* managed<global::System.String, void> Get_Proxy_Library_Registry_OnBroadcast ([UnsafeAccessorType("Library.Registry, Library")] object? _);
+
+                [ModuleInitializer]
+                internal static unsafe void Initialize ()
+                {
+                    Get_Proxy_Entry_App_GetName(default) = &Proxy_Entry_App_GetName;
+                    Get_Proxy_Library_Registry_GetLabel(default) = &Proxy_Library_Registry_GetLabel;
+                    Get_Proxy_Library_Registry_OnBroadcast(default) = &Proxy_Library_Registry_OnBroadcast;
+                }
+            """);
+    }
+
+    [Fact]
     public void GeneratesForMethodsWithoutNamespace ()
     {
         AddAssembly(With(

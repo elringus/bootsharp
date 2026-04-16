@@ -15,6 +15,7 @@
     <ItemGroup>
         <None Include="../Bootsharp.Generate/bin/$(Configuration)/netstandard2.0/Bootsharp.Generate.dll"
               Pack="true" Visible="false" PackagePath="analyzers/dotnet/cs"/>
+        <Content Include="Build/**" Pack="true" PackagePath="buildTransitive/"/>
         <InternalsVisibleTo Include="Bootsharp.Common.Test"/>
     </ItemGroup>
 
