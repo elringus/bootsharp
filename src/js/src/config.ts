@@ -1,4 +1,4 @@
-import { RuntimeConfig, RuntimeWasm, RuntimeModule, RuntimeAssembly, getRuntime, getNative } from "./modules";
+import { RuntimeConfig, WasmAsset, ModuleAsset, AssemblyAsset, PdbAsset, SymbolsAsset, getRuntime, getNative } from "./modules";
 import { BinaryResource, BootResources } from "./resources";
 import { decodeBase64 } from "./decoder";
 
@@ -8,11 +8,13 @@ import { decodeBase64 } from "./decoder";
 export async function buildConfig(resources: BootResources, root?: string): Promise<RuntimeConfig> {
     const embed = root == null;
     const mt = !embed && (await import("./dotnet.g")).mt;
-    const [wasm, native, runtime, assemblies] = await Promise.all([
+    const [wasm, native, runtime, assemblies, pdb, symbols] = await Promise.all([
         resolveWasm(),
         resolveModule("dotnet.native.js", embed ? getNative : undefined),
         resolveModule("dotnet.runtime.js", embed ? getRuntime : undefined),
-        Promise.all(resources.assemblies.map(resolveAssembly))
+        Promise.all(resources.assemblies.map(resolveAssembly)),
+        Promise.all(resources.debugging.filter(r => r.name.endsWith(".pdb")).map(resolvePdb)),
+        Promise.all(resources.debugging.filter(r => r.name.endsWith(".symbols")).map(resolveSymbols))
     ]);
     return {
         resources: {
@@ -20,31 +22,59 @@ export async function buildConfig(resources: BootResources, root?: string): Prom
             jsModuleNative: [native],
             jsModuleRuntime: [runtime],
             jsModuleWorker: mt ? [await resolveModule("dotnet.native.worker.mjs")] : undefined,
-            assembly: assemblies
+            assembly: assemblies,
+            wasmSymbols: symbols,
+            pdb: pdb
         },
-        mainAssemblyName: resources.entryAssemblyName
+        mainAssemblyName: resources.entryAssemblyName,
+        debugLevel: resources.debugging.length > 0 ? -1 : undefined
     };
 
-    async function resolveWasm(): Promise<RuntimeWasm> {
+    async function resolveWasm(): Promise<WasmAsset> {
         return {
             name: resources.wasm.name,
             buffer: await resolveBuffer(resources.wasm)
         };
     }
 
-    async function resolveModule(name: string, embed?: () => Promise<unknown>): Promise<RuntimeModule> {
+    async function resolveModule(name: string, embed?: () => Promise<unknown>): Promise<ModuleAsset> {
         return {
             name,
             moduleExports: embed ? await embed() : undefined
         };
     }
 
-    async function resolveAssembly(res: BinaryResource): Promise<RuntimeAssembly> {
+    async function resolveAssembly(res: BinaryResource): Promise<AssemblyAsset> {
         return {
             name: res.name,
             virtualPath: res.name,
             buffer: await resolveBuffer(res)
         };
+    }
+
+    async function resolvePdb(res: BinaryResource): Promise<PdbAsset> {
+        return {
+            name: res.name,
+            virtualPath: res.name,
+            buffer: await resolveBuffer(res)
+        };
+    }
+
+    async function resolveSymbols(res: BinaryResource): Promise<SymbolsAsset> {
+        return {
+            name: res.name,
+            pendingDownload: {
+                name: res.name,
+                url: embed ? res.name : `${root}/${res.name}`,
+                response: fakeResponse()
+            }
+        };
+
+        // Due to a bug in .NET, symbols ignore 'buffer', so we have to fake an HTTP response.
+        async function fakeResponse(): Promise<Response> {
+            const text = new TextDecoder("utf-8").decode(await resolveBuffer(res));
+            return new Response(text, { status: 200 });
+        }
     }
 
     async function resolveBuffer(res: BinaryResource): Promise<ArrayBuffer> {

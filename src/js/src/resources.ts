@@ -6,6 +6,8 @@ export type BootResources = {
     readonly wasm: BinaryResource;
     /** Compiled .NET assemblies. */
     readonly assemblies: BinaryResource[];
+    /** Debugging artifacts consumed by the runtime. */
+    readonly debugging: BinaryResource[];
     /** Name of the entry (main) assembly, with .dll extension. */
     readonly entryAssemblyName: string;
 }

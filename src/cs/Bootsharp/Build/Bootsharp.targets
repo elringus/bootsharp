@@ -126,10 +126,10 @@
         <BootsharpPack BuildDirectory="$(BootsharpBuildDirectory)"
                        InspectedDirectory="$(OutputPath)"
                        EntryAssemblyName="$(BootsharpEntryAssemblyName)"
-                       TrimmingEnabled="$(BootsharpLlvm)"
                        EmbedBinaries="$(BootsharpEmbedBinaries)"
                        Threading="$(BootsharpThreading)"
-                       LLVM="$(BootsharpLlvm)"/>
+                       LLVM="$(BootsharpLlvm)"
+                       Debug="!$(BootsharpLlvm)"/>
 
         <!-- Compile generated JavaScript solution. -->
         <Exec Command="$(BootsharpBundleCommand)"

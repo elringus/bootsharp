@@ -1,21 +1,32 @@
 namespace Bootsharp.Publish;
 
-internal sealed class ResourceGenerator (string entryAssemblyName, bool embed)
+internal sealed class ResourceGenerator (string entryAssemblyName, bool embed, bool debug)
 {
     private readonly List<string> assemblies = [];
+    private readonly List<string> debugging = [];
     private string wasm = null!;
 
     public string Generate (string buildDir)
     {
-        foreach (var path in Directory.GetFiles(buildDir, "*.wasm"))
+        foreach (var path in Directory.GetFiles(buildDir, "*.wasm").Order())
             if (path.EndsWith("dotnet.native.wasm")) wasm = BuildBin(path);
             else assemblies.Add(BuildBin(path));
+        if (debug)
+        {
+            foreach (var path in Directory.GetFiles(buildDir, "*.pdb").Order())
+                debugging.Add(BuildBin(path));
+            foreach (var path in Directory.GetFiles(buildDir, "*.symbols").Order())
+                debugging.Add(BuildBin(path));
+        }
         return
             $$"""
               export default {
                   wasm: {{wasm}},
                   assemblies: [
                       {{JoinLines(assemblies, 2, ",\n")}}
+                  ],
+                  debugging: [
+                      {{JoinLines(debugging, 2, ",\n")}}
                   ],
                   entryAssemblyName: "{{entryAssemblyName}}"
               };

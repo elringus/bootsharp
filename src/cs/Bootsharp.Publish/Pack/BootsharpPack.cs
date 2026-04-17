@@ -8,10 +8,10 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
     public required string BuildDirectory { get; set; }
     public required string InspectedDirectory { get; set; }
     public required string EntryAssemblyName { get; set; }
-    public required bool TrimmingEnabled { get; set; }
     public required bool EmbedBinaries { get; set; }
     public required bool Threading { get; set; }
     public required bool LLVM { get; set; }
+    public required bool Debug { get; set; }
 
     public override bool Execute ()
     {
@@ -63,7 +63,7 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
 
     private void GenerateResources (SolutionInspection inspection)
     {
-        var generator = new ResourceGenerator(EntryAssemblyName, EmbedBinaries);
+        var generator = new ResourceGenerator(EntryAssemblyName, EmbedBinaries, Debug);
         var content = generator.Generate(BuildDirectory);
         File.WriteAllText(Path.Combine(BuildDirectory, "resources.g.js"), content);
     }
