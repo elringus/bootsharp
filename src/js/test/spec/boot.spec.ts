@@ -34,9 +34,8 @@ describe("boot", () => {
     it("defines module exports when root is not specified", async () => {
         const { embed: { bootsharp } } = await setup();
         const config = await bootsharp.dotnet.buildConfig(bootsharp.resources);
-        expect(config.assets!.find(a => a.behavior === "js-module-dotnet")!.moduleExports).toBeDefined();
-        expect(config.assets!.find(a => a.behavior === "js-module-native")!.moduleExports).toBeDefined();
-        expect(config.assets!.find(a => a.behavior === "js-module-runtime")!.moduleExports).toBeDefined();
+        expect(config.resources!.jsModuleNative[0].moduleExports).toBeDefined();
+        expect(config.resources!.jsModuleRuntime[0].moduleExports).toBeDefined();
     });
     it("throws when missing boot resource", async () => {
         const { side: { bootsharp } } = await setup();
@@ -147,31 +146,30 @@ describe("boot", () => {
         const customs: BootOptions = {
             config: {
                 mainAssemblyName: bins.entryAssemblyName,
-                assets: [
-                    {
-                        name: resolve("test/cs/Test/bin/sideload/bin/dotnet.js"),
-                        behavior: "js-module-dotnet"
-                    },
-                    {
-                        name: resolve("test/cs/Test/bin/sideload/bin/dotnet.runtime.js"),
-                        behavior: "js-module-runtime"
-                    },
-                    {
-                        name: resolve("test/cs/Test/bin/sideload/bin/dotnet.native.js"),
-                        behavior: "js-module-native"
-                    },
-                    {
+                resources: {
+                    jsModuleRuntime: [{
+                        name: "dotnet.runtime.js",
+                        resolvedUrl: resolve("test/cs/Test/bin/sideload/bin/dotnet.runtime.js")
+                    }],
+                    jsModuleNative: [{
+                        name: "dotnet.native.js",
+                        resolvedUrl: resolve("test/cs/Test/bin/sideload/bin/dotnet.native.js")
+                    }],
+                    wasmNative: [{
                         name: "dotnet.native.wasm",
-                        buffer: <never>bins.wasm.buffer,
-                        behavior: "dotnetwasm"
-                    },
-                    ...bins.assemblies.map(a => (<never>{ name: a.name, buffer: a.content, behavior: "assembly" }))
-                ]
+                        buffer: <never>bins.wasm.buffer
+                    }],
+                    assembly: bins.assemblies.map(a => ({
+                        name: a.name,
+                        virtualPath: a.name,
+                        buffer: <never>a.content.buffer.slice(a.content.byteOffset, a.content.byteOffset + a.content.byteLength)
+                    }))
+                }
             },
             create: vi.fn(async () => {
                 const bootsharp = (await import("../cs/Test/bin/sideload")).default;
                 const dotnet = (await bootsharp.dotnet.getMain(root)).dotnet;
-                return await dotnet.withConfig(<never>customs.config).create();
+                return await dotnet.withConfig(customs.config!).create();
             }),
             import: vi.fn(),
             run: vi.fn(),
@@ -201,7 +199,7 @@ describe("boot", () => {
         const { side: { bootsharp }, root } = await setup();
         vi.doMock("../cs/Test/bin/sideload/dotnet.g", () => ({ mt: true }));
         const config = await bootsharp.dotnet.buildConfig(bootsharp.resources, root);
-        expect(config.assets!.some(a => a.behavior === "js-module-threads")).toBeTruthy();
+        expect(config.resources!.jsModuleWorker?.length).toStrictEqual(1);
         vi.doUnmock("../cs/Test/bin/sideload/dotnet.g");
     });
 });

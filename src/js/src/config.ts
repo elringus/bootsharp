@@ -1,4 +1,4 @@
-import { RuntimeConfig, AssetEntry, AssetBehaviors, getRuntime, getNative, getMain } from "./modules";
+import { RuntimeConfig, RuntimeWasm, RuntimeModule, RuntimeAssembly, getRuntime, getNative } from "./modules";
 import { BinaryResource, BootResources } from "./resources";
 import { decodeBase64 } from "./decoder";
 
@@ -7,39 +7,43 @@ import { decodeBase64 } from "./decoder";
  *  @param root When specified, assumes boot resources are side-loaded from the specified root. */
 export async function buildConfig(resources: BootResources, root?: string): Promise<RuntimeConfig> {
     const embed = root == null;
-    const assets: AssetEntry[] = await Promise.all([
-        resolveWasm(),
-        resolveModule("dotnet.js", "js-module-dotnet", embed ? getMain : undefined),
-        resolveModule("dotnet.native.js", "js-module-native", embed ? getNative : undefined),
-        resolveModule("dotnet.runtime.js", "js-module-runtime", embed ? getRuntime : undefined),
-        ...resources.assemblies.map(resolveAssembly)
-    ]);
     const mt = !embed && (await import("./dotnet.g")).mt;
-    if (mt) assets.push(await resolveModule("dotnet.native.worker.mjs", "js-module-threads"));
-    return { assets, mainAssemblyName: resources.entryAssemblyName };
+    const [wasm, native, runtime, assemblies] = await Promise.all([
+        resolveWasm(),
+        resolveModule("dotnet.native.js", embed ? getNative : undefined),
+        resolveModule("dotnet.runtime.js", embed ? getRuntime : undefined),
+        Promise.all(resources.assemblies.map(resolveAssembly))
+    ]);
+    return {
+        resources: {
+            wasmNative: [wasm],
+            jsModuleNative: [native],
+            jsModuleRuntime: [runtime],
+            jsModuleWorker: mt ? [await resolveModule("dotnet.native.worker.mjs")] : undefined,
+            assembly: assemblies
+        },
+        mainAssemblyName: resources.entryAssemblyName
+    };
 
-    async function resolveWasm(): Promise<AssetEntry> {
+    async function resolveWasm(): Promise<RuntimeWasm> {
         return {
             name: resources.wasm.name,
-            buffer: await resolveBuffer(resources.wasm),
-            behavior: "dotnetwasm"
+            buffer: await resolveBuffer(resources.wasm)
         };
     }
 
-    async function resolveModule(name: string, behavior: AssetBehaviors,
-        embed?: () => Promise<unknown>): Promise<AssetEntry> {
+    async function resolveModule(name: string, embed?: () => Promise<unknown>): Promise<RuntimeModule> {
         return {
             name,
-            moduleExports: embed ? await embed() : undefined,
-            behavior
+            moduleExports: embed ? await embed() : undefined
         };
     }
 
-    async function resolveAssembly(res: BinaryResource): Promise<AssetEntry> {
+    async function resolveAssembly(res: BinaryResource): Promise<RuntimeAssembly> {
         return {
             name: res.name,
-            buffer: await resolveBuffer(res),
-            behavior: "assembly"
+            virtualPath: res.name,
+            buffer: await resolveBuffer(res)
         };
     }
 

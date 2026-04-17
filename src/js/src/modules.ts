@@ -1,9 +1,13 @@
-import type { ModuleAPI, MonoConfig, AssetEntry } from "./dotnet.g.d.ts";
+import type { ModuleAPI, MonoConfig } from "./dotnet.g.d.ts";
 
 export type * from "./dotnet.g.d.ts";
-export type RuntimeConfig = MonoConfig & { assets?: AssetEntry[] };
+export type RuntimeConfig = MonoConfig;
+export type RuntimeResources = NonNullable<RuntimeConfig["resources"]>;
+export type RuntimeWasm = NonNullable<RuntimeResources["wasmNative"]>[number];
+export type RuntimeModule = NonNullable<RuntimeResources["jsModuleNative"]>[number];
+export type RuntimeAssembly = NonNullable<RuntimeResources["assembly"]>[number];
 
-/** Fetches main dotnet module (<code>dotnet.js</code>). */
+/** Fetches the main dotnet module (<code>dotnet.js</code>). */
 export async function getMain(root?: string): Promise<ModuleAPI & { embedded?: boolean }> {
     if (root == null) return await import("./dotnet.g");
     return await import(/*@vite-ignore*//*webpackIgnore:true*/`${root}/dotnet.js`);
