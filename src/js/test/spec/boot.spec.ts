@@ -43,8 +43,8 @@ describe("boot", () => {
         expect(config.debugLevel).not.toBeUndefined();
     });
     it("doesn't enable debugging when missing debugging resources", async () => {
-        const { side: { bootsharp }, root, any } = await setup();
-        const resources = any({ ...bootsharp.resources, debugging: [] });
+        const { side: { bootsharp }, root } = await setup();
+        const resources = { ...bootsharp.resources, debugging: [] };
         const config = await bootsharp.dotnet.buildConfig(resources, root);
         expect(config.debugLevel).toBeUndefined();
     });

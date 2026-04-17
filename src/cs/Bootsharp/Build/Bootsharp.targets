@@ -124,6 +124,7 @@
 
         <!-- Generate bindings, type declarations and (optionally) embed binaries. -->
         <BootsharpPack BuildDirectory="$(BootsharpBuildDirectory)"
+                       DebugDirectory="$(PublishDir)"
                        InspectedDirectory="$(OutputPath)"
                        EntryAssemblyName="$(BootsharpEntryAssemblyName)"
                        EmbedBinaries="$(BootsharpEmbedBinaries)"
@@ -164,9 +165,9 @@
 
         <!-- Publish debug symbols and maps when aggressive trimming is disabled. -->
         <ItemGroup>
-            <BootsharpMaps Include="$(BootsharpBuildDirectory)/*.map"/>
-            <BootsharpSymbols Include="$(BootsharpBuildDirectory)/*.symbols"/>
-            <BootsharpPdbs Include="$(BootsharpBuildDirectory)/*.pdb"/>
+            <BootsharpMaps Include="$(PublishDir)/*.map"/>
+            <BootsharpSymbols Include="$(PublishDir)/*.symbols"/>
+            <BootsharpPdbs Include="$(PublishDir)/*.pdb"/>
         </ItemGroup>
         <Copy Condition="!$(BootsharpLlvm) And !$(BootsharpEmbedBinaries)"
               SourceFiles="@(BootsharpMaps)" DestinationFolder="$(BootsharpBinariesDirectory)"/>

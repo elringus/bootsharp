@@ -40,6 +40,7 @@ public class PackTest : TaskTest
 
     private BootsharpPack CreateTask () => new() {
         BuildDirectory = Project.Root,
+        DebugDirectory = Project.Root,
         InspectedDirectory = Project.Root,
         EntryAssemblyName = "System.Runtime.dll",
         BuildEngine = Engine,

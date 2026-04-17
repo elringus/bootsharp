@@ -67,7 +67,7 @@ export async function buildConfig(resources: BootResources, root?: string): Prom
             name: res.name,
             pendingDownload: {
                 name: res.name,
-                url: embed ? res.name : `${root}/${res.name}`,
+                url: res.name,
                 response: Promise.resolve(new Response(txt, { status: 200 }))
             }
         };
