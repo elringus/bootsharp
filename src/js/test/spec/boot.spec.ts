@@ -37,6 +37,17 @@ describe("boot", () => {
         expect(config.resources!.jsModuleNative[0].moduleExports).toBeDefined();
         expect(config.resources!.jsModuleRuntime[0].moduleExports).toBeDefined();
     });
+    it("enables debugging when debugging resources exist", async () => {
+        const { side: { bootsharp }, root } = await setup();
+        const config = await bootsharp.dotnet.buildConfig(bootsharp.resources, root);
+        expect(config.debugLevel).not.toBeUndefined();
+    });
+    it("doesn't enable debugging when missing debugging resources", async () => {
+        const { side: { bootsharp }, root, any } = await setup();
+        const resources = any({ ...bootsharp.resources, debugging: [] });
+        const config = await bootsharp.dotnet.buildConfig(resources, root);
+        expect(config.debugLevel).toBeUndefined();
+    });
     it("throws when missing boot resource", async () => {
         const { side: { bootsharp } } = await setup();
         await expect(bootsharp.dotnet.buildConfig(bootsharp.resources))

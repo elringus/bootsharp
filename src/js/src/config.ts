@@ -61,20 +61,16 @@ export async function buildConfig(resources: BootResources, root?: string): Prom
     }
 
     async function resolveSymbols(res: BinaryResource): Promise<SymbolsAsset> {
+        // Due to a bug in .NET, symbols ignore 'buffer', so we have to fake an HTTP response.
+        const txt = new TextDecoder("utf-8").decode(await resolveBuffer(res));
         return {
             name: res.name,
             pendingDownload: {
                 name: res.name,
                 url: embed ? res.name : `${root}/${res.name}`,
-                response: fakeResponse()
+                response: Promise.resolve(new Response(txt, { status: 200 }))
             }
         };
-
-        // Due to a bug in .NET, symbols ignore 'buffer', so we have to fake an HTTP response.
-        async function fakeResponse(): Promise<Response> {
-            const text = new TextDecoder("utf-8").decode(await resolveBuffer(res));
-            return new Response(text, { status: 200 });
-        }
     }
 
     async function resolveBuffer(res: BinaryResource): Promise<ArrayBuffer> {
