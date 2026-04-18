@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Bootsharp.Publish;
 
-internal sealed class ModulePatcher (string buildDir, bool thread, bool embed, bool debug)
+internal sealed class ModulePatcher (string buildDir, bool thread, bool embed)
 {
     private readonly string dotnet = Path.Combine(buildDir, "dotnet.js");
     private readonly string runtime = Path.Combine(buildDir, "dotnet.runtime.js");
@@ -16,7 +16,7 @@ internal sealed class ModulePatcher (string buildDir, bool thread, bool embed, b
     {
         if (thread) PatchThreading();
         if (embed) new InternalPatcher(dotnet, runtime, native).Patch();
-        if (!debug) RemoveMaps();
+        RemoveMaps();
         RemoveWasmNag();
         CopyInternals();
     }

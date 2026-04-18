@@ -160,15 +160,12 @@
 
         <!-- Publish debug artifacts when in the debug configuration. -->
         <ItemGroup>
-            <BsMaps Condition="$(BootsharpEmbedBinaries)" Include="$(BsBuildDir)/*.mjs.map"/>
-            <BsMaps Condition="!$(BootsharpEmbedBinaries)" Include="$(PublishDir)/*.map"/>
+            <BsMaps Include="$(BsBuildDir)/*.mjs.map"/>
             <BsSymbols Include="$(PublishDir)/*.symbols"/>
             <BsPdbs Include="$(PublishDir)/*.pdb"/>
         </ItemGroup>
-        <Copy Condition="$(BsDebug) And $(BootsharpEmbedBinaries)"
+        <Copy Condition="$(BsDebug)"
               SourceFiles="@(BsMaps)" DestinationFolder="$(BootsharpPublishDirectory)"/>
-        <Copy Condition="$(BsDebug) And !$(BootsharpEmbedBinaries)"
-              SourceFiles="@(BsMaps)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy Condition="$(BsDebug) And !$(BootsharpEmbedBinaries)"
               SourceFiles="@(BsSymbols)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy Condition="$(BsDebug) And !$(BootsharpEmbedBinaries)"
