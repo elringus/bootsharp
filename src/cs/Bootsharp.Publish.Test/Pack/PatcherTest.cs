@@ -32,4 +32,30 @@ public class PatcherTest : PackTest
         Assert.Equal("export const embedded = false;\nexport const mt = true;", GeneratedRuntimeModule);
         Assert.Equal("export const embedded = false;\nexport const mt = true;", GeneratedNativeModule);
     }
+
+    [Fact]
+    public void WhenDebugDisabledMapsAreRemoved ()
+    {
+        Task.Debug = false;
+        Project.WriteFile("dotnet.js", "dotnet\n//# sourceMappingURL=dotnet.js.map\n");
+        Project.WriteFile("dotnet.runtime.js", "runtime\n//# sourceMappingURL=dotnet.runtime.js.map\n");
+        Project.WriteFile("dotnet.native.js", "native\n//# sourceMappingURL=dotnet.native.js.map\n");
+        Execute();
+        Assert.DoesNotContain("sourceMappingURL", Project.ReadFile("dotnet.js"));
+        Assert.DoesNotContain("sourceMappingURL", Project.ReadFile("dotnet.runtime.js"));
+        Assert.DoesNotContain("sourceMappingURL", Project.ReadFile("dotnet.runtime.js"));
+    }
+
+    [Fact]
+    public void WhenDebugEnabledMapsArePreserved ()
+    {
+        Task.Debug = true;
+        Project.WriteFile("dotnet.js", "dotnet\n//# sourceMappingURL=dotnet.js.map\n");
+        Project.WriteFile("dotnet.runtime.js", "runtime\n//# sourceMappingURL=dotnet.runtime.js.map\n");
+        Project.WriteFile("dotnet.native.js", "native\n//# sourceMappingURL=dotnet.native.js.map\n");
+        Execute();
+        Assert.Contains("sourceMappingURL", Project.ReadFile("dotnet.js"));
+        Assert.Contains("sourceMappingURL", Project.ReadFile("dotnet.runtime.js"));
+        Assert.Contains("sourceMappingURL", Project.ReadFile("dotnet.runtime.js"));
+    }
 }

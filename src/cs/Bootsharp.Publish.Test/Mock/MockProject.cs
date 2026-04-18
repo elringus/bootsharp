@@ -34,6 +34,12 @@ public sealed class MockProject : IDisposable
         File.WriteAllText(filePath, content);
     }
 
+    public string ReadFile (string name)
+    {
+        var filePath = Path.Combine(Root, name);
+        return File.ReadAllText(filePath);
+    }
+
     private static string CreateUniqueRootDirectory ()
     {
         var testAssembly = System.Reflection.Assembly.GetExecutingAssembly().Location;
