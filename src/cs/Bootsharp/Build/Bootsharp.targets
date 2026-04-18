@@ -1,37 +1,37 @@
 <Project>
 
     <PropertyGroup>
-        <BootsharpRoot>$(MSBuildThisFileDirectory)../</BootsharpRoot>
-        <BootsharpSourceDirectory>$(BootsharpRoot)/js</BootsharpSourceDirectory>
-        <BootsharpLlvmDirectory>$(BootsharpRoot)/llvm</BootsharpLlvmDirectory>
-        <BootsharpPublishAssembly>$(BootsharpRoot)/tasks/Bootsharp.Publish.dll</BootsharpPublishAssembly>
-        <BootsharpIntermediateDirectory>$(IntermediateOutputPath)bootsharp</BootsharpIntermediateDirectory>
-        <BootsharpInterfacesFilePath>$(BootsharpIntermediateDirectory)/Interfaces.g.cs</BootsharpInterfacesFilePath>
-        <BootsharpDependenciesFilePath>$(BootsharpIntermediateDirectory)/Dependencies.g.cs</BootsharpDependenciesFilePath>
-        <BootsharpSerializerFilePath>$(BootsharpIntermediateDirectory)/Serializer.g.cs</BootsharpSerializerFilePath>
-        <BootsharpInteropFilePath>$(BootsharpIntermediateDirectory)/Interop.g.cs</BootsharpInteropFilePath>
-        <BootsharpEntryAssemblyName>$(AssemblyName).dll</BootsharpEntryAssemblyName>
-        <BootsharpPackAfter Condition="$(BootsharpLlvm)">CopyNativeBinary</BootsharpPackAfter>
-        <BootsharpPackAfter Condition="!$(BootsharpLlvm)">WasmNestedPublishApp</BootsharpPackAfter>
+        <BsRoot>$(MSBuildThisFileDirectory)../</BsRoot>
+        <BsSourceDir>$(BsRoot)/js</BsSourceDir>
+        <BsLlvmDir>$(BsRoot)/llvm</BsLlvmDir>
+        <BsPublishAssembly>$(BsRoot)/tasks/Bootsharp.Publish.dll</BsPublishAssembly>
+        <BsIntermediateDir>$(IntermediateOutputPath)bootsharp</BsIntermediateDir>
+        <BsInterfacesFilePath>$(BsIntermediateDir)/Interfaces.g.cs</BsInterfacesFilePath>
+        <BsDependenciesFilePath>$(BsIntermediateDir)/Dependencies.g.cs</BsDependenciesFilePath>
+        <BsSerializerFilePath>$(BsIntermediateDir)/Serializer.g.cs</BsSerializerFilePath>
+        <BsInteropFilePath>$(BsIntermediateDir)/Interop.g.cs</BsInteropFilePath>
+        <BsEntryAssembly>$(AssemblyName).dll</BsEntryAssembly>
+        <BsPackAfter Condition="$(BsLlvm)">CopyNativeBinary</BsPackAfter>
+        <BsPackAfter Condition="!$(BsLlvm)">WasmNestedPublishApp</BsPackAfter>
     </PropertyGroup>
 
     <!-- Include NativeAOT-LLVM compiler infrastructure when enabled. -->
-    <Import Project="$(BootsharpLlvmDirectory)/microsoft.dotnet.ilcompiler.llvm/build/Microsoft.DotNet.ILCompiler.LLVM.targets"
-            Condition="$(BootsharpLlvm)"/>
-    <ItemGroup Condition="$(BootsharpLlvm)">
+    <Import Condition="$(BsLlvm)"
+            Project="$(BsLlvmDir)/microsoft.dotnet.ilcompiler.llvm/build/Microsoft.DotNet.ILCompiler.LLVM.targets"/>
+    <ItemGroup Condition="$(BsLlvm)">
         <PackageDefinitions Condition="'$([MSBuild]::IsOSPlatform(`Windows`))' == 'true'"
-                            Include="$(BootsharpLlvmDirectory)/runtime.win-x64.microsoft.dotnet.ilcompiler.llvm">
+                            Include="$(BsLlvmDir)/runtime.win-x64.microsoft.dotnet.ilcompiler.llvm">
             <Name>runtime.win-x64.Microsoft.DotNet.ILCompiler.LLVM</Name>
-            <ResolvedPath>$(BootsharpLlvmDirectory)/runtime.win-x64.microsoft.dotnet.ilcompiler.llvm</ResolvedPath>
+            <ResolvedPath>$(BsLlvmDir)/runtime.win-x64.microsoft.dotnet.ilcompiler.llvm</ResolvedPath>
         </PackageDefinitions>
         <PackageDefinitions Condition="'$([MSBuild]::IsOSPlatform(`Linux`))' == 'true'"
-                            Include="$(BootsharpLlvmDirectory)/runtime.linux-x64.microsoft.dotnet.ilcompiler.llvm">
+                            Include="$(BsLlvmDir)/runtime.linux-x64.microsoft.dotnet.ilcompiler.llvm">
             <Name>runtime.linux-x64.Microsoft.DotNet.ILCompiler.LLVM</Name>
-            <ResolvedPath>$(BootsharpLlvmDirectory)/runtime.linux-x64.microsoft.dotnet.ilcompiler.llvm</ResolvedPath>
+            <ResolvedPath>$(BsLlvmDir)/runtime.linux-x64.microsoft.dotnet.ilcompiler.llvm</ResolvedPath>
         </PackageDefinitions>
-        <PackageDefinitions Include="$(BootsharpLlvmDirectory)/runtime.browser-wasm.microsoft.dotnet.ilcompiler.llvm">
+        <PackageDefinitions Include="$(BsLlvmDir)/runtime.browser-wasm.microsoft.dotnet.ilcompiler.llvm">
             <Name>runtime.browser-wasm.Microsoft.DotNet.ILCompiler.LLVM</Name>
-            <ResolvedPath>$(BootsharpLlvmDirectory)/runtime.browser-wasm.microsoft.dotnet.ilcompiler.llvm</ResolvedPath>
+            <ResolvedPath>$(BsLlvmDir)/runtime.browser-wasm.microsoft.dotnet.ilcompiler.llvm</ResolvedPath>
         </PackageDefinitions>
         <EmscriptenEnvVars Include="DOTNET_EMSCRIPTEN_LLVM_ROOT=$(EmscriptenUpstreamBinPath)"/>
         <EmscriptenEnvVars Include="DOTNET_EMSCRIPTEN_BINARYEN_ROOT=$(EmscriptenSdkToolsPath)"/>
@@ -41,147 +41,143 @@
 
     <!-- Register tasks for Visual Studio. (https://github.com/elringus/bootsharp/issues/137) -->
     <UsingTask Condition="'$(MSBuildRuntimeType)' == 'Full'"
-               TaskName="Bootsharp.Publish.BootsharpEmit" AssemblyFile="$(BootsharpPublishAssembly)"
+               TaskName="Bootsharp.Publish.BootsharpEmit" AssemblyFile="$(BsPublishAssembly)"
                Runtime="NET" TaskFactory="TaskHostFactory"/>
     <UsingTask Condition="'$(MSBuildRuntimeType)' == 'Full'"
-               TaskName="Bootsharp.Publish.BootsharpPack" AssemblyFile="$(BootsharpPublishAssembly)"
+               TaskName="Bootsharp.Publish.BootsharpPack" AssemblyFile="$(BsPublishAssembly)"
                Runtime="NET" TaskFactory="TaskHostFactory"/>
     <!-- Register tasks for 'dotnet publish' run from CLI. -->
     <UsingTask Condition="'$(MSBuildRuntimeType)' != 'Full'"
-               TaskName="Bootsharp.Publish.BootsharpEmit" AssemblyFile="$(BootsharpPublishAssembly)"/>
+               TaskName="Bootsharp.Publish.BootsharpEmit" AssemblyFile="$(BsPublishAssembly)"/>
     <UsingTask Condition="'$(MSBuildRuntimeType)' != 'Full'"
-               TaskName="Bootsharp.Publish.BootsharpPack" AssemblyFile="$(BootsharpPublishAssembly)"/>
+               TaskName="Bootsharp.Publish.BootsharpPack" AssemblyFile="$(BsPublishAssembly)"/>
 
     <!-- A hack due to source generator compositing not possible. (https://github.com/dotnet/roslyn/issues/57239#issuecomment-1585235740) -->
-    <Target Name="BootsharpEmit" BeforeTargets="GenerateAdditionalSources"
-            Condition="'$(BootsharpSkip)' != 'true' And Exists('$(OutputPath)')">
-
-        <PropertyGroup>
-            <DefineConstants>$(DefineConstants);BOOTSHARP_EMITTED</DefineConstants>
-        </PropertyGroup>
+    <Target Condition="'$(BsSkip)' != 'true'" Name="BootsharpEmit" BeforeTargets="GenerateAdditionalSources">
 
         <!-- Pre-compile the solution, as we'll need to inspect the assemblies in the next step. -->
-        <MSBuild Projects="$(MSBuildProjectFile)" Targets="BuildCompile" Properties="BootsharpSkip=true"/>
+        <MSBuild Projects="$(MSBuildProjectFile)" Targets="BuildCompile" Properties="BsSkip=true"/>
 
         <!-- Emit code to be analyzed by .NET's source generators: interop methods and serialized type hints. -->
         <BootsharpEmit InspectedDirectory="$(OutputPath)"
-                       EntryAssemblyName="$(BootsharpEntryAssemblyName)"
-                       InterfacesFilePath="$(BootsharpInterfacesFilePath)"
-                       DependenciesFilePath="$(BootsharpDependenciesFilePath)"
-                       SerializerFilePath="$(BootsharpSerializerFilePath)"
-                       InteropFilePath="$(BootsharpInteropFilePath)"/>
+                       EntryAssemblyName="$(BsEntryAssembly)"
+                       InterfacesFilePath="$(BsInterfacesFilePath)"
+                       DependenciesFilePath="$(BsDependenciesFilePath)"
+                       SerializerFilePath="$(BsSerializerFilePath)"
+                       InteropFilePath="$(BsInteropFilePath)"/>
         <ItemGroup>
-            <Compile Remove="$(BootsharpInterfacesFilePath)"/>
-            <Compile Remove="$(BootsharpDependenciesFilePath)"/>
-            <Compile Remove="$(BootsharpSerializerFilePath)"/>
-            <Compile Remove="$(BootsharpInteropFilePath)"/>
-            <Compile Include="$(BootsharpInterfacesFilePath)"/>
-            <Compile Include="$(BootsharpDependenciesFilePath)"/>
-            <Compile Include="$(BootsharpSerializerFilePath)"/>
-            <Compile Include="$(BootsharpInteropFilePath)"/>
+            <Compile Remove="$(BsInterfacesFilePath)"/>
+            <Compile Remove="$(BsDependenciesFilePath)"/>
+            <Compile Remove="$(BsSerializerFilePath)"/>
+            <Compile Remove="$(BsInteropFilePath)"/>
+            <Compile Include="$(BsInterfacesFilePath)"/>
+            <Compile Include="$(BsDependenciesFilePath)"/>
+            <Compile Include="$(BsSerializerFilePath)"/>
+            <Compile Include="$(BsInteropFilePath)"/>
         </ItemGroup>
 
     </Target>
 
     <Target Name="BootsharpClean" AfterTargets="Clean">
         <!-- Delete generated sources to ensure they're re-generated on rebuild. -->
-        <RemoveDir Directories="$(BootsharpIntermediateDirectory)"/>
+        <RemoveDir Directories="$(BsIntermediateDir)"/>
     </Target>
 
-    <Target Name="BootsharpPack" AfterTargets="$(BootsharpPackAfter)"
-            Condition="Exists('$(PublishDir)')">
+    <Target Name="BootsharpPack" AfterTargets="$(BsPackAfter)">
 
         <PropertyGroup>
-            <BootsharpBuildDirectory Condition="$(BootsharpLlvm)">$(PublishDir)</BootsharpBuildDirectory>
-            <BootsharpBuildDirectory Condition="!$(BootsharpLlvm)">$(WasmAppDir)/$(WasmRuntimeAssetsLocation)</BootsharpBuildDirectory>
-            <BootSharpBaseOutputPath>$(BaseOutputPath.Replace('\', '/'))</BootSharpBaseOutputPath>
-            <BootsharpPublishDirectory Condition="'$(BootsharpPublishDirectory)' == ''">$(BootSharpBaseOutputPath)$(BootsharpName)</BootsharpPublishDirectory>
+            <BsBuildDir Condition="$(BsLlvm)">$(PublishDir)</BsBuildDir>
+            <BsBuildDir Condition="!$(BsLlvm)">$(WasmAppDir)/$(WasmRuntimeAssetsLocation)</BsBuildDir>
+            <BsBaseOutputPath>$(BaseOutputPath.Replace('\', '/'))</BsBaseOutputPath>
+            <BootsharpPublishDirectory Condition="'$(BootsharpPublishDirectory)' == ''">$(BsBaseOutputPath)$(BootsharpName)</BootsharpPublishDirectory>
             <BootsharpTypesDirectory Condition="'$(BootsharpTypesDirectory)' == ''">$(BootsharpPublishDirectory)/types</BootsharpTypesDirectory>
             <BootsharpBinariesDirectory Condition="'$(BootsharpBinariesDirectory)' == ''">$(BootsharpPublishDirectory)/bin</BootsharpBinariesDirectory>
             <BootsharpPackageDirectory Condition="'$(BootsharpPackageDirectory)' == ''">$(BootsharpPublishDirectory)</BootsharpPackageDirectory>
-            <BootsharpBundleCommand Condition="'$(BootsharpBundleCommand)' == ''">npx --yes rollup index.js -o index.mjs -f es -e process,module,fs/promises --output.inlineDynamicImports</BootsharpBundleCommand>
-            <BootsharpThreading Condition="'$(WasmEnableThreads)' == 'true'">true</BootsharpThreading>
-            <BootsharpThreading Condition="'$(WasmEnableThreads)' != 'true'">false</BootsharpThreading>
-            <BootsharpEmbedBinaries Condition="$(BootsharpThreading)">false</BootsharpEmbedBinaries>
+            <BsThreading Condition="'$(WasmEnableThreads)' == 'true'">true</BsThreading>
+            <BsThreading Condition="'$(WasmEnableThreads)' != 'true'">false</BsThreading>
+            <BootsharpEmbedBinaries Condition="$(BsThreading)">false</BootsharpEmbedBinaries>
+            <BsBundleMapsArg Condition="$(BsDebug) And $(BootsharpEmbedBinaries)">--sourcemap</BsBundleMapsArg>
+            <BootsharpBundleCommand Condition="'$(BootsharpBundleCommand)' == ''">npx --yes rollup index.js -o index.mjs -f es -e process,module,fs/promises --output.inlineDynamicImports $(BsBundleMapsArg)</BootsharpBundleCommand>
         </PropertyGroup>
 
         <!-- Copy bootsharp source files to the build directory. -->
         <ItemGroup>
-            <BootsharpSourceFiles Include="$(BootsharpSourceDirectory)/*.*"/>
+            <BsSourceFiles Include="$(BsSourceDir)/*.*"/>
         </ItemGroup>
-        <Copy SourceFiles="@(BootsharpSourceFiles)" DestinationFolder="$(BootsharpBuildDirectory)"/>
+        <Copy SourceFiles="@(BsSourceFiles)" DestinationFolder="$(BsBuildDir)"/>
 
         <!-- Optimize the produced WASM with Binaryen when publishing release builds. -->
-        <Exec Condition="$(BootsharpLlvm)"
+        <Exec Condition="!$(BsDebug)"
               Command="wasm-opt dotnet.native.wasm -O3 -o dotnet.native.wasm --all-features --strip-dwarf --strip-debug --vacuum"
-              WorkingDirectory="$(BootsharpBuildDirectory)"
+              WorkingDirectory="$(BsBuildDir)"
               StdOutEncoding="utf-8" StdErrEncoding="utf-8"
               IgnoreExitCode="true">
-            <Output TaskParameter="ExitCode" PropertyName="BootsharpBinaryenExitCode"/>
+            <Output TaskParameter="ExitCode" PropertyName="BsBinaryenExitCode"/>
         </Exec>
-        <Warning Condition="$(BootsharpLlvm) And '$(BootsharpBinaryenExitCode)' != '' And '$(BootsharpBinaryenExitCode)' != '0'"
+        <Warning Condition="!$(BsDebug) And '$(BsBinaryenExitCode)' != '' And '$(BsBinaryenExitCode)' != '0'"
                  Text="Failed to run Binaryen optimization. Ensure Binaryen (https://github.com/WebAssembly/binaryen) is installed and 'wasm-opt' is in the system path, otherwise the build is not fully optimized."/>
 
         <!-- Generate bindings, type declarations and (optionally) embed binaries. -->
-        <BootsharpPack BuildDirectory="$(BootsharpBuildDirectory)"
+        <BootsharpPack BuildDirectory="$(BsBuildDir)"
+                       DebugDirectory="$(PublishDir)"
                        InspectedDirectory="$(OutputPath)"
-                       EntryAssemblyName="$(BootsharpEntryAssemblyName)"
-                       TrimmingEnabled="$(BootsharpLlvm)"
+                       EntryAssemblyName="$(BsEntryAssembly)"
                        EmbedBinaries="$(BootsharpEmbedBinaries)"
-                       Threading="$(BootsharpThreading)"
-                       LLVM="$(BootsharpLlvm)"/>
+                       Threading="$(BsThreading)"
+                       LLVM="$(BsLlvm)"
+                       Debug="$(BsDebug)"/>
 
         <!-- Compile generated JavaScript solution. -->
         <Exec Command="$(BootsharpBundleCommand)"
-              WorkingDirectory="$(BootsharpBuildDirectory)"
+              WorkingDirectory="$(BsBuildDir)"
               StdOutEncoding="utf-8" StdErrEncoding="utf-8"/>
 
         <!-- Publish modules, binaries and type declarations. -->
         <ItemGroup>
-            <BootsharpModuleFiles Include="$(BootsharpBuildDirectory)/*.mjs"/>
-            <BootsharpWasmFiles Include="$(BootsharpBuildDirectory)/*.wasm"/>
-            <BootsharpTypeFiles Include="$(BootsharpBuildDirectory)/*.d.ts"/>
-            <BootsharpDotNetFile Include="$(BootsharpBuildDirectory)/dotnet.js"/>
-            <BootsharpRuntimeFile Include="$(BootsharpBuildDirectory)/dotnet.runtime.js"/>
-            <BootsharpNativeFile Include="$(BootsharpBuildDirectory)/dotnet.native.js"/>
-            <BootsharpWorkerFile Include="$(BootsharpBuildDirectory)/dotnet.native.worker.mjs"/>
+            <BsModuleFiles Include="$(BsBuildDir)/*.mjs"/>
+            <BsWasmFiles Include="$(BsBuildDir)/*.wasm"/>
+            <BsTypeFiles Include="$(BsBuildDir)/*.d.ts"/>
+            <BsDotNetFile Include="$(BsBuildDir)/dotnet.js"/>
+            <BsRuntimeFile Include="$(BsBuildDir)/dotnet.runtime.js"/>
+            <BsNativeFile Include="$(BsBuildDir)/dotnet.native.js"/>
+            <BsWorkerFile Include="$(BsBuildDir)/dotnet.native.worker.mjs"/>
         </ItemGroup>
         <RemoveDir Directories="$(BootsharpBinariesDirectory);$(BootsharpTypesDirectory)"/>
-        <Copy Condition="!$(BootsharpEmbedBinaries)" SourceFiles="@(BootsharpWasmFiles)"
+        <Copy Condition="!$(BootsharpEmbedBinaries)" SourceFiles="@(BsWasmFiles)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy Condition="!$(BootsharpEmbedBinaries)" SourceFiles="@(BootsharpDotNetFile)"
+        <Copy Condition="!$(BootsharpEmbedBinaries)" SourceFiles="@(BsDotNetFile)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy Condition="!$(BootsharpEmbedBinaries)" SourceFiles="@(BootsharpRuntimeFile)"
+        <Copy Condition="!$(BootsharpEmbedBinaries)" SourceFiles="@(BsRuntimeFile)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy Condition="!$(BootsharpEmbedBinaries)" SourceFiles="@(BootsharpNativeFile)"
+        <Copy Condition="!$(BootsharpEmbedBinaries)" SourceFiles="@(BsNativeFile)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy Condition="$(BootsharpThreading)" SourceFiles="@(BootsharpWorkerFile)"
+        <Copy Condition="$(BsThreading)" SourceFiles="@(BsWorkerFile)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy SourceFiles="@(BootsharpTypeFiles)"
+        <Copy SourceFiles="@(BsTypeFiles)"
               DestinationFolder="$(BootsharpTypesDirectory)"/>
-        <Copy SourceFiles="@(BootsharpModuleFiles)"
+        <Copy SourceFiles="@(BsModuleFiles)"
               DestinationFolder="$(BootsharpPublishDirectory)"/>
 
-        <!-- Publish debug symbols and maps when aggressive trimming is disabled. -->
+        <!-- Publish debug artifacts when in the debug configuration. -->
         <ItemGroup>
-            <BootsharpMaps Include="$(BootsharpBuildDirectory)/*.map"/>
-            <BootsharpSymbols Include="$(BootsharpBuildDirectory)/*.symbols"/>
-            <BootsharpPdbs Include="$(BootsharpBuildDirectory)/*.pdb"/>
+            <BsMaps Include="$(BsBuildDir)/*.mjs.map"/>
+            <BsSymbols Include="$(PublishDir)/*.symbols"/>
+            <BsPdbs Include="$(PublishDir)/*.pdb"/>
         </ItemGroup>
-        <Copy Condition="!$(BootsharpLlvm) And !$(BootsharpEmbedBinaries)"
-              SourceFiles="@(BootsharpMaps)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy Condition="!$(BootsharpLlvm) And !$(BootsharpEmbedBinaries)"
-              SourceFiles="@(BootsharpSymbols)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy Condition="!$(BootsharpLlvm) And !$(BootsharpEmbedBinaries)"
-              SourceFiles="@(BootsharpPdbs)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
+        <Copy Condition="$(BsDebug)"
+              SourceFiles="@(BsMaps)" DestinationFolder="$(BootsharpPublishDirectory)"/>
+        <Copy Condition="$(BsDebug) And !$(BootsharpEmbedBinaries)"
+              SourceFiles="@(BsSymbols)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
+        <Copy Condition="$(BsDebug) And !$(BootsharpEmbedBinaries)"
+              SourceFiles="@(BsPdbs)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
 
         <!-- Publish package file. -->
         <ItemGroup>
-            <BootsharpPackageFile Include="$(BootsharpPackageDirectory)/package.json"/>
+            <BsPackageFile Include="$(BootsharpPackageDirectory)/package.json"/>
         </ItemGroup>
         <WriteLinesToFile Condition="!Exists('$(BootsharpPackageDirectory)/package.json')"
-                          File="@(BootsharpPackageFile)"
-                          Lines="$([System.IO.File]::ReadAllText('$(BootsharpRoot)/build/PackageTemplate.json')
+                          File="@(BsPackageFile)"
+                          Lines="$([System.IO.File]::ReadAllText('$(BsRoot)/build/PackageTemplate.json')
                                  .Replace('%MODULE_NAME%','$(BootsharpName)')
                                  .Replace('%MODULE_DIR%','$([System.IO.Path]::GetRelativePath('$(BootsharpPackageDirectory)','$(BootsharpPublishDirectory)'))')
                                  .Replace('%TYPES_DIR%','$([System.IO.Path]::GetRelativePath('$(BootsharpPackageDirectory)','$(BootsharpTypesDirectory)'))')

@@ -6,12 +6,13 @@ namespace Bootsharp.Publish;
 public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
 {
     public required string BuildDirectory { get; set; }
+    public required string DebugDirectory { get; set; }
     public required string InspectedDirectory { get; set; }
     public required string EntryAssemblyName { get; set; }
-    public required bool TrimmingEnabled { get; set; }
     public required bool EmbedBinaries { get; set; }
     public required bool Threading { get; set; }
     public required bool LLVM { get; set; }
+    public required bool Debug { get; set; }
 
     public override bool Execute ()
     {
@@ -49,7 +50,7 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
 
     private void GenerateBindings (Preferences prefs, SolutionInspection inspection)
     {
-        var generator = new BindingGenerator(prefs);
+        var generator = new BindingGenerator(prefs, Debug);
         var content = generator.Generate(inspection);
         File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.js"), content);
     }
@@ -63,8 +64,8 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
 
     private void GenerateResources (SolutionInspection inspection)
     {
-        var generator = new ResourceGenerator(EntryAssemblyName, EmbedBinaries);
-        var content = generator.Generate(BuildDirectory);
+        var generator = new ResourceGenerator(EntryAssemblyName, EmbedBinaries, Debug);
+        var content = generator.Generate(BuildDirectory, DebugDirectory);
         File.WriteAllText(Path.Combine(BuildDirectory, "resources.g.js"), content);
     }
 

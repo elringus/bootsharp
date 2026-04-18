@@ -3,9 +3,11 @@ import type { ModuleAPI, MonoConfig } from "./dotnet.g.d.ts";
 export type * from "./dotnet.g.d.ts";
 export type RuntimeConfig = MonoConfig;
 export type RuntimeResources = NonNullable<RuntimeConfig["resources"]>;
-export type RuntimeWasm = NonNullable<RuntimeResources["wasmNative"]>[number];
-export type RuntimeModule = NonNullable<RuntimeResources["jsModuleNative"]>[number];
-export type RuntimeAssembly = NonNullable<RuntimeResources["assembly"]>[number];
+export type WasmAsset = NonNullable<RuntimeResources["wasmNative"]>[number];
+export type ModuleAsset = NonNullable<RuntimeResources["jsModuleNative"]>[number];
+export type AssemblyAsset = NonNullable<RuntimeResources["assembly"]>[number];
+export type PdbAsset = NonNullable<RuntimeResources["pdb"]>[number];
+export type SymbolsAsset = NonNullable<RuntimeResources["wasmSymbols"]>[number];
 
 /** Fetches the main dotnet module (<code>dotnet.js</code>). */
 export async function getMain(root?: string): Promise<ModuleAPI & { embedded?: boolean }> {

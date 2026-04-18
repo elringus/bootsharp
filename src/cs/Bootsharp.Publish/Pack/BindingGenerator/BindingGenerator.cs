@@ -2,7 +2,7 @@ using System.Text;
 
 namespace Bootsharp.Publish;
 
-internal sealed class BindingGenerator (Preferences prefs)
+internal sealed class BindingGenerator (Preferences prefs, bool debug)
 {
     private record Binding (MethodMeta? Method, Type? Enum, string Namespace);
 
@@ -35,6 +35,12 @@ internal sealed class BindingGenerator (Preferences prefs)
         EmitImports();
         builder.Append("\n\n");
 
+        if (debug)
+        {
+            EmitDebugHelpers();
+            builder.Append("\n\n");
+        }
+
         builder.Append(serdeGenerator.Generate(inspection.Serialized));
         builder.Append('\n');
 
@@ -54,9 +60,30 @@ internal sealed class BindingGenerator (Preferences prefs)
             import { Event } from "./event";
             import { registerInstance, getInstance, disposeOnFinalize } from "./instances";
             import { serialize, deserialize, binary, types } from "./serialization";
+            """
+        );
+    }
 
-            function getExports() { if (exports == null) throw Error("Boot the runtime before invoking C# APIs."); return exports; }
-            function getImport(handler, serializedHandler, name) { if (typeof handler !== "function") throw Error(`Failed to invoke '${name}' from C#. Make sure to assign the function in JavaScript.`); return serializedHandler; }
+    private void EmitDebugHelpers ()
+    {
+        builder.Append(
+            """
+            function getExport(name) {
+                return (...args) => {
+                    if (exports == null) throw Error("Boot the runtime before invoking C# APIs.");
+                    let result;
+                    try { result = exports[name](...args); }
+                    catch (error) { throw Error(`${error.message}\n${error.stack}`); }
+                    if (typeof result?.then === "function")
+                        return result.catch(error => { throw Error(`${error.message}\n${error.stack}`); });
+                    return result;
+                };
+            }
+
+            function getImport(handler, serializedHandler, name) {
+                if (typeof handler !== "function") throw Error(`Failed to invoke '${name}' from C#. Make sure to assign the function in JavaScript.`);
+                return serializedHandler;
+            }
             """
         );
     }
@@ -123,7 +150,8 @@ internal sealed class BindingGenerator (Preferences prefs)
     {
         var instanced = IsInstanced(method);
         var wait = ShouldWait(method);
-        var endpoint = $"getExports().{method.Space.Replace('.', '_')}_{method.Name}";
+        var fn = $"{method.Space.Replace('.', '_')}_{method.Name}";
+        var endpoint = debug ? $"""getExport("{fn}")""" : $"exports.{fn}";
         var funcArgs = string.Join(", ", method.Arguments.Select(a => a.JSName));
         if (instanced) funcArgs = PrependInstanceIdArgName(funcArgs);
         var invArgs = string.Join(", ", method.Arguments.Select(BuildInvArg));
@@ -158,11 +186,11 @@ internal sealed class BindingGenerator (Preferences prefs)
         if (instanced) builder.Append($"{Break()}{name}Serialized: {serdeHandler}");
         else
         {
-            var set = $"{handler} = handler; this.{name}SerializedHandler = {serdeHandler};";
-            var serde = $"return getImport({handler}, this.{name}SerializedHandler, \"{binding.Namespace}.{name}\");";
+            var serde = $"this.{name}SerializedHandler";
+            var serdeExp = debug ? $"getImport({handler}, {serde}, \"{binding.Namespace}.{name}\")" : serde;
             builder.Append($"{Break()}get {name}() {{ return {handler}; }}");
-            builder.Append($"{Break()}set {name}(handler) {{ {set} }}");
-            builder.Append($"{Break()}get {name}Serialized() {{ {serde} }}");
+            builder.Append($"{Break()}set {name}(handler) {{ {handler} = handler; {serde} = {serdeHandler}; }}");
+            builder.Append($"{Break()}get {name}Serialized() {{ return {serdeExp}; }}");
         }
 
         string BuildInvArg (ArgumentMeta arg)
