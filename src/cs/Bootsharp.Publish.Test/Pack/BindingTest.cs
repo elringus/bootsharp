@@ -25,6 +25,40 @@ public class BindingTest : PackTest
     }
 
     [Fact]
+    public void WhenDebugEnabledEmitsAndUsesExportImportHelpers ()
+    {
+        Task.Debug = true;
+        AddAssembly(WithClass(
+            """
+            [JSInvokable] public static Task<int> InvAsync () => Task.FromResult(0);
+            [JSFunction] public static void Fun () {}
+            """
+        ));
+        Execute();
+        Contains("function getExport");
+        Contains("function getImport");
+        Contains("""getExport("Class_InvAsync")""");
+        Contains("""getImport(this.funHandler, this.funSerializedHandler, "Class.fun")""");
+    }
+
+    [Fact]
+    public void WhenDebugDisabledDoesntEmitAndDoesntUseExportImportHelpers ()
+    {
+        Task.Debug = false;
+        AddAssembly(WithClass(
+            """
+            [JSInvokable] public static Task<int> InvAsync () => Task.FromResult(0);
+            [JSFunction] public static void Fun () {}
+            """
+        ));
+        Execute();
+        DoesNotContain("function getExport");
+        DoesNotContain("function getImport");
+        DoesNotContain("""getExport("Class_InvAsync")""");
+        DoesNotContain("""getImport(this.funHandler, this.funSerializedHandler, "Class.fun")""");
+    }
+
+    [Fact]
     public void BindingForInvokableMethodIsGenerated ()
     {
         AddAssembly(WithClass("Foo.Bar", "[JSInvokable] public static void Nya () {}"));
@@ -34,7 +68,7 @@ public class BindingTest : PackTest
             export const Foo = {
                 Bar: {
                     Class: {
-                        nya: () => getExports().Foo_Bar_Class_Nya()
+                        nya: () => exports.Foo_Bar_Class_Nya()
                     }
                 }
             };
@@ -53,7 +87,7 @@ public class BindingTest : PackTest
                     Class: {
                         get fun() { return this.funHandler; },
                         set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                        get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "Foo.Bar.Class.fun"); }
+                        get funSerialized() { return this.funSerializedHandler; }
                     }
                 }
             };
@@ -90,7 +124,7 @@ public class BindingTest : PackTest
             """
             export const Foo = {
                 Class: {
-                    bar: () => getExports().Foo_Class_Bar()
+                    bar: () => exports.Foo_Class_Bar()
                 }
             };
             """);
@@ -107,7 +141,7 @@ public class BindingTest : PackTest
                 Bar: {
                     Nya: {
                         Class: {
-                            bar: () => getExports().Foo_Bar_Nya_Class_Bar()
+                            bar: () => exports.Foo_Bar_Nya_Class_Bar()
                         }
                     }
                 }
@@ -129,13 +163,13 @@ public class BindingTest : PackTest
                     Class: {
                         get fun() { return this.funHandler; },
                         set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                        get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "Bar.Nya.Class.fun"); }
+                        get funSerialized() { return this.funSerializedHandler; }
                     }
                 }
             };
             export const Foo = {
                 Class: {
-                    foo: () => getExports().Foo_Class_Foo()
+                    foo: () => exports.Foo_Class_Foo()
                 }
             };
             """);
@@ -148,12 +182,12 @@ public class BindingTest : PackTest
         AddAssembly(WithClass("Foo", "[JSFunction] public static void Fun () {}"));
         Execute();
         Once("export const Foo");
-        Contains("bar: () => getExports().Foo_Class_Bar()");
+        Contains("bar: () => exports.Foo_Class_Bar()");
         Contains(
             """
                     get fun() { return this.funHandler; },
                     set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                    get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "Foo.Class.fun"); }
+                    get funSerialized() { return this.funSerializedHandler; }
             """);
     }
 
@@ -171,12 +205,12 @@ public class BindingTest : PackTest
                     Class: {
                         get fun() { return this.funHandler; },
                         set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                        get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "Nya.Bar.Class.fun"); }
+                        get funSerialized() { return this.funSerializedHandler; }
                     }
                 },
                 Foo: {
                     Class: {
-                        foo: () => getExports().Nya_Foo_Class_Foo()
+                        foo: () => exports.Nya_Foo_Class_Foo()
                     }
                 }
             };
@@ -195,13 +229,13 @@ public class BindingTest : PackTest
             """
             export const Foo = {
                 Class: {
-                    method: () => getExports().Foo_Class_Method()
+                    method: () => exports.Foo_Class_Method()
                 }
             };
             export const FooBar = {
                 Baz: {
                     Class: {
-                        method: () => getExports().FooBar_Baz_Class_Method()
+                        method: () => exports.FooBar_Baz_Class_Method()
                     }
                 }
             };
@@ -221,13 +255,13 @@ public class BindingTest : PackTest
                     Class: {
                         get fun() { return this.funHandler; },
                         set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                        get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "Bar.Nya.Class.fun"); }
+                        get funSerialized() { return this.funSerializedHandler; }
                     }
                 }
             };
             export const Foo = {
                 Class: {
-                    foo: () => getExports().Foo_Class_Foo()
+                    foo: () => exports.Foo_Class_Foo()
                 }
             };
             """);
@@ -243,12 +277,12 @@ public class BindingTest : PackTest
         Contains(
             """
             export const ClassA = {
-                inv: () => getExports().ClassA_Inv()
+                inv: () => exports.ClassA_Inv()
             };
             export const ClassB = {
                 get fun() { return this.funHandler; },
                 set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "ClassB.fun"); }
+                get funSerialized() { return this.funSerializedHandler; }
             };
             """);
     }
@@ -263,10 +297,10 @@ public class BindingTest : PackTest
         Contains(
             """
             export const Class = {
-                nya: () => getExports().Class_Nya(),
+                nya: () => exports.Class_Nya(),
                 get fun() { return this.funHandler; },
                 set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
-                get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "Class.fun"); }
+                get funSerialized() { return this.funSerializedHandler; }
             };
             """);
     }
@@ -279,7 +313,7 @@ public class BindingTest : PackTest
         Contains(
             """
             export const Class = {
-                fun: (fn) => getExports().Class_Fun(fn)
+                fun: (fn) => exports.Class_Fun(fn)
             };
             """);
     }
@@ -297,10 +331,10 @@ public class BindingTest : PackTest
         Contains(
             """
             export const Class = {
-                foo: (i) => deserialize(getExports().Class_Foo(serialize(i, Info)), Info),
+                foo: (i) => deserialize(exports.Class_Foo(serialize(i, Info)), Info),
                 get bar() { return this.barHandler; },
                 set bar(handler) { this.barHandler = handler; this.barSerializedHandler = (i) => serialize(this.barHandler(deserialize(i, Info)), Info); },
-                get barSerialized() { return getImport(this.barHandler, this.barSerializedHandler, "Class.bar"); },
+                get barSerialized() { return this.barSerializedHandler; },
                 baz: new Event(),
                 bazSerialized: (i) => Class.baz.broadcast(deserialize(i, InfoArray) ?? undefined),
                 yaz: new Event(),
@@ -404,14 +438,14 @@ public class BindingTest : PackTest
         Contains(
             """
             export const Class = {
-                foo: async (i) => deserialize(await getExports().Class_Foo(serialize(i, Info)), Info),
+                foo: async (i) => deserialize(await exports.Class_Foo(serialize(i, Info)), Info),
                 get bar() { return this.barHandler; },
                 set bar(handler) { this.barHandler = handler; this.barSerializedHandler = async (i) => serialize(await this.barHandler(deserialize(i, Info)), Info); },
-                get barSerialized() { return getImport(this.barHandler, this.barSerializedHandler, "Class.bar"); },
-                baz: async () => deserialize(await getExports().Class_Baz(), System_Collections_Generic_IReadOnlyList_Of_Info),
+                get barSerialized() { return this.barSerializedHandler; },
+                baz: async () => deserialize(await exports.Class_Baz(), System_Collections_Generic_IReadOnlyList_Of_Info),
                 get yaz() { return this.yazHandler; },
                 set yaz(handler) { this.yazHandler = handler; this.yazSerializedHandler = async () => serialize(await this.yazHandler(), System_Collections_Generic_IReadOnlyList_Of_Info); },
-                get yazSerialized() { return getImport(this.yazHandler, this.yazSerializedHandler, "Class.yaz"); }
+                get yazSerialized() { return this.yazSerializedHandler; }
             };
             """);
     }
@@ -427,7 +461,7 @@ public class BindingTest : PackTest
             """
             export const n = {
                 Class: {
-                    getFoo: () => deserialize(getExports().n_Class_GetFoo(), n_Foo),
+                    getFoo: () => deserialize(exports.n_Class_GetFoo(), n_Foo),
                     Foo: { "0": "A", "1": "B", "A": 0, "B": 1 }
                 }
             };
@@ -460,7 +494,7 @@ public class BindingTest : PackTest
             export const n = {
                 Foo: { "1": "A", "6": "B", "A": 1, "B": 6 },
                 Class: {
-                    getFoo: () => deserialize(getExports().n_Class_GetFoo(), n_Foo)
+                    getFoo: () => deserialize(exports.n_Class_GetFoo(), n_Foo)
                 }
             };
             """);
@@ -485,12 +519,12 @@ public class BindingTest : PackTest
                 Class: {
                     get onFun() { return this.onFunHandler; },
                     set onFun(handler) { this.onFunHandler = handler; this.onFunSerializedHandler = () => this.onFunHandler(); },
-                    get onFunSerialized() { return getImport(this.onFunHandler, this.onFunSerializedHandler, "Fun.Class.onFun"); }
+                    get onFunSerialized() { return this.onFunSerializedHandler; }
                 }
             };
             export const Nya = {
                 Class: {
-                    getNya: () => getExports().Foo_Bar_Nya_Class_GetNya()
+                    getNya: () => exports.Foo_Bar_Nya_Class_GetNya()
                 }
             };
             """);
@@ -508,7 +542,7 @@ public class BindingTest : PackTest
             """
             export const Space = {
                 Class: {
-                    foo: () => getExports().Space_Class_Inv()
+                    foo: () => exports.Space_Class_Inv()
                 }
             };
             """);
@@ -548,12 +582,12 @@ public class BindingTest : PackTest
             export const Space = {
                 Enum: { "0": "A", "1": "B", "A": 0, "B": 1 },
                 Exported: {
-                    inv: (s, e) => getExports().Bootsharp_Generated_Exports_Space_JSExported_Inv(s, serialize(e, Space_Enum))
+                    inv: (s, e) => exports.Bootsharp_Generated_Exports_Space_JSExported_Inv(s, serialize(e, Space_Enum))
                 },
                 Imported: {
                     get fun() { return this.funHandler; },
                     set fun(handler) { this.funHandler = handler; this.funSerializedHandler = (s, e) => this.funHandler(s, deserialize(e, Space_Enum)); },
-                    get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "Space.Imported.fun"); },
+                    get funSerialized() { return this.funSerializedHandler; },
                     onEvt: new Event(),
                     onEvtSerialized: (s, e) => Space.Imported.onEvt.broadcast(s, deserialize(e, Space_Enum))
                 }
@@ -581,10 +615,10 @@ public class BindingTest : PackTest
         Contains(
             """
             export const Foo = {
-                inv: (s, e) => getExports().Bootsharp_Generated_Exports_Space_JSExported_Inv(s, serialize(e, Space_Enum)),
+                inv: (s, e) => exports.Bootsharp_Generated_Exports_Space_JSExported_Inv(s, serialize(e, Space_Enum)),
                 get fun() { return this.funHandler; },
                 set fun(handler) { this.funHandler = handler; this.funSerializedHandler = (s, e) => this.funHandler(s, deserialize(e, Space_Enum)); },
-                get funSerialized() { return getImport(this.funHandler, this.funSerializedHandler, "Foo.fun"); },
+                get funSerialized() { return this.funSerializedHandler; },
                 onEvt: new Event(),
                 onEvtSerialized: (s, e) => Foo.onEvt.broadcast(s, deserialize(e, Space_Enum)),
                 Enum: { "0": "A", "1": "B", "A": 0, "B": 1 }
@@ -629,20 +663,20 @@ public class BindingTest : PackTest
         Contains(
             """
             export const Class = {
-                getExported: async (inst) => new Space_JSExported(await getExports().Class_GetExported(registerInstance(inst))),
+                getExported: async (inst) => new Space_JSExported(await exports.Class_GetExported(registerInstance(inst))),
                 get getImported() { return this.getImportedHandler; },
                 set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = async (inst) => registerInstance(await this.getImportedHandler(new JSExported(inst))); },
-                get getImportedSerialized() { return getImport(this.getImportedHandler, this.getImportedSerializedHandler, "Class.getImported"); }
+                get getImportedSerialized() { return this.getImportedSerializedHandler; }
             };
             export const Exported = {
-                inv: (_id, str) => deserialize(getExports().Bootsharp_Generated_Exports_JSExported_Inv(_id, str), Enum)
+                inv: (_id, str) => deserialize(exports.Bootsharp_Generated_Exports_JSExported_Inv(_id, str), Enum)
             };
             export const Imported = {
                 onEvtSerialized: (_id, str) => getInstance(_id).onEvt.broadcast(str)
             };
             export const Space = {
                 Exported: {
-                    inv: (_id, en) => getExports().Bootsharp_Generated_Exports_Space_JSExported_Inv(_id, serialize(en, Enum))
+                    inv: (_id, en) => exports.Bootsharp_Generated_Exports_Space_JSExported_Inv(_id, serialize(en, Enum))
                 },
                 Imported: {
                     funSerialized: (_id, en) => serialize(getInstance(_id).fun(deserialize(en, Enum)), Enum)

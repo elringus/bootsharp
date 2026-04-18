@@ -50,7 +50,7 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
 
     private void GenerateBindings (Preferences prefs, SolutionInspection inspection)
     {
-        var generator = new BindingGenerator(prefs);
+        var generator = new BindingGenerator(prefs, Debug);
         var content = generator.Generate(inspection);
         File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.js"), content);
     }
