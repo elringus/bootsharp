@@ -8,13 +8,13 @@ import { decodeBase64 } from "./decoder";
 export async function buildConfig(resources: BootResources, root?: string): Promise<RuntimeConfig> {
     const embed = root == null;
     const mt = !embed && (await import("./dotnet.g")).mt;
-    const [wasm, native, runtime, assemblies, pdb, symbols] = await Promise.all([
+    const [wasm, native, runtime, assemblies, symbols, pdb] = await Promise.all([
         resolveWasm(),
         resolveModule("dotnet.native.js", embed ? getNative : undefined),
         resolveModule("dotnet.runtime.js", embed ? getRuntime : undefined),
         Promise.all(resources.assemblies.map(resolveAssembly)),
-        Promise.all(resources.debugging.filter(r => r.name.endsWith(".pdb")).map(resolvePdb)),
-        Promise.all(resources.debugging.filter(r => r.name.endsWith(".symbols")).map(resolveSymbols))
+        Promise.all(resources.symbols.map(resolveSymbols)),
+        Promise.all(resources.pdb.map(resolvePdb))
     ]);
     return {
         resources: {
@@ -27,7 +27,7 @@ export async function buildConfig(resources: BootResources, root?: string): Prom
             pdb: pdb
         },
         mainAssemblyName: resources.entryAssemblyName,
-        debugLevel: resources.debugging.length > 0 ? -1 : undefined
+        debugLevel: resources.symbols.length > 0 ? -1 : undefined
     };
 
     async function resolveWasm(): Promise<WasmAsset> {

@@ -42,9 +42,9 @@ describe("boot", () => {
         const config = await bootsharp.dotnet.buildConfig(bootsharp.resources, root);
         expect(config.debugLevel).not.toBeUndefined();
     });
-    it("doesn't enable debugging when missing debugging resources", async () => {
+    it("doesn't enable debugging when missing debug artifacts", async () => {
         const { side: { bootsharp }, root } = await setup();
-        const resources = { ...bootsharp.resources, debugging: [] };
+        const resources = { ...bootsharp.resources, symbols: [], pdb: [] };
         const config = await bootsharp.dotnet.buildConfig(resources, root);
         expect(config.debugLevel).toBeUndefined();
     });
