@@ -61,7 +61,7 @@ export async function buildConfig(resources: BootResources, root?: string): Prom
     }
 
     async function resolveSymbols(res: BinaryResource): Promise<SymbolsAsset> {
-        // Due to a bug in .NET, symbols ignore 'buffer', so we have to fake an HTTP response.
+        // Use buffer similar to the other assets once https://github.com/dotnet/runtime/pull/127087 is merged.
         const txt = new TextDecoder("utf-8").decode(await resolveBuffer(res));
         return {
             name: res.name,
