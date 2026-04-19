@@ -6,6 +6,8 @@ export type BootResources = {
     readonly wasm: BinaryResource;
     /** Compiled .NET assemblies. */
     readonly assemblies: BinaryResource[];
+    /** Globalization data. */
+    readonly icu: BinaryResource[];
     /** WASM debug symbols. */
     readonly symbols: BinaryResource[];
     /** PDB debug artifacts. */

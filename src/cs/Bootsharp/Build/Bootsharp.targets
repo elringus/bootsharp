@@ -93,8 +93,8 @@
             <BootsharpTypesDirectory Condition="'$(BootsharpTypesDirectory)' == ''">$(BootsharpPublishDirectory)/types</BootsharpTypesDirectory>
             <BootsharpBinariesDirectory Condition="'$(BootsharpBinariesDirectory)' == ''">$(BootsharpPublishDirectory)/bin</BootsharpBinariesDirectory>
             <BootsharpPackageDirectory Condition="'$(BootsharpPackageDirectory)' == ''">$(BootsharpPublishDirectory)</BootsharpPackageDirectory>
-            <BsThreading Condition="'$(WasmEnableThreads)' == 'true'">true</BsThreading>
-            <BsThreading Condition="'$(WasmEnableThreads)' != 'true'">false</BsThreading>
+            <BsGlobalization>$([System.String]::Equals('$(InvariantGlobalization)', 'false'))</BsGlobalization>
+            <BsThreading>$([System.String]::Equals('$(WasmEnableThreads)', 'true'))</BsThreading>
             <BootsharpEmbedBinaries Condition="$(BsThreading)">false</BootsharpEmbedBinaries>
             <BsBundleMapsArg Condition="$(BsDebug) And $(BootsharpEmbedBinaries)">--sourcemap</BsBundleMapsArg>
             <BootsharpBundleCommand Condition="'$(BootsharpBundleCommand)' == ''">npx --yes rollup index.js -o index.mjs -f es -e process,module,fs/promises --output.inlineDynamicImports $(BsBundleMapsArg)</BootsharpBundleCommand>
@@ -123,6 +123,7 @@
                        InspectedDirectory="$(OutputPath)"
                        EntryAssemblyName="$(BsEntryAssembly)"
                        EmbedBinaries="$(BootsharpEmbedBinaries)"
+                       Globalization="$(BsGlobalization)"
                        Threading="$(BsThreading)"
                        LLVM="$(BsLlvm)"
                        Debug="$(BsDebug)"/>
@@ -137,6 +138,7 @@
             <BsModuleFiles Include="$(BsBuildDir)/*.mjs"/>
             <BsWasmFiles Include="$(BsBuildDir)/*.wasm"/>
             <BsTypeFiles Include="$(BsBuildDir)/*.d.ts"/>
+            <BsIcuFiles Include="$(BsBuildDir)/*.dat"/>
             <BsDotNetFile Include="$(BsBuildDir)/dotnet.js"/>
             <BsRuntimeFile Include="$(BsBuildDir)/dotnet.runtime.js"/>
             <BsNativeFile Include="$(BsBuildDir)/dotnet.native.js"/>
@@ -150,6 +152,8 @@
         <Copy Condition="!$(BootsharpEmbedBinaries)" SourceFiles="@(BsRuntimeFile)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy Condition="!$(BootsharpEmbedBinaries)" SourceFiles="@(BsNativeFile)"
+              DestinationFolder="$(BootsharpBinariesDirectory)"/>
+        <Copy Condition="!$(BootsharpEmbedBinaries)" SourceFiles="@(BsIcuFiles)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy Condition="$(BsThreading)" SourceFiles="@(BsWorkerFile)"
               DestinationFolder="$(BootsharpBinariesDirectory)"/>

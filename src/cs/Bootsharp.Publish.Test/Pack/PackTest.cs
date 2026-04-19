@@ -45,6 +45,7 @@ public class PackTest : TaskTest
         EntryAssemblyName = "System.Runtime.dll",
         BuildEngine = Engine,
         EmbedBinaries = false,
+        Globalization = false,
         Threading = false,
         LLVM = false,
         Debug = false

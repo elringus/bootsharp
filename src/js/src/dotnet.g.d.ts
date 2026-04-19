@@ -266,7 +266,7 @@ interface Assets {
     coreVfs?: VfsAsset[];
     vfs?: VfsAsset[];
 }
-type Asset = {
+export type Asset = {
     /**
      * this should be absolute url to the asset
      */

@@ -11,6 +11,11 @@ describe("platform", () => {
         expect(guid2.length).toStrictEqual(36);
         expect(guid1).not.toStrictEqual(guid2);
     });
+    it("supports globalization", () => {
+        expect(Test.Platform.formatDate("ru", 5, 1, "d MMMM")).toStrictEqual("1 мая");
+        expect(Test.Platform.formatDate("ja", 5, 1, "d MMMM")).toStrictEqual("1 5月");
+        expect(Test.Platform.formatDate("en", 5, 1, "MMMM d")).toStrictEqual("May 1");
+    });
     it("can communicate via websocket", async () => {
         // .NET requires ws package when running on node:
         // https://github.com/dotnet/runtime/blob/main/src/mono/wasm/features.md#websocket

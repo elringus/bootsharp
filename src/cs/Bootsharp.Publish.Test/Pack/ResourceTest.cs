@@ -55,4 +55,24 @@ public class ResourceTest : PackTest
         DoesNotContain("""{ name: "Foo.pdb", content: undefined }""");
         DoesNotContain("""{ name: "dotnet.native.js.symbols", content: undefined }""");
     }
+
+    [Fact]
+    public void WhenGlobalizationEnabledIcuIncluded ()
+    {
+        Task.Globalization = true;
+        AddAssembly("Foo.dll");
+        Project.WriteFile("icudt.dat", "MockIcuContent");
+        Execute();
+        Contains("""{ name: "icudt.dat", content: undefined }""");
+    }
+
+    [Fact]
+    public void WhenGlobalizationDisabledIcuNotIncluded ()
+    {
+        Task.Globalization = false;
+        AddAssembly("Foo.dll");
+        Project.WriteFile("icudt.dat", "MockIcuContent");
+        Execute();
+        DoesNotContain("""{ name: "icudt.dat", content: undefined }""");
+    }
 }
