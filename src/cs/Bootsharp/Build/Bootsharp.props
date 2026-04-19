@@ -9,9 +9,10 @@
         <WasmEnableLegacyJsInterop>false</WasmEnableLegacyJsInterop>
         <WasmEnableSIMD>true</WasmEnableSIMD>
 
-        <!-- These inflate bundle size and require additional wiring on the JS side — not supported for now. -->
-        <InvariantTimezone>true</InvariantTimezone>
-        <InvariantGlobalization>true</InvariantGlobalization>
+        <!-- These significantly reduce bundle size and RAM usage — enable by default. -->
+        <InvariantTimezone Condition="'$(InvariantTimezone)' == ''">true</InvariantTimezone>
+        <InvariantGlobalization Condition="'$(InvariantGlobalization)' == ''">true</InvariantGlobalization>
+        <PredefinedCulturesOnly Condition="'$(PredefinedCulturesOnly)' == ''">true</PredefinedCulturesOnly>
 
         <!-- User Preferences -->
         <!-- Name of the generated JavaScript module; 'bootsharp' by default. -->
@@ -36,12 +37,16 @@
         <BsLlvm>!$(BsDebug)</BsLlvm>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$(BsLlvm)">
-        <!-- NativeAOT-LLVM specific knobs. -->
-        <DotNetJsApi>true</DotNetJsApi>
-        <EmccFlags>$(EmccFlags) -O3</EmccFlags>
-        <UsingBrowserRuntimeWorkload>false</UsingBrowserRuntimeWorkload>
+    <PropertyGroup Condition="$(BsDebug)">
+        <!-- Various knobs that improve debugging and compile times. -->
+        <WasmRunWasmOpt>false</WasmRunWasmOpt>
+        <WasmNativeStrip>false</WasmNativeStrip>
+        <WasmEmitSourceMap>true</WasmEmitSourceMap>
+        <WasmNativeDebugSymbols>true</WasmNativeDebugSymbols>
+        <NativeDebugSymbols>true</NativeDebugSymbols>
+    </PropertyGroup>
 
+    <PropertyGroup Condition="!$(BsDebug)">
         <!-- Various knobs that reduce the generated bundle size or improve performance. -->
         <!-- https://learn.microsoft.com/en-us/aspnet/core/blazor/performance?#minimize-app-download-size -->
         <!-- https://raw.githubusercontent.com/dotnet/runtime/main/docs/workflow/trimming/feature-switches.md -->
@@ -71,7 +76,6 @@
         <WasmNativeDebugSymbols>false</WasmNativeDebugSymbols>
         <NativeDebugSymbols>false</NativeDebugSymbols>
         <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
-        <PredefinedCulturesOnly>true</PredefinedCulturesOnly>
         <MetricsSupport>false</MetricsSupport>
         <DisableDependencyInjectionDynamicEngine>true</DisableDependencyInjectionDynamicEngine>
         <NullabilityInfoContextSupport>false</NullabilityInfoContextSupport>
@@ -79,23 +83,21 @@
         <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
     </PropertyGroup>
 
-    <PropertyGroup Condition="!$(BsLlvm)">
-        <!-- Various knobs that improve debugging and compile times. -->
-        <WasmRunWasmOpt>false</WasmRunWasmOpt>
-        <WasmNativeStrip>false</WasmNativeStrip>
-        <WasmEmitSourceMap>true</WasmEmitSourceMap>
-        <WasmNativeDebugSymbols>true</WasmNativeDebugSymbols>
-        <NativeDebugSymbols>true</NativeDebugSymbols>
+    <PropertyGroup Condition="$(BsLlvm)">
+        <!-- NativeAOT-LLVM specific knobs. -->
+        <DotNetJsApi>true</DotNetJsApi>
+        <EmccFlags>$(EmccFlags) -O3</EmccFlags>
+        <UsingBrowserRuntimeWorkload>false</UsingBrowserRuntimeWorkload>
     </PropertyGroup>
+
+    <!-- Include NativeAOT-LLVM properties when enabled. -->
+    <Import Project="$(MSBuildThisFileDirectory)../llvm/microsoft.dotnet.ilcompiler.llvm/build/Microsoft.DotNet.ILCompiler.LLVM.props"
+            Condition="$(BsLlvm)"/>
 
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatform">
             <_Parameter1>browser</_Parameter1> <!-- Enable browser target for the entry assembly. -->
         </AssemblyAttribute>
     </ItemGroup>
-
-    <!-- Include NativeAOT-LLVM properties when enabled. -->
-    <Import Project="$(MSBuildThisFileDirectory)../llvm/microsoft.dotnet.ilcompiler.llvm/build/Microsoft.DotNet.ILCompiler.LLVM.props"
-            Condition="$(BsLlvm)"/>
 
 </Project>

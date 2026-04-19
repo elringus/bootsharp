@@ -37,16 +37,33 @@ describe("boot", () => {
         expect(config.resources!.jsModuleNative[0].moduleExports).toBeDefined();
         expect(config.resources!.jsModuleRuntime[0].moduleExports).toBeDefined();
     });
-    it("enables debugging when debugging resources exist", async () => {
+    it("enables debugging when debugging resources are present", async () => {
         const { side: { bootsharp }, root } = await setup();
         const config = await bootsharp.dotnet.buildConfig(bootsharp.resources, root);
         expect(config.debugLevel).not.toBeUndefined();
     });
-    it("doesn't enable debugging when missing debug artifacts", async () => {
+    it("doesn't enable debugging when debug are absent", async () => {
         const { side: { bootsharp }, root } = await setup();
         const resources = { ...bootsharp.resources, symbols: [], pdb: [] };
         const config = await bootsharp.dotnet.buildConfig(resources, root);
         expect(config.debugLevel).toBeUndefined();
+    });
+    it("uses full globalization mode when full ICU resource is present", async () => {
+        const { side: { bootsharp }, root } = await setup();
+        const config = await bootsharp.dotnet.buildConfig(bootsharp.resources, root);
+        expect(config.globalizationMode).toStrictEqual("all");
+    });
+    it("uses sharded globalization mode when sharded ICU resource is present", async () => {
+        const { side: { bootsharp }, root } = await setup();
+        const resources = { ...bootsharp.resources, icu: [{ name: "icudt_CJK.dat", content: new Uint8Array() }] };
+        const config = await bootsharp.dotnet.buildConfig(resources, root);
+        expect(config.globalizationMode).toStrictEqual("sharded");
+    });
+    it("disables globalization when ICU resources are absent", async () => {
+        const { side: { bootsharp }, root } = await setup();
+        const resources = { ...bootsharp.resources, icu: [] };
+        const config = await bootsharp.dotnet.buildConfig(resources, root);
+        expect(config.globalizationMode).toStrictEqual("invariant");
     });
     it("throws when missing boot resource", async () => {
         const { side: { bootsharp } } = await setup();

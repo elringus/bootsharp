@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -11,6 +12,13 @@ public static partial class Platform
 {
     [JSInvokable]
     public static string GetGuid () => Guid.NewGuid().ToString();
+
+    [JSInvokable]
+    public static string FormatDate (string culture, int month, int day, string format)
+    {
+        var info = new CultureInfo(culture, false);
+        return new DateTime(2024, month, day).ToString(format, info);
+    }
 
     [JSInvokable]
     public static string? CatchException ()

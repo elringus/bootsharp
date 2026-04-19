@@ -1,4 +1,4 @@
-import { RuntimeConfig, WasmAsset, ModuleAsset, AssemblyAsset, PdbAsset, SymbolsAsset, getRuntime, getNative } from "./modules";
+import { RuntimeConfig, Asset, WasmAsset, ModuleAsset, AssemblyAsset, IcuAsset, PdbAsset, SymbolsAsset, getRuntime, getNative } from "./modules";
 import { BinaryResource, BootResources } from "./resources";
 import { decodeBase64 } from "./decoder";
 
@@ -8,13 +8,14 @@ import { decodeBase64 } from "./decoder";
 export async function buildConfig(resources: BootResources, root?: string): Promise<RuntimeConfig> {
     const embed = root == null;
     const mt = !embed && (await import("./dotnet.g")).mt;
-    const [wasm, native, runtime, assemblies, symbols, pdb] = await Promise.all([
-        resolveWasm(),
+    const [wasm, native, runtime, assemblies, icu, symbols, pdb] = await Promise.all([
+        resolveAsset<WasmAsset>(resources.wasm),
         resolveModule("dotnet.native.js", embed ? getNative : undefined),
         resolveModule("dotnet.runtime.js", embed ? getRuntime : undefined),
-        Promise.all(resources.assemblies.map(resolveAssembly)),
+        Promise.all(resources.assemblies.map(resolveAsset<AssemblyAsset>)),
+        Promise.all(resources.icu.map(resolveAsset<IcuAsset>)),
         Promise.all(resources.symbols.map(resolveSymbols)),
-        Promise.all(resources.pdb.map(resolvePdb))
+        Promise.all(resources.pdb.map(resolveAsset<PdbAsset>))
     ]);
     return {
         resources: {
@@ -24,17 +25,18 @@ export async function buildConfig(resources: BootResources, root?: string): Prom
             jsModuleWorker: mt ? [await resolveModule("dotnet.native.worker.mjs")] : undefined,
             assembly: assemblies,
             wasmSymbols: symbols,
-            pdb: pdb
+            pdb: pdb,
+            icu: icu
         },
         mainAssemblyName: resources.entryAssemblyName,
+        globalizationMode: resolveGlobalizationMode(),
         debugLevel: resources.symbols.length > 0 ? -1 : undefined
     };
 
-    async function resolveWasm(): Promise<WasmAsset> {
-        return {
-            name: resources.wasm.name,
-            buffer: await resolveBuffer(resources.wasm)
-        };
+    function resolveGlobalizationMode(): RuntimeConfig["globalizationMode"] {
+        if (resources.icu.length === 0) return <never>"invariant";
+        if (resources.icu.some(res => res.name === "icudt.dat")) return <never>"all";
+        return <never>"sharded";
     }
 
     async function resolveModule(name: string, embed?: () => Promise<unknown>): Promise<ModuleAsset> {
@@ -44,16 +46,8 @@ export async function buildConfig(resources: BootResources, root?: string): Prom
         };
     }
 
-    async function resolveAssembly(res: BinaryResource): Promise<AssemblyAsset> {
-        return {
-            name: res.name,
-            virtualPath: res.name,
-            buffer: await resolveBuffer(res)
-        };
-    }
-
-    async function resolvePdb(res: BinaryResource): Promise<PdbAsset> {
-        return {
+    async function resolveAsset<T extends Asset>(res: BinaryResource): Promise<T> {
+        return <T><Asset>{
             name: res.name,
             virtualPath: res.name,
             buffer: await resolveBuffer(res)
@@ -61,7 +55,7 @@ export async function buildConfig(resources: BootResources, root?: string): Prom
     }
 
     async function resolveSymbols(res: BinaryResource): Promise<SymbolsAsset> {
-        // Use buffer similar to the other assets once https://github.com/dotnet/runtime/pull/127087 is merged.
+        // Use 'resolveAsset<SymbolsAsset>()' once https://github.com/dotnet/runtime/pull/127087 is merged.
         const txt = new TextDecoder("utf-8").decode(await resolveBuffer(res));
         return {
             name: res.name,
