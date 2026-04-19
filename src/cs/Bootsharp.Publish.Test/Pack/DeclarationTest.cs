@@ -693,29 +693,110 @@ public class DeclarationTest : PackTest
                 export interface Foo {
                 }
             }
-
-            export namespace Class {
-                export function bar(): Class.Foo;
-            }
             """);
     }
 
     [Fact]
-    public void ExpressionPropertiesAreNotIncluded ()
+    public void ComputedPropertiesAreIncluded ()
     {
-        AddAssembly(
-            WithClass("public class Foo { public bool Boo => true; }"),
-            WithClass("[JSInvokable] public static Foo Bar () => default;"));
+        AddAssembly(WithClass(
+            """
+            public record Foo 
+            {
+                public bool Boo => true; 
+                public bool SetOnly { set { } } 
+                public bool this[int index] => true; 
+            }
+             
+            [JSInvokable] public static Foo Bar () => default;
+            """));
         Execute();
         Contains(
             """
             export namespace Class {
                 export interface Foo {
+                    boo: boolean;
                 }
+            }
+            """);
+    }
+
+    [Fact]
+    public void PropertyDeclarationsAreGeneratedForInteropInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSExport(typeof(IExportedStatic))]
+            [assembly:JSImport(typeof(IImportedStatic))]
+
+            public record Record (string Value);
+
+            public interface IExportedStatic
+            {
+                Record State { get; set; }
+                Record? Optional { get; }
+                IExportedInstanced Exported { get; }
+                IImportedInstanced Imported { set; }
+            }
+
+            public interface IImportedStatic
+            {
+                Record State { get; }
+                IImportedInstanced Imported { get; }
+                IExportedInstanced Exported { set; }
+            }
+
+            public interface IExportedInstanced
+            {
+                Record State { get; }
+                IExportedInstanced Exported { get; }
+                IImportedInstanced Imported { set; }
+            }
+
+            public interface IImportedInstanced
+            {
+                Record State { get; set; }
+                IImportedInstanced Imported { get; }
+                IExportedInstanced Exported { set; }
+            }
+
+            public class Class
+            {
+                [JSInvokable] public static IExportedInstanced GetExported () => default;
+                [JSFunction] public static IImportedInstanced GetImported () => default;
+            }
+            """));
+        Execute();
+        Contains(
+            """
+            export interface IExportedInstanced {
+                readonly state: Record;
+                readonly exported: IExportedInstanced;
+                imported: IImportedInstanced;
+            }
+            export interface Record {
+                value: string;
+            }
+            export interface IImportedInstanced {
+                state: Record;
+                readonly imported: IImportedInstanced;
+                exported: IExportedInstanced;
             }
 
             export namespace Class {
-                export function bar(): Class.Foo;
+                export function getExported(): IExportedInstanced;
+                export let getImported: () => IImportedInstanced;
+            }
+            export namespace ExportedStatic {
+                export let state: Record;
+                export const optional: Record | null;
+                export const exported: IExportedInstanced;
+                export let imported: IImportedInstanced;
+            }
+            export namespace ImportedStatic {
+                export const state: Record;
+                export const imported: IImportedInstanced;
+                export let exported: IExportedInstanced;
             }
             """);
     }

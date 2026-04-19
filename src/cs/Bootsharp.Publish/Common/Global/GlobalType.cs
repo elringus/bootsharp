@@ -56,14 +56,14 @@ internal static class GlobalType
              type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyDictionary<,>).FullName);
     }
 
-    public static NullabilityInfo GetNullability (PropertyInfo property)
+    public static NullabilityInfo GetNullability (PropertyInfo prop)
     {
-        return new NullabilityInfoContext().Create(property);
+        return new NullabilityInfoContext().Create(prop);
     }
 
-    public static NullabilityInfo GetNullability (ParameterInfo parameter)
+    public static NullabilityInfo GetNullability (ParameterInfo param)
     {
-        return new NullabilityInfoContext().Create(parameter);
+        return new NullabilityInfoContext().Create(param);
     }
 
     public static bool IsNullable (Type type) => IsNullable(type, out _);
@@ -78,10 +78,10 @@ internal static class GlobalType
         return value != null;
     }
 
-    public static bool IsAutoProperty (PropertyInfo property)
+    public static bool IsAutoProperty (PropertyInfo prop)
     {
-        var backingFieldName = $"<{property.Name}>k__BackingField";
-        var backingField = property.DeclaringType!.GetField(backingFieldName,
+        var backingFieldName = $"<{prop.Name}>k__BackingField";
+        var backingField = prop.DeclaringType!.GetField(backingFieldName,
             BindingFlags.NonPublic | BindingFlags.Instance);
         return backingField != null;
     }
@@ -116,10 +116,10 @@ internal static class GlobalType
         return string.IsNullOrEmpty(space) ? name : $"{space}.{name}";
     }
 
-    public static (string space, string name, string full) BuildInteropInterfaceImplementationName
-        (Type instanceType, InterfaceKind kind)
+    public static (string space, string name, string full) BuildInterfaceImplName
+        (Type instanceType, InteropKind interop)
     {
-        var space = "Bootsharp.Generated." + (kind == InterfaceKind.Export ? "Exports" : "Imports");
+        var space = "Bootsharp.Generated." + (interop == InteropKind.Export ? "Exports" : "Imports");
         if (instanceType.Namespace != null) space += $".{instanceType.Namespace}";
         var name = "JS" + instanceType.Name[1..];
         return (space, name, $"{space}.{name}");

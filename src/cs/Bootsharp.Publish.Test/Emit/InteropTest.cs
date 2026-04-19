@@ -209,9 +209,9 @@ public class InteropTest : EmitTest
         Contains("JSExport] internal static global::System.Threading.Tasks.Task<global::System.Exception> Space_Class_Inv (global::System.Boolean a1, global::System.Byte a2, global::System.Char a3, global::System.Int16 a4, [JSMarshalAs<JSType.BigInt>] global::System.Int64 a5, global::System.Int32 a6, global::System.Single a7, global::System.Double a8, global::System.IntPtr a9, [JSMarshalAs<JSType.Date>] global::System.DateTime a10, [JSMarshalAs<JSType.Date>] global::System.DateTimeOffset a11, global::System.String a12) => global::Space.Class.Inv(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);");
         Contains("JSExport] [return: JSMarshalAs<JSType.Promise<JSType.Date>>] internal static global::System.Threading.Tasks.Task<global::System.DateTime> Space_Class_InvNull (global::System.Boolean? a1, global::System.Byte? a2, global::System.Char? a3, global::System.Int16? a4, [JSMarshalAs<JSType.BigInt>] global::System.Int64? a5, global::System.Int32? a6, global::System.Single? a7, global::System.Double? a8, global::System.IntPtr? a9, [JSMarshalAs<JSType.Date>] global::System.DateTime? a10, [JSMarshalAs<JSType.Date>] global::System.DateTimeOffset? a11, global::System.String? a12) => global::Space.Class.InvNull(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);");
         Contains("""JSImport("Space.Class.funSerialized", "Bootsharp")] internal static partial global::System.Threading.Tasks.Task<global::System.Exception> Space_Class_Fun (global::System.Boolean a1, global::System.Byte a2, global::System.Char a3, global::System.Int16 a4, [JSMarshalAs<JSType.BigInt>] global::System.Int64 a5, global::System.Int32 a6, global::System.Single a7, global::System.Double a8, global::System.IntPtr a9, [JSMarshalAs<JSType.Date>] global::System.DateTime a10, [JSMarshalAs<JSType.Date>] global::System.DateTimeOffset a11, global::System.String a12);""");
-        Contains("public static global::System.Threading.Tasks.Task<global::System.DateTime> Proxy_Space_Class_FunNull(global::System.Boolean? a1, global::System.Byte? a2, global::System.Char? a3, global::System.Int16? a4, global::System.Int64? a5, global::System.Int32? a6, global::System.Single? a7, global::System.Double? a8, global::System.IntPtr? a9, global::System.DateTime? a10, global::System.DateTimeOffset? a11, global::System.String? a12) => Space_Class_FunNull(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);");
+        Contains("public static global::System.Threading.Tasks.Task<global::System.DateTime> Proxy_Space_Class_FunNull (global::System.Boolean? a1, global::System.Byte? a2, global::System.Char? a3, global::System.Int16? a4, global::System.Int64? a5, global::System.Int32? a6, global::System.Single? a7, global::System.Double? a8, global::System.IntPtr? a9, global::System.DateTime? a10, global::System.DateTimeOffset? a11, global::System.String? a12) => Space_Class_FunNull(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);");
         Contains("""JSImport("Space.Class.funNullSerialized", "Bootsharp")] [return: JSMarshalAs<JSType.Promise<JSType.Date>>] internal static partial global::System.Threading.Tasks.Task<global::System.DateTime> Space_Class_FunNull (global::System.Boolean? a1, global::System.Byte? a2, global::System.Char? a3, global::System.Int16? a4, [JSMarshalAs<JSType.BigInt>] global::System.Int64? a5, global::System.Int32? a6, global::System.Single? a7, global::System.Double? a8, global::System.IntPtr? a9, [JSMarshalAs<JSType.Date>] global::System.DateTime? a10, [JSMarshalAs<JSType.Date>] global::System.DateTimeOffset? a11, global::System.String? a12);""");
-        Contains("public static global::System.Threading.Tasks.Task<global::System.DateTime> Proxy_Space_Class_FunNull(global::System.Boolean? a1, global::System.Byte? a2, global::System.Char? a3, global::System.Int16? a4, global::System.Int64? a5, global::System.Int32? a6, global::System.Single? a7, global::System.Double? a8, global::System.IntPtr? a9, global::System.DateTime? a10, global::System.DateTimeOffset? a11, global::System.String? a12) => Space_Class_FunNull(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);");
+        Contains("public static global::System.Threading.Tasks.Task<global::System.DateTime> Proxy_Space_Class_FunNull (global::System.Boolean? a1, global::System.Byte? a2, global::System.Char? a3, global::System.Int16? a4, global::System.Int64? a5, global::System.Int32? a6, global::System.Single? a7, global::System.Double? a8, global::System.IntPtr? a9, global::System.DateTime? a10, global::System.DateTimeOffset? a11, global::System.String? a12) => Space_Class_FunNull(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);");
     }
 
     [Fact]
@@ -235,9 +235,9 @@ public class InteropTest : EmitTest
         Contains("JSExport] [return: JSMarshalAs<JSType.BigInt>] internal static global::System.Int64 Space_Class_InvA ([JSMarshalAs<JSType.BigInt>] global::System.Int64 a) => Serializer.Serialize(global::Space.Class.InvA(Serializer.Deserialize(a, SerializerContext.Space_Record)), SerializerContext.Space_Record);");
         Contains("JSExport] [return: JSMarshalAs<JSType.Promise<JSType.BigInt>>] internal static async global::System.Threading.Tasks.Task<global::System.Int64> Space_Class_InvB ([JSMarshalAs<JSType.BigInt>] global::System.Int64 a) => Serializer.Serialize(await global::Space.Class.InvB(Serializer.Deserialize(a, SerializerContext.Space_RecordArray)), SerializerContext.Space_RecordArray);");
         Contains("""JSImport("Space.Class.funASerialized", "Bootsharp")] [return: JSMarshalAs<JSType.BigInt>] internal static partial global::System.Int64 Space_Class_FunA ([JSMarshalAs<JSType.BigInt>] global::System.Int64 a);""");
-        Contains("public static global::Space.Record Proxy_Space_Class_FunA(global::Space.Record a) => Serializer.Deserialize(Space_Class_FunA(Serializer.Serialize(a, SerializerContext.Space_Record)), SerializerContext.Space_Record);");
+        Contains("public static global::Space.Record Proxy_Space_Class_FunA (global::Space.Record a) => Serializer.Deserialize(Space_Class_FunA(Serializer.Serialize(a, SerializerContext.Space_Record)), SerializerContext.Space_Record);");
         Contains("""JSImport("Space.Class.funBSerialized", "Bootsharp")] [return: JSMarshalAs<JSType.Promise<JSType.BigInt>>] internal static partial global::System.Threading.Tasks.Task<global::System.Int64> Space_Class_FunB ([JSMarshalAs<JSType.BigInt>] global::System.Int64 a);""");
-        Contains("public static async global::System.Threading.Tasks.Task<global::Space.Record?[]?> Proxy_Space_Class_FunB(global::Space.Record?[]? a) => Serializer.Deserialize(await Space_Class_FunB(Serializer.Serialize(a, SerializerContext.Space_RecordArray)), SerializerContext.Space_RecordArray);");
+        Contains("public static async global::System.Threading.Tasks.Task<global::Space.Record?[]?> Proxy_Space_Class_FunB (global::Space.Record?[]? a) => Serializer.Deserialize(await Space_Class_FunB(Serializer.Serialize(a, SerializerContext.Space_RecordArray)), SerializerContext.Space_RecordArray);");
     }
 
     [Fact]
@@ -268,5 +268,81 @@ public class InteropTest : EmitTest
         Contains("JSExport] internal static void Bootsharp_Generated_Exports_Space_JSExported_Inv () => global::Bootsharp.Generated.Exports.Space.JSExported.Inv();");
         Contains("""JSImport("Foo.Imported.funSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_Space_JSImported_Fun ();""");
         Contains("""JSImport("Foo.Imported.onEvtSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_Space_JSImported_OnEvt ();""");
+    }
+
+    [Fact]
+    public void GeneratesForInterfaceProperties ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSExport(typeof(IExportedStatic))]
+            [assembly:JSImport(typeof(IImportedStatic))]
+
+            public record Record;
+
+            public interface IExportedStatic
+            {
+                Record State { get; set; }
+                IExportedInstanced Exported { get; }
+                IImportedInstanced Imported { set; }
+                int Count { set; }
+                int Ignored { get => 0; }
+                int IgnoredToo { set { } }
+                int this[int index] { get; set; }
+            }
+
+            public interface IImportedStatic
+            {
+                Record State { get; set; }
+                IImportedInstanced Imported { get; }
+                IExportedInstanced Exported { set; }
+                int Count { set; }
+            }
+
+            public interface IExportedInstanced
+            {
+                Record State { get; set; }
+                IExportedInstanced Exported { get; }
+                IImportedInstanced Imported { set; }
+            }
+
+            public interface IImportedInstanced
+            {
+                Record State { get; set; }
+                IImportedInstanced Imported { get; }
+                IExportedInstanced Exported { set; }
+            }
+
+            public class Class
+            {
+                [JSInvokable] public static IExportedInstanced GetExported (IImportedInstanced arg) => default;
+                [JSFunction] public static IImportedInstanced GetImported (IExportedInstanced arg) => default;
+            }
+            """));
+        Execute();
+        Contains("JSExport] [return: JSMarshalAs<JSType.BigInt>] internal static global::System.Int64 Bootsharp_Generated_Exports_JSExportedStatic_GetPropertyState () => Serializer.Serialize(global::Bootsharp.Generated.Exports.JSExportedStatic.GetPropertyState(), SerializerContext.Record);");
+        Contains("JSExport] internal static void Bootsharp_Generated_Exports_JSExportedStatic_SetPropertyState ([JSMarshalAs<JSType.BigInt>] global::System.Int64 value) => global::Bootsharp.Generated.Exports.JSExportedStatic.SetPropertyState(Serializer.Deserialize(value, SerializerContext.Record));");
+        Contains("""JSImport("ImportedStatic.getPropertyStateSerialized", "Bootsharp")] [return: JSMarshalAs<JSType.BigInt>] internal static partial global::System.Int64 Bootsharp_Generated_Imports_JSImportedStatic_GetPropertyState ();""");
+        Contains("public static global::Record Proxy_Bootsharp_Generated_Imports_JSImportedStatic_GetPropertyState() => Serializer.Deserialize(Bootsharp_Generated_Imports_JSImportedStatic_GetPropertyState(), SerializerContext.Record);");
+        Contains("""JSImport("ImportedStatic.setPropertyStateSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_JSImportedStatic_SetPropertyState ([JSMarshalAs<JSType.BigInt>] global::System.Int64 value);""");
+        Contains("public static void Proxy_Bootsharp_Generated_Imports_JSImportedStatic_SetPropertyState(global::Record value) => Bootsharp_Generated_Imports_JSImportedStatic_SetPropertyState(Serializer.Serialize(value, SerializerContext.Record));");
+        Contains("JSExport] internal static global::System.Int32 Bootsharp_Generated_Exports_JSExportedStatic_GetPropertyExported () => Instances.Register(global::Bootsharp.Generated.Exports.JSExportedStatic.GetPropertyExported());");
+        Contains("JSExport] internal static void Bootsharp_Generated_Exports_JSExportedStatic_SetPropertyImported (global::System.Int32 value) => global::Bootsharp.Generated.Exports.JSExportedStatic.SetPropertyImported(new global::Bootsharp.Generated.Imports.JSImportedInstanced(value));");
+        Contains("JSExport] internal static void Bootsharp_Generated_Exports_JSExportedStatic_SetPropertyCount (global::System.Int32 value) => global::Bootsharp.Generated.Exports.JSExportedStatic.SetPropertyCount(value);");
+        Contains("""JSImport("ImportedStatic.getPropertyImportedSerialized", "Bootsharp")] internal static partial global::System.Int32 Bootsharp_Generated_Imports_JSImportedStatic_GetPropertyImported ();""");
+        Contains("public static global::IImportedInstanced Proxy_Bootsharp_Generated_Imports_JSImportedStatic_GetPropertyImported() => (global::IImportedInstanced)new global::Bootsharp.Generated.Imports.JSImportedInstanced(Bootsharp_Generated_Imports_JSImportedStatic_GetPropertyImported());");
+        Contains("""JSImport("ImportedStatic.setPropertyExportedSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_JSImportedStatic_SetPropertyExported (global::System.Int32 value);""");
+        Contains("public static void Proxy_Bootsharp_Generated_Imports_JSImportedStatic_SetPropertyExported(global::IExportedInstanced value) => Bootsharp_Generated_Imports_JSImportedStatic_SetPropertyExported(Instances.Register(value));");
+        Contains("""JSImport("ImportedStatic.setPropertyCountSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_JSImportedStatic_SetPropertyCount (global::System.Int32 value);""");
+        Contains("public static void Proxy_Bootsharp_Generated_Imports_JSImportedStatic_SetPropertyCount(global::System.Int32 value) => Bootsharp_Generated_Imports_JSImportedStatic_SetPropertyCount(value);");
+        Contains("JSExport] [return: JSMarshalAs<JSType.BigInt>] internal static global::System.Int64 Bootsharp_Generated_Exports_JSExportedInstanced_GetPropertyState (global::System.Int32 _id) => Serializer.Serialize(((global::IExportedInstanced)Instances.Get(_id)).State, SerializerContext.Record);");
+        Contains("JSExport] internal static void Bootsharp_Generated_Exports_JSExportedInstanced_SetPropertyState (global::System.Int32 _id, [JSMarshalAs<JSType.BigInt>] global::System.Int64 value) => ((global::IExportedInstanced)Instances.Get(_id)).State = Serializer.Deserialize(value, SerializerContext.Record);");
+        Contains("""JSImport("ImportedInstanced.getPropertyStateSerialized", "Bootsharp")] [return: JSMarshalAs<JSType.BigInt>] internal static partial global::System.Int64 Bootsharp_Generated_Imports_JSImportedInstanced_GetPropertyState (global::System.Int32 _id);""");
+        Contains("JSExport] internal static global::System.Int32 Bootsharp_Generated_Exports_JSExportedInstanced_GetPropertyExported (global::System.Int32 _id) => Instances.Register(((global::IExportedInstanced)Instances.Get(_id)).Exported);");
+        Contains("JSExport] internal static void Bootsharp_Generated_Exports_JSExportedInstanced_SetPropertyImported (global::System.Int32 _id, global::System.Int32 value) => ((global::IExportedInstanced)Instances.Get(_id)).Imported = new global::Bootsharp.Generated.Imports.JSImportedInstanced(value);");
+        Contains("""JSImport("ImportedInstanced.getPropertyImportedSerialized", "Bootsharp")] internal static partial global::System.Int32 Bootsharp_Generated_Imports_JSImportedInstanced_GetPropertyImported (global::System.Int32 _id);""");
+        Contains("public static global::IImportedInstanced Proxy_Bootsharp_Generated_Imports_JSImportedInstanced_GetPropertyImported(global::System.Int32 _id) => (global::IImportedInstanced)new global::Bootsharp.Generated.Imports.JSImportedInstanced(Bootsharp_Generated_Imports_JSImportedInstanced_GetPropertyImported(_id));");
+        Contains("""JSImport("ImportedInstanced.setPropertyExportedSerialized", "Bootsharp")] internal static partial void Bootsharp_Generated_Imports_JSImportedInstanced_SetPropertyExported (global::System.Int32 _id, global::System.Int32 value);""");
+        Contains("public static void Proxy_Bootsharp_Generated_Imports_JSImportedInstanced_SetPropertyExported(global::System.Int32 _id, global::IExportedInstanced value) => Bootsharp_Generated_Imports_JSImportedInstanced_SetPropertyExported(_id, Instances.Register(value));");
     }
 }

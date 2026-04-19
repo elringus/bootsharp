@@ -4,7 +4,7 @@ internal sealed class InteropInitializerGenerator
 {
     public string Generate (IEnumerable<MethodMeta> methods)
     {
-        var interop = methods.Where(m => m.Kind is MethodKind.Function or MethodKind.Event)
+        var interop = methods.Where(m => m.Interop == InteropKind.Import)
             .OrderBy(BuildProxyName).ToArray();
         if (interop.Length == 0) return "";
         return $$"""
@@ -39,7 +39,7 @@ internal sealed class InteropInitializerGenerator
     private static string BuildPointerType (MethodMeta method)
     {
         var args = method.Arguments.Select(a => a.Value.TypeSyntax).ToList();
-        args.Add(method.ReturnValue.TypeSyntax);
+        args.Add(method.Value.TypeSyntax);
         return $"delegate* managed<{string.Join(", ", args)}>";
     }
 

@@ -65,17 +65,6 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         AppendLine("}", 0);
     }
 
-    private void DeclareInterface ()
-    {
-        AppendLine($"export interface {BuildTypeName(type)}", indent);
-        AppendExtensions();
-        builder.Append(" {");
-        if (instanced.FirstOrDefault(i => i.Type == type) is { } inst)
-            AppendInstancedMethods(inst);
-        else AppendProperties();
-        AppendLine("}", indent);
-    }
-
     private void DeclareEnum ()
     {
         AppendLine($"export enum {type.Name} {{", indent);
@@ -86,9 +75,21 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         AppendLine("}", indent);
     }
 
-    private string GetNamespace (Type type)
+    private void DeclareInterface ()
     {
-        return BuildJSSpace(type, prefs);
+        AppendLine($"export interface {BuildTypeName(type)}", indent);
+        AppendExtensions();
+        builder.Append(" {");
+        if (instanced.FirstOrDefault(i => i.Type == type) is { } inst)
+            foreach (var member in inst.Members)
+                switch (member)
+                {
+                    case EventMeta e: AppendInstancedEvent(e); break;
+                    case PropertyMeta p: AppendInstancedProperty(p); break;
+                    case MethodMeta m: AppendInstancedFunction(m); break;
+                }
+        else AppendProperties();
+        AppendLine("}", indent);
     }
 
     private void AppendExtensions ()
@@ -103,31 +104,28 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     private void AppendProperties ()
     {
         var flags = BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance;
-        foreach (var property in type.GetProperties(flags))
-            if (IsAutoProperty(property) || type.IsInterface)
-                AppendProperty(property);
+        foreach (var prop in type.GetProperties(flags))
+            if (prop.GetMethod != null && prop.GetIndexParameters().Length == 0)
+                AppendProperty(ToFirstLower(prop.Name), prop.PropertyType, GetNullability(prop));
     }
 
-    private void AppendProperty (PropertyInfo property)
+    private void AppendProperty (string name, Type type, NullabilityInfo? nullability)
     {
-        AppendLine(ToFirstLower(property.Name), indent + 1);
-        var nullability = GetNullability(property);
-        if (IsNullable(property.PropertyType, nullability)) builder.Append('?');
+        AppendLine(name, indent + 1);
+        if (IsNullable(type, nullability)) builder.Append('?');
         builder.Append(": ");
-        if (property.PropertyType.IsGenericTypeParameter) builder.Append(property.PropertyType.Name);
-        else builder.Append(typeBuilder.Build(property.PropertyType, nullability));
+        if (type.IsGenericTypeParameter) builder.Append(type.Name);
+        else builder.Append(typeBuilder.Build(type, nullability));
         builder.Append(';');
     }
 
-    private void AppendInstancedMethods (InterfaceMeta instanced)
+    private void AppendInstancedProperty (PropertyMeta prop)
     {
-        foreach (var meta in instanced.Methods)
-            if (meta.Kind == MethodKind.Event)
-                AppendInstancedEvent(meta);
-            else AppendInstancedFunction(meta);
+        var name = prop.CanGet && !prop.CanSet ? $"readonly {prop.JSName}" : prop.JSName;
+        AppendProperty(name, prop.Value.Type.Clr, prop.Value.Nullability);
     }
 
-    private void AppendInstancedEvent (MethodMeta meta)
+    private void AppendInstancedEvent (EventMeta meta)
     {
         AppendLine(meta.JSName, indent + 1);
         builder.Append(": Event<[");
@@ -164,5 +162,10 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         if (!type.IsGenericType) return name;
         var args = string.Join(", ", type.GetGenericArguments().Select(BuildTypeName));
         return $"{name}<{args}>";
+    }
+
+    private string GetNamespace (Type type)
+    {
+        return BuildJSSpace(type, prefs);
     }
 }

@@ -382,14 +382,32 @@ public class SerializerTest : EmitTest
     }
 
     [Fact]
-    public void IgnoresWriteOnlyAndComputedProperties ()
+    public void SerializersComputedProperties ()
     {
         AddAssembly(With(
             """
-            public class Node
+            public record Node
             {
-                public string Id { get; set; } = string.Empty;
-                public string Computed => string.Empty;
+                public string Id { get; set; }
+                public string Computed => Id + "something";
+            }
+
+            public class Class
+            {
+                [JSInvokable] public static Node Echo (Node node) => node;
+            }
+            """));
+        Execute();
+        Contains("System_String.Write(ref writer, value.Computed);");
+    }
+
+    [Fact]
+    public void IgnoresWriteOnlyProperties ()
+    {
+        AddAssembly(With(
+            """
+            public record Node
+            {
                 public string WriteOnly { set { } }
             }
 
@@ -399,7 +417,6 @@ public class SerializerTest : EmitTest
             }
             """));
         Execute();
-        DoesNotContain("Computed");
         DoesNotContain("WriteOnly");
     }
 

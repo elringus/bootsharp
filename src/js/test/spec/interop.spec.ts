@@ -207,39 +207,56 @@ describe("while bootsharp is booted", () => {
     it("can interop with imported interfaces", async () => {
         class Imported {
             constructor(private arg: string) { }
+            record: Test.Types.Record = { id: "foo" };
             getInstanceArg() { return this.arg; }
-            async getVehicleIdAsync(vehicle: Test.Types.Vehicle) {
+            async getRecordIdAsync(record: Test.Types.Record) {
                 await new Promise(res => setTimeout(res, 1));
-                return vehicle.id;
+                return record.id;
             }
         }
+        Test.Types.ImportedStatic.record = { id: "baz" };
         Test.Types.ImportedStatic.getInstanceAsync = async (arg) => {
             await new Promise(res => setTimeout(res, 1));
             return new Imported(arg);
         };
-        const result1 = await Test.Program.getImportedArgAndVehicleIdAsync({ id: "foo", maxSpeed: 0 }, "bar");
-        const result2 = await Test.Program.getImportedArgAndVehicleIdAsync({ id: "baz", maxSpeed: 0 }, "nya");
+        const result1 = await Test.Types.Interfaces.getImportedArgAndRecordIdAsync({ id: "foo" }, "bar");
+        const result2 = await Test.Types.Interfaces.getImportedArgAndRecordIdAsync({ id: "baz" }, "nya");
         expect(result1).toStrictEqual("foobar");
         expect(result2).toStrictEqual("baznya");
+        expect(Test.Types.Interfaces.getImportedStaticRecordIdAndSet({ id: "qux" })).toStrictEqual("baz");
+        expect(Test.Types.ImportedStatic.record).toStrictEqual({ id: "qux" });
+        expect(await Test.Types.Interfaces.getImportedInstanceArgAndRecordIdAsync({ id: "zip" }, "qux"))
+            .toStrictEqual("quxfoozip");
     });
     it("can interop with exported interfaces", async () => {
+        const record = { id: "foo" };
+        Test.Types.ExportedStatic.record = record;
+        expect(Test.Types.ExportedStatic.record).toStrictEqual(record);
+        Test.Types.ExportedStatic.record = { id: "bar" };
+        expect(Test.Types.ExportedStatic.record).toStrictEqual({ id: "bar" });
+        Test.Types.ExportedStatic.record = null;
+        expect(Test.Types.ExportedStatic.record).toBeNull();
+
         const exported = await Test.Types.ExportedStatic.getInstanceAsync("bar");
         expect(exported.getInstanceArg()).toStrictEqual("bar");
-        expect(await exported.getVehicleIdAsync({ id: "foo", maxSpeed: 0 })).toStrictEqual("foo");
-        expect(await Test.Program.getExportedArgAndVehicleIdAsync({ id: "foo", maxSpeed: 0 }, "bar")).toStrictEqual("foobar");
+        expect(await exported.getRecordIdAsync({ id: "foo" })).toStrictEqual("foo");
+        expect(exported.record).toBeNull();
+        exported.record = { id: "qux" };
+        expect(exported.record).toStrictEqual({ id: "qux" });
     });
     it("releases interface instances after use", async () => {
         class Imported {
             constructor(private arg: string) { }
+            record?: Test.Types.Record;
             getInstanceArg() { return this.arg; }
-            async getVehicleIdAsync(vehicle: Test.Types.Vehicle) {
+            async getRecordIdAsync(record: Test.Types.Record) {
                 await new Promise(res => setTimeout(res, 1));
-                return vehicle.id;
+                return record.id;
             }
         }
         Test.Types.ImportedStatic.getInstanceAsync = async (arg) => new Imported(arg);
-        expect(await Test.Program.getImportedArgsAndFinalize("qux", "fox")).toStrictEqual(["qux", "fox"]);
-        expect(await Test.Program.getImportedArgsAndFinalize("zip", "zap")).toStrictEqual(["zip", "zap"]);
+        expect(await Test.Types.Interfaces.getImportedArgsAndFinalize("qux", "fox")).toStrictEqual(["qux", "fox"]);
+        expect(await Test.Types.Interfaces.getImportedArgsAndFinalize("zip", "zap")).toStrictEqual(["zip", "zap"]);
     });
     it("empty string of a struct is transferred correctly", () => {
         const id = Test.Types.Registry.getWithEmptyId().id;

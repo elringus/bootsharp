@@ -8,8 +8,6 @@ namespace Bootsharp.Publish;
 /// Remember that the serialization is only required for the values that cross the interop boundary
 /// and whose types are not natively supported by System.Runtime.InteropServices.JavaScript.
 /// The types that are referenced by these top-level interop types are crawled by this inspector.
-/// To make sure the serialization inspection is not performed on just arbitrary and unrelated types,
-/// the <see cref="Inspect"/> expects <see cref="ParameterInfo"/> and not just a <see cref="Type"/>.
 /// </remarks>
 internal sealed class SerializedInspector
 {
@@ -27,9 +25,8 @@ internal sealed class SerializedInspector
     private readonly Dictionary<string, SerializedMeta> byId = [];
     private readonly HashSet<Type> cycle = [];
 
-    public SerializedMeta? Inspect (ParameterInfo info)
+    public SerializedMeta? Inspect (Type type)
     {
-        var type = info.ParameterType;
         return ShouldSerialize(type) ? Build(type) : null;
     }
 
@@ -131,7 +128,7 @@ internal sealed class SerializedInspector
     private static IEnumerable<PropertyInfo> GetSerializableProperties (Type type)
     {
         return type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-            .Where(p => p.GetMethod != null && (IsAutoProperty(p) || type.IsInterface));
+            .Where(p => p.GetMethod != null && p.GetIndexParameters().Length == 0);
     }
 
     private static IReadOnlyList<SerializedMeta> OrderByDependencyGraph (IEnumerable<SerializedMeta> types)

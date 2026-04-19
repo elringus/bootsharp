@@ -10,13 +10,13 @@ internal sealed class SolutionInspector
     private readonly List<string> warnings = [];
     private readonly TypeInspector typeInspector = new();
     private readonly SerializedInspector serdeInspector = new();
-    private readonly MethodInspector methodInspector;
+    private readonly MemberInspector memberInspector;
     private readonly InterfaceInspector interfaceInspector;
 
     public SolutionInspector (Preferences prefs, string entryAssemblyName)
     {
-        methodInspector = new(prefs, typeInspector, serdeInspector);
-        interfaceInspector = new(prefs, methodInspector, entryAssemblyName);
+        memberInspector = new(prefs, typeInspector, serdeInspector);
+        interfaceInspector = new(prefs, memberInspector, entryAssemblyName);
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ internal sealed class SolutionInspector
     {
         var fileName = Path.GetFileName(assemblyPath);
         var message = $"Failed to inspect '{fileName}' assembly; " +
-                      $"affected methods won't be available in JavaScript. Error: {exception.Message}";
+                      $"affected interop members won't be available in JavaScript. Error: {exception.Message}";
         warnings.Add(message);
     }
 
@@ -74,58 +74,66 @@ internal sealed class SolutionInspector
 
     private void InspectAssemblyAttribute (CustomAttributeData attribute)
     {
-        var kind = default(InterfaceKind);
+        var interop = default(InteropKind);
         var name = attribute.AttributeType.FullName;
-        if (name == typeof(JSExportAttribute).FullName) kind = InterfaceKind.Export;
-        else if (name == typeof(JSImportAttribute).FullName) kind = InterfaceKind.Import;
+        if (name == typeof(JSExportAttribute).FullName) interop = InteropKind.Export;
+        else if (name == typeof(JSImportAttribute).FullName) interop = InteropKind.Import;
         else return;
         foreach (var arg in (IEnumerable<CustomAttributeTypedArgument>)attribute.ConstructorArguments[0].Value!)
-            InspectStaticInteropInterface((Type)arg.Value!, kind);
+            InspectStaticInteropInterface((Type)arg.Value!, interop);
     }
 
     private void InspectExportedStaticMethod (MethodInfo info)
     {
-        var kind = default(MethodKind?);
+        var interop = default(InteropKind?);
+        var @event = false;
         foreach (var attr in info.CustomAttributes.Select(a => a.AttributeType.FullName))
-            if (attr == typeof(JSInvokableAttribute).FullName) kind = MethodKind.Invokable;
-            else if (attr == typeof(JSFunctionAttribute).FullName) kind = MethodKind.Function;
-            else if (attr == typeof(JSEventAttribute).FullName) kind = MethodKind.Event;
-        if (kind.HasValue) InspectStaticInteropMethod(info, kind.Value);
+            if (attr == typeof(JSInvokableAttribute).FullName) interop = InteropKind.Export;
+            else if (attr == typeof(JSFunctionAttribute).FullName) interop = InteropKind.Import;
+            else if (attr == typeof(JSEventAttribute).FullName)
+            {
+                interop = InteropKind.Import;
+                @event = true;
+            }
+        if (interop.HasValue) InspectStaticInteropMethod(info, interop.Value, @event);
     }
 
-    private void InspectStaticInteropMethod (MethodInfo info, MethodKind kind)
+    private void InspectStaticInteropMethod (MethodInfo info, InteropKind interop, bool @event)
     {
-        var methodMeta = methodInspector.Inspect(info, kind);
-        staticMethods.Add(methodMeta);
-        InspectMethodParameters(methodMeta, kind);
+        var method = memberInspector.Inspect(info, interop);
+        if (@event) method = new EventMeta(method, info.Name);
+        staticMethods.Add(method);
+        InspectMember(method);
     }
 
-    private void InspectStaticInteropInterface (Type type, InterfaceKind kind)
+    private void InspectStaticInteropInterface (Type type, InteropKind interop)
     {
-        var interfaceMeta = interfaceInspector.Inspect(type, kind);
+        var interfaceMeta = interfaceInspector.Inspect(type, interop);
         staticInterfaces.Add(interfaceMeta);
-        foreach (var method in interfaceMeta.Methods)
-            InspectMethodParameters(method, kind);
+        foreach (var member in interfaceMeta.Members)
+            InspectMember(member);
     }
 
-    private void InspectMethodParameters (MethodMeta meta, MethodKind kind)
-    {
-        var iKind = kind == MethodKind.Invokable ? InterfaceKind.Export : InterfaceKind.Import;
-        InspectMethodParameters(meta, iKind);
-    }
-
-    private void InspectMethodParameters (MethodMeta meta, InterfaceKind kind)
+    private void InspectMember (MemberMeta meta)
     {
         // When interop instance is an argument of exported method, it's imported (JS) API and vice versa.
-        var argKind = kind == InterfaceKind.Export ? InterfaceKind.Import : InterfaceKind.Export;
-        foreach (var arg in meta.Arguments)
-            InspectMethodParameter(arg.Value.Type.Clr, argKind);
-        if (!meta.Void) InspectMethodParameter(meta.ReturnValue.Type.Clr, kind);
+        var interop = meta.Interop == InteropKind.Export ? InteropKind.Import : InteropKind.Export;
+        if (meta is PropertyMeta prop)
+        {
+            if (prop.CanSet) InspectType(prop.Value.Type.Clr, interop);
+            if (prop.CanGet) InspectType(prop.Value.Type.Clr, prop.Interop);
+        }
+        else if (meta is MethodMeta method)
+        {
+            foreach (var arg in method.Arguments)
+                InspectType(arg.Value.Type.Clr, interop);
+            if (!method.Void) InspectType(method.Value.Type.Clr, method.Interop);
+        }
     }
 
-    private void InspectMethodParameter (Type paramType, InterfaceKind kind)
+    private void InspectType (Type type, InteropKind interop)
     {
-        if (IsInstancedInteropInterface(paramType, out var instanceType))
-            instancedInterfaces.Add(interfaceInspector.Inspect(instanceType, kind));
+        if (IsInstancedInteropInterface(type, out var instanceType))
+            instancedInterfaces.Add(interfaceInspector.Inspect(instanceType, interop));
     }
 }

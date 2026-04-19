@@ -14,12 +14,15 @@ internal sealed class InteropGenerator
     public string Generate (SolutionInspection inspection)
     {
         instanced = inspection.InstancedInterfaces;
-        var @static = inspection.StaticMethods
-            .Concat(inspection.StaticInterfaces.SelectMany(i => i.Methods))
-            .Concat(inspection.InstancedInterfaces.SelectMany(i => i.Methods));
-        foreach (var meta in @static) // @formatter:off
-            if (meta.Kind == MethodKind.Invokable) AddExportMethod(meta);
-            else { AddImportMethod(meta); AddImportProxy(meta); } // @formatter:on
+        foreach (var method in inspection.StaticMethods)
+            if (method.Interop == InteropKind.Export) AddMethodExport(method);
+            else AddMethodImport(method);
+        foreach (var inter in inspection.StaticInterfaces)
+        foreach (var member in inter.Members)
+            AddMember(member);
+        foreach (var inter in inspection.InstancedInterfaces)
+        foreach (var member in inter.Members)
+            AddMember(member);
         return
             $$"""
               #nullable enable
@@ -42,86 +45,160 @@ internal sealed class InteropGenerator
               """;
     }
 
-    private void AddExportMethod (MethodMeta inv)
+    private void AddMember (MemberMeta member)
     {
-        var instanced = TryInstanced(inv, out var instance);
-        var marshalAs = MarshalAmbiguous(inv.ReturnValue, true);
-        var wait = ShouldWait(inv);
-        var attr = $"[System.Runtime.InteropServices.JavaScript.JSExport] {marshalAs}";
-        methods.Add($"{attr}internal static {BuildSignature()} => {BuildBody()};");
-
-        string BuildSignature ()
+        switch (member)
         {
-            var args = string.Join(", ", inv.Arguments.Select(BuildSignatureArg));
-            if (instanced) args = args = PrependInstanceIdArgTypeAndName(args);
-            var @return = BuildReturnValue(inv);
-            var signature = $"{@return} {BuildMethodName(inv)} ({args})";
-            if (wait) signature = $"async {signature}";
-            return signature;
+            case PropertyMeta { Interop: InteropKind.Export } p: AddPropertyExport(p); break;
+            case PropertyMeta { Interop: InteropKind.Import } p: AddPropertyImport(p); break;
+            case MethodMeta { Interop: InteropKind.Export } m: AddMethodExport(m); break;
+            case MethodMeta { Interop: InteropKind.Import } m: AddMethodImport(m); break;
         }
+    }
 
-        string BuildBody ()
+    private void AddPropertyExport (PropertyMeta prop)
+    {
+        var instanced = TryInstanced(prop, out var instance);
+        if (prop.CanGet)
         {
-            var args = string.Join(", ", inv.Arguments.Select(BuildBodyArg));
+            var marshalAs = MarshalAmbiguous(prop.Value, true);
+            var attr = $"[System.Runtime.InteropServices.JavaScript.JSExport] {marshalAs}";
+            var name = $"{prop.Space.Replace('.', '_')}_GetProperty{prop.Name}";
+            var args = instanced ? PrependInstanceIdArgTypeAndName("") : "";
             var body = instanced
-                ? $"(({instance!.TypeSyntax})Instances.Get(_id)).{inv.Name}({args})"
-                : $"global::{inv.Space}.{inv.Name}({args})";
-            if (wait) body = $"await {body}";
-            if (inv.ReturnValue.IsInstance) body = $"Instances.Register({body})";
-            else if (Serialized(inv.ReturnValue, out var id)) body = $"Serializer.Serialize({body}, {id})";
-            return body;
+                ? $"(({instance!.TypeSyntax})Instances.Get(_id)).{prop.Name}"
+                : $"global::{prop.Space}.GetProperty{prop.Name}()";
+            if (prop.Value.IsInstance) body = $"Instances.Register({body})";
+            else if (Serialized(prop.Value, out var id)) body = $"Serializer.Serialize({body}, {id})";
+            methods.Add($"{attr}internal static {BuildValueSyntax(prop.Value)} {name} ({args}) => {body};");
         }
-
-        string BuildBodyArg (ArgumentMeta arg)
+        if (prop.CanSet)
         {
-            if (arg.Value.IsInstance)
-            {
-                var (_, _, full) = BuildInteropInterfaceImplementationName(arg.Value.InstanceType, InterfaceKind.Import);
-                return $"new global::{full}({arg.Name})";
-            }
+            var attr = "[System.Runtime.InteropServices.JavaScript.JSExport] ";
+            var name = $"{prop.Space.Replace('.', '_')}_SetProperty{prop.Name}";
+            var args = BuildParameter(prop.Value, "value");
+            if (instanced) args = PrependInstanceIdArgTypeAndName(args);
+            var value = prop.Value.InstanceType is { } it
+                ? $"new global::{BuildInterfaceImplName(it, InteropKind.Import).full}(value)"
+                : Serialized(prop.Value, out var id) ? $"Serializer.Deserialize(value, {id})" : "value";
+            var body = instanced
+                ? $"(({instance!.TypeSyntax})Instances.Get(_id)).{prop.Name} = {value}"
+                : $"global::{prop.Space}.SetProperty{prop.Name}({value})";
+            methods.Add($"{attr}internal static void {name} ({args}) => {body};");
+        }
+    }
+
+    private void AddPropertyImport (PropertyMeta prop)
+    {
+        var instanced = TryInstanced(prop, out _);
+        if (prop.CanGet)
+        {
+            var endpoint = $"""("{prop.JSSpace}.getProperty{prop.Name}Serialized", "Bootsharp")""";
+            var marshalAs = MarshalAmbiguous(prop.Value, true);
+            var attr = $"[System.Runtime.InteropServices.JavaScript.JSImport{endpoint}] {marshalAs}";
+            var name = $"{prop.Space.Replace('.', '_')}_GetProperty{prop.Name}";
+            var args = instanced ? PrependInstanceIdArgTypeAndName("") : "";
+            methods.Add($"{attr}internal static partial {BuildValueSyntax(prop.Value)} {name} ({args});");
+        }
+        if (prop.CanSet)
+        {
+            var endpoint = $"""("{prop.JSSpace}.setProperty{prop.Name}Serialized", "Bootsharp")""";
+            var attr = $"[System.Runtime.InteropServices.JavaScript.JSImport{endpoint}] ";
+            var name = $"{prop.Space.Replace('.', '_')}_SetProperty{prop.Name}";
+            var args = BuildParameter(prop.Value, "value");
+            if (instanced) args = PrependInstanceIdArgTypeAndName(args);
+            methods.Add($"{attr}internal static partial void {name} ({args});");
+        }
+        AddPropertyImportProxy(prop);
+    }
+
+    private void AddPropertyImportProxy (PropertyMeta prop)
+    {
+        var instanced = TryInstanced(prop, out _);
+        if (prop.CanGet)
+        {
+            var name = $"{prop.Space.Replace('.', '_')}_GetProperty{prop.Name}";
+            var args = instanced ? PrependInstanceIdArgTypeAndName("") : "";
+            var body = instanced ? $"{name}(_id)" : $"{name}()";
+            if (prop.Value.InstanceType is { } it)
+                body = $"({BuildSyntax(it)})new global::{BuildInterfaceImplName(it, InteropKind.Import).full}({body})";
+            else if (Serialized(prop.Value, out var id)) body = $"Serializer.Deserialize({body}, {id})";
+            methods.Add($"public static {prop.Value.TypeSyntax} Proxy_{name}({args}) => {body};");
+        }
+        if (prop.CanSet)
+        {
+            var name = $"{prop.Space.Replace('.', '_')}_SetProperty{prop.Name}";
+            var args = $"{prop.Value.TypeSyntax} value";
+            if (instanced) args = PrependInstanceIdArgTypeAndName(args);
+            var value = prop.Value.IsInstance ? "Instances.Register(value)" :
+                Serialized(prop.Value, out var id) ? $"Serializer.Serialize(value, {id})" : "value";
+            var body = instanced ? $"{name}(_id, {value})" : $"{name}({value})";
+            methods.Add($"public static void Proxy_{name}({args}) => {body};");
+        }
+    }
+
+    private void AddMethodExport (MethodMeta method)
+    {
+        var instanced = TryInstanced(method, out var instance);
+        var wait = ShouldWait(method);
+        var marshalAs = MarshalAmbiguous(method.Value, true);
+        var attr = $"[System.Runtime.InteropServices.JavaScript.JSExport] {marshalAs}";
+        var name = $"{method.Space.Replace('.', '_')}_{method.Name}";
+        var @return = BuildValueSyntax(method.Value);
+        if (wait) @return = $"async global::System.Threading.Tasks.Task<{@return}>";
+        var sigArgs = string.Join(", ", method.Arguments.Select(a => BuildParameter(a.Value, a.Name)));
+        if (instanced) sigArgs = PrependInstanceIdArgTypeAndName(sigArgs);
+        var callArgs = string.Join(", ", method.Arguments.Select(BuildCallArg));
+        var body = instanced
+            ? $"(({instance!.TypeSyntax})Instances.Get(_id)).{method.Name}({callArgs})"
+            : $"global::{method.Space}.{method.Name}({callArgs})";
+        if (wait) body = $"await {body}";
+        if (method.Value.IsInstance) body = $"Instances.Register({body})";
+        else if (Serialized(method.Value, out var id)) body = $"Serializer.Serialize({body}, {id})";
+        methods.Add($"{attr}internal static {@return} {name} ({sigArgs}) => {body};");
+
+        string BuildCallArg (ArgumentMeta arg)
+        {
+            if (arg.Value.InstanceType is { } it)
+                return $"new global::{BuildInterfaceImplName(it, InteropKind.Import).full}({arg.Name})";
             if (Serialized(arg.Value, out var id)) return $"Serializer.Deserialize({arg.Name}, {id})";
             return arg.Name;
         }
     }
 
-    private void AddImportMethod (MethodMeta method)
-    {
-        var args = string.Join(", ", method.Arguments.Select(BuildSignatureArg));
-        if (TryInstanced(method, out _)) args = PrependInstanceIdArgTypeAndName(args);
-        var @return = BuildReturnValue(method);
-        var endpoint = $"{method.JSSpace}.{method.JSName}Serialized";
-        var attr = $"""[System.Runtime.InteropServices.JavaScript.JSImport("{endpoint}", "Bootsharp")]""";
-        var marsh = MarshalAmbiguous(method.ReturnValue, true);
-        methods.Add($"{attr} {marsh}internal static partial {@return} {BuildMethodName(method)} ({args});");
-    }
-
-    private void AddImportProxy (MethodMeta method)
+    private void AddMethodImport (MethodMeta method)
     {
         var instanced = TryInstanced(method, out _);
-        var name = $"Proxy_{BuildMethodName(method)}";
-        var @return = method.ReturnValue.TypeSyntax;
-        var args = string.Join(", ", method.Arguments.Select(arg => $"{arg.Value.TypeSyntax} {arg.Name}"));
-        if (instanced) args = args = PrependInstanceIdArgTypeAndName(args);
+        var marshalAs = MarshalAmbiguous(method.Value, true);
+        var endpoint = $"""("{method.JSSpace}.{method.JSName}Serialized", "Bootsharp")""";
+        var attr = $"[System.Runtime.InteropServices.JavaScript.JSImport{endpoint}] {marshalAs}";
+        var name = $"{method.Space.Replace('.', '_')}_{method.Name}";
+        var @return = BuildValueSyntax(method.Value);
+        if (ShouldWait(method)) @return = $"global::System.Threading.Tasks.Task<{@return}>";
+        var args = string.Join(", ", method.Arguments.Select(a => BuildParameter(a.Value, a.Name)));
+        if (instanced) args = PrependInstanceIdArgTypeAndName(args);
+        methods.Add($"{attr}internal static partial {@return} {name} ({args});");
+        AddMethodImportProxy(method);
+    }
+
+    private void AddMethodImportProxy (MethodMeta method)
+    {
+        var instanced = TryInstanced(method, out _);
         var wait = ShouldWait(method);
-        var async = wait ? "async " : "";
-        methods.Add($"public static {async}{@return} {name}({args}) => {BuildBody()};");
+        var @return = $"{(wait ? "async " : "")}{method.Value.TypeSyntax}";
+        var name = $"{method.Space.Replace('.', '_')}_{method.Name}";
+        var sigArgs = string.Join(", ", method.Arguments.Select(arg => $"{arg.Value.TypeSyntax} {arg.Name}"));
+        if (instanced) sigArgs = PrependInstanceIdArgTypeAndName(sigArgs);
+        var callArgs = string.Join(", ", method.Arguments.Select(BuildCallArg));
+        if (instanced) callArgs = PrependInstanceIdArgName(callArgs);
+        var body = $"{name}({callArgs})";
+        if (wait) body = $"await {body}";
+        if (method.Value.InstanceType is { } it)
+            body = $"({BuildSyntax(it)})new global::{BuildInterfaceImplName(it, InteropKind.Import).full}({body})";
+        else if (Serialized(method.Value, out var id)) body = $"Serializer.Deserialize({body}, {id})";
+        methods.Add($"public static {@return} Proxy_{name} ({sigArgs}) => {body};");
 
-        string BuildBody ()
-        {
-            var args = string.Join(", ", method.Arguments.Select(BuildBodyArg));
-            if (instanced) args = PrependInstanceIdArgName(args);
-            var body = $"{BuildMethodName(method)}({args})";
-            if (wait) body = $"await {body}";
-            if (method.ReturnValue.InstanceType is { } itp)
-            {
-                var (_, _, full) = BuildInteropInterfaceImplementationName(itp, InterfaceKind.Import);
-                return $"({BuildSyntax(itp)})new global::{full}({body})";
-            }
-            if (Serialized(method.ReturnValue, out var id)) return $"Serializer.Deserialize({body}, {id})";
-            return body;
-        }
-
-        string BuildBodyArg (ArgumentMeta arg)
+        string BuildCallArg (ArgumentMeta arg)
         {
             if (arg.Value.IsInstance) return $"Instances.Register({arg.Name})";
             if (Serialized(arg.Value, out var id)) return $"Serializer.Serialize({arg.Name}, {id})";
@@ -129,7 +206,13 @@ internal sealed class InteropGenerator
         }
     }
 
-    private string BuildValueType (ValueMeta value)
+    private string BuildParameter (ValueMeta value, string name)
+    {
+        var type = BuildValueSyntax(value);
+        return $"{MarshalAmbiguous(value, false)}{type} {name}";
+    }
+
+    private string BuildValueSyntax (ValueMeta value)
     {
         var nil = value.Nullable && !value.IsSerialized ? "?" : "";
         if (value.IsInstance) return $"global::System.Int32{nil}";
@@ -137,34 +220,16 @@ internal sealed class InteropGenerator
         return value.TypeSyntax;
     }
 
-    private string BuildSignatureArg (ArgumentMeta arg)
+    private bool TryInstanced (MemberMeta member, [NotNullWhen(true)] out InterfaceMeta? instance)
     {
-        var type = BuildValueType(arg.Value);
-        return $"{MarshalAmbiguous(arg.Value, false)}{type} {arg.Name}";
-    }
-
-    private string BuildReturnValue (MethodMeta method)
-    {
-        var syntax = BuildValueType(method.ReturnValue);
-        if (ShouldWait(method)) syntax = $"global::System.Threading.Tasks.Task<{syntax}>";
-        return syntax;
-    }
-
-    private string BuildMethodName (MethodMeta method)
-    {
-        return $"{method.Space.Replace('.', '_')}_{method.Name}";
-    }
-
-    private bool TryInstanced (MethodMeta method, [NotNullWhen(true)] out InterfaceMeta? instance)
-    {
-        instance = instanced.FirstOrDefault(i => i.Methods.Contains(method));
+        instance = instanced.FirstOrDefault(i => i.Members.Contains(member));
         return instance is not null;
     }
 
     private bool ShouldWait (MethodMeta method)
     {
         if (!method.Async) return false;
-        return method.ReturnValue.IsSerialized || method.ReturnValue.IsInstance;
+        return method.Value.IsSerialized || method.Value.IsInstance;
     }
 
     private static string MarshalAmbiguous (ValueMeta value, bool @return)

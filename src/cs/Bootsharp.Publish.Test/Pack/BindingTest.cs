@@ -28,16 +28,23 @@ public class BindingTest : PackTest
     public void WhenDebugEnabledEmitsAndUsesExportImportHelpers ()
     {
         Task.Debug = true;
-        AddAssembly(WithClass(
+        AddAssembly(With(
             """
-            [JSInvokable] public static Task<int> InvAsync () => Task.FromResult(0);
-            [JSFunction] public static void Fun () {}
-            """
-        ));
+            [assembly:JSExport(typeof(IExportedStatic))]
+
+            public interface IExportedStatic { int State { get; set; } }
+
+            public class Class
+            {
+                [JSInvokable] public static Task<int> InvAsync () => Task.FromResult(0);
+                [JSFunction] public static void Fun () {}
+            }
+            """));
         Execute();
         Contains("function getExport");
         Contains("function getImport");
         Contains("""getExport("Class_InvAsync")""");
+        Contains("""getExport("Bootsharp_Generated_Exports_JSExportedStatic_GetPropertyState")""");
         Contains("""getImport(this.funHandler, this.funSerializedHandler, "Class.fun")""");
     }
 
@@ -45,16 +52,23 @@ public class BindingTest : PackTest
     public void WhenDebugDisabledDoesntEmitAndDoesntUseExportImportHelpers ()
     {
         Task.Debug = false;
-        AddAssembly(WithClass(
+        AddAssembly(With(
             """
-            [JSInvokable] public static Task<int> InvAsync () => Task.FromResult(0);
-            [JSFunction] public static void Fun () {}
-            """
-        ));
+            [assembly:JSExport(typeof(IExportedStatic))]
+
+            public interface IExportedStatic { int State { get; set; } }
+
+            public class Class
+            {
+                [JSInvokable] public static Task<int> InvAsync () => Task.FromResult(0);
+                [JSFunction] public static void Fun () {}
+            }
+            """));
         Execute();
         DoesNotContain("function getExport");
         DoesNotContain("function getImport");
         DoesNotContain("""getExport("Class_InvAsync")""");
+        DoesNotContain("""getExport("Bootsharp_Generated_Exports_JSExportedStatic_GetPropertyState")""");
         DoesNotContain("""getImport(this.funHandler, this.funSerializedHandler, "Class.fun")""");
     }
 
@@ -622,6 +636,103 @@ public class BindingTest : PackTest
                 onEvt: new Event(),
                 onEvtSerialized: (s, e) => Foo.onEvt.broadcast(s, deserialize(e, Space_Enum)),
                 Enum: { "0": "A", "1": "B", "A": 0, "B": 1 }
+            };
+            """);
+    }
+
+    [Fact]
+    public void GeneratesPropertiesForInteropInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:JSExport(typeof(IExportedStatic))]
+            [assembly:JSImport(typeof(IImportedStatic))]
+
+            public record Info (string Value);
+
+            public interface IExportedStatic
+            {
+                Info State { get; set; }
+                IExportedInstanced Exported { get; }
+                IImportedInstanced Imported { set; }
+                int Count { set; }
+            }
+
+            public interface IImportedStatic
+            {
+                Info State { get; set; }
+                IImportedInstanced Imported { get; }
+                IExportedInstanced Exported { set; }
+                int Count { set; }
+            }
+
+            public interface IExportedInstanced
+            {
+                Info State { get; set; }
+                IExportedInstanced Exported { get; }
+                IImportedInstanced Imported { set; }
+            }
+
+            public interface IImportedInstanced
+            {
+                Info State { get; set; }
+                IImportedInstanced Imported { get; }
+                IExportedInstanced Exported { set; }
+            }
+
+            public class Class
+            {
+                [JSInvokable] public static IExportedInstanced GetExported (IImportedInstanced inst) => default;
+                [JSFunction] public static IImportedInstanced GetImported (IExportedInstanced inst) => default;
+            }
+            """));
+        Execute();
+        Contains(
+            """
+            class JSExportedInstanced {
+                constructor(_id) { this._id = _id; disposeOnFinalize(this, _id); }
+                get state() { return ExportedInstanced.getPropertyState(this._id); }
+                set state(value) { ExportedInstanced.setPropertyState(this._id, value); }
+                get exported() { return ExportedInstanced.getPropertyExported(this._id); }
+                set imported(value) { ExportedInstanced.setPropertyImported(this._id, value); }
+            }
+
+            export const Class = {
+                getExported: (inst) => new JSExportedInstanced(exports.Class_GetExported(registerInstance(inst))),
+                get getImported() { return this.getImportedHandler; },
+                set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = (inst) => registerInstance(this.getImportedHandler(new JSExportedInstanced(inst))); },
+                get getImportedSerialized() { return this.getImportedSerializedHandler; }
+            };
+            export const ExportedInstanced = {
+                getPropertyState(_id) { return deserialize(exports.Bootsharp_Generated_Exports_JSExportedInstanced_GetPropertyState(_id), Info); },
+                setPropertyState(_id, value) { exports.Bootsharp_Generated_Exports_JSExportedInstanced_SetPropertyState(_id, serialize(value, Info)); },
+                getPropertyExported(_id) { return new JSExportedInstanced(exports.Bootsharp_Generated_Exports_JSExportedInstanced_GetPropertyExported(_id)); },
+                setPropertyImported(_id, value) { exports.Bootsharp_Generated_Exports_JSExportedInstanced_SetPropertyImported(_id, registerInstance(value)); }
+            };
+            export const ExportedStatic = {
+                get state() { return deserialize(exports.Bootsharp_Generated_Exports_JSExportedStatic_GetPropertyState(), Info); },
+                set state(value) { exports.Bootsharp_Generated_Exports_JSExportedStatic_SetPropertyState(serialize(value, Info)); },
+                get exported() { return new JSExportedInstanced(exports.Bootsharp_Generated_Exports_JSExportedStatic_GetPropertyExported()); },
+                set imported(value) { exports.Bootsharp_Generated_Exports_JSExportedStatic_SetPropertyImported(registerInstance(value)); },
+                set count(value) { exports.Bootsharp_Generated_Exports_JSExportedStatic_SetPropertyCount(value); }
+            };
+            export const ImportedInstanced = {
+                getPropertyStateSerialized(_id) { return serialize(getInstance(_id).state, Info); },
+                setPropertyStateSerialized(_id, value) { getInstance(_id).state = deserialize(value, Info); },
+                getPropertyImportedSerialized(_id) { return registerInstance(getInstance(_id).imported); },
+                setPropertyExportedSerialized(_id, value) { getInstance(_id).exported = new JSExportedInstanced(value); }
+            };
+            export const ImportedStatic = {
+                get state() { return this._state; },
+                getPropertyStateSerialized() { return serialize(this.state, Info); },
+                set state(value) { this._state = value; },
+                setPropertyStateSerialized(value) { this.state = deserialize(value, Info); },
+                get imported() { return this._imported; },
+                getPropertyImportedSerialized() { return registerInstance(this.imported); },
+                set exported(value) { this._exported = value; },
+                setPropertyExportedSerialized(value) { this.exported = new JSExportedInstanced(value); },
+                set count(value) { this._count = value; },
+                setPropertyCountSerialized(value) { this.count = value; }
             };
             """);
     }

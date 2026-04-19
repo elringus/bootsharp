@@ -47,7 +47,16 @@ describe("serialization", () => {
         expect(Test.Serialization.echoUnions(undefined)).toBeNull();
     });
 
+    it("computes expression properties on the C# side", () => {
+        expect(Test.Serialization.echoComputed({ id: "foo", count: 7, summary: "ignored" }))
+            .toStrictEqual({ id: "foo", count: 7, summary: "foo:7" });
+        expect(Test.Serialization.echoComputedArray([{ id: "bar", count: 3, summary: "ignored" }, null]))
+            .toStrictEqual([{ id: "bar", count: 3, summary: "bar:3" }, null]);
+    });
+
     it("can echo vehicles", async () => {
+        expect(Test.Types.Registry.echoRecords([{ id: "foo" }, null]))
+            .toStrictEqual([{ id: "foo" }, null]);
         expect(Test.Types.Registry.echoVehicles([{ id: "foo", maxSpeed: 1 }, null]))
             .toStrictEqual([{ id: "foo", maxSpeed: 1 }, null]);
         expect(Test.Types.Registry.echoRegistry({

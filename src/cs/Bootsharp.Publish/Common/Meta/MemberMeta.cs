@@ -1,0 +1,93 @@
+using System.Diagnostics.CodeAnalysis;
+
+namespace Bootsharp.Publish;
+
+/// <summary>
+/// An interop member declared on a static API surface or interop interface.
+/// </summary>
+internal abstract record MemberMeta
+{
+    /// <summary>
+    /// Whether the member is implemented in C# and exposed to JavaScript (export)
+    /// or implemented in JavaScript and consumed from C# (import).
+    /// </summary>
+    public required InteropKind Interop { get; init; }
+    /// <summary>
+    /// C# assembly name (DLL file name, w/o the extension), under which the member is declared.
+    /// </summary>
+    public required string Assembly { get; init; }
+    /// <summary>
+    /// Full name of the C# type (including namespace), under which the member is declared.
+    /// </summary>
+    public required string Space { get; init; }
+    /// <summary>
+    /// JavaScript object name(s) (joined with dot when nested) under which the associated interop
+    /// member will be declared; resolved from <see cref="Space"/> with user-defined converters.
+    /// </summary>
+    public required string JSSpace { get; init; }
+    /// <summary>
+    /// C# name of the member, as specified in source code or generated for the interop implementation.
+    /// </summary>
+    public required string Name { get; init; }
+    /// <summary>
+    /// JavaScript name of the member as will be specified in source code.
+    /// </summary>
+    public required string JSName { get; init; }
+    /// <summary>
+    /// Metadata of the value carried by the member.
+    /// </summary>
+    public required ValueMeta Value { get; init; }
+}
+
+/// <summary>
+/// An interop method declared on a static API surface or interop interface.
+/// </summary>
+/// <remarks>
+/// Return value of the method is described in <see cref="MemberMeta.Value"/>.
+/// </remarks>
+internal record MethodMeta : MemberMeta
+{
+    /// <summary>
+    /// Arguments of the method.
+    /// </summary>
+    public required IReadOnlyList<ArgumentMeta> Arguments { get; init; }
+    /// <summary>
+    /// Whether the method returns void.
+    /// </summary>
+    public required bool Void { get; init; }
+    /// <summary>
+    /// Whether the method returns is task-like value (can be awaited).
+    /// </summary>
+    public required bool Async { get; init; }
+}
+
+/// <summary>
+/// An interop event declared on a static API surface or interop interface (temporarily shares the method path).
+/// </summary>
+internal sealed record EventMeta : MethodMeta
+{
+    /// <summary>
+    /// C# interface method name. It may differ from <see cref="MemberMeta.Name"/> because event methods
+    /// on interfaces have special names, which are then renamed on the JS side. This will be removed once
+    /// we add proper support for events.
+    /// </summary>
+    public string MethodName { get; }
+
+    [SetsRequiredMembers] // TODO: Remove after implementing proper support for events.
+    public EventMeta (MethodMeta method, string methodName) : base(method) => MethodName = methodName;
+}
+
+/// <summary>
+/// An interop property declared on an interop interface.
+/// </summary>
+internal sealed record PropertyMeta : MemberMeta
+{
+    /// <summary>
+    /// Whether the property has an accessible getter.
+    /// </summary>
+    public required bool CanGet { get; init; }
+    /// <summary>
+    /// Whether the property has an accessible setter.
+    /// </summary>
+    public required bool CanSet { get; init; }
+}
