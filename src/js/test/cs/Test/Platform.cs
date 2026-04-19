@@ -16,8 +16,8 @@ public static partial class Platform
     [JSInvokable]
     public static string FormatDate (string culture, int month, int day, string format)
     {
-    	var info = new CultureInfo(culture, false);
-       	return new DateTime(2024, month, day).ToString(format, info);
+        var info = new CultureInfo(culture, false);
+        return new DateTime(2024, month, day).ToString(format, info);
     }
 
     [JSInvokable]
