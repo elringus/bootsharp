@@ -98,3 +98,25 @@ import { Program } from "bootsharp";
 const map = Program.map(["foo", "bar"], [0, 7]);
 console.log(map.get("bar")); // 7
 ```
+
+## Computed Properties
+
+Computed C# properties are evaluated and written to the JS objects on serialization. For example:
+
+```csharp
+public record Order
+{
+    public required string Id { get; init; }
+    public required int Revision { get; init; }
+    public string Version => $"{Id}:{Revision}";
+}
+```
+
+When an `Order` crosses the C# -> JavaScript boundary, Bootsharp reads `Version` on the C# side and writes the result to the JavaScript object as a regular persisted value:
+
+```ts
+const order = Orders.getCurrent();
+console.log(order.version); // "A:7"
+```
+
+The value is computed only while the C# object is being serialized. After that, it's just a normal JavaScript property on the received object.
