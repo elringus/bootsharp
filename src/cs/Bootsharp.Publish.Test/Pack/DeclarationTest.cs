@@ -701,13 +701,13 @@ public class DeclarationTest : PackTest
     {
         AddAssembly(WithClass(
             """
-            public record Foo 
+            public record Foo
             {
-                public bool Boo => true; 
-                public bool SetOnly { set { } } 
-                public bool this[int index] => true; 
+                public bool Boo => true;
+                public bool SetOnly { set { } }
+                public bool this[int index] => true;
             }
-             
+
             [JSInvokable] public static Foo Bar () => default;
             """));
         Execute();
