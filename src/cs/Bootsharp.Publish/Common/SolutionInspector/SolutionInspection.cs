@@ -21,8 +21,8 @@ internal sealed class SolutionInspection (MetadataLoadContext ctx) : IDisposable
     /// <summary>
     /// Interop interfaces found in interop method arguments or return values.
     /// Such interfaces are considered instanced interop APIs, ie stateful objects with
-    /// interop methods/functions. Both methods of <see cref="StaticInterfaces"/> and
-    /// <see cref="StaticMethods"/> can be sources of the instanced interfaces.
+    /// interop methods and properties. Both members of <see cref="StaticInterfaces"/>
+    /// and <see cref="StaticMethods"/> can be sources of the instanced interfaces.
     /// </summary>
     public required IReadOnlyCollection<InterfaceMeta> InstancedInterfaces { get; init; }
     /// <summary>

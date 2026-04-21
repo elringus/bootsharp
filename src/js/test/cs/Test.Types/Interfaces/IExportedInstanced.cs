@@ -4,6 +4,7 @@ namespace Test.Types;
 
 public interface IExportedInstanced
 {
+    Record? Record { get; set; }
     string GetInstanceArg ();
-    Task<string> GetVehicleIdAsync (Vehicle vehicle);
+    Task<string> GetRecordIdAsync (Record record);
 }

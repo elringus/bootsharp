@@ -4,11 +4,13 @@ namespace Test.Types;
 
 public class ExportedInstanced (string instanceArg) : IExportedInstanced
 {
+    public Record? Record { get; set; }
+
     public string GetInstanceArg () => instanceArg;
 
-    public async Task<string> GetVehicleIdAsync (Vehicle vehicle)
+    public async Task<string> GetRecordIdAsync (Record record)
     {
         await Task.Delay(1);
-        return vehicle.Id;
+        return record.Id;
     }
 }

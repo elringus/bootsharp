@@ -11,7 +11,7 @@ internal sealed record InterfaceMeta
     /// Whether the interface represents C# API consumed in
     /// JavaScript (export) or vice versa (import).
     /// </summary>
-    public required InterfaceKind Kind { get; init; }
+    public required InteropKind Interop { get; init; }
     /// <summary>
     /// C# type of the interface.
     /// </summary>
@@ -33,22 +33,8 @@ internal sealed record InterfaceMeta
     /// </summary>
     public string FullName => $"{Namespace}.{Name}";
     /// <summary>
-    /// Methods declared on the interface, representing the interop API.
+    /// Members declared on the interface, representing the interop API.
     /// </summary>
-    public required IReadOnlyCollection<MethodMeta> Methods { get; init; }
+    public required IReadOnlyCollection<MemberMeta> Members { get; init; }
 }
 
-/// <summary>
-/// The type of API interop interface represents.
-/// </summary>
-internal enum InterfaceKind
-{
-    /// <summary>
-    /// The interface represents C# API consumed in JavaScript.
-    /// </summary>
-    Export,
-    /// <summary>
-    /// The interface represents JavaScript API consumed in C#.
-    /// </summary>
-    Import
-}

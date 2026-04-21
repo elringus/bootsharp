@@ -1,14 +1,12 @@
-using System.Reflection;
-
 namespace Bootsharp.Publish;
 
 internal sealed class TypeInspector
 {
     private readonly Dictionary<Type, TypeMeta> byType = [];
 
-    public TypeMeta Inspect (ParameterInfo info)
+    public TypeMeta Inspect (Type type)
     {
-        return Crawl(info.ParameterType);
+        return Crawl(type);
     }
 
     public IReadOnlyCollection<TypeMeta> Collect ()

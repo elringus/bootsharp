@@ -7,8 +7,8 @@ For example, say we have a JavaScript UI (frontend) that needs to be notified wh
 ```csharp
 interface IFrontend
 {
+    bool IsMuted { get; set; }
     void NotifyDataChanged (Data data);
-    bool IsMuted ();
 }
 ```
 
@@ -24,8 +24,8 @@ Bootsharp will automatically implement the interface in C#, wiring it to JavaScr
 
 ```ts
 export namespace Frontend {
+    export let isMuted: boolean;
     export const onDataChanged: Event<[Data]>;
-    export let isMuted: () => boolean;
 }
 ```
 
@@ -34,6 +34,7 @@ Now, say we want to provide an API for the frontend to request a mutation of the
 ```csharp
 interface IBackend
 {
+    Data? Current { get; set; }
     void AddData (Data data);
 }
 ```
@@ -46,27 +47,11 @@ Export the interface to JavaScript:
 ])]
 ```
 
-This will generate the following implementation:
-
-```csharp
-public class JSBackend
-{
-    private static IBackend handler = null!;
-
-    public JSBackend (IBackend handler)
-    {
-        JSBackend.handler = handler;
-    }
-
-    [JSInvokable]
-    public static void AddData (Data data) => handler.AddData(data);
-}
-```
-
-— which will produce the following spec to be consumed on the JavaScript side:
+This will produce the following spec to be consumed on the JavaScript side:
 
 ```ts
 export namespace Backend {
+    export let current: Data | null;
     export function addData(data: Data): void;
 }
 ```

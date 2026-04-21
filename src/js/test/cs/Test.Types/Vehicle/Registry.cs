@@ -18,6 +18,9 @@ public partial class Registry
     public static Vehicle?[]? EchoVehicles (Vehicle?[]? value) => value;
 
     [JSInvokable]
+    public static Record?[]? EchoRecords (Record?[]? value) => value;
+
+    [JSInvokable]
     public static float CountTotalSpeed ()
     {
         var registry = Provider.GetRegistry();

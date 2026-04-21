@@ -4,23 +4,34 @@ internal sealed class BindingClassGenerator
 {
     public string Generate (IReadOnlyCollection<InterfaceMeta> instanced)
     {
-        var exported = instanced.Where(i => i.Kind == InterfaceKind.Export);
-        return JoinLines(exported.Select(BuildClass), 0) + '\n';
+        var exported = instanced.Where(i => i.Interop == InteropKind.Export);
+        return JoinLines(exported.Select(EmitClass), 0) + '\n';
     }
 
-    private string BuildClass (InterfaceMeta inter) =>
+    private string EmitClass (InterfaceMeta inter) =>
         $$"""
           class {{BuildJSInteropInstanceClassName(inter)}} {
               constructor(_id) { this._id = _id; disposeOnFinalize(this, _id); }
-              {{JoinLines(inter.Methods.Select(BuildFunction))}}
+              {{JoinLines(inter.Members.Select(EmitMember))}}
           }
           """;
 
-    private string BuildFunction (MethodMeta inv)
+    private string EmitMember (MemberMeta member) => member switch {
+        PropertyMeta prop => EmitProperty(prop),
+        _ => EmitMethod((MethodMeta)member)
+    };
+
+    private string EmitMethod (MethodMeta method)
     {
-        var sigArgs = string.Join(", ", inv.Arguments.Select(a => a.Name));
-        var args = "this._id" + (sigArgs.Length > 0 ? $", {sigArgs}" : "");
-        var @return = inv.Void ? "" : "return ";
-        return $"{inv.JSName}({sigArgs}) {{ {@return}{inv.JSSpace}.{inv.JSName}({args}); }}";
+        var sigArgs = string.Join(", ", method.Arguments.Select(a => a.Name));
+        var callArgs = sigArgs.Length > 0 ? $"this._id, {sigArgs}" : "this._id";
+        var body = $"{method.JSSpace}.{method.JSName}({callArgs})";
+        if (!method.Void) body = $"return {body}";
+        return $"{method.JSName}({sigArgs}) {{ {body}; }}";
     }
+
+    private string EmitProperty (PropertyMeta p) => JoinLines(0,
+        p.CanGet ? $"get {p.JSName}() {{ return {p.JSSpace}.getProperty{p.Name}(this._id); }}" : null,
+        p.CanSet ? $"set {p.JSName}(value) {{ {p.JSSpace}.setProperty{p.Name}(this._id, value); }}" : null
+    );
 }
