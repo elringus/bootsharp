@@ -13,9 +13,7 @@ Most simple types, such as numbers, booleans, strings, arrays (lists) and promis
 | float    | Number     |   ✔️    |    ❌     |
 | DateTime | Date       |   ✔️    |    ❌     |
 
-When serializing nullable inputs from JavaScript, Bootsharp accepts both `null` and `undefined`. Generated TypeScript declarations then use a contextual convention for emitted APIs, such as `| undefined` for nullable method arguments and `| null` for nullable return values and collection elements. Refer to the [nullability guide](/guide/nullability) for the exact rules and examples.
-
-When a value of non-natively supported type is specified in an interop API, Bootsharp will attempt to de-/serialize it with [System.Text.JSON](https://learn.microsoft.com/en-us/dotnet/api/system.text.json) using fast source-generation mode. The whole process is encapsulated under the hood on both the C# and JavaScript sides, so you don't have to manually author generator hints or specify `[MarshallAs]` attributes for each value:
+When a value of non-natively supported type is specified in an interop API, Bootsharp will de-/serialize it using a custom efficient binary serialization format. The whole process is encapsulated under the hood on both the C# and JavaScript sides, so you don't have to manually author generator hints or specify `[MarshallAs]` attributes for each value:
 
 ```csharp
 public record User (long Id, string Name, DateTime Registered);
