@@ -10,6 +10,8 @@
         <BootsharpBundleCommand>npx --yes rollup index.js -d ./ -f es -e process,module,fs/promises --output.preserveModules --entryFileNames [name].mjs --sourcemap</BootsharpBundleCommand>
         <InvariantGlobalization>false</InvariantGlobalization>
         <WasmIncludeFullIcuData>true</WasmIncludeFullIcuData>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>CS1591</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
