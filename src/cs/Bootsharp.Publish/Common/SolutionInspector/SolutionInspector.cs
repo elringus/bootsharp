@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace Bootsharp.Publish;
 
@@ -7,6 +8,7 @@ internal sealed class SolutionInspector
     private readonly List<InterfaceMeta> staticInterfaces = [];
     private readonly List<InterfaceMeta> instancedInterfaces = [];
     private readonly List<MethodMeta> staticMethods = [];
+    private readonly List<DocumentationMeta> docs = [];
     private readonly List<string> warnings = [];
     private readonly TypeInspector typeInspector = new();
     private readonly SerializedInspector serdeInspector = new();
@@ -36,8 +38,9 @@ internal sealed class SolutionInspector
     private void InspectAssemblyFile (string assemblyPath, MetadataLoadContext ctx)
     {
         var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
-        if (IsUserAssembly(assemblyName))
-            InspectAssembly(ctx.LoadFromAssemblyPath(assemblyPath));
+        if (!IsUserAssembly(assemblyName)) return;
+        InspectDocumentation(assemblyPath, assemblyName);
+        InspectAssembly(ctx.LoadFromAssemblyPath(assemblyPath));
     }
 
     private void AddSkippedAssemblyWarning (string assemblyPath, Exception exception)
@@ -54,8 +57,15 @@ internal sealed class SolutionInspector
         StaticMethods = staticMethods.ToArray(),
         Types = typeInspector.Collect(),
         Serialized = serdeInspector.Collect(),
+        Documentation = docs.ToArray(),
         Warnings = warnings.ToArray()
     };
+
+    private void InspectDocumentation (string assemblyPath, string assemblyName)
+    {
+        var xmlPath = Path.ChangeExtension(assemblyPath, ".xml");
+        if (File.Exists(xmlPath)) docs.Add(new(assemblyName, XDocument.Load(xmlPath)));
+    }
 
     private void InspectAssembly (Assembly assembly)
     {

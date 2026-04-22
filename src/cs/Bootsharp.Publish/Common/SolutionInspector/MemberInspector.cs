@@ -4,7 +4,7 @@ namespace Bootsharp.Publish;
 
 internal sealed class MemberInspector (Preferences prefs, TypeInspector types, SerializedInspector serde)
 {
-    public PropertyMeta Inspect (PropertyInfo prop, InteropKind interop) => new() {
+    public PropertyMeta Inspect (PropertyInfo prop, InteropKind interop) => new(prop) {
         Interop = interop,
         Assembly = prop.DeclaringType!.Assembly.GetName().Name!,
         Space = prop.DeclaringType.FullName!,
@@ -16,7 +16,7 @@ internal sealed class MemberInspector (Preferences prefs, TypeInspector types, S
         CanSet = prop.SetMethod != null
     };
 
-    public MethodMeta Inspect (MethodInfo method, InteropKind interop) => new() {
+    public MethodMeta Inspect (MethodInfo method, InteropKind interop) => new(method) {
         Interop = interop,
         Assembly = method.DeclaringType!.Assembly.GetName().Name!,
         Space = method.DeclaringType.FullName!,
@@ -29,7 +29,7 @@ internal sealed class MemberInspector (Preferences prefs, TypeInspector types, S
         Async = IsTaskLike(method.ReturnParameter.ParameterType)
     };
 
-    private ArgumentMeta CreateArgument (ParameterInfo param) => new() {
+    private ArgumentMeta CreateArgument (ParameterInfo param) => new(param) {
         Name = param.Name!,
         JSName = param.Name == "function" ? "fn" : param.Name!,
         Value = CreateValue(param.ParameterType, GetNullability(param))

@@ -21,7 +21,9 @@ public class MockCompiler
              {string.Join('\n', sources.Select(BuildSource))}
              """;
         var compilation = CreateCompilation(assemblyPath, source);
-        var result = compilation.Emit(assemblyPath);
+        using var assembly = File.Create(assemblyPath);
+        using var docs = File.Create(Path.ChangeExtension(assemblyPath, ".xml"));
+        var result = compilation.Emit(assembly, xmlDocumentationStream: docs);
         if (result.Success) return;
         var error = $"Invalid test source code: {result.Diagnostics.First().GetMessage()}";
         Assert.Fail(string.Join('\n', [error, "---", source, "---"]));

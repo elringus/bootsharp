@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace Bootsharp.Publish;
 
@@ -7,6 +8,10 @@ namespace Bootsharp.Publish;
 /// </summary>
 internal abstract record MemberMeta
 {
+    /// <summary>
+    /// The reflected info of the member.
+    /// </summary>
+    public abstract MemberInfo Info { get; }
     /// <summary>
     /// Whether the member is implemented in C# and exposed to JavaScript (export)
     /// or implemented in JavaScript and consumed from C# (import).
@@ -45,8 +50,12 @@ internal abstract record MemberMeta
 /// <remarks>
 /// Return value of the method is described in <see cref="MemberMeta.Value"/>.
 /// </remarks>
-internal record MethodMeta : MemberMeta
+internal record MethodMeta (MethodInfo Info) : MemberMeta
 {
+    /// <summary>
+    /// The reflected info of the method.
+    /// </summary>
+    public override MethodInfo Info { get; } = Info;
     /// <summary>
     /// Arguments of the method.
     /// </summary>
@@ -80,8 +89,12 @@ internal sealed record EventMeta : MethodMeta
 /// <summary>
 /// An interop property declared on an interop interface.
 /// </summary>
-internal sealed record PropertyMeta : MemberMeta
+internal sealed record PropertyMeta (PropertyInfo Info) : MemberMeta
 {
+    /// <summary>
+    /// The reflected info of the property.
+    /// </summary>
+    public override PropertyInfo Info { get; } = Info;
     /// <summary>
     /// Whether the property has an accessible getter.
     /// </summary>
@@ -90,4 +103,27 @@ internal sealed record PropertyMeta : MemberMeta
     /// Whether the property has an accessible setter.
     /// </summary>
     public required bool CanSet { get; init; }
+}
+
+/// <summary>
+/// Interop method argument.
+/// </summary>
+internal sealed record ArgumentMeta (ParameterInfo Info)
+{
+    /// <summary>
+    /// The reflected info of the argument.
+    /// </summary>
+    public ParameterInfo Info { get; } = Info;
+    /// <summary>
+    /// C# name of the argument, as specified in source code.
+    /// </summary>
+    public required string Name { get; init; }
+    /// <summary>
+    /// JavaScript name of the argument, to be specified in source code.
+    /// </summary>
+    public required string JSName { get; init; }
+    /// <summary>
+    /// Metadata of the argument's value.
+    /// </summary>
+    public required ValueMeta Value { get; init; }
 }

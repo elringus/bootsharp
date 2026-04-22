@@ -13,12 +13,14 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     private Type? nextType => index == types.Length - 1 ? null : GetTypeAt(index + 1);
     private int indent => !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
 
+    private DocumentationBuilder docs = null!;
     private InterfaceMeta[] instanced = null!;
     private Type[] types = null!;
     private int index;
 
     public string Generate (SolutionInspection inspection)
     {
+        docs = new(inspection.Documentation);
         instanced = [..inspection.InstancedInterfaces];
         types = inspection.Types.Select(t => t.Clr).Where(IsUserType).OrderBy(GetNamespace).ToArray();
         for (index = 0; index < types.Length; index++)
@@ -67,16 +69,21 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private void DeclareEnum ()
     {
+        builder.Append(docs.BuildType(type, indent));
         AppendLine($"export enum {type.Name} {{", indent);
         var names = Enum.GetNames(type);
         for (int i = 0; i < names.Length; i++)
+        {
+            builder.Append(docs.BuildProperty(type.GetField(names[i])!, indent + 1));
             if (i == names.Length - 1) AppendLine(names[i], indent + 1);
             else AppendLine($"{names[i]},", indent + 1);
+        }
         AppendLine("}", indent);
     }
 
     private void DeclareInterface ()
     {
+        builder.Append(docs.BuildType(type, indent));
         AppendLine($"export interface {BuildTypeName(type)}", indent);
         AppendExtensions();
         builder.Append(" {");
@@ -106,7 +113,10 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         var flags = BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance;
         foreach (var prop in type.GetProperties(flags))
             if (prop.GetMethod != null && prop.GetIndexParameters().Length == 0)
+            {
+                builder.Append(docs.BuildProperty(prop, indent + 1));
                 AppendProperty(ToFirstLower(prop.Name), prop.PropertyType, GetNullability(prop));
+            }
     }
 
     private void AppendProperty (string name, Type type, NullabilityInfo? nullability)
@@ -121,12 +131,14 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private void AppendInstancedProperty (PropertyMeta prop)
     {
+        builder.Append(docs.BuildProperty(prop.Info, indent + 1));
         var name = prop.CanGet && !prop.CanSet ? $"readonly {prop.JSName}" : prop.JSName;
         AppendProperty(name, prop.Value.Type.Clr, prop.Value.Nullability);
     }
 
     private void AppendInstancedEvent (EventMeta meta)
     {
+        builder.Append(docs.BuildEvent(meta, indent + 1));
         AppendLine(meta.JSName, indent + 1);
         builder.Append(": Event<[");
         builder.AppendJoin(", ", meta.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
@@ -135,6 +147,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private void AppendInstancedFunction (MethodMeta meta)
     {
+        builder.Append(docs.BuildFunction(meta, indent + 1));
         AppendLine(meta.JSName, indent + 1);
         builder.Append('(');
         builder.AppendJoin(", ", meta.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
