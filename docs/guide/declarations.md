@@ -86,6 +86,42 @@ Foo.onBar.subscribe(payload => {});
 
 :::
 
+## Documentation Declarations
+
+When an inspected assembly has XML documentation generated, Bootsharp mirrors the matching documentation into the emitted TypeScript declarations.
+
+::: code-group
+
+```csharp [Foo.cs]
+/// <summary>Math API.</summary>
+public class MathApi
+{
+    /// <summary>Adds two numbers.</summary>
+    /// <param name="left">Left number.</param>
+    /// <param name="right">Right number.</param>
+    /// <returns>The sum.</returns>
+    [JSInvokable]
+    public static int Add (int left, int right) => left + right;
+}
+```
+
+```ts [bindings.d.ts]
+/**
+ * Math API.
+ */
+export namespace MathApi {
+    /**
+     * Adds two numbers.
+     * @param left Left number.
+     * @param right Right number.
+     * @returns The sum.
+     */
+    export function add(left: number, right: number): number;
+}
+```
+
+:::
+
 ## Nullability
 
 Bootsharp uses different TypeScript nullish forms depending on where a nullable C# value appears:

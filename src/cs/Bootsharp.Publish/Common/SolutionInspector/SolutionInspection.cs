@@ -39,6 +39,10 @@ internal sealed class SolutionInspection (MetadataLoadContext ctx) : IDisposable
     /// </summary>
     public required IReadOnlyCollection<SerializedMeta> Serialized { get; init; }
     /// <summary>
+    /// C# XML documentation for the inspected assemblies.
+    /// </summary>
+    public required IReadOnlyCollection<DocumentationMeta> Documentation { get; init; }
+    /// <summary>
     /// Warnings logged while inspecting the solution.
     /// </summary>
     public required IReadOnlyCollection<string> Warnings { get; init; }

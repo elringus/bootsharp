@@ -15,4 +15,21 @@ describe("export", () => {
     it("exports type declarations", () => {
         expect(getDeclarations()).toBeTruthy();
     });
+    it("exports documentation declarations", () => {
+        expect(getDeclarations()).toContain(`
+/**
+ * Invokable test API.
+ */
+export namespace Test.Invokable {
+    `);
+        expect(getDeclarations()).toContain(`
+    /**
+     * Joins two strings.
+     * @param a First string.
+     * @param b Second string.
+     * @returns Joined string.
+     */
+    export function joinStrings(a: string, b: string): string;
+    `);
+    });
 });

@@ -11,11 +11,13 @@ internal sealed class MemberDeclarationGenerator (Preferences prefs)
     private MemberMeta? prevMember => index == 0 ? null : members[index - 1];
     private MemberMeta? nextMember => index == members.Length - 1 ? null : members[index + 1];
 
+    private DocumentationBuilder docs = null!;
     private MemberMeta[] members = null!;
     private int index;
 
     public string Generate (SolutionInspection inspection)
     {
+        docs = new(inspection.Documentation);
         members = inspection.StaticMethods
             .Concat(inspection.StaticInterfaces.SelectMany(i => i.Members))
             .OrderBy(m => m.JSSpace).ToArray();
@@ -45,6 +47,7 @@ internal sealed class MemberDeclarationGenerator (Preferences prefs)
 
     private void OpenNamespace ()
     {
+        builder.Append(docs.BuildType(member.Info.DeclaringType!, 0));
         builder.Append($"\nexport namespace {member.JSSpace} {{");
     }
 
@@ -61,6 +64,7 @@ internal sealed class MemberDeclarationGenerator (Preferences prefs)
 
     private void DeclareProperty (PropertyMeta prop)
     {
+        builder.Append(docs.BuildProperty(prop.Info, 1));
         builder.Append($"\n    export {(prop.CanGet && !prop.CanSet ? "const" : "let")} {prop.JSName}: ");
         builder.Append(typeBuilder.Build(prop.Value.Type.Clr, prop.Value.Nullability));
         if (prop.Value.Nullable) builder.Append(" | null");
@@ -69,6 +73,7 @@ internal sealed class MemberDeclarationGenerator (Preferences prefs)
 
     private void DeclareMethodExport (MethodMeta method)
     {
+        builder.Append(docs.BuildFunction(method, 1));
         builder.Append($"\n    export function {method.JSName}(");
         builder.AppendJoin(", ", method.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
         builder.Append($"): {typeBuilder.BuildReturn(method)};");
@@ -76,6 +81,7 @@ internal sealed class MemberDeclarationGenerator (Preferences prefs)
 
     private void DeclareMethodImport (MethodMeta method)
     {
+        builder.Append(docs.BuildFunction(method, 1));
         builder.Append($"\n    export let {method.JSName}: (");
         builder.AppendJoin(", ", method.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
         builder.Append($") => {typeBuilder.BuildReturn(method)};");
@@ -83,6 +89,7 @@ internal sealed class MemberDeclarationGenerator (Preferences prefs)
 
     private void DeclareEvent (EventMeta @event)
     {
+        builder.Append(docs.BuildEvent(@event, 1));
         builder.Append($"\n    export const {@event.JSName}: Event<[");
         builder.AppendJoin(", ", @event.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
         builder.Append("]>;");

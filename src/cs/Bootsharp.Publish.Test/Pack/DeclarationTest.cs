@@ -1192,4 +1192,149 @@ public class DeclarationTest : PackTest
         Execute();
         DoesNotContain("Foo");
     }
+
+    [Fact]
+    public void GeneratesJsDocsOverCsDocs ()
+    {
+        AddAssembly(With(
+            """
+            /// <summary>Payload kind.</summary>
+            public enum Kind
+            {
+                /// <summary>First kind.</summary>
+                First,
+                /// <summary>Second kind.</summary>
+                Second
+            }
+
+            /// <summary>A payload sent across interop.</summary>
+            /// <remarks>Visible in generated TypeScript.</remarks>
+            public record Payload
+            {
+                /// <summary>The payload name.</summary>
+                public string Name { get; init; }
+            }
+
+            /// <summary>Exported instance API.</summary>
+            public interface IExportedInstanced
+            {
+                /// <summary>Current state.</summary>
+                int State { get; }
+
+                /// <summary>Invokes instance.</summary>
+                /// <param name="value">Value to pass.</param>
+                void Inv (string value);
+            }
+
+            /// <summary>Static interop API.</summary>
+            public class Class
+            {
+                /// <summary>Runs foo.</summary>
+                /// <param name="function">Function value.</param>
+                /// <param name="names">Names to run.</param>
+                /// <returns>Computed value.</returns>
+                [JSInvokable] public static int Foo (List<int?> function, string[] names) => 0;
+
+                /// <summary>Gets payload.</summary>
+                [JSInvokable] public static Payload Get (Kind kind) => default;
+
+                /// <summary>Gets exported instance.</summary>
+                [JSInvokable] public static IExportedInstanced GetExported () => default;
+
+                /// <summary>Receives foo.</summary>
+                /// <param name="count">Count to receive.</param>
+                [JSFunction] public static void OnFoo (int count) { }
+
+                /// <param name="value">Value without summary.</param>
+                [JSFunction] public static void OnParamOnly (string value) { }
+
+                /// <summary>Signals completion.</summary>
+                /// <param name="done">Whether work is done.</param>
+                [JSEvent] public static void OnDone (bool done) { }
+            }
+            """));
+        Execute();
+        Contains(
+            """
+            /**
+             * Payload kind.
+             */
+            export enum Kind {
+                /**
+                 * First kind.
+                 */
+                First,
+                /**
+                 * Second kind.
+                 */
+                Second
+            }
+            """);
+        Contains(
+            """
+            /**
+             * A payload sent across interop.
+             */
+            export interface Payload {
+                /**
+                 * The payload name.
+                 */
+                name: string;
+            }
+            """);
+        Contains(
+            """
+            /**
+             * Exported instance API.
+             */
+            export interface IExportedInstanced {
+                /**
+                 * Current state.
+                 */
+                readonly state: number;
+                /**
+                 * Invokes instance.
+                 * @param value Value to pass.
+                 */
+                inv(value: string): void;
+            }
+            """);
+        Contains(
+            """
+            /**
+             * Static interop API.
+             */
+            export namespace Class {
+                /**
+                 * Runs foo.
+                 * @param fn Function value.
+                 * @param names Names to run.
+                 * @returns Computed value.
+                 */
+                export function foo(fn: Array<number | null>, names: Array<string>): number;
+                /**
+                 * Gets payload.
+                 */
+                export function get(kind: Kind): Payload;
+                /**
+                 * Gets exported instance.
+                 */
+                export function getExported(): IExportedInstanced;
+                /**
+                 * Receives foo.
+                 * @param count Count to receive.
+                 */
+                export let onFoo: (count: number) => void;
+                /**
+                 * @param value Value without summary.
+                 */
+                export let onParamOnly: (value: string) => void;
+                /**
+                 * Signals completion.
+                 * @param done Whether work is done.
+                 */
+                export const onDone: Event<[done: boolean]>;
+            }
+            """);
+    }
 }

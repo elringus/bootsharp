@@ -5,11 +5,16 @@ using Bootsharp;
 
 namespace Test;
 
+/// <summary>Invokable test API.</summary>
 public static class Invokable
 {
     [JSInvokable]
     public static void InvokeVoid () { }
 
+    /// <summary>Joins two strings.</summary>
+    /// <param name="a">First string.</param>
+    /// <param name="b">Second string.</param>
+    /// <returns>Joined string.</returns>
     [JSInvokable]
     public static string JoinStrings (string a, string b) => a + b;
 
