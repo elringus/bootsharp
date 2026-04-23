@@ -11,7 +11,7 @@ IMPORTANT: NEVER RUN ANY BUILD/PUBLISH COMMANDS IN PARALLEL.
 
 # Packaging Bootsharp
 
-Follow these steps exactly and sequentially whenever the Bootsharp package consumed by other projects must be actualized, or when running the JS end-to-end tests after updating JS or C# code.
+Follow these steps exactly and sequentially whenever the Bootsharp package consumed by other projects must be actualized, or when running the JS end-to-end tests after updating the package's C# or JS code.
 
 1. Build the JS package with `npm run build` under `src/js`.
 2. Bump the Bootsharp library alpha version in `src/cs/Directory.Build.props`
@@ -22,6 +22,8 @@ Follow these steps exactly and sequentially whenever the Bootsharp package consu
 5. Run the end-to-end JS tests with `npm run test` under `src/js`.
 
 Important: Always execute these steps in order, do not parallelize them.
+
+Note: Bumping the package version is only required after modifying the package's C# or JS sources. If you're only editing E2E tests, there is no need to follow the full repackaging procedure each time.
 
 # Code Coverage
 
