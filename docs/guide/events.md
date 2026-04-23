@@ -1,10 +1,15 @@
 # Events
 
-To make a C# method act as event broadcaster for JavaScript consumers, annotate it with `[JSEvent]` attribute:
+To expose a C# event to JavaScript consumers, declare a static event and annotate it with `[Export]`:
 
 ```csharp
-[JSEvent]
-public static partial void OnSomethingChanged (string payload);
+[Export]
+public static event Action<string>? OnSomethingChanged;
+
+public static void UpdateSomething (string payload)
+{
+    OnSomethingChanged?.Invoke(payload);
+}
 ```
 
 — and consume it from JavaScript as follows:
@@ -18,13 +23,24 @@ function handleSomething(payload: string) {
 }
 ```
 
-When the method in invoked in C#, subscribed JavaScript handlers will be notified. In TypeScript the event will have typed generic declaration corresponding to the event arguments.
+When the event is raised in C#, subscribed JavaScript handlers will be notified. In TypeScript exported events are declared as `EventSubscriber<...>` with argument types inferred from the event delegate signature.
 
-## Events in Interop Interfaces
+To use a JavaScript event from C#, declare a static event on a partial type and annotate it with `[Import]`:
 
-To make a method in an [interop interface](/guide/interop-interfaces) act as event broadcaster, make its name start with "Notify". Such methods will be detected by Bootsharp and exposed to JavaScript as events with "Notify" changed to "On". For example, `NotifyUserUpdated` C# method will be exposed as `OnUserUpdated` JavaScript event.
+```csharp
+[Import]
+public static event Action<string>? OnSomethingChanged;
+```
 
-Which interface methods are considered events and the way they are named in JavaScript can be customized with [emit preferences](/guide/emit-prefs).
+JavaScript will see it as an `EventBroadcaster`:
+
+```ts
+Program.onSomethingChanged.broadcast("updated");
+```
+
+Bootsharp supports all common event types: `Action`, `EventHandler`, and any custom delegate types without a return type.
+
+Events on the [interop interfaces](/guide/interop-interfaces) are picked up automatically, so you don't have to annotate them.
 
 ## React Event Hooks
 

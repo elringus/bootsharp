@@ -13,9 +13,9 @@ internal sealed class SerializerGenerator
 
                  internal static class SerializerContext
                  {
-                     {{JoinLines(serialized.Select(EmitFactory))}}
+                     {{Fmt(serialized.Select(EmitFactory))}}
 
-                     {{JoinLines(serialized.SelectMany(EmitHelpers), separator: "\n\n")}}
+                     {{Fmt(serialized.SelectMany(EmitHelpers), separator: "\n\n")}}
                  }
                  """;
     }
@@ -46,13 +46,13 @@ internal sealed class SerializerGenerator
         yield return $$"""
                        private static void Write_{{obj.Id}} (ref Writer writer, {{obj.Syntax}} value)
                        {
-                           {{JoinLines(EmitObjectWrite(obj))}}
+                           {{Fmt(EmitObjectWrite(obj))}}
                        }
                        """;
         yield return $$"""
                        private static {{obj.Syntax}} Read_{{obj.Id}} (ref Reader reader)
                        {
-                           {{JoinLines(EmitObjectRead(obj))}}
+                           {{Fmt(EmitObjectRead(obj))}}
                        }
                        """;
         foreach (var prop in obj.Properties.Where(p => p.Kind == SerializedPropertyKind.Field))

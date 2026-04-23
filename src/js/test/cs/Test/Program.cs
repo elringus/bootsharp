@@ -4,8 +4,8 @@ using Bootsharp.Inject;
 using Microsoft.Extensions.DependencyInjection;
 using Test.Types;
 
-[assembly: JSExport(typeof(IExportedStatic))]
-[assembly: JSImport(typeof(IImportedStatic), typeof(IRegistryProvider))]
+[assembly: Export(typeof(IExportedStatic))]
+[assembly: Import(typeof(IImportedStatic), typeof(IRegistryProvider))]
 
 namespace Test;
 
@@ -24,6 +24,6 @@ public static partial class Program
         OnMainInvoked();
     }
 
-    [JSFunction]
+    [Import]
     public static partial void OnMainInvoked ();
 }

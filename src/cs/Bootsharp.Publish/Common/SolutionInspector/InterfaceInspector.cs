@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace Bootsharp.Publish;
 
-internal sealed class InterfaceInspector (Preferences prefs, MemberInspector members, string entryAssemblyName)
+internal sealed class InterfaceInspector (MemberInspector members, string entryAssemblyName)
 {
     private InteropKind interop;
     private (string space, string name, string full) impl;
@@ -10,21 +10,19 @@ internal sealed class InterfaceInspector (Preferences prefs, MemberInspector mem
     public InterfaceMeta Inspect (Type interfaceType, InteropKind interopKind)
     {
         interop = interopKind;
-        impl = BuildInterfaceImplName(interfaceType, interop);
+        impl = BuildInterfaceImpl(interfaceType, interop);
         return new InterfaceMeta {
             Interop = interop,
             Type = interfaceType,
             TypeSyntax = BuildSyntax(interfaceType),
             Namespace = impl.space,
             Name = impl.name,
-            Members = interfaceType.GetProperties().Where(ShouldInspectProperty).Select(CreateProperty)
-                .Concat(interfaceType.GetMethods().Where(ShouldInspectMethod).Select(CreateMethod)).ToArray()
+            Members = [
+                ..interfaceType.GetEvents().Select(CreateEvent),
+                ..interfaceType.GetProperties().Where(ShouldInspectProperty).Select(CreateProperty),
+                ..interfaceType.GetMethods().Where(ShouldInspectMethod).Select(CreateMethod)
+            ]
         };
-    }
-
-    private bool ShouldInspectMethod (MethodInfo method)
-    {
-        return method.IsAbstract && !method.IsSpecialName;
     }
 
     private bool ShouldInspectProperty (PropertyInfo prop)
@@ -33,27 +31,25 @@ internal sealed class InterfaceInspector (Preferences prefs, MemberInspector mem
         return prop.GetMethod?.IsAbstract == true || prop.SetMethod?.IsAbstract == true;
     }
 
-    private MemberMeta CreateMethod (MethodInfo info)
+    private bool ShouldInspectMethod (MethodInfo method)
     {
-        var name = WithPrefs(prefs.Event, info.Name, info.Name);
-        var method = members.Inspect(info, interop) with {
-            Assembly = entryAssemblyName,
-            Space = impl.full,
-            Name = name,
-            JSName = ToFirstLower(name)
-        };
-        if (interop == InteropKind.Import && name != info.Name)
-            return new EventMeta(method, info.Name);
-        return method;
+        return method.IsAbstract && !method.IsSpecialName;
     }
 
-    private MemberMeta CreateProperty (PropertyInfo info)
-    {
-        return members.Inspect(info, interop) with {
-            Assembly = entryAssemblyName,
-            Space = impl.full,
-            CanGet = info.GetMethod?.IsAbstract == true,
-            CanSet = info.SetMethod?.IsAbstract == true
-        };
-    }
+    private EventMeta CreateEvent (EventInfo info) => members.Inspect(info, interop) with {
+        Assembly = entryAssemblyName,
+        Space = impl.full
+    };
+
+    private PropertyMeta CreateProperty (PropertyInfo info) => members.Inspect(info, interop) with {
+        Assembly = entryAssemblyName,
+        Space = impl.full,
+        CanGet = info.GetMethod?.IsAbstract == true,
+        CanSet = info.SetMethod?.IsAbstract == true
+    };
+
+    private MethodMeta CreateMethod (MethodInfo info) => members.Inspect(info, interop) with {
+        Assembly = entryAssemblyName,
+        Space = impl.full
+    };
 }

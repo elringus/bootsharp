@@ -6,9 +6,9 @@ internal sealed class BindingSerializerGenerator
     {
         if (serialized.Count == 0) return "";
         return $"""
-                {JoinLines(serialized.Select(EmitFactory), 0)}
+                {Fmt(serialized.Select(EmitFactory), 0)}
 
-                {JoinLines(serialized.SelectMany(EmitHelpers), 0, "\n\n")}
+                {Fmt(serialized.SelectMany(EmitHelpers), 0, "\n\n")}
                 """;
     }
 
@@ -37,12 +37,12 @@ internal sealed class BindingSerializerGenerator
         if (meta is not SerializedObjectMeta obj) yield break;
         yield return $$"""
                        function write_{{obj.Id}}(writer, value) {
-                           {{JoinLines(EmitObjectWrite(obj))}}
+                           {{Fmt(EmitObjectWrite(obj))}}
                        }
                        """;
         yield return $$"""
                        function read_{{obj.Id}}(reader) {
-                           {{JoinLines(EmitObjectRead(obj))}}
+                           {{Fmt(EmitObjectRead(obj))}}
                        }
                        """;
     }

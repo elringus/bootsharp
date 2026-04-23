@@ -23,7 +23,7 @@ Nullable method arguments are emitted as `| undefined`.
 ::: code-group
 
 ```csharp [C#]
-[JSInvokable]
+[Export]
 public static void SetTitle (string? title) { }
 ```
 
@@ -49,7 +49,7 @@ Nullable method return values are emitted as `| null`.
 ::: code-group
 
 ```csharp [C#]
-[JSInvokable]
+[Export]
 public static string? FindUserName (int id) => null;
 ```
 
@@ -102,10 +102,10 @@ Nullable collection elements are emitted as `| null`.
 ::: code-group
 
 ```csharp [C#]
-[JSInvokable]
+[Export]
 public static string?[]? EchoNames (string?[]? names) => names;
 
-[JSInvokable]
+[Export]
 public static List<int?>? EchoNumbers (List<int?>? numbers) => numbers;
 ```
 
@@ -132,7 +132,7 @@ Nullable dictionary values are also emitted as `| null`.
 ::: code-group
 
 ```csharp [C#]
-[JSInvokable]
+[Export]
 public static Dictionary<string, string?>? GetLabels () =>
     new () { ["a"] = "Ready", ["b"] = null };
 ```
@@ -161,13 +161,13 @@ Events are the one special case where missing nullable payload values are expose
 ::: code-group
 
 ```csharp [C#]
-[JSEvent]
-public static partial void OnVehicleChanged (int id, Vehicle? vehicle);
+[Export]
+public static event Action<int, Vehicle?>? OnVehicleChanged;
 ```
 
 ```ts [TypeScript]
 export namespace Program {
-    export const onVehicleChanged: Event<[id: number, vehicle: Vehicle | undefined]>;
+    export const onVehicleChanged: EventSubscriber<[id: number, vehicle: Vehicle | undefined]>;
 }
 ```
 

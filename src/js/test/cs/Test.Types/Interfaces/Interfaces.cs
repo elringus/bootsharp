@@ -6,14 +6,17 @@ namespace Test.Types;
 
 public static class Interfaces
 {
-    [JSInvokable]
+    [Export] public static event Action<Record?>? OnImportedStaticRecordEchoed;
+    [Export] public static event RecordChanged<IImportedInstanced>? OnImportedInstanceRecordEchoed;
+
+    [Export]
     public static async Task<string> GetImportedArgAndRecordIdAsync (Record record, string arg)
     {
         var instance = await GetImportedStatic().GetInstanceAsync(arg);
         return await instance.GetRecordIdAsync(record) + instance.GetInstanceArg();
     }
 
-    [JSInvokable]
+    [Export]
     public static string GetImportedStaticRecordIdAndSet (Record record)
     {
         var imported = GetImportedStatic();
@@ -22,7 +25,7 @@ public static class Interfaces
         return currentRecordId;
     }
 
-    [JSInvokable]
+    [Export]
     public static async Task<string> GetImportedInstanceArgAndRecordIdAsync (Record record, string arg)
     {
         var instance = await GetImportedStatic().GetInstanceAsync(arg);
@@ -31,7 +34,7 @@ public static class Interfaces
         return instance.GetInstanceArg() + currentRecordId + instance.Record.Id;
     }
 
-    [JSInvokable]
+    [Export]
     public static async Task<string[]> GetImportedArgsAndFinalize (string arg1, string arg2)
     {
         var imported = GetImportedStatic();
@@ -44,6 +47,37 @@ public static class Interfaces
         GC.WaitForPendingFinalizers();
         GC.Collect();
         return result;
+    }
+
+    [Export]
+    public static Task EchoImportedStaticRecordEventAsync ()
+    {
+        var imported = GetImportedStatic();
+        var tcs = new TaskCompletionSource();
+        imported.OnRecordChanged += Handle;
+        return tcs.Task;
+
+        void Handle (Record? record)
+        {
+            imported.OnRecordChanged -= Handle;
+            OnImportedStaticRecordEchoed?.Invoke(record);
+            tcs.SetResult();
+        }
+    }
+
+    [Export]
+    public static Task EchoImportedInstanceRecordEventAsync (IImportedInstanced imported)
+    {
+        var tcs = new TaskCompletionSource();
+        imported.OnRecordChanged += Handle;
+        return tcs.Task;
+
+        void Handle (IImportedInstanced caller, Record? record)
+        {
+            imported.OnRecordChanged -= Handle;
+            OnImportedInstanceRecordEchoed?.Invoke(caller, record);
+            tcs.SetResult();
+        }
     }
 
     private static IImportedStatic GetImportedStatic ()

@@ -100,7 +100,7 @@ internal sealed class SerializedInspector
             ConstructorParameter = ctor,
             Kind = canInit ? SerializedPropertyKind.Init : canSet ? SerializedPropertyKind.Set :
                 canSetField ? SerializedPropertyKind.Field : SerializedPropertyKind.None,
-            FieldAccessorName = canSetField ? $"Set_{BuildSerializedId(prop.DeclaringType!)}_{prop.Name}" : null
+            FieldAccessorName = canSetField ? $"Access_{BuildSerializedId(prop.DeclaringType!)}_{prop.Name}" : null
         };
     }
 

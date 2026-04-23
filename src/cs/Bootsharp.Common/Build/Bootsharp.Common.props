@@ -1,7 +1,7 @@
 <Project>
 
     <PropertyGroup>
-        <!-- Required for source-generated [JSImport] bindings. -->
+        <!-- Required for source-generated [Import] bindings. -->
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 

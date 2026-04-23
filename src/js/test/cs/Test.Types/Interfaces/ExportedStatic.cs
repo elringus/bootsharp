@@ -1,10 +1,13 @@
+using System;
 using System.Threading.Tasks;
 
 namespace Test.Types;
 
 public class ExportedStatic : IExportedStatic
 {
-    public Record? Record { get; set; }
+    public event Action<Record?>? OnRecordChanged;
+
+    public Record? Record { get; set => OnRecordChanged?.Invoke(field = value); }
 
     public async Task<IExportedInstanced> GetInstanceAsync (string arg)
     {

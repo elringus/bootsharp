@@ -31,8 +31,8 @@ public class DependenciesTest : EmitTest
     public void AddsStaticInteropInterfaceImplementations ()
     {
         AddAssembly(
-            With("[assembly:JSExport(typeof(IExported), typeof(Space.IExported))]"),
-            With("[assembly:JSImport(typeof(IImported), typeof(Space.IImported))]"),
+            With("[assembly:Export(typeof(IExported), typeof(Space.IExported))]"),
+            With("[assembly:Import(typeof(IImported), typeof(Space.IImported))]"),
             With("public interface IExported {}"),
             With("public interface IImported {}"),
             With("Space", "public interface IExported {}"),
@@ -49,8 +49,8 @@ public class DependenciesTest : EmitTest
     {
         AddAssembly(With(
             """
-            [assembly:JSExport(typeof(IExportedStatic))]
-            [assembly:JSImport(typeof(IImportedStatic))]
+            [assembly:Export(typeof(IExportedStatic))]
+            [assembly:Import(typeof(IImportedStatic))]
 
             public interface IExportedStatic { IExportedInstancedA CreateExported (); }
             public interface IImportedStatic { IImportedInstancedA CreateImported (); }
@@ -62,8 +62,8 @@ public class DependenciesTest : EmitTest
 
             public class Class
             {
-                 [JSInvokable] public static IExportedInstancedB CreateExported () => default;
-                 [JSFunction] public static IImportedInstancedB CreateImported () => default;
+                 [Export] public static IExportedInstancedB CreateExported () => default;
+                 [Import] public static IImportedInstancedB CreateImported () => default;
             }
             """));
         Execute();
@@ -76,12 +76,12 @@ public class DependenciesTest : EmitTest
     }
 
     [Fact]
-    public void AddsClassesWithStaticInteropMethods ()
+    public void AddsClassesWithStaticInteropMembers ()
     {
         AddAssembly("Assembly.With.Dots.dll",
-            With("SpaceA", "public class ClassA { [JSInvokable] public static void Foo () {} }"),
-            With("SpaceB.SpaceC", "public class ClassB { [JSFunction] public static void Foo () {} }"),
-            With("public class ClassC { [JSEvent] public static void Foo () {} }"));
+            With("SpaceA", "public class ClassA { [Export] public static void Foo () {} }"),
+            With("SpaceB.SpaceC", "public class ClassB { [Import] public static void Foo () {} }"),
+            With("public class ClassC { [Export] public static event Action? Evt; }"));
         Execute();
         Added(All, "SpaceA.ClassA", "Assembly.With.Dots");
         Added(All, "SpaceB.SpaceC.ClassB", "Assembly.With.Dots");

@@ -13,6 +13,26 @@ internal sealed class DocumentationBuilder (IReadOnlyCollection<DocumentationMet
         return GetXml(asm, key) is { } xml ? Build(GetSummary(xml), indent) : "";
     }
 
+    public string BuildEvent (EventMeta evt, int indent)
+    {
+        var asm = evt.Info.DeclaringType!.Assembly.GetName().Name!;
+        var key = $"E:{GetXmlKey(evt.Info.DeclaringType!)}.{evt.Name}";
+        if (GetXml(asm, key) is not { } xml) return "";
+
+        var sum = GetSummary(xml);
+        foreach (var arg in evt.Arguments)
+            if ((GetArgXml(xml, arg) ?? GetDelegateArgXml(arg)) is { } x)
+                sum.Add($"@param {arg.JSName} {x.Value}");
+        return Build(sum, indent);
+
+        XElement? GetDelegateArgXml (ArgumentMeta arg)
+        {
+            var asm = evt.Info.EventHandlerType!.Assembly.GetName().Name!;
+            var key = $"T:{GetXmlKey(evt.Info.EventHandlerType!)}";
+            return GetXml(asm, key) is { } x ? GetArgXml(x, arg) : null;
+        }
+    }
+
     public string BuildProperty (MemberInfo member, int indent)
     {
         var asm = member.DeclaringType!.Assembly.GetName().Name!;
@@ -27,7 +47,7 @@ internal sealed class DocumentationBuilder (IReadOnlyCollection<DocumentationMet
 
         var sum = GetSummary(xml);
         foreach (var arg in method.Arguments)
-            if (xml.Elements("param").FirstOrDefault(e => e.Attribute("name")!.Value == arg.Info.Name) is { } x)
+            if (GetArgXml(xml, arg) is { } x)
                 sum.Add($"@param {arg.JSName} {x.Value}");
         if (xml.Element("returns") is { } returns)
             sum.Add($"@returns {returns.Value}");
@@ -51,11 +71,6 @@ internal sealed class DocumentationBuilder (IReadOnlyCollection<DocumentationMet
             name = string.IsNullOrEmpty(definition.Namespace) ? name : $"{definition.Namespace}.{name}";
             return $"{name}{{{string.Join(',', type.GetGenericArguments().Select(GetArgKey))}}}";
         }
-    }
-
-    public string BuildEvent (EventMeta @event, int indent)
-    {
-        return BuildFunction(@event, indent);
     }
 
     private string Build (IReadOnlyList<string> summary, int indent)
@@ -83,8 +98,13 @@ internal sealed class DocumentationBuilder (IReadOnlyCollection<DocumentationMet
             .FirstOrDefault(e => e.Attribute("name")!.Value == key);
     }
 
+    private static XElement? GetArgXml (XElement xml, ArgumentMeta arg)
+    {
+        return xml.Elements("param").FirstOrDefault(e => e.Attribute("name")!.Value == arg.Info.Name);
+    }
+
     private List<string> GetSummary (XElement xml)
     {
-        return xml.Elements("summary").Select(e => e.Value).ToList();
+        return xml.Elements("summary").Select(e => e.Value.Trim()).ToList();
     }
 }

@@ -23,8 +23,8 @@ public class Exported : IExported
 
 public static partial class Factory
 {
-    [JSInvokable] public static IExported GetExported () => new Exported();
-    [JSFunction] public static partial IImported GetImported ();
+    [Export] public static IExported GetExported () => new Exported();
+    [Import] public static partial IImported GetImported ();
 }
 
 var imported = Factory.GetImported();
@@ -51,5 +51,4 @@ _ = exported.value; // invokes the C# getter
 
 Interop instances are subject to the following limitations:
 - Can't be args or return values of other interop instance method
-- Can't be args of events
 - Interfaces from "System" namespace are not qualified

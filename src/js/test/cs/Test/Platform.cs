@@ -10,17 +10,17 @@ namespace Test;
 
 public static partial class Platform
 {
-    [JSInvokable]
+    [Export]
     public static string GetGuid () => Guid.NewGuid().ToString();
 
-    [JSInvokable]
+    [Export]
     public static string FormatDate (string culture, int month, int day, string format)
     {
         var info = new CultureInfo(culture, false);
         return new DateTime(2024, month, day).ToString(format, info);
     }
 
-    [JSInvokable]
+    [Export]
     public static string? CatchException ()
     {
         try { ThrowJS(); }
@@ -28,13 +28,13 @@ public static partial class Platform
         return null;
     }
 
-    [JSInvokable]
+    [Export]
     public static void ThrowCS (string message) => throw new Exception(message);
 
-    [JSFunction]
+    [Import]
     public static partial void ThrowJS ();
 
-    [JSInvokable]
+    [Export]
     public static async Task<string> EchoWebSocket (string uri, string message, int timeout)
     {
         using var cts = new CancellationTokenSource(timeout);

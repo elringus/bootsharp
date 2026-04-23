@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 
 namespace Backend.Prime;
@@ -7,6 +8,9 @@ namespace Backend.Prime;
 
 public class Prime (IPrimeUI ui) : IComputer
 {
+    public event Action<bool>? OnComputing;
+    public event Action<long>? OnComplete;
+
     private static readonly SemaphoreSlim semaphore = new(0);
     private readonly Stopwatch watch = new();
     private CancellationTokenSource? cts;
@@ -15,12 +19,12 @@ public class Prime (IPrimeUI ui) : IComputer
     {
         cts?.Cancel();
         cts = new CancellationTokenSource();
-        cts.Token.Register(() => ui.NotifyComputing(false));
+        cts.Token.Register(() => OnComputing?.Invoke(false));
         var options = ui.GetOptions();
         if (!options.Multithreading) ComputeLoop(options.Complexity, cts.Token);
         else new Thread(() => ComputeLoop(options.Complexity, cts.Token)).Start();
         ObserveLoop(cts.Token);
-        ui.NotifyComputing(true);
+        OnComputing?.Invoke(true);
     }
 
     public void StopComputing () => cts?.Cancel();
@@ -37,7 +41,7 @@ public class Prime (IPrimeUI ui) : IComputer
             finally
             {
                 watch.Stop();
-                ui.NotifyComplete(watch.ElapsedMilliseconds);
+                OnComplete?.Invoke(watch.ElapsedMilliseconds);
             }
             await Task.Delay(1);
         }

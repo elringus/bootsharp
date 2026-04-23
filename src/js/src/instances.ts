@@ -1,43 +1,62 @@
 import { exports } from "./exports";
 
-const finalizer = new FinalizationRegistry(finalizeInstance);
-const idToInstance = new Map<number, object>();
+const exportedFinalizer = new FinalizationRegistry(finalizeExported);
+const exportedById = new Map<number, WeakRef<object>>();
+const importedById = new Map<number, object>();
+const idByImported = new Map<object, number>();
+const onDisposeById = new Map<number, () => void>();
 const idPool = new Array<number>();
 let nextId = -2147483648; // Number.MIN_SAFE_INTEGER is below C#'s Int32.MinValue
 
 /** Registers specified imported (JS -> C#) interop instance and associates it with unique ID.
  *  @param instance Interop instance to resolve ID for.
+ *  @param onDispose Invoked when disposing the registered instance.
  *  @return Unique identifier of the registered instance. */
-export function registerInstance(instance: object): number {
+export function registerImported(instance: object, onDispose?: () => void): number {
+    const registered = idByImported.get(instance);
+    if (registered !== undefined) return registered;
     const id = idPool.length > 0 ? idPool.pop()! : nextId++;
-    idToInstance.set(id, instance);
+    importedById.set(id, instance);
+    idByImported.set(instance, id);
+    if (onDispose != null) onDisposeById.set(id, onDispose);
     return id;
 }
 
-/** Resolves registered imported (JS -> C#) interop instance from specified ID.
- *  @param id Unique identifier of the instance. */
-export function getInstance(id: number): object {
-    return idToInstance.get(id)!;
+/** Registers specified exported (C# -> JS) interop instance with the specified ID. */
+export function registerExported(instance: object, id: number): void {
+    exportedById.set(id, new WeakRef(instance));
+    exportedFinalizer.register(instance, id);
 }
 
-/** Invoked from C# to notify that the imported (JS-> C #) interop instance is no longer
+/** Returns currently registered imported instance with the specified ID. */
+export function getImported(id: number): object {
+    return importedById.get(id)!;
+}
+
+/** Resolves ID of the specified registered imported instance; returns undefined when not registered. */
+export function getImportedId(instance: object): number | undefined {
+    return idByImported.get(instance);
+}
+
+/** Returns currently registered exported instance with the specified ID. */
+export function getExported(id: number): object {
+    return exportedById.get(id)!.deref()!;
+}
+
+/** Invoked from C# to notify that the imported (JS -> C#) interop instance is no longer
  *  used (eg, was garbage collected) and can be released on the JavaScript side as well.
  *  @param id Unique identifier of the disposed interop instance. */
-export function disposeInstance(id: number): void {
-    idToInstance.delete(id);
+export function disposeImported(id: number): void {
+    idByImported.delete(importedById.get(id)!);
+    importedById.delete(id);
+    onDisposeById.get(id)?.();
+    onDisposeById.delete(id);
     idPool.push(id);
 }
 
-/** Registers specified exported (C# -> JS) instance to invoke disposal on the C# side
- *  when it's collected (finalized) by JavaScript runtime GC.
- *  @param instance Interop instance to register.
- *  @param id Unique identifier of the interop instance. */
-export function disposeOnFinalize(instance: object, id: number): void {
-    finalizer.register(instance, id);
-}
-
 /* v8 ignore start -- @preserve */ // Uncoverable, as finalization in Node is not controllable.
-function finalizeInstance(id: number) {
+function finalizeExported(id: number) {
+    exportedById.delete(id);
     (<{ DisposeExportedInstance: (id: number) => void }>exports).DisposeExportedInstance(id);
 }
 /* v8 ignore stop -- @preserve */

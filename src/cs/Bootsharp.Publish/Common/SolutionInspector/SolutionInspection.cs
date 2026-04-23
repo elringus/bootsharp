@@ -14,22 +14,22 @@ namespace Bootsharp.Publish;
 internal sealed class SolutionInspection (MetadataLoadContext ctx) : IDisposable
 {
     /// <summary>
-    /// Interop interfaces specified under <see cref="JSImportAttribute"/> or
-    /// <see cref="JSExportAttribute"/> for which static bindings have to be emitted.
+    /// Interop interfaces specified under <see cref="ImportAttribute"/> or
+    /// <see cref="ExportAttribute"/> for which static bindings have to be emitted.
     /// </summary>
     public required IReadOnlyCollection<InterfaceMeta> StaticInterfaces { get; init; }
     /// <summary>
     /// Interop interfaces found in interop method arguments or return values.
     /// Such interfaces are considered instanced interop APIs, ie stateful objects with
     /// interop methods and properties. Both members of <see cref="StaticInterfaces"/>
-    /// and <see cref="StaticMethods"/> can be sources of the instanced interfaces.
+    /// and <see cref="StaticMembers"/> can be sources of the instanced interfaces.
     /// </summary>
     public required IReadOnlyCollection<InterfaceMeta> InstancedInterfaces { get; init; }
     /// <summary>
-    /// Static interop methods, ie methods with <see cref="JSInvokableAttribute"/>
-    /// and similar interop attributes found on user-defined static classes.
+    /// Static interop members, ie methods or events with <see cref="ExportAttribute"/>
+    /// or <see cref="ImportAttribute"/> found on user-defined static classes.
     /// </summary>
-    public required IReadOnlyCollection<MethodMeta> StaticMethods { get; init; }
+    public required IReadOnlyCollection<MemberMeta> StaticMembers { get; init; }
     /// <summary>
     /// All the types that cross the interop boundary or referenced by them.
     /// </summary>

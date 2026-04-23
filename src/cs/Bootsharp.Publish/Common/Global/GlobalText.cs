@@ -4,12 +4,14 @@ namespace Bootsharp.Publish;
 
 internal static class GlobalText
 {
-    public static string JoinLines (params string?[] values) => JoinLines(values, 1);
-    public static string JoinLines (int indent, params string?[] values) => JoinLines(values, indent);
-    public static string JoinLines (IEnumerable<string?> values, int indent = 1, string separator = "\n")
+    public static string Fmt (params string?[] txt) => Fmt(txt, 1);
+    public static string Fmt (int indent, params string?[] txt) => Fmt(txt, indent);
+    public static string Fmt (IEnumerable<string?> txt, int indent = 1, string separator = "\n")
     {
         var pad = new string(' ', indent * 4);
-        var padded = values.Where(v => v != null).Select(v => v!.Replace("\n", "\n" + pad));
+        var padded = txt.Where(v => v != null).Select(v =>
+            string.Join("\n", v!.Split('\n').Select((line, i) =>
+                i == 0 ? line : string.IsNullOrWhiteSpace(line) ? "" : pad + line)));
         return string.Join(separator + pad, padded);
     }
 

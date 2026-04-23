@@ -11,13 +11,13 @@ namespace Bootsharp;
 /// <example>
 /// Make all spaces starting with "Foo.Bar" replaced with "Baz":
 /// <code>
-/// [assembly: Bootsharp.JSPreferences(
+/// [assembly: Bootsharp.Preferences(
 ///     Space = ["^Foo\.Bar\.(\S+)", "Baz.$1"]
 /// )]
 /// </code>
 /// </example>
 [AttributeUsage(AttributeTargets.Assembly)]
-public sealed class JSPreferencesAttribute : Attribute
+public sealed class PreferencesAttribute : Attribute
 {
     /// <summary>
     /// Customize generated JavaScript object names and TypeScript namespaces.
@@ -26,7 +26,7 @@ public sealed class JSPreferencesAttribute : Attribute
     /// The patterns are matched against full type name (namespace.typename) of
     /// declaring C# type when generating JavaScript objects for interop methods
     /// and against namespace when generating TypeScript syntax for C# types.
-    /// Matched type names have following modifications:<br/>
+    /// Matched type names have the following modifications:<br/>
     ///  - interfaces have first character removed<br/>
     ///  - generics have parameter spec removed<br/>
     ///  - nested have "+" replaced with "."<br/>
@@ -40,16 +40,6 @@ public sealed class JSPreferencesAttribute : Attribute
     /// interop method arguments, return values and object properties.
     /// </remarks>
     public string[] Type { get; init; } = [];
-    /// <summary>
-    /// Customize which C# methods should be transformed into JavaScript
-    /// events, as well as generated event names.
-    /// </summary>
-    /// <remarks>
-    /// The patterns are matched against C# method names declared under
-    /// <see cref="JSImportAttribute"/> interfaces. By default, methods
-    /// starting with "Notify.." are matched.
-    /// </remarks>
-    public string[] Event { get; init; } = [];
     /// <summary>
     /// Customize generated JavaScript function names.
     /// </summary>

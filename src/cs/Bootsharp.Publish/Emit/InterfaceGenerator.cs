@@ -5,8 +5,11 @@ namespace Bootsharp.Publish;
 /// </summary>
 internal sealed class InterfaceGenerator
 {
+    private IReadOnlyCollection<InterfaceMeta> instanced = [];
+
     public string Generate (SolutionInspection inspection)
     {
+        instanced = inspection.InstancedInterfaces;
         var classes = new HashSet<string>();
         foreach (var i in inspection.StaticInterfaces)
             if (i.Interop == InteropKind.Export) classes.Add(EmitExportClass(i));
@@ -26,24 +29,24 @@ internal sealed class InterfaceGenerator
                       [System.Runtime.CompilerServices.ModuleInitializer]
                       internal static void RegisterInterfaces ()
                       {
-                          {{JoinLines(inspection.StaticInterfaces.Select(EmitRegistration), 3)}}
+                          {{Fmt(inspection.StaticInterfaces.Select(EmitRegistration), 3)}}
                       }
                   }
               }
 
-              {{JoinLines(classes, 0, "\n\n")}}
+              {{Fmt(classes, 0, "\n\n")}}
               """;
     }
 
     private string EmitRegistration (InterfaceMeta i)
     {
-        var inter = i.Interop == InteropKind.Import
+        var it = i.Interop == InteropKind.Import
             ? $"new ImportInterface(new {i.FullName}())"
             : $"new ExportInterface(typeof({i.TypeSyntax}), handler => new {i.FullName}(({i.TypeSyntax})handler))";
         var key = i.Interop == InteropKind.Import
             ? $"typeof({i.TypeSyntax})"
             : $"typeof({i.FullName})";
-        return $"Interfaces.Register({key}, {inter});";
+        return $"Interfaces.Register({key}, {it});";
     }
 
     private string EmitExportClass (InterfaceMeta i) =>
@@ -56,10 +59,13 @@ internal sealed class InterfaceGenerator
 
                   public {{i.Name}} ({{i.TypeSyntax}} handler)
                   {
-                      {{i.Name}}.handler = handler;
+                      {{Fmt([
+                          $"{i.Name}.handler = handler;",
+                          ..i.Members.OfType<EventMeta>().Select(e => $"handler.{e.Name} += {e.Name}.Invoke;")
+                      ], 3)}}
                   }
 
-                  {{JoinLines(i.Members.Select(EmitExport), 2)}}
+                  {{Fmt(i.Members.Select(EmitExport), 2)}}
               }
           }
           """;
@@ -70,7 +76,7 @@ internal sealed class InterfaceGenerator
           {
               public class {{i.Name}} : {{i.TypeSyntax}}
               {
-                  {{JoinLines(i.Members.Select(m => EmitImport(i, m)), 2)}}
+                  {{Fmt(i.Members.Select(m => EmitImport(i, m)), 2)}}
               }
           }
           """;
@@ -79,37 +85,75 @@ internal sealed class InterfaceGenerator
         $$"""
           namespace {{i.Namespace}}
           {
-              public class {{i.Name}}(global::System.Int32 _id) : {{i.TypeSyntax}}
+              public class {{i.Name}} (global::System.Int32 id) : {{i.TypeSyntax}}
               {
-                  ~{{i.Name}}() => global::Bootsharp.Generated.Interop.DisposeImportedInstance(_id);
+                  internal readonly global::System.Int32 _id = id;
 
-                  {{JoinLines(i.Members.Select(m => EmitInstancedImport(i, m)), 2)}}
+                  ~{{i.Name}}()
+                  {
+                      global::Bootsharp.Instances.DisposeImported(_id);
+                      global::Bootsharp.Generated.Interop.DisposeImportedInstance(_id);
+                  }
+
+                  {{Fmt(i.Members.Select(m => EmitImport(i, m)), 2)}}
               }
           }
           """;
 
     private string EmitExport (MemberMeta member) => member switch {
+        EventMeta evt => EmitEventExport(evt),
         PropertyMeta prop => EmitPropertyExport(prop),
         _ => EmitMethodExport((MethodMeta)member)
     };
 
     private string EmitImport (InterfaceMeta i, MemberMeta member) => member switch {
+        EventMeta evt => EmitEventImport(evt),
         PropertyMeta prop => EmitPropertyImport(i, prop),
         _ => EmitMethodImport(i, (MethodMeta)member),
     };
 
-    private string EmitInstancedImport (InterfaceMeta i, MemberMeta member) => member switch {
-        PropertyMeta prop => EmitInstancedPropertyImport(i, prop),
-        _ => EmitInstancedMethodImport(i, (MethodMeta)member)
-    };
+    private string EmitEventExport (EventMeta evt)
+    {
+        var type = BuildSyntax(evt.Info.EventHandlerType!, GetNullability(evt.Info));
+        return $"[Export] public static event {type} {evt.Name};";
+    }
+
+    private string EmitEventImport (EventMeta evt)
+    {
+        var type = BuildSyntax(evt.Info.EventHandlerType!, GetNullability(evt.Info));
+        var sigArgs = string.Join(", ", evt.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
+        var args = string.Join(", ", evt.Arguments.Select(a => a.Name));
+        return Fmt(0,
+            $"public event {type} {evt.Name};",
+            $"internal void Invoke{evt.Name} ({sigArgs}) => {evt.Name}?.Invoke({args});"
+        );
+    }
 
     private string EmitPropertyExport (PropertyMeta prop)
     {
         var name = prop.Name;
         var type = prop.Value.TypeSyntax;
-        var get = $"[JSInvokable] public static {type} GetProperty{name} () => handler.{name};";
-        var set = $"[JSInvokable] public static void SetProperty{name} ({type} value) => handler.{name} = value;";
-        return JoinLines(0, prop.CanGet ? get : null, prop.CanSet ? set : null);
+        var get = $"[Export] public static {type} GetProperty{name} () => handler.{name};";
+        var set = $"[Export] public static void SetProperty{name} ({type} value) => handler.{name} = value;";
+        return Fmt(0, prop.CanGet ? get : null, prop.CanSet ? set : null);
+    }
+
+    private string EmitPropertyImport (InterfaceMeta i, PropertyMeta prop)
+    {
+        var instanced = IsInstanced(prop);
+        var space = $"global::Bootsharp.Generated.Interop.{prop.Space.Replace('.', '_')}";
+        var getArgs = instanced ? "_id" : "";
+        var setArgs = instanced ? "_id, value" : "value";
+        return
+            $$"""
+              {{prop.Value.TypeSyntax}} {{i.TypeSyntax}}.{{prop.Name}}
+              {
+                  {{Fmt(
+                      prop.CanGet ? $"get => {space}_GetProperty{prop.Name}({getArgs});" : null,
+                      prop.CanSet ? $"set => {space}_SetProperty{prop.Name}({setArgs});" : null
+                  )}}
+              }
+              """;
     }
 
     private string EmitMethodExport (MethodMeta method)
@@ -117,56 +161,21 @@ internal sealed class InterfaceGenerator
         var sigArgs = string.Join(", ", method.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         var sig = $"public static {method.Value.TypeSyntax} {method.Name} ({sigArgs})";
         var args = string.Join(", ", method.Arguments.Select(a => a.Name));
-        return $"[JSInvokable] {sig} => handler.{method.Name}({args});";
-    }
-
-    private string EmitPropertyImport (InterfaceMeta i, PropertyMeta prop)
-    {
-        var space = $"global::Bootsharp.Generated.Interop.Proxy_{prop.Space.Replace('.', '_')}";
-        return
-            $$"""
-              {{prop.Value.TypeSyntax}} {{i.TypeSyntax}}.{{prop.Name}}
-              {
-                  {{JoinLines(
-                      prop.CanGet ? $"get => {space}_GetProperty{prop.Name}();" : null,
-                      prop.CanSet ? $"set => {space}_SetProperty{prop.Name}(value);" : null
-                  )}}
-              }
-              """;
+        return $"[Export] {sig} => handler.{method.Name}({args});";
     }
 
     private string EmitMethodImport (InterfaceMeta i, MethodMeta method)
     {
         var sigArgs = string.Join(", ", method.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
-        var contract = method is EventMeta @event ? @event.MethodName : method.Name;
         var args = string.Join(", ", method.Arguments.Select(a => a.Name));
-        var name = $"Proxy_{method.Space.Replace('.', '_')}_{method.Name}";
-        return $"{method.Value.TypeSyntax} {i.TypeSyntax}.{contract} ({sigArgs}) => " +
+        if (IsInstanced(method)) args = PrependIdArg(args);
+        var name = $"{method.Space.Replace('.', '_')}_{method.Name}";
+        return $"{method.Value.TypeSyntax} {i.TypeSyntax}.{method.Name} ({sigArgs}) => " +
                $"global::Bootsharp.Generated.Interop.{name}({args});";
     }
 
-    private string EmitInstancedPropertyImport (InterfaceMeta i, PropertyMeta prop)
+    private bool IsInstanced (MemberMeta member)
     {
-        var space = $"global::Bootsharp.Generated.Interop.Proxy_{prop.Space.Replace('.', '_')}";
-        return
-            $$"""
-              {{prop.Value.TypeSyntax}} {{i.TypeSyntax}}.{{prop.Name}}
-              {
-                  {{JoinLines(
-                      prop.CanGet ? $"get => {space}_GetProperty{prop.Name}(_id);" : null,
-                      prop.CanSet ? $"set => {space}_SetProperty{prop.Name}(_id, value);" : null
-                  )}}
-              }
-              """;
-    }
-
-    private string EmitInstancedMethodImport (InterfaceMeta i, MethodMeta method)
-    {
-        var sigArgs = string.Join(", ", method.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
-        var contract = method is EventMeta @event ? @event.MethodName : method.Name;
-        var args = PrependInstanceIdArgName(string.Join(", ", method.Arguments.Select(a => a.Name)));
-        var name = $"Proxy_{method.Space.Replace('.', '_')}_{method.Name}";
-        return $"{method.Value.TypeSyntax} {i.TypeSyntax}.{contract} ({sigArgs}) => " +
-               $"global::Bootsharp.Generated.Interop.{name}({args});";
+        return instanced.Any(i => i.Members.Contains(member));
     }
 }

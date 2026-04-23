@@ -1,8 +1,8 @@
 namespace Bootsharp.Publish;
 
 /// <summary>
-/// Interface supplied by user under either <see cref="JSExportAttribute"/>
-/// or <see cref="JSImportAttribute"/> representing static interop API, or in
+/// Interface supplied by user under either <see cref="ExportAttribute"/>
+/// or <see cref="ImportAttribute"/> representing static interop API, or in
 /// an interop method, representing instanced interop API.
 /// </summary>
 internal sealed record InterfaceMeta

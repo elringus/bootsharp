@@ -28,12 +28,12 @@ using Bootsharp;
 using Bootsharp.Inject;
 using Microsoft.Extensions.DependencyInjection;
 
-[assembly: JSExport(
+[assembly: Export(
     typeof(IExported),
     // other APIs to export to JavaScript
 )]
 
-[assembly: JSImport(
+[assembly: Import(
     typeof(IImported),
     // other APIs to import from JavaScript
 )]

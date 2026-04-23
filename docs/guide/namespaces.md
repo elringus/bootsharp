@@ -7,9 +7,9 @@ Bootsharp maps generated binding APIs based on the name of the associated C# typ
 Full type name (including namespace) of the declaring type of the static interop method is mapped into JavaScript object name:
 
 ```csharp
-class Class { [JSInvokable] static void Method() {} }
-namespace Foo { class Class { [JSInvokable] static void Method() {} } }
-namespace Foo.Bar { class Class { [JSInvokable] static void Method() {} } }
+class Class { [Export] static void Method() {} }
+namespace Foo { class Class { [Export] static void Method() {} } }
+namespace Foo.Bar { class Class { [Export] static void Method() {} } }
 ```
 
 ```ts
@@ -27,7 +27,7 @@ namespace Foo;
 
 public class Class
 {
-    public class Nested { [JSInvokable] public static void Method() {} }
+    public class Nested { [Export] public static void Method() {} }
 }
 ```
 
@@ -42,11 +42,11 @@ Foo.Class.Nested.method();
 When generating bindings for [interop interfaces](/guide/interop-interfaces), it's assumed the interface name has "I" prefix, so the associated implementation name will have first character removed. In case interface is declared under namespace, it'll be mirrored in JavaScript.
 
 ```csharp
-[JSExport([
+[Export(
     typeof(IExported),
     typeof(Foo.IExported),
-    typeof(Foo.Bar.IExported),
-])]
+    typeof(Foo.Bar.IExported)
+)]
 
 interface IExported { void Method(); }
 namespace Foo { interface IExported { void Method(); } }
@@ -71,7 +71,7 @@ namespace Foo { public record Record; }
 
 partial class Class
 {
-    [JSFunction]
+    [Import]
     public static partial Record Method(Foo.Record r);
 }
 ```

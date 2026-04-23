@@ -5,16 +5,16 @@ public class DeclarationTest : PackTest
     protected override string TestedContent => GeneratedDeclarations;
 
     [Fact]
-    public void ImportsEventType ()
+    public void ImportsEventTypes ()
     {
         Execute();
-        Contains("""import type { Event } from "./event";""");
+        Contains("""import type { EventBroadcaster, EventSubscriber } from "./event";""");
     }
 
     [Fact]
     public void DeclaresNamespace ()
     {
-        AddAssembly(WithClass("Foo", "[JSInvokable] public static void Bar () { }"));
+        AddAssembly(WithClass("Foo", "[Export] public static void Bar () { }"));
         Execute();
         Contains(
             """
@@ -27,7 +27,7 @@ public class DeclarationTest : PackTest
     [Fact]
     public void DotsInSpaceArePreserved ()
     {
-        AddAssembly(WithClass("Foo.Bar.Nya", "[JSInvokable] public static void Bar () { }"));
+        AddAssembly(WithClass("Foo.Bar.Nya", "[Export] public static void Bar () { }"));
         Execute();
         Contains(
             """
@@ -43,7 +43,7 @@ public class DeclarationTest : PackTest
         AddAssembly(
             With("public record Record;"),
             With("public enum Enum { A, B }"),
-            WithClass("[JSInvokable] public static Enum Inv (Record r) => default;"));
+            WithClass("[Export] public static Enum Inv (Record r) => default;"));
         Execute();
         Contains(
             """
@@ -65,7 +65,7 @@ public class DeclarationTest : PackTest
     {
         AddAssembly(
             With("public class Foo { public record Bar; }"),
-            WithClass("[JSInvokable] public static void Inv (Foo.Bar r) {}"));
+            WithClass("[Export] public static void Inv (Foo.Bar r) {}"));
         Execute();
         Contains(
             """
@@ -83,7 +83,7 @@ public class DeclarationTest : PackTest
     [Fact]
     public void FunctionDeclarationIsExportedForInvokableMethod ()
     {
-        AddAssembly(WithClass("Foo", "[JSInvokable] public static void Foo () { }"));
+        AddAssembly(WithClass("Foo", "[Export] public static void Foo () { }"));
         Execute();
         Contains(
             """
@@ -96,7 +96,7 @@ public class DeclarationTest : PackTest
     [Fact]
     public void AssignableVariableIsExportedForFunctionCallback ()
     {
-        AddAssembly(WithClass("Foo", "[JSFunction] public static void OnFoo () { }"));
+        AddAssembly(WithClass("Foo", "[Import] public static void OnFoo () { }"));
         Execute();
         Contains(
             """
@@ -107,19 +107,19 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void EventPropertiesAreExportedForEventMethods ()
+    public void EventPropertiesAreExportedForStaticEvents ()
     {
         AddAssembly(
-            WithClass("Foo", "[JSEvent] public static void OnFoo () { }"),
-            WithClass("Foo", "[JSEvent] public static void OnBar (string baz) { }"),
-            WithClass("Foo", "[JSEvent] public static void OnFar (int yaz, bool? nya) { }"));
+            WithClass("Foo", "[Export] public static event Action? ExpEvt;"),
+            WithClass("Foo", "[Export] public static event Action<string>? Evt;"),
+            WithClass("Foo", "[Import] public static event Action<int, bool?>? ImpEvt;"));
         Execute();
         Contains(
             """
             export namespace Foo.Class {
-                export const onFoo: Event<[]>;
-                export const onBar: Event<[baz: string]>;
-                export const onFar: Event<[yaz: number, nya: boolean | undefined]>;
+                export const expEvt: EventSubscriber<[]>;
+                export const evt: EventSubscriber<[obj: string]>;
+                export const impEvt: EventBroadcaster<[arg1: number, arg2: boolean | undefined]>;
             }
             """);
     }
@@ -130,7 +130,7 @@ public class DeclarationTest : PackTest
         AddAssembly(
             With("Space", "public class Foo { }"),
             With("Space", "public class Bar { }"),
-            WithClass("Space", "[JSInvokable] public static Foo GetFoo (Bar bar) => default;"));
+            WithClass("Space", "[Export] public static Foo GetFoo (Bar bar) => default;"));
         Execute();
         Contains(
             """
@@ -153,7 +153,7 @@ public class DeclarationTest : PackTest
         AddAssembly(
             With("SpaceA", "public class Foo { }"),
             With("SpaceB", "public class Bar { }"),
-            WithClass("[JSInvokable] public static SpaceA.Foo GetFoo (SpaceB.Bar bar) => default;"));
+            WithClass("[Export] public static SpaceA.Foo GetFoo (SpaceB.Bar bar) => default;"));
         Execute();
         Contains(
             """
@@ -176,8 +176,8 @@ public class DeclarationTest : PackTest
     public void DifferentSpacesWithSameRootAreDeclaredIndividually ()
     {
         AddAssembly(
-            WithClass("Nya.Bar", "[JSInvokable] public static void Fun () { }"),
-            WithClass("Nya.Foo", "[JSInvokable] public static void Foo () { }"));
+            WithClass("Nya.Bar", "[Export] public static void Fun () { }"),
+            WithClass("Nya.Foo", "[Export] public static void Foo () { }"));
         Execute();
         Contains(
             """
@@ -195,7 +195,7 @@ public class DeclarationTest : PackTest
     {
         AddAssembly(
             With("public class Foo { }"),
-            WithClass("[JSFunction] public static void OnFoo (Foo foo) { }"));
+            WithClass("[Import] public static void OnFoo (Foo foo) { }"));
         Execute();
         Contains(
             """
@@ -214,7 +214,7 @@ public class DeclarationTest : PackTest
         var types = new[] { "byte", "sbyte", "ushort", "uint", "ulong", "short", "int", "decimal", "double", "float" };
         var csArgs = string.Join(", ", types.Select(n => $"{n} v{Array.IndexOf(types, n)}"));
         var tsArgs = string.Join(", ", types.Select(n => $"v{Array.IndexOf(types, n)}: number"));
-        AddAssembly(WithClass($"[JSInvokable] public static void Num ({csArgs}) {{ }}"));
+        AddAssembly(WithClass($"[Export] public static void Num ({csArgs}) {{ }}"));
         Execute();
         Contains($"num({tsArgs})");
     }
@@ -222,7 +222,7 @@ public class DeclarationTest : PackTest
     [Fact]
     public void Int64TranslatedToBigInt ()
     {
-        AddAssembly(WithClass("[JSInvokable] public static void Foo (long bar) {}"));
+        AddAssembly(WithClass("[Export] public static void Foo (long bar) {}"));
         Execute();
         Contains("foo(bar: bigint): void");
     }
@@ -231,8 +231,8 @@ public class DeclarationTest : PackTest
     public void TaskTranslatedToPromise ()
     {
         AddAssembly(
-            WithClass("[JSInvokable] public static Task<bool> AsyBool () => default;"),
-            WithClass("[JSInvokable] public static Task AsyVoid () => default;"));
+            WithClass("[Export] public static Task<bool> AsyBool () => default;"),
+            WithClass("[Export] public static Task AsyVoid () => default;"));
         Execute();
         Contains("asyBool(): Promise<boolean>");
         Contains("asyVoid(): Promise<void>");
@@ -241,7 +241,7 @@ public class DeclarationTest : PackTest
     [Fact]
     public void CharAndStringTranslatedToString ()
     {
-        AddAssembly(WithClass("[JSInvokable] public static void Cha (char c, string s) {}"));
+        AddAssembly(WithClass("[Export] public static void Cha (char c, string s) {}"));
         Execute();
         Contains("cha(c: string, s: string): void");
     }
@@ -249,7 +249,7 @@ public class DeclarationTest : PackTest
     [Fact]
     public void BoolTranslatedToBoolean ()
     {
-        AddAssembly(WithClass("[JSInvokable] public static void Boo (bool b) {}"));
+        AddAssembly(WithClass("[Export] public static void Boo (bool b) {}"));
         Execute();
         Contains("boo(b: boolean): void");
     }
@@ -257,7 +257,7 @@ public class DeclarationTest : PackTest
     [Fact]
     public void DateTimeTranslatedToDate ()
     {
-        AddAssembly(WithClass("[JSInvokable] public static void Doo (DateTime time) {}"));
+        AddAssembly(WithClass("[Export] public static void Doo (DateTime time) {}"));
         Execute();
         Contains("doo(time: Date): void");
     }
@@ -265,7 +265,7 @@ public class DeclarationTest : PackTest
     [Fact]
     public void ListAndArrayTranslatedToArray ()
     {
-        AddAssembly(WithClass("[JSInvokable] public static List<string> Goo (DateTime[] d) => default;"));
+        AddAssembly(WithClass("[Export] public static List<string> Goo (DateTime[] d) => default;"));
         Execute();
         Contains("goo(d: Array<Date>): Array<string>");
     }
@@ -273,7 +273,7 @@ public class DeclarationTest : PackTest
     [Fact]
     public void JaggedArrayAndListOfListsTranslatedToArrayOfArrays ()
     {
-        AddAssembly(WithClass("[JSInvokable] public static List<List<string>> Goo (DateTime[][] d) => default;"));
+        AddAssembly(WithClass("[Export] public static List<List<string>> Goo (DateTime[][] d) => default;"));
         Execute();
         Contains("goo(d: Array<Array<Date>>): Array<Array<string>>");
     }
@@ -282,15 +282,15 @@ public class DeclarationTest : PackTest
     public void IntArraysTranslatedToRelatedTypes ()
     {
         AddAssembly(
-            WithClass("[JSInvokable] public static void Uint8 (byte[] foo) {}"),
-            WithClass("[JSInvokable] public static void Int8 (sbyte[] foo) {}"),
-            WithClass("[JSInvokable] public static void Uint16 (ushort[] foo) {}"),
-            WithClass("[JSInvokable] public static void Int16 (short[] foo) {}"),
-            WithClass("[JSInvokable] public static void Uint32 (uint[] foo) {}"),
-            WithClass("[JSInvokable] public static void Int32 (int[] foo) {}"),
-            WithClass("[JSInvokable] public static void BigInt64 (long[] foo) {}"),
-            WithClass("[JSInvokable] public static void Float32 (float[] foo) {}"),
-            WithClass("[JSInvokable] public static void Float64 (double[] foo) {}"));
+            WithClass("[Export] public static void Uint8 (byte[] foo) {}"),
+            WithClass("[Export] public static void Int8 (sbyte[] foo) {}"),
+            WithClass("[Export] public static void Uint16 (ushort[] foo) {}"),
+            WithClass("[Export] public static void Int16 (short[] foo) {}"),
+            WithClass("[Export] public static void Uint32 (uint[] foo) {}"),
+            WithClass("[Export] public static void Int32 (int[] foo) {}"),
+            WithClass("[Export] public static void BigInt64 (long[] foo) {}"),
+            WithClass("[Export] public static void Float32 (float[] foo) {}"),
+            WithClass("[Export] public static void Float64 (double[] foo) {}"));
         Execute();
         Contains("uint8(foo: Uint8Array): void");
         Contains("int8(foo: Int8Array): void");
@@ -306,7 +306,7 @@ public class DeclarationTest : PackTest
     [Fact]
     public void OtherTypesAreTranslatedToAny ()
     {
-        AddAssembly(WithClass("[JSInvokable] public static DBNull Method (IEnumerable<string> t) => default;"));
+        AddAssembly(WithClass("[Export] public static DBNull Method (IEnumerable<string> t) => default;"));
         Execute();
         Contains("method(t: any): any");
     }
@@ -316,7 +316,7 @@ public class DeclarationTest : PackTest
     {
         AddAssembly(
             With("n", "public class Foo { public string S { get; set; } public int I { get; set; } }"),
-            WithClass("n", "[JSInvokable] public static Foo Method (Foo t) => default;"));
+            WithClass("n", "[Export] public static Foo Method (Foo t) => default;"));
         Execute();
         Contains(
             """
@@ -340,7 +340,7 @@ public class DeclarationTest : PackTest
             With("n", "public interface Interface { Interface Foo { get; } void Bar (Interface b); }"),
             With("n", "public class Base { }"),
             With("n", "public class Derived : Base, Interface { public Interface Foo { get; } public void Bar (Interface b) {} }"),
-            WithClass("n", "[JSInvokable] public static Derived Method (Base b) => default;"));
+            WithClass("n", "[Export] public static Derived Method (Base b) => default;"));
         Execute();
         Contains(
             """
@@ -367,7 +367,7 @@ public class DeclarationTest : PackTest
         AddAssembly(
             With("n", "public interface Item { }"),
             With("n", "public class Container { public List<Item> Items { get; } }"),
-            WithClass("n", "[JSInvokable] public static Container Combine (List<Item> items) => default;"));
+            WithClass("n", "[Export] public static Container Combine (List<Item> items) => default;"));
         Execute();
         Contains(
             """
@@ -391,7 +391,7 @@ public class DeclarationTest : PackTest
         AddAssembly(
             With("n", "public interface Item { }"),
             With("n", "public class Container { public Item[][] Items { get; } }"),
-            WithClass("n", "[JSInvokable] public static Container Get () => default;"));
+            WithClass("n", "[Export] public static Container Get () => default;"));
         Execute();
         Contains(
             """
@@ -415,7 +415,7 @@ public class DeclarationTest : PackTest
         AddAssembly(
             With("n", "public interface Item { }"),
             With("n", "public class Container { public IReadOnlyList<Item> Items { get; } }"),
-            WithClass("n", "[JSInvokable] public static Container Combine (IReadOnlyList<Item> items) => default;"));
+            WithClass("n", "[Export] public static Container Combine (IReadOnlyList<Item> items) => default;"));
         Execute();
         Contains(
             """
@@ -439,7 +439,7 @@ public class DeclarationTest : PackTest
         AddAssembly(
             With("n", "public interface Item { }"),
             With("n", "public class Container { public Dictionary<string, Item> Items { get; } }"),
-            WithClass("n", "[JSInvokable] public static Container Combine (Dictionary<string, Item> items) => default;"));
+            WithClass("n", "[Export] public static Container Combine (Dictionary<string, Item> items) => default;"));
         Execute();
         Contains(
             """
@@ -463,7 +463,7 @@ public class DeclarationTest : PackTest
         AddAssembly(
             With("n", "public interface Item { }"),
             With("n", "public class Container { public IReadOnlyDictionary<string, Item> Items { get; } }"),
-            WithClass("n", "[JSInvokable] public static Container Combine (IReadOnlyDictionary<string, Item> items) => default;"));
+            WithClass("n", "[Export] public static Container Combine (IReadOnlyDictionary<string, Item> items) => default;"));
         Execute();
         Contains(
             """
@@ -487,7 +487,7 @@ public class DeclarationTest : PackTest
         AddAssembly(
             With("n", "public interface Item { }"),
             With("n", "public class Container { public ICollection<Item> Items { get; } }"),
-            WithClass("n", "[JSInvokable] public static Container Combine (ICollection<Item> items) => default;"));
+            WithClass("n", "[Export] public static Container Combine (ICollection<Item> items) => default;"));
         Execute();
         Contains(
             """
@@ -511,7 +511,7 @@ public class DeclarationTest : PackTest
         AddAssembly(
             With("n", "public interface Item { }"),
             With("n", "public class Container { public IReadOnlyCollection<Item> Items { get; } }"),
-            WithClass("n", "[JSInvokable] public static Container Combine (IReadOnlyCollection<Item> items) => default;"));
+            WithClass("n", "[Export] public static Container Combine (IReadOnlyCollection<Item> items) => default;"));
         Execute();
         Contains(
             """
@@ -535,7 +535,7 @@ public class DeclarationTest : PackTest
         AddAssembly(
             With("n", "public class Generic<T> where T: notnull { public T Value { get; set; } }"),
             With("n", "public class GenericNull<T> { public T Value { get; set; } }"),
-            WithClass("n", "[JSInvokable] public static void Method (Generic<string> a, GenericNull<int> b) { }"));
+            WithClass("n", "[Export] public static void Method (Generic<string> a, GenericNull<int> b) { }"));
         Execute();
         Contains(
             """
@@ -559,7 +559,7 @@ public class DeclarationTest : PackTest
     {
         AddAssembly(
             With("n", "public interface IGenericInterface<T> { public T Value { get; set; } }"),
-            WithClass("n", "[JSInvokable] public static IGenericInterface<string> Method () => default;"));
+            WithClass("n", "[Export] public static IGenericInterface<string> Method () => default;"));
         Execute();
         Contains(
             """
@@ -581,7 +581,7 @@ public class DeclarationTest : PackTest
         AddAssembly(
             With("Foo", "public class GenericClass<T> { public T Value { get; set; } }"),
             With("Bar", "public interface GenericInterface<T> { public T Value { get; set; } }"),
-            WithClass("n", "[JSInvokable] public static void Method (Foo.GenericClass<Bar.GenericInterface<string>> p) { }"));
+            WithClass("n", "[Export] public static void Method (Foo.GenericClass<Bar.GenericInterface<string>> p) { }"));
         Execute();
         Contains(
             """
@@ -607,7 +607,7 @@ public class DeclarationTest : PackTest
     {
         AddAssembly(
             With("n", "public class GenericClass<T1, T2> { public T1 Key { get; set; } public T2 Value { get; set; } }"),
-            WithClass("n", "[JSInvokable] public static void Method (GenericClass<string, int> p) { }"));
+            WithClass("n", "[Export] public static void Method (GenericClass<string, int> p) { }"));
         Execute();
         Contains(
             """
@@ -638,7 +638,7 @@ public class DeclarationTest : PackTest
                 public class Foo { public Struct S { get; } public ReadonlyStruct Rs { get; } }
                 public class Bar : Foo { public ReadonlyRecordStruct Rrs { get; } public RecordClass Rc { get; } }
                 public class Baz { public List<Bar> Bars { get; } public Enum E { get; } }
-                public class Class { [JSInvokable] public static Baz GetBaz () => default; }
+                public class Class { [Export] public static Baz GetBaz () => default; }
                 """));
         Execute();
         Contains(
@@ -685,7 +685,7 @@ public class DeclarationTest : PackTest
     {
         AddAssembly(
             WithClass("public class Foo { public static string Soo { get; } }"),
-            WithClass("[JSInvokable] public static Foo Bar () => default;"));
+            WithClass("[Export] public static Foo Bar () => default;"));
         Execute();
         Contains(
             """
@@ -708,7 +708,7 @@ public class DeclarationTest : PackTest
                 public bool this[int index] => true;
             }
 
-            [JSInvokable] public static Foo Bar () => default;
+            [Export] public static Foo Bar () => default;
             """));
         Execute();
         Contains(
@@ -722,81 +722,244 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void PropertyDeclarationsAreGeneratedForInteropInterfaces ()
+    public void GeneratesForMethodsInStaticInterfaces ()
     {
         AddAssembly(With(
             """
-            [assembly:JSExport(typeof(IExportedStatic))]
-            [assembly:JSImport(typeof(IImportedStatic))]
+            [assembly:Export(typeof(IExported))]
+            [assembly:Import(typeof(IImported))]
 
-            public record Record (string Value);
+            public record Info (string Value);
+
+            public interface IExported { Info Inv (string str, Info info); }
+            public interface IImported { Info Fun (string str, Info info); }
+            """));
+        Execute();
+        Contains(
+            """
+            export interface Info {
+                value: string;
+            }
+
+            export namespace Exported {
+                export function inv(str: string, info: Info): Info;
+            }
+            export namespace Imported {
+                export let fun: (str: string, info: Info) => Info;
+            }
+            """);
+    }
+
+    [Fact]
+    public void GeneratesForMethodsInInstancedInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            public record Info (string Value);
+
+            public interface IExported { Info Inv (string str, Info info); void Reset (); }
+            public interface IImported { Info Fun (Info info, string str); }
+
+            public class Class
+            {
+                [Export] public static Task<IExported> GetExported (IImported inst) => default;
+                [Import] public static Task<IImported> GetImported (IExported inst) => default;
+            }
+            """));
+        Execute();
+        Contains(
+            """
+            export interface IImported {
+                fun(info: Info, str: string): Info;
+            }
+            export interface IExported {
+                inv(str: string, info: Info): Info;
+                reset(): void;
+            }
+            export interface Info {
+                value: string;
+            }
+
+            export namespace Class {
+                export function getExported(inst: IImported): Promise<IExported>;
+                export let getImported: (inst: IExported) => Promise<IImported>;
+            }
+            """);
+    }
+
+    [Fact]
+    public void GeneratesForPropertiesInStaticInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:Export(typeof(IExportedStatic))]
+            [assembly:Import(typeof(IImportedStatic))]
+
+            public record Info (string Value);
 
             public interface IExportedStatic
             {
-                Record State { get; set; }
-                Record? Optional { get; }
+                Info State { get; set; }
+                Info? Optional { get; }
                 IExportedInstanced Exported { get; }
                 IImportedInstanced Imported { set; }
             }
 
             public interface IImportedStatic
             {
-                Record State { get; }
+                Info State { get; }
                 IImportedInstanced Imported { get; }
                 IExportedInstanced Exported { set; }
             }
 
-            public interface IExportedInstanced
-            {
-                Record State { get; }
-                IExportedInstanced Exported { get; }
-                IImportedInstanced Imported { set; }
+            public interface IExportedInstanced {}
+            public interface IImportedInstanced {}
+            """));
+        Execute();
+        Contains(
+            """
+            export interface Info {
+                value: string;
+            }
+            export interface IExportedInstanced {
+            }
+            export interface IImportedInstanced {
             }
 
-            public interface IImportedInstanced
+            export namespace ExportedStatic {
+                export let state: Info;
+                export const optional: Info | undefined;
+                export const exported: IExportedInstanced;
+                export let imported: IImportedInstanced;
+            }
+            export namespace ImportedStatic {
+                export const state: Info;
+                export const imported: IImportedInstanced;
+                export let exported: IExportedInstanced;
+            }
+            """);
+    }
+
+    [Fact]
+    public void GeneratesForPropertiesInInstancedInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            public record Info (string Value);
+
+            public interface IExported
             {
-                Record State { get; set; }
-                IImportedInstanced Imported { get; }
-                IExportedInstanced Exported { set; }
+                Info State { get; set; }
+                IExported Exported { get; }
+                IImported Imported { set; }
+            }
+
+            public interface IImported
+            {
+                Info State { get; set; }
+                IImported Imported { get; }
+                IExported Exported { set; }
             }
 
             public class Class
             {
-                [JSInvokable] public static IExportedInstanced GetExported () => default;
-                [JSFunction] public static IImportedInstanced GetImported () => default;
+                [Export] public static IExported GetExported (IImported inst) => default;
+                [Import] public static IImported GetImported (IExported inst) => default;
             }
             """));
         Execute();
         Contains(
             """
-            export interface IExportedInstanced {
-                readonly state: Record;
-                readonly exported: IExportedInstanced;
-                imported: IImportedInstanced;
+            export interface IImported {
+                state: Info;
+                readonly imported: IImported;
+                exported: IExported;
             }
-            export interface Record {
+            export interface Info {
                 value: string;
             }
-            export interface IImportedInstanced {
-                state: Record;
-                readonly imported: IImportedInstanced;
-                exported: IExportedInstanced;
+            export interface IExported {
+                state: Info;
+                readonly exported: IExported;
+                imported: IImported;
             }
 
             export namespace Class {
-                export function getExported(): IExportedInstanced;
-                export let getImported: () => IImportedInstanced;
+                export function getExported(inst: IImported): IExported;
+                export let getImported: (inst: IExported) => IImported;
             }
-            export namespace ExportedStatic {
-                export let state: Record;
-                export const optional: Record | null;
-                export const exported: IExportedInstanced;
-                export let imported: IImportedInstanced;
+            """);
+    }
+
+    [Fact]
+    public void GeneratesForEventsInStaticInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:Export(typeof(IExported))]
+            [assembly:Import(typeof(IImported))]
+
+            public record Info (string Value);
+
+            public interface IExported { event Action<string, Info, IExportedInstanced> Evt; }
+            public interface IImported { event Action<string, Info, IImportedInstanced> Evt; }
+
+            public interface IExportedInstanced {}
+            public interface IImportedInstanced {}
+            """));
+        Execute();
+        Contains(
+            """
+            export interface Info {
+                value: string;
             }
-            export namespace ImportedStatic {
-                export const state: Record;
-                export const imported: IImportedInstanced;
-                export let exported: IExportedInstanced;
+            export interface IExportedInstanced {
+            }
+            export interface IImportedInstanced {
+            }
+
+            export namespace Exported {
+                export const evt: EventSubscriber<[arg1: string, arg2: Info, arg3: IExportedInstanced]>;
+            }
+            export namespace Imported {
+                export const evt: EventBroadcaster<[arg1: string, arg2: Info, arg3: IImportedInstanced]>;
+            }
+            """);
+    }
+
+    [Fact]
+    public void GeneratesForEventsInInstancedInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            public record Info (string Value);
+
+            public interface IExported { event Action<Info>? Changed; event Action? Done; }
+            public interface IImported { event Action<IImported, Info, string>? Changed; }
+
+            public class Class
+            {
+                [Export] public static IExported GetExported (IImported inst) => default;
+                [Import] public static IImported GetImported (IExported inst) => default;
+            }
+            """));
+        Execute();
+        Contains(
+            """
+            export interface IImported {
+                changed: EventBroadcaster<[arg1: IImported, arg2: Info, arg3: string]>;
+            }
+            export interface IExported {
+                changed: EventSubscriber<[obj: Info]>;
+                done: EventSubscriber<[]>;
+            }
+            export interface Info {
+                value: string;
+            }
+
+            export namespace Class {
+                export function getExported(inst: IImported): IExported;
+                export let getImported: (inst: IExported) => IImported;
             }
             """);
     }
@@ -805,8 +968,8 @@ public class DeclarationTest : PackTest
     public void NullableMethodArgumentsUnionWithUndefined ()
     {
         AddAssembly(
-            WithClass("[JSInvokable] public static void Foo (string? bar) { }"),
-            WithClass("[JSFunction] public static void Fun (int? nya) { }"));
+            WithClass("[Export] public static void Foo (string? bar) { }"),
+            WithClass("[Import] public static void Fun (int? nya) { }"));
         Execute();
         Contains("export function foo(bar: string | undefined): void;");
         Contains("export let fun: (nya: number | undefined) => void;");
@@ -816,11 +979,11 @@ public class DeclarationTest : PackTest
     public void NullableMethodReturnTypesUnionWithNull ()
     {
         AddAssembly(
-            WithClass("[JSInvokable] public static string? Foo () => default;"),
-            WithClass("[JSInvokable] public static Task? Bar () => default;"),
-            WithClass("[JSInvokable] public static Task<byte[]?> Baz () => default;"),
-            WithClass("[JSInvokable] public static Task<byte[]?>? Quz () => default;"),
-            WithClass("[JSFunction] public static ValueTask<List<string>?> Nya () => default;"));
+            WithClass("[Export] public static string? Foo () => default;"),
+            WithClass("[Export] public static Task? Bar () => default;"),
+            WithClass("[Export] public static Task<byte[]?> Baz () => default;"),
+            WithClass("[Export] public static Task<byte[]?>? Quz () => default;"),
+            WithClass("[Import] public static ValueTask<List<string>?> Nya () => default;"));
         Execute();
         Contains("export function foo(): string | null;");
         Contains("export function bar(): Promise<void> | null;");
@@ -834,7 +997,7 @@ public class DeclarationTest : PackTest
     {
         AddAssembly(
             With("public class Foo { }"),
-            WithClass("[JSFunction] public static List<Foo?>? Fun (int?[]? bar, Foo[]?[]? nya, Foo?[]?[]? far) => default;"));
+            WithClass("[Import] public static List<Foo?>? Fun (int?[]? bar, Foo[]?[]? nya, Foo?[]?[]? far) => default;"));
         Execute();
         Contains(
             """
@@ -853,7 +1016,7 @@ public class DeclarationTest : PackTest
         AddAssembly(
             With("public interface IFoo<T> { }"),
             With("public record Foo (List<List<IFoo<string>?>?>? Bar, IFoo<int>?[]?[]? Nya) : IFoo<bool>;"),
-            WithClass("[JSFunction] public static IFoo<bool> Fun (Foo foo) => default;"));
+            WithClass("[Import] public static IFoo<bool> Fun (Foo foo) => default;"));
         Execute();
         Contains("bar?: Array<Array<IFoo<string> | null> | null>;");
         Contains("nya?: Array<Array<IFoo<number> | null> | null>;");
@@ -863,7 +1026,7 @@ public class DeclarationTest : PackTest
     public void NullableDictionaryValueTypesUnionWithNull ()
     {
         AddAssembly(
-            WithClass("[JSFunction] public static Dictionary<string, int?>? Fun (Dictionary<string, string?>? bar) => default;"));
+            WithClass("[Import] public static Dictionary<string, int?>? Fun (Dictionary<string, string?>? bar) => default;"));
         Execute();
         Contains("export let fun: (bar: Map<string, string | null> | undefined) => Map<string, number | null> | null;");
     }
@@ -874,7 +1037,7 @@ public class DeclarationTest : PackTest
         AddAssembly(
             With("n", "public class Foo { public bool? Bool { get; } }"),
             With("n", "public class Bar { public Foo? Foo { get; } }"),
-            WithClass("n", "[JSInvokable] public static Foo FooBar (Bar bar) => default;"));
+            WithClass("n", "[Export] public static Foo FooBar (Bar bar) => default;"));
         Execute();
         Contains(
             """
@@ -899,7 +1062,7 @@ public class DeclarationTest : PackTest
         AddAssembly(
             With("n", "public enum Foo { A, B }"),
             With("n", "public class Bar { public Foo? Foo { get; } }"),
-            WithClass("n", "[JSInvokable] public static Bar GetBar () => default;"));
+            WithClass("n", "[Export] public static Bar GetBar () => default;"));
         Execute();
         Contains(
             """
@@ -926,9 +1089,9 @@ public class DeclarationTest : PackTest
             With("public interface Foo { }"),
             With("public class Bar : Foo { public Foo Foo { get; } }"),
             With("public class Far : Bar { public Bar Bar { get; } }"),
-            WithClass("[JSInvokable] public static Bar TakeFooGiveBar (Foo f) => default;"),
-            WithClass("[JSInvokable] public static Foo TakeBarGiveFoo (Bar b) => default;"),
-            WithClass("[JSInvokable] public static Far TakeAllGiveFar (Foo f, Bar b, Far ff) => default;"));
+            WithClass("[Export] public static Bar TakeFooGiveBar (Foo f) => default;"),
+            WithClass("[Export] public static Foo TakeBarGiveFoo (Bar b) => default;"),
+            WithClass("[Export] public static Far TakeAllGiveFar (Foo f, Bar b, Far ff) => default;"));
         Execute();
         Once("export interface Foo");
         Once("export interface Bar");
@@ -936,17 +1099,17 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void RespectsSpacePreference ()
+    public void RespectsSpacePrefInStaticMembers ()
     {
         AddAssembly(
             With(
                 """
-                [assembly: Bootsharp.JSPreferences(
+                [assembly: Bootsharp.Preferences(
                     Space = [@"^Foo\.Bar\.(\S+)", "$1"]
                 )]
                 """),
             With("Foo.Bar.Nya", "public class Nya { }"),
-            WithClass("Foo.Bar.Fun", "[JSFunction] public static void OnFun (Nya.Nya nya) { }"));
+            WithClass("Foo.Bar.Fun", "[Import] public static void OnFun (Nya.Nya nya) { }"));
         Execute();
         Contains(
             """
@@ -962,11 +1125,44 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
+    public void RespectsSpacePrefInStaticInterfaces ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:Preferences(Space = [@".+", "Foo"])]
+            [assembly:Export(typeof(Space.IExported))]
+            [assembly:Import(typeof(Space.IImported))]
+
+            namespace Space;
+
+            public enum Enum { A, B }
+
+            public interface IExported { void Inv (string s, Enum e); }
+            public interface IImported { void Fun (string s, Enum e); }
+            """));
+        Execute();
+        Contains(
+            """
+            export namespace Foo {
+                export enum Enum {
+                    A,
+                    B
+                }
+            }
+
+            export namespace Foo {
+                export function inv(s: string, e: Foo.Enum): void;
+                export let fun: (s: string, e: Foo.Enum) => void;
+            }
+            """);
+    }
+
+    [Fact]
     public void RespectsTypePreference ()
     {
         AddAssembly(With(
             """
-            [assembly: Bootsharp.JSPreferences(
+            [assembly: Bootsharp.Preferences(
                 Type = [@"Record", "Foo", @".+`.+", "Bar"]
             )]
 
@@ -975,7 +1171,7 @@ public class DeclarationTest : PackTest
 
             public class Class
             {
-                [JSInvokable] public static void Inv (Record r, Generic<string> g) {}
+                [Export] public static void Inv (Record r, Generic<string> g) {}
             }
             """));
         Execute();
@@ -998,8 +1194,8 @@ public class DeclarationTest : PackTest
         AddAssembly(With("Bootsharp.Generated",
             """
             public record Record;
-            public static class Exports { [JSInvokable] public static void Inv (Record r) {} }
-            public static class Imports { [JSFunction] public static void Fun () {} }
+            public static class Exports { [Export] public static void Inv (Record r) {} }
+            public static class Imports { [Import] public static void Fun () {} }
             """));
         Execute();
         DoesNotContain("Record");
@@ -1008,175 +1204,12 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForExportImportInterfaces ()
-    {
-        AddAssembly(With(
-            """
-            [assembly:JSExport(typeof(Space.IExported))]
-            [assembly:JSImport(typeof(Space.IImported))]
-
-            namespace Space;
-
-            public enum Enum { A, B }
-
-            public interface IExported { void Inv (string s, Enum e); }
-            public interface IImported { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }
-            """));
-        Execute();
-        Contains(
-            """
-            export namespace Space {
-                export enum Enum {
-                    A,
-                    B
-                }
-            }
-
-            export namespace Space.Exported {
-                export function inv(s: string, e: Space.Enum): void;
-            }
-            export namespace Space.Imported {
-                export let fun: (s: string, e: Space.Enum) => void;
-                export const onEvt: Event<[s: string, e: Space.Enum]>;
-            }
-            """);
-    }
-
-    [Fact]
-    public void GeneratesForExportImportInterfacesWithSpacePref ()
-    {
-        AddAssembly(With(
-            """
-            [assembly:JSPreferences(Space = [@".+", "Foo"])]
-            [assembly:JSExport(typeof(Space.IExported))]
-            [assembly:JSImport(typeof(Space.IImported))]
-
-            namespace Space;
-
-            public enum Enum { A, B }
-
-            public interface IExported { void Inv (string s, Enum e); }
-            public interface IImported { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }
-            """));
-        Execute();
-        Contains(
-            """
-            export namespace Foo {
-                export enum Enum {
-                    A,
-                    B
-                }
-            }
-
-            export namespace Foo {
-                export function inv(s: string, e: Foo.Enum): void;
-                export let fun: (s: string, e: Foo.Enum) => void;
-                export const onEvt: Event<[s: string, e: Foo.Enum]>;
-            }
-            """);
-    }
-
-    [Fact]
-    public void GeneratesInstancedInterfacesFromStaticMethods ()
-    {
-        AddAssembly(With(
-            """
-            public enum Enum { A, B }
-            public interface IExportedInstancedA { void Inv (string? s, Enum e); }
-            public interface IExportedInstancedB { Enum? Inv (); }
-            public interface IImportedInstancedA { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }
-            public interface IImportedInstancedB { Enum Fun (); void NotifyEvt (); }
-
-            public class Class
-            {
-                 [JSInvokable] public static IExportedInstancedA CreateExported (string arg, IImportedInstancedB i) => default;
-                 [JSFunction] public static IImportedInstancedA CreateImported (string arg, IExportedInstancedB i) => default;
-            }
-            """));
-        Execute();
-        Contains(
-            """
-            export interface IImportedInstancedB {
-                fun(): Enum;
-                onEvt: Event<[]>;
-            }
-            export interface IExportedInstancedA {
-                inv(s: string | undefined, e: Enum): void;
-            }
-            export enum Enum {
-                A,
-                B
-            }
-            export interface IExportedInstancedB {
-                inv(): Enum | null;
-            }
-            export interface IImportedInstancedA {
-                fun(s: string, e: Enum): void;
-                onEvt: Event<[s: string, e: Enum]>;
-            }
-
-            export namespace Class {
-                export function createExported(arg: string, i: IImportedInstancedB): IExportedInstancedA;
-                export let createImported: (arg: string, i: IExportedInstancedB) => IImportedInstancedA;
-            }
-            """);
-    }
-
-    [Fact]
-    public void GeneratesInstancedInterfacesFromStaticInterfaces ()
-    {
-        AddAssembly(With(
-            """
-            [assembly:JSExport(typeof(IExportedStatic))]
-            [assembly:JSImport(typeof(IImportedStatic))]
-
-            public interface IExportedStatic { IExportedInstancedA CreateExported (string arg, IImportedInstancedB i); }
-            public interface IImportedStatic { IImportedInstancedA CreateImported (string arg, IExportedInstancedB i); }
-
-            public enum Enum { A, B }
-            public interface IExportedInstancedA { void Inv (string s, Enum e); }
-            public interface IExportedInstancedB { Enum Inv (); }
-            public interface IImportedInstancedA { void Fun (string s, Enum e); void NotifyEvt (string s, Enum e); }
-            public interface IImportedInstancedB { Enum Fun (); void NotifyEvt (); }
-            """));
-        Execute();
-        Contains(
-            """
-            export interface IImportedInstancedB {
-                fun(): Enum;
-                onEvt: Event<[]>;
-            }
-            export interface IExportedInstancedA {
-                inv(s: string, e: Enum): void;
-            }
-            export enum Enum {
-                A,
-                B
-            }
-            export interface IExportedInstancedB {
-                inv(): Enum;
-            }
-            export interface IImportedInstancedA {
-                fun(s: string, e: Enum): void;
-                onEvt: Event<[s: string, e: Enum]>;
-            }
-
-            export namespace ExportedStatic {
-                export function createExported(arg: string, i: IImportedInstancedB): IExportedInstancedA;
-            }
-            export namespace ImportedStatic {
-                export let createImported: (arg: string, i: IExportedInstancedB) => IImportedInstancedA;
-            }
-            """);
-    }
-
-    [Fact]
     public void IgnoresImplementedInterfaceMethods ()
     {
         AddAssembly(With(
             """
-            [assembly:JSExport(typeof(IExportedStatic))]
-            [assembly:JSImport(typeof(IImportedStatic))]
+            [assembly:Export(typeof(IExportedStatic))]
+            [assembly:Import(typeof(IImportedStatic))]
 
             public interface IExportedStatic { int Foo () => 0; }
             public interface IImportedStatic { int Foo () => 0; }
@@ -1185,8 +1218,8 @@ public class DeclarationTest : PackTest
 
             public class Class
             {
-                [JSInvokable] public static IExportedInstanced GetExported () => default;
-                [JSFunction] public static IImportedInstanced GetImported () => default;
+                [Export] public static IExportedInstanced GetExported () => default;
+                [Import] public static IImportedInstanced GetImported () => default;
             }
             """));
         Execute();
@@ -1198,7 +1231,9 @@ public class DeclarationTest : PackTest
     {
         AddAssembly(With(
             """
-            /// <summary>Payload kind.</summary>
+            /// <summary>
+            /// Payload kind.
+            /// </summary>
             public enum Kind
             {
                 /// <summary>First kind.</summary>
@@ -1207,7 +1242,9 @@ public class DeclarationTest : PackTest
                 Second
             }
 
-            /// <summary>A payload sent across interop.</summary>
+            /// <summary>
+            /// A payload sent across interop.
+            /// </summary>
             /// <remarks>Visible in generated TypeScript.</remarks>
             public record Payload
             {
@@ -1215,7 +1252,19 @@ public class DeclarationTest : PackTest
                 public string Name { get; init; }
             }
 
-            /// <summary>Exported instance API.</summary>
+            /// <summary>
+            /// Event handler payload.
+            /// </summary>
+            public class HandlerArgs : EventArgs;
+
+            /// <summary>Payload changed callback.</summary>
+            /// <param name="payload">Payload from custom delegate.</param>
+            /// <param name="label">Label from custom delegate.</param>
+            public delegate void PayloadChanged (Payload payload, string label);
+
+            /// <summary>
+            /// Exported instance API.
+            /// </summary>
             public interface IExportedInstanced
             {
                 /// <summary>Current state.</summary>
@@ -1226,31 +1275,40 @@ public class DeclarationTest : PackTest
                 void Inv (string value);
             }
 
-            /// <summary>Static interop API.</summary>
-            public class Class
+            /// <summary>
+            /// Static interop API.
+            /// </summary>
+            public partial class Class
             {
+                /// <summary>Exports completion signal.</summary>
+                [Export] public static event Action<bool>? ExpEvt;
+                /// <summary>Imports completion signal.</summary>
+                [Import] public static event Action<string, int>? ImpEvt;
+                /// <summary>Exports payload changes.</summary>
+                [Export] public static event PayloadChanged? PayloadChanged;
+                /// <summary>Imports handler signal.</summary>
+                /// <param name="sender">Sender from event handler.</param>
+                /// <param name="e">Payload from event handler.</param>
+                [Import] public static event EventHandler<HandlerArgs>? HandlerEvt;
+
                 /// <summary>Runs foo.</summary>
                 /// <param name="function">Function value.</param>
                 /// <param name="names">Names to run.</param>
                 /// <returns>Computed value.</returns>
-                [JSInvokable] public static int Foo (List<int?> function, string[] names) => 0;
+                [Export] public static int Foo (List<int?> function, string[] names) => 0;
 
                 /// <summary>Gets payload.</summary>
-                [JSInvokable] public static Payload Get (Kind kind) => default;
+                [Export] public static Payload Get (Kind kind) => default;
 
                 /// <summary>Gets exported instance.</summary>
-                [JSInvokable] public static IExportedInstanced GetExported () => default;
+                [Export] public static IExportedInstanced GetExported () => default;
 
                 /// <summary>Receives foo.</summary>
                 /// <param name="count">Count to receive.</param>
-                [JSFunction] public static void OnFoo (int count) { }
+                [Import] public static void OnFoo (int count) { }
 
                 /// <param name="value">Value without summary.</param>
-                [JSFunction] public static void OnParamOnly (string value) { }
-
-                /// <summary>Signals completion.</summary>
-                /// <param name="done">Whether work is done.</param>
-                [JSEvent] public static void OnDone (bool done) { }
+                [Import] public static void OnParamOnly (string value) { }
             }
             """));
         Execute();
@@ -1306,6 +1364,26 @@ public class DeclarationTest : PackTest
              */
             export namespace Class {
                 /**
+                 * Exports completion signal.
+                 */
+                export const expEvt: EventSubscriber<[obj: boolean]>;
+                /**
+                 * Imports completion signal.
+                 */
+                export const impEvt: EventBroadcaster<[arg1: string, arg2: number]>;
+                /**
+                 * Exports payload changes.
+                 * @param payload Payload from custom delegate.
+                 * @param label Label from custom delegate.
+                 */
+                export const payloadChanged: EventSubscriber<[payload: Payload, label: string]>;
+                /**
+                 * Imports handler signal.
+                 * @param sender Sender from event handler.
+                 * @param e Payload from event handler.
+                 */
+                export const handlerEvt: EventBroadcaster<[sender: any | undefined, e: HandlerArgs]>;
+                /**
                  * Runs foo.
                  * @param fn Function value.
                  * @param names Names to run.
@@ -1329,11 +1407,6 @@ public class DeclarationTest : PackTest
                  * @param value Value without summary.
                  */
                 export let onParamOnly: (value: string) => void;
-                /**
-                 * Signals completion.
-                 * @param done Whether work is done.
-                 */
-                export const onDone: Event<[done: boolean]>;
             }
             """);
     }

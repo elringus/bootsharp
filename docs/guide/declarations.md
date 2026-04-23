@@ -6,12 +6,12 @@ Bootsharp will automatically generate [type declarations](https://www.typescript
 
 For the interop methods, function declarations are emitted.
 
-Exported `[JSInvokable]` methods will have associated function assigned under the declaring type space:
+Exported methods will have associated function assigned under the declaring type space:
 
 ```csharp
 public class Foo
 {
-    [JSInvokable]
+    [Export]
     public static void Bar() { }
 }
 ```
@@ -32,14 +32,14 @@ import { Foo } from "bootsharp";
 Foo.bar();
 ```
 
-Imported `[JSFunction]` methods will be emitted as properties, which have to be assigned before booting the runtime:
+Imported methods will be emitted as properties, which have to be assigned before booting the runtime:
 
 ::: code-group
 
 ```csharp [Foo.cs]
 public partial class Foo
 {
-    [JSFunction]
+    [Import]
     public static partial void Bar();
 }
 ```
@@ -60,21 +60,21 @@ Foo.bar = () => {};
 
 ## Event Declarations
 
-`[JSEvent]` methods will be emitted as objects with `subscribe` and `unsubscribe` methods:
+Exported events are emitted as `EventSubscriber` objects:
 
 ::: code-group
 
 ```csharp [Foo.cs]
 public class Foo
 {
-    [JSEvent]
-    public static partial void OnBar (string payload);
+    [Export]
+    public static event Action<string>? OnBar;
 }
 ```
 
 ```ts [bindings.d.ts]
 export namespace Foo {
-    export const onBar: Event<[string]>;
+    export const onBar: EventSubscriber<[payload: string]>;
 }
 ```
 
@@ -82,6 +82,32 @@ export namespace Foo {
 import { Foo } from "bootsharp";
 
 Foo.onBar.subscribe(payload => {});
+```
+
+:::
+
+Imported events are emitted as `EventBroadcaster` objects:
+
+::: code-group
+
+```csharp [Foo.cs]
+public static partial class Foo
+{
+    [Import]
+    public static event Action<string>? OnBar;
+}
+```
+
+```ts [bindings.d.ts]
+export namespace Foo {
+    export const onBar: EventBroadcaster<[payload: string]>;
+}
+```
+
+```ts [main.ts]
+import { Foo } from "bootsharp";
+
+Foo.onBar.broadcast("updated");
 ```
 
 :::
@@ -100,7 +126,7 @@ public class MathApi
     /// <param name="left">Left number.</param>
     /// <param name="right">Right number.</param>
     /// <returns>The sum.</returns>
-    [JSInvokable]
+    [Export]
     public static int Add (int left, int right) => left + right;
 }
 ```
@@ -146,7 +172,7 @@ public record Bar (Foo foo);
 
 public partial class Foo
 {
-    [JSFunction]
+    [Import]
     public static partial Bar GetBar();
 }
 ```

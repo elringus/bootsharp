@@ -8,11 +8,11 @@ using Microsoft.Extensions.DependencyInjection;
 // and can be shared with other build targets (console, MAUI, etc).
 
 // Generate C# -> JavaScript interop handlers for specified contracts.
-[assembly: JSExport(typeof(Backend.IComputer))]
+[assembly: Export(typeof(Backend.IComputer))]
 // Generate JavaScript -> C# interop handlers for specified contracts.
-[assembly: JSImport(typeof(Backend.Prime.IPrimeUI))]
+[assembly: Import(typeof(Backend.Prime.IPrimeUI))]
 // Group all generated JavaScript APIs under "Computer" namespace.
-[assembly: JSPreferences(Space = [".+", "Computer"])]
+[assembly: Preferences(Space = [".+", "Computer"])]
 
 // Perform dependency injection.
 new ServiceCollection()

@@ -56,15 +56,9 @@ internal static class GlobalType
              type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyDictionary<,>).FullName);
     }
 
-    public static NullabilityInfo GetNullability (PropertyInfo prop)
-    {
-        return new NullabilityInfoContext().Create(prop);
-    }
-
-    public static NullabilityInfo GetNullability (ParameterInfo param)
-    {
-        return new NullabilityInfoContext().Create(param);
-    }
+    public static NullabilityInfo GetNullability (EventInfo evt) => new NullabilityInfoContext().Create(evt);
+    public static NullabilityInfo GetNullability (PropertyInfo prop) => new NullabilityInfoContext().Create(prop);
+    public static NullabilityInfo GetNullability (ParameterInfo param) => new NullabilityInfoContext().Create(param);
 
     public static bool IsNullable (Type type) => IsNullable(type, out _);
     public static bool IsNullable (Type type, NullabilityInfo? info) => IsNullable(type, info, out _);
@@ -116,8 +110,7 @@ internal static class GlobalType
         return string.IsNullOrEmpty(space) ? name : $"{space}.{name}";
     }
 
-    public static (string space, string name, string full) BuildInterfaceImplName
-        (Type instanceType, InteropKind interop)
+    public static (string space, string name, string full) BuildInterfaceImpl (Type instanceType, InteropKind interop)
     {
         var space = "Bootsharp.Generated." + (interop == InteropKind.Export ? "Exports" : "Imports");
         if (instanceType.Namespace != null) space += $".{instanceType.Namespace}";
@@ -125,20 +118,15 @@ internal static class GlobalType
         return (space, name, $"{space}.{name}");
     }
 
-    public static string PrependInstanceIdArgName (string args)
+    public static string PrependIdArg (string args)
     {
         if (string.IsNullOrEmpty(args)) return "_id";
         return $"_id, {args}";
     }
 
-    public static string PrependInstanceIdArgTypeAndName (string args)
+    public static string BuildJSInstanceClassName (InterfaceMeta it)
     {
-        return $"{BuildSyntax(typeof(int))} {PrependInstanceIdArgName(args)}";
-    }
-
-    public static string BuildJSInteropInstanceClassName (InterfaceMeta inter)
-    {
-        return inter.FullName.Replace("Bootsharp.Generated.Exports.", "").Replace(".", "_");
+        return it.FullName.Replace("Bootsharp.Generated.Exports.", "").Replace(".", "_");
     }
 
     public static string BuildSerializedId (Type type)

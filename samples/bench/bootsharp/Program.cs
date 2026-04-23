@@ -2,8 +2,8 @@ using Bootsharp;
 using Bootsharp.Inject;
 using Microsoft.Extensions.DependencyInjection;
 
-[assembly: JSImport(typeof(IImport))]
-[assembly: JSExport(typeof(IExport))]
+[assembly: Import(typeof(IImport))]
+[assembly: Export(typeof(IExport))]
 
 new ServiceCollection()
     .AddBootsharp()
