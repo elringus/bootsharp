@@ -4,7 +4,7 @@ namespace Bootsharp;
 
 /// <summary>
 /// Provides access to generated interop types for interfaces supplied
-/// under <see cref="JSExportAttribute"/> and <see cref="JSImportAttribute"/>.
+/// under <see cref="ExportAttribute"/> and <see cref="ImportAttribute"/>.
 /// </summary>
 /// <remarks>
 /// Exported interfaces are C# APIs invoked in JavaScript. Their C# implementation
@@ -17,13 +17,13 @@ namespace Bootsharp;
 public static class Interfaces
 {
     /// <summary>
-    /// Interop classes generated for <see cref="JSExportAttribute"/> interfaces
+    /// Interop classes generated for <see cref="ExportAttribute"/> interfaces
     /// mapped by the generated class type. Expected to have <see cref="ExportInterface.Factory"/>
     /// invoked with the interface implementation (handler) before associated API usage in JS.
     /// </summary>
     public static IReadOnlyDictionary<Type, ExportInterface> Exports => exports;
     /// <summary>
-    /// Implementations generated for <see cref="JSImportAttribute"/> interop
+    /// Implementations generated for <see cref="ImportAttribute"/> interop
     /// interfaces mapped by the interface type of the associated implementation.
     /// </summary>
     public static IReadOnlyDictionary<Type, ImportInterface> Imports => imports;

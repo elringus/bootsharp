@@ -40,7 +40,7 @@ internal sealed class SerializedInspector
         if (IsVoid(type)) return false;
         if (IsNullable(type, out var value)) return ShouldSerialize(value);
         if (IsTaskWithResult(type, out var result)) return ShouldSerialize(result);
-        if (IsInstancedInteropInterface(type, out _)) return false;
+        if (IsInstancedInterface(type, out _)) return false;
         return !native.Contains(type.FullName!);
     }
 
@@ -100,7 +100,7 @@ internal sealed class SerializedInspector
             ConstructorParameter = ctor,
             Kind = canInit ? SerializedPropertyKind.Init : canSet ? SerializedPropertyKind.Set :
                 canSetField ? SerializedPropertyKind.Field : SerializedPropertyKind.None,
-            FieldAccessorName = canSetField ? $"Set_{BuildSerializedId(prop.DeclaringType!)}_{prop.Name}" : null
+            FieldAccessorName = canSetField ? $"Access_{BuildSerializedId(prop.DeclaringType!)}_{prop.Name}" : null
         };
     }
 

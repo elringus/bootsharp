@@ -2,29 +2,29 @@ using System.Reflection;
 
 namespace Bootsharp.Publish;
 
-internal sealed class InterfaceInspector (Preferences prefs, MemberInspector members, string entryAssemblyName)
+internal sealed class InterfaceInspector (MemberInspector members, string entryAssemblyName)
 {
     private InteropKind interop;
-    private (string space, string name, string full) impl;
+    private string memberSpace = null!;
 
     public InterfaceMeta Inspect (Type interfaceType, InteropKind interopKind)
     {
-        interop = interopKind;
-        impl = BuildInterfaceImplName(interfaceType, interop);
+        var space = BuildInterfaceSpace(interfaceType, interopKind);
+        var name = BuildInterfaceName(interfaceType);
         return new InterfaceMeta {
-            Interop = interop,
+            Interop = interop = interopKind,
             Type = interfaceType,
             TypeSyntax = BuildSyntax(interfaceType),
-            Namespace = impl.space,
-            Name = impl.name,
-            Members = interfaceType.GetProperties().Where(ShouldInspectProperty).Select(CreateProperty)
-                .Concat(interfaceType.GetMethods().Where(ShouldInspectMethod).Select(CreateMethod)).ToArray()
+            Namespace = space,
+            Name = name,
+            FullName = memberSpace = $"{space}.{name}",
+            JSName = BuildInterfaceJSName(interfaceType),
+            Members = [
+                ..interfaceType.GetEvents().Select(CreateEvent),
+                ..interfaceType.GetProperties().Where(ShouldInspectProperty).Select(CreateProperty),
+                ..interfaceType.GetMethods().Where(ShouldInspectMethod).Select(CreateMethod)
+            ]
         };
-    }
-
-    private bool ShouldInspectMethod (MethodInfo method)
-    {
-        return method.IsAbstract && !method.IsSpecialName;
     }
 
     private bool ShouldInspectProperty (PropertyInfo prop)
@@ -33,27 +33,44 @@ internal sealed class InterfaceInspector (Preferences prefs, MemberInspector mem
         return prop.GetMethod?.IsAbstract == true || prop.SetMethod?.IsAbstract == true;
     }
 
-    private MemberMeta CreateMethod (MethodInfo info)
+    private bool ShouldInspectMethod (MethodInfo method)
     {
-        var name = WithPrefs(prefs.Event, info.Name, info.Name);
-        var method = members.Inspect(info, interop) with {
-            Assembly = entryAssemblyName,
-            Space = impl.full,
-            Name = name,
-            JSName = ToFirstLower(name)
-        };
-        if (interop == InteropKind.Import && name != info.Name)
-            return new EventMeta(method, info.Name);
-        return method;
+        return method.IsAbstract && !method.IsSpecialName;
     }
 
-    private MemberMeta CreateProperty (PropertyInfo info)
+    private EventMeta CreateEvent (EventInfo info) => members.Inspect(info, interop) with {
+        Assembly = entryAssemblyName,
+        Space = memberSpace
+    };
+
+    private PropertyMeta CreateProperty (PropertyInfo info) => members.Inspect(info, interop) with {
+        Assembly = entryAssemblyName,
+        Space = memberSpace,
+        CanGet = info.GetMethod?.IsAbstract == true,
+        CanSet = info.SetMethod?.IsAbstract == true
+    };
+
+    private MethodMeta CreateMethod (MethodInfo info) => members.Inspect(info, interop) with {
+        Assembly = entryAssemblyName,
+        Space = memberSpace
+    };
+
+    private static string BuildInterfaceSpace (Type type, InteropKind interop)
     {
-        return members.Inspect(info, interop) with {
-            Assembly = entryAssemblyName,
-            Space = impl.full,
-            CanGet = info.GetMethod?.IsAbstract == true,
-            CanSet = info.SetMethod?.IsAbstract == true
-        };
+        var space = "Bootsharp.Generated." + (interop == InteropKind.Export ? "Exports" : "Imports");
+        if (type.Namespace != null) space += $".{type.Namespace}";
+        return space;
+    }
+
+    private static string BuildInterfaceName (Type type)
+    {
+        return "JS" + type.Name[1..];
+    }
+
+    private static string BuildInterfaceJSName (Type type)
+    {
+        var name = BuildInterfaceName(type);
+        if (type.Namespace == null) return name;
+        return $"{type.Namespace}.{name}".Replace(".", "_");
     }
 }

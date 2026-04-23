@@ -30,16 +30,16 @@ internal sealed class ResourceGenerator (string entryAssemblyName, bool embed, b
               export default {
                   wasm: {{wasm}},
                   assemblies: [
-                      {{JoinLines(assemblies, 2, ",\n")}}
+                      {{Fmt(assemblies, 2, ",\n")}}
                   ],
                   icu: [
-                      {{JoinLines(icu, 2, ",\n")}}
+                      {{Fmt(icu, 2, ",\n")}}
                   ],
                   symbols: [
-                      {{JoinLines(symbols, 2, ",\n")}}
+                      {{Fmt(symbols, 2, ",\n")}}
                   ],
                   pdb: [
-                      {{JoinLines(pdb, 2, ",\n")}}
+                      {{Fmt(pdb, 2, ",\n")}}
                   ],
                   entryAssemblyName: "{{entryAssemblyName}}"
               };

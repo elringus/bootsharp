@@ -25,7 +25,7 @@ internal sealed class DependencyGenerator (string entryAssembly)
               public static class Dependencies
               {
                   [System.Runtime.CompilerServices.ModuleInitializer]
-                  {{JoinLines(added)}}
+                  {{Fmt(added)}}
                   internal static void RegisterDynamicDependencies () { }
               }
               """;
@@ -39,17 +39,17 @@ internal sealed class DependencyGenerator (string entryAssembly)
 
     private void AddGeneratedInteropClasses (SolutionInspection inspection)
     {
-        foreach (var inter in inspection.StaticInterfaces)
-            Add(All, inter.FullName, entryAssembly);
-        foreach (var inter in inspection.InstancedInterfaces)
-            if (inter.Interop == InteropKind.Import)
-                Add(All, inter.FullName, entryAssembly);
+        foreach (var it in inspection.StaticInterfaces)
+            Add(All, it.FullName, entryAssembly);
+        foreach (var it in inspection.InstancedInterfaces)
+            if (it.Interop == InteropKind.Import)
+                Add(All, it.FullName, entryAssembly);
     }
 
     private void AddClassesWithInteropMethods (SolutionInspection inspection)
     {
-        foreach (var method in inspection.StaticMethods)
-            Add(All, method.Space, method.Assembly);
+        foreach (var member in inspection.StaticMembers)
+            Add(All, member.Space, member.Assembly);
     }
 
     private void Add (DynamicallyAccessedMemberTypes types, string name, string assembly)

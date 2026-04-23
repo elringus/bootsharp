@@ -1,14 +1,12 @@
 namespace Bootsharp.Publish;
 
-/// <inheritdoc cref="JSPreferencesAttribute"/>
+/// <inheritdoc cref="PreferencesAttribute"/>
 internal sealed record Preferences
 {
-    /// <inheritdoc cref="JSPreferencesAttribute.Space"/>
+    /// <inheritdoc cref="PreferencesAttribute.Space"/>
     public IReadOnlyList<Preference> Space { get; init; } = [];
-    /// <inheritdoc cref="JSPreferencesAttribute.Type"/>
+    /// <inheritdoc cref="PreferencesAttribute.Type"/>
     public IReadOnlyList<Preference> Type { get; init; } = [];
-    /// <inheritdoc cref="JSPreferencesAttribute.Event"/>
-    public IReadOnlyList<Preference> Event { get; init; } = [];
-    /// <inheritdoc cref="JSPreferencesAttribute.Function"/>
+    /// <inheritdoc cref="PreferencesAttribute.Function"/>
     public IReadOnlyList<Preference> Function { get; init; } = [];
 }

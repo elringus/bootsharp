@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Bootsharp.Publish;
@@ -6,22 +7,19 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
 {
     private record Binding (MemberMeta? Member, Type? Enum, string Namespace);
 
-    private readonly StringBuilder builder = new();
-    private readonly BindingClassGenerator classGenerator = new();
-    private readonly BindingSerializerGenerator serdeGenerator = new();
-    private IReadOnlyCollection<InterfaceMeta> instanced = [];
-
     private Binding binding => bindings[index];
     private Binding? prevBinding => index == 0 ? null : bindings[index - 1];
     private Binding? nextBinding => index == bindings.Length - 1 ? null : bindings[index + 1];
 
-    private Binding[] bindings = null!;
+    private readonly StringBuilder builder = new();
+    private IReadOnlyCollection<InterfaceMeta> instanced = [];
+    private Binding[] bindings = [];
     private int index, level;
 
     public string Generate (SolutionInspection inspection)
     {
         instanced = inspection.InstancedInterfaces;
-        bindings = inspection.StaticMethods
+        bindings = inspection.StaticMembers
             .Select(m => new Binding(m, null, m.JSSpace))
             .Concat(inspection.StaticInterfaces.SelectMany(i => i.Members
                 .Select(m => new Binding(m, null, m.JSSpace))))
@@ -41,11 +39,20 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
             builder.Append("\n\n");
         }
 
-        builder.Append(serdeGenerator.Generate(inspection.Serialized));
-        builder.Append('\n');
+        EmitHelpers();
+        builder.Append("\n\n");
+
+        builder.Append(new BindingSerializerGenerator().Generate(inspection.Serialized));
+        builder.Append("\n\n");
+
+        foreach (var instance in inspection.InstancedInterfaces
+                     .Where(i => i.Interop == InteropKind.Import && i.Members.OfType<EventMeta>().Any()))
+            EmitInstanceRegistrar(instance);
+        builder.Append("\n\n");
 
         if (inspection.InstancedInterfaces.Count > 0)
-            builder.Append(classGenerator.Generate(inspection.InstancedInterfaces));
+            builder.Append(new BindingClassGenerator().Generate(inspection.InstancedInterfaces));
+
         for (index = 0; index < bindings.Length; index++)
             EmitBinding();
 
@@ -58,7 +65,7 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
             """
             import { exports } from "./exports";
             import { Event } from "./event";
-            import { registerInstance, getInstance, disposeOnFinalize } from "./instances";
+            import { instances } from "./instances";
             import { serialize, deserialize, binary, types } from "./serialization";
             """
         );
@@ -83,6 +90,20 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
             function getImport(handler, serializedHandler, name) {
                 if (typeof handler !== "function") throw Error(`Failed to invoke '${name}' from C#. Make sure to assign the function in JavaScript.`);
                 return serializedHandler;
+            }
+            """
+        );
+    }
+
+    private void EmitHelpers ()
+    {
+        builder.Append(
+            """
+            function importEvent(handler) {
+                const event = new Event();
+                const broadcast = event.broadcast.bind(event);
+                event.broadcast = (...args) => { broadcast(...args); handler(...args); };
+                return event;
             }
             """
         );
@@ -143,7 +164,8 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
     {
         switch (member)
         {
-            case EventMeta e: EmitEvent(e); break;
+            case EventMeta { Interop: InteropKind.Export } e: EmitEventExport(e); break;
+            case EventMeta { Interop: InteropKind.Import } e: EmitEventImport(e); break;
             case PropertyMeta { Interop: InteropKind.Export } p: EmitPropertyExport(p); break;
             case PropertyMeta { Interop: InteropKind.Import } p: EmitPropertyImport(p); break;
             case MethodMeta { Interop: InteropKind.Export } m: EmitMethodExport(m); break;
@@ -151,132 +173,114 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
         }
     }
 
+    private void EmitEventExport (EventMeta evt)
+    {
+        var inst = TryInstanced(evt, out var instance);
+        var name = $"broadcast{evt.Name}Serialized";
+        var args = string.Join(", ", evt.Arguments.Select(a => a.JSName));
+        var invArgs = string.Join(", ", evt.Arguments.Select(arg =>
+            // By default, we use 'null' for missing collection items, but here the event args array
+            // represents args specified to the event's 'broadcast' function, so user expects 'undefined'.
+            $"{Deserialize(arg)}{(arg.Value.Nullable ? " ?? undefined" : "")}"));
+        if (inst)
+        {
+            var invName = $"instances.export(_id, id => new {instance!.JSName}(id)).broadcast{evt.Name}";
+            builder.Append($"{Br}{name}({PrependIdArg(args)}) {{ {invName}({invArgs}); }}");
+        }
+        else
+        {
+            var invName = $"{evt.JSSpace}.{evt.JSName}.broadcast";
+            builder.Append($"{Br}{evt.JSName}: new Event()");
+            builder.Append($"{Br}{name}: ({args}) => {invName}({invArgs})");
+        }
+    }
+
+    private void EmitEventImport (EventMeta evt)
+    {
+        if (TryInstanced(evt, out _)) return; // instanced import event handlers are emitted in the registrar
+        var name = $"{evt.Space.Replace('.', '_')}_Invoke{evt.Name}";
+        var invName = debug ? $"""getExport("{name}")""" : $"exports.{name}";
+        var args = string.Join(", ", evt.Arguments.Select(a => a.JSName));
+        var invArgs = string.Join(", ", evt.Arguments.Select(Serialize));
+        builder.Append($"{Br}{evt.JSName}: importEvent(({args}) => {invName}({invArgs}))");
+    }
+
     private void EmitPropertyExport (PropertyMeta prop)
     {
-        var instanced = this.instanced.Any(i => i.Members.Contains(prop));
+        var inst = TryInstanced(prop, out _);
         if (prop.CanGet)
         {
             var fnName = $"{prop.Space.Replace('.', '_')}_GetProperty{prop.Name}";
-            var endpoint = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
-            var body = instanced ? $"{endpoint}(_id)" : $"{endpoint}()";
-            if (prop.Value.InstanceType is { } it)
-                body = $"new {BuildJSInteropInstanceClassName(this.instanced.First(i => i.Type == it))}({body})";
-            else if (prop.Value.IsSerialized) body = $"deserialize({body}, {prop.Value.Serialized.Id})";
-            if (instanced) builder.Append($"{Br}getProperty{prop.Name}(_id) {{ return {body}; }}");
+            var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
+            var body = Deserialize(prop.Value, inst ? $"{invName}(_id)" : $"{invName}()");
+            if (prop.Value.Nullable && !prop.Value.IsInstance) body += " ?? undefined";
+            if (inst) builder.Append($"{Br}getProperty{prop.Name}(_id) {{ return {body}; }}");
             else builder.Append($"{Br}get {prop.JSName}() {{ return {body}; }}");
         }
         if (prop.CanSet)
         {
             var fnName = $"{prop.Space.Replace('.', '_')}_SetProperty{prop.Name}";
-            var endpoint = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
-            var value = prop.Value.IsInstance ? "registerInstance(value)" :
-                prop.Value.IsSerialized ? $"serialize(value, {prop.Value.Serialized.Id})" : "value";
-            var body = instanced ? $"{endpoint}(_id, {value})" : $"{endpoint}({value})";
-            if (instanced) builder.Append($"{Br}setProperty{prop.Name}(_id, value) {{ {body}; }}");
+            var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
+            var value = Serialize(prop.Value, "value");
+            var body = inst ? $"{invName}(_id, {value})" : $"{invName}({value})";
+            if (inst) builder.Append($"{Br}setProperty{prop.Name}(_id, value) {{ {body}; }}");
             else builder.Append($"{Br}set {prop.JSName}(value) {{ {body}; }}");
         }
     }
 
     private void EmitPropertyImport (PropertyMeta prop)
     {
-        var instanced = this.instanced.Any(i => i.Members.Contains(prop));
+        var inst = TryInstanced(prop, out _);
         if (prop.CanGet)
         {
-            if (!instanced) builder.Append($"{Br}get {prop.JSName}() {{ return this._{prop.JSName}; }}");
-            var args = instanced ? "_id" : "";
-            var body = instanced ? $"getInstance(_id).{prop.JSName}" : $"this.{prop.JSName}";
-            if (prop.Value.IsInstance) body = $"registerInstance({body})";
-            else if (prop.Value.IsSerialized) body = $"serialize({body}, {prop.Value.Serialized.Id})";
+            if (!inst) builder.Append($"{Br}get {prop.JSName}() {{ return this._{prop.JSName}; }}");
+            var args = inst ? "_id" : "";
+            var body = Serialize(prop.Value, inst ? $"instances.imported(_id).{prop.JSName}" : $"this.{prop.JSName}");
             builder.Append($"{Br}getProperty{prop.Name}Serialized({args}) {{ return {body}; }}");
         }
         if (prop.CanSet)
         {
-            if (!instanced) builder.Append($"{Br}set {prop.JSName}(value) {{ this._{prop.JSName} = value; }}");
-            var value = prop.Value.InstanceType is { } it
-                ? $"new {BuildJSInteropInstanceClassName(this.instanced.First(i => i.Type == it))}(value)"
-                : prop.Value.IsSerialized ? $"deserialize(value, {prop.Value.Serialized.Id})" : "value";
-            var args = instanced ? "_id, value" : "value";
-            var body = instanced ? $"getInstance(_id).{prop.JSName} = {value}" : $"this.{prop.JSName} = {value}";
+            if (!inst) builder.Append($"{Br}set {prop.JSName}(value) {{ this._{prop.JSName} = value; }}");
+            var value = Deserialize(prop.Value, "value");
+            var args = inst ? "_id, value" : "value";
+            var body = inst ? $"instances.imported(_id).{prop.JSName} = {value}" : $"this.{prop.JSName} = {value}";
             builder.Append($"{Br}setProperty{prop.Name}Serialized({args}) {{ {body}; }}");
-        }
-    }
-
-    private void EmitEvent (EventMeta method)
-    {
-        var instanced = this.instanced.Any(i => i.Members.Contains(method));
-        var name = method.JSName;
-        if (!instanced) builder.Append($"{Br}{name}: new Event()");
-        var sigArgs = string.Join(", ", method.Arguments.Select(a => a.JSName));
-        if (instanced) sigArgs = PrependInstanceIdArgName(sigArgs);
-        var callArgs = string.Join(", ", method.Arguments.Select(BuildCallArg));
-        var handler = instanced ? "getInstance(_id)" : method.JSSpace;
-        builder.Append($"{Br}{name}Serialized: ({sigArgs}) => {handler}.{name}.broadcast({callArgs})");
-
-        string BuildCallArg (ArgumentMeta arg)
-        {
-            if (!arg.Value.IsSerialized) return arg.JSName;
-            // By default, we use 'null' for missing collection items, but here the event args array
-            // represents args specified to the event's 'broadcast' function, so user expects 'undefined'.
-            var toUndefined = arg.Value.Nullable ? " ?? undefined" : "";
-            return $"deserialize({arg.JSName}, {arg.Value.Serialized.Id}){toUndefined}";
         }
     }
 
     private void EmitMethodExport (MethodMeta method)
     {
-        var instanced = this.instanced.Any(i => i.Members.Contains(method));
+        var inst = TryInstanced(method, out _);
         var wait = ShouldWait(method);
         var fnName = $"{method.Space.Replace('.', '_')}_{method.Name}";
-        var endpoint = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
-        var sigArgs = string.Join(", ", method.Arguments.Select(a => a.JSName));
-        if (instanced) sigArgs = PrependInstanceIdArgName(sigArgs);
-        var callArgs = string.Join(", ", method.Arguments.Select(BuildCallArg));
-        if (instanced) callArgs = PrependInstanceIdArgName(callArgs);
-        var body = $"{(wait ? "await " : "")}{endpoint}({callArgs})";
-        if (method.Value.InstanceType is { } it)
-            body = $"new {BuildJSInteropInstanceClassName(this.instanced.First(i => i.Type == it))}({body})";
-        else if (method.Value.IsSerialized) body = $"deserialize({body}, {method.Value.Serialized.Id})";
-        builder.Append($"{Br}{method.JSName}: {(wait ? "async " : "")}({sigArgs}) => {body}");
-
-        string BuildCallArg (ArgumentMeta arg)
-        {
-            var name = arg.JSName;
-            if (arg.Value.IsInstance) name = $"registerInstance({name})";
-            else if (arg.Value.IsSerialized) name = $"serialize({name}, {arg.Value.Serialized.Id})";
-            return name;
-        }
+        var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
+        var args = string.Join(", ", method.Arguments.Select(a => a.JSName));
+        if (inst) args = PrependIdArg(args);
+        var invArgs = string.Join(", ", method.Arguments.Select(Serialize));
+        if (inst) invArgs = PrependIdArg(invArgs);
+        var body = Deserialize(method.Value, $"{(wait ? "await " : "")}{invName}({invArgs})");
+        builder.Append($"{Br}{method.JSName}: {(wait ? "async " : "")}({args}) => {body}");
     }
 
     private void EmitMethodImport (MethodMeta method)
     {
-        var instanced = this.instanced.Any(i => i.Members.Contains(method));
+        var inst = TryInstanced(method, out _);
         var wait = ShouldWait(method);
-        var fnName = method.JSName;
-        var sigArgs = string.Join(", ", method.Arguments.Select(a => a.JSName));
-        if (instanced) sigArgs = PrependInstanceIdArgName(sigArgs);
-        var callArgs = string.Join(", ", method.Arguments.Select(BuildCallArg));
-        var handler = instanced ? $"getInstance(_id).{fnName}" : $"this.{fnName}Handler";
-        var body = $"{(wait ? "await " : "")}{handler}({callArgs})";
-        if (method.Value.IsInstance) body = $"registerInstance({body})";
-        else if (method.Value.IsSerialized) body = $"serialize({body}, {method.Value.Serialized.Id})";
-        var serdeHandler = $"{(wait ? "async " : "")}({sigArgs}) => {body}";
-        if (instanced) builder.Append($"{Br}{fnName}Serialized: {serdeHandler}");
+        var name = method.JSName;
+        var args = string.Join(", ", method.Arguments.Select(a => a.JSName));
+        if (inst) args = PrependIdArg(args);
+        var invArgs = string.Join(", ", method.Arguments.Select(Deserialize));
+        var invName = inst ? $"instances.imported(_id).{name}" : $"this.{name}Handler";
+        var body = Serialize(method.Value, $"{(wait ? "await " : "")}{invName}({invArgs})");
+        var serdeHandler = $"{(wait ? "async " : "")}({args}) => {body}";
+        if (inst) builder.Append($"{Br}{name}Serialized: {serdeHandler}");
         else
         {
-            var serde = $"this.{fnName}SerializedHandler";
-            var serdeExp = debug ? $"getImport({handler}, {serde}, \"{binding.Namespace}.{fnName}\")" : serde;
-            builder.Append($"{Br}get {fnName}() {{ return {handler}; }}");
-            builder.Append($"{Br}set {fnName}(handler) {{ {handler} = handler; {serde} = {serdeHandler}; }}");
-            builder.Append($"{Br}get {fnName}Serialized() {{ return {serdeExp}; }}");
-        }
-
-        string BuildCallArg (ArgumentMeta arg)
-        {
-            var name = arg.JSName;
-            if (arg.Value.InstanceType is { } it)
-                name = $"new {BuildJSInteropInstanceClassName(this.instanced.First(i => i.Type == it))}({name})";
-            else if (arg.Value.IsSerialized) name = $"deserialize({name}, {arg.Value.Serialized.Id})";
-            return name;
+            var serde = $"this.{name}SerializedHandler";
+            var serdeExp = debug ? $"getImport({invName}, {serde}, \"{binding.Namespace}.{name}\")" : serde;
+            builder.Append($"{Br}get {name}() {{ return {invName}; }}");
+            builder.Append($"{Br}set {name}(handler) {{ {invName} = handler; {serde} = {serdeHandler}; }}");
+            builder.Append($"{Br}get {name}Serialized() {{ return {serdeExp}; }}");
         }
     }
 
@@ -287,6 +291,71 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
             .Select(v => $"\"{v}\": \"{Enum.GetName(@enum, v)}\"")
             .Concat(values.Select(v => $"\"{Enum.GetName(@enum, v)}\": {v}")));
         builder.Append($"{Br}{@enum.Name}: {{ {fields} }}");
+    }
+
+    private void EmitInstanceRegistrar (InterfaceMeta instance)
+    {
+        var events = instance.Members.OfType<EventMeta>().ToArray();
+        builder.Append(
+            $$"""
+              function {{BuildRegistrarName(instance)}}(instance) {
+                  return instances.import(instance, _id => {
+                      {{Fmt(events.Select(e => $"instance.{e.JSName}.subscribe(handle{e.Name});"))}}
+                      return () => {
+                          {{Fmt(events.Select(e => $"instance.{e.JSName}.unsubscribe(handle{e.Name});"), 2)}}
+                      };
+
+                      {{Fmt(events.Select(e => {
+                          var fnName = $"{e.Space.Replace('.', '_')}_Invoke{e.Name}";
+                          var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
+                          var args = string.Join(", ", e.Arguments.Select(a => a.JSName));
+                          var invArgs = PrependIdArg(string.Join(", ", e.Arguments.Select(Serialize)));
+                          return $"function handle{e.Name}({args}) {{ {invName}({invArgs}); }}";
+                      }))}}
+                  });
+              }
+              """
+        );
+    }
+
+    private string Serialize (ArgumentMeta arg) => Serialize(arg.Value, arg.JSName);
+    private string Serialize (ValueMeta value, string exp)
+    {
+        if (value.IsInstance) return RegisterInstance(value, exp);
+        if (value.IsSerialized) return $"serialize({exp}, {value.Serialized.Id})";
+        return exp;
+    }
+
+    private string Deserialize (ArgumentMeta arg) => Deserialize(arg.Value, arg.JSName);
+    private string Deserialize (ValueMeta value, string exp)
+    {
+        if (value.InstanceType is { } it)
+        {
+            var instance = instanced.First(i => i.Type == it);
+            if (instance.Interop == InteropKind.Import) return $"instances.imported({exp})";
+            return $"instances.export({exp}, id => new {instance.JSName}(id))";
+        }
+        if (value.IsSerialized) return $"deserialize({exp}, {value.Serialized.Id})";
+        return exp;
+    }
+
+    private string RegisterInstance (ValueMeta value, string exp)
+    {
+        var it = instanced.First(i => i.Type == value.InstanceType);
+        if (it.Interop == InteropKind.Export) return $"{exp}._id";
+        if (it.Members.OfType<EventMeta>().Any()) return $"{BuildRegistrarName(it)}({exp})";
+        return $"instances.import({exp})";
+    }
+
+    private static string BuildRegistrarName (InterfaceMeta it)
+    {
+        return $"register_{it.Type.FullName!.Replace('.', '_').Replace('+', '_')}";
+    }
+
+    private bool TryInstanced (MemberMeta member, [NotNullWhen(true)] out InterfaceMeta? instance)
+    {
+        instance = instanced.FirstOrDefault(i => i.Members.Contains(member));
+        return instance is not null;
     }
 
     private bool ShouldWait (MethodMeta method)

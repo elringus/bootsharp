@@ -9,12 +9,14 @@ public class InterfacesTest : EmitTest
     {
         AddAssembly(With(
             """
-            [assembly:JSExport(typeof(IExported))]
+            [assembly:Export(typeof(IExported))]
 
             public record Record;
 
             public interface IExported
             {
+                event Action<Record?> OnRecordChanged;
+
                 Record? Record { get; set; }
 
                 void Inv (string? a);
@@ -48,15 +50,17 @@ public class InterfacesTest : EmitTest
                     public JSExported (global::IExported handler)
                     {
                         JSExported.handler = handler;
+                        handler.OnRecordChanged += OnRecordChanged.Invoke;
                     }
 
-                    [JSInvokable] public static global::Record? GetPropertyRecord () => handler.Record;
-                    [JSInvokable] public static void SetPropertyRecord (global::Record? value) => handler.Record = value;
-                    [JSInvokable] public static void Inv (global::System.String? a) => handler.Inv(a);
-                    [JSInvokable] public static global::System.Threading.Tasks.Task InvAsync () => handler.InvAsync();
-                    [JSInvokable] public static global::Record? InvRecord () => handler.InvRecord();
-                    [JSInvokable] public static global::System.Threading.Tasks.Task<global::System.String> InvAsyncResult () => handler.InvAsyncResult();
-                    [JSInvokable] public static global::System.String[] InvArray (global::System.Int32[] a) => handler.InvArray(a);
+                    [Export] public static event global::System.Action<global::Record?> OnRecordChanged;
+                    [Export] public static global::Record? GetPropertyRecord () => handler.Record;
+                    [Export] public static void SetPropertyRecord (global::Record? value) => handler.Record = value;
+                    [Export] public static void Inv (global::System.String? a) => handler.Inv(a);
+                    [Export] public static global::System.Threading.Tasks.Task InvAsync () => handler.InvAsync();
+                    [Export] public static global::Record? InvRecord () => handler.InvRecord();
+                    [Export] public static global::System.Threading.Tasks.Task<global::System.String> InvAsyncResult () => handler.InvAsyncResult();
+                    [Export] public static global::System.String[] InvArray (global::System.Int32[] a) => handler.InvArray(a);
                 }
             }
             """);
@@ -67,12 +71,14 @@ public class InterfacesTest : EmitTest
     {
         AddAssembly(With(
             """
-            [assembly:JSImport(typeof(IImported))]
+            [assembly:Import(typeof(IImported))]
 
             public record Record;
 
             public interface IImported
             {
+                event Action<Record?> OnRecordChanged;
+
                 Record? Record { get; set; }
 
                 void Inv (string? a);
@@ -101,40 +107,42 @@ public class InterfacesTest : EmitTest
             {
                 public class JSImported : global::IImported
                 {
+                    public event global::System.Action<global::Record?> OnRecordChanged;
+                    internal void InvokeOnRecordChanged (global::Record? obj) => OnRecordChanged?.Invoke(obj);
                     global::Record? global::IImported.Record
                     {
-                        get => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_GetPropertyRecord();
-                        set => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_SetPropertyRecord(value);
+                        get => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_GetPropertyRecord();
+                        set => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_SetPropertyRecord(value);
                     }
-                    void global::IImported.Inv (global::System.String? a) => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_Inv(a);
-                    global::System.Threading.Tasks.Task global::IImported.InvAsync () => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_InvAsync();
-                    global::Record? global::IImported.InvRecord () => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_InvRecord();
-                    global::System.Threading.Tasks.Task<global::System.String> global::IImported.InvAsyncResult () => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_InvAsyncResult();
-                    global::System.String[] global::IImported.InvArray (global::System.Int32[] a) => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_InvArray(a);
+                    void global::IImported.Inv (global::System.String? a) => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_Inv(a);
+                    global::System.Threading.Tasks.Task global::IImported.InvAsync () => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_InvAsync();
+                    global::Record? global::IImported.InvRecord () => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_InvRecord();
+                    global::System.Threading.Tasks.Task<global::System.String> global::IImported.InvAsyncResult () => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_InvAsyncResult();
+                    global::System.String[] global::IImported.InvArray (global::System.Int32[] a) => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_InvArray(a);
                 }
             }
             """);
     }
 
     [Fact]
-    public void GeneratesImplementationForInstancedImportInterface ()
+    public void GeneratesImplementationForImportedInstanceInterface ()
     {
         AddAssembly(With(
             """
             public record Record;
-            public interface IExported { void Inv (string arg); }
+
             public interface IImported
             {
+                event Action<Record?> OnRecordChanged;
+
                 Record? Record { get; set; }
 
                 void Fun (string arg);
-                void NotifyEvt (string arg);
             }
 
             public class Class
             {
-                [JSInvokable] public static IExported GetExported () => default;
-                [JSFunction] public static IImported GetImported () => Proxies.Get<Func<IImported>>("Class.GetImported")();
+                [Import] public static IImported GetImported () => Proxies.Get<Func<IImported>>("Class.GetImported")();
             }
             """));
         Execute();
@@ -142,21 +150,52 @@ public class InterfacesTest : EmitTest
             """
             namespace Bootsharp.Generated.Imports
             {
-                public class JSImported(global::System.Int32 _id) : global::IImported
+                public class JSImported (global::System.Int32 id) : global::IImported
                 {
-                    ~JSImported() => global::Bootsharp.Generated.Interop.DisposeImportedInstance(_id);
+                    internal readonly global::System.Int32 _id = id;
 
+                    ~JSImported()
+                    {
+                        global::Bootsharp.Instances.DisposeImported(_id);
+                        global::Bootsharp.Generated.Interop.DisposeImportedInstance(_id);
+                    }
+
+                    public event global::System.Action<global::Record?> OnRecordChanged;
+                    internal void InvokeOnRecordChanged (global::Record? obj) => OnRecordChanged?.Invoke(obj);
                     global::Record? global::IImported.Record
                     {
-                        get => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_GetPropertyRecord(_id);
-                        set => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_SetPropertyRecord(_id, value);
+                        get => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_GetPropertyRecord(_id);
+                        set => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_SetPropertyRecord(_id, value);
                     }
-                    void global::IImported.Fun (global::System.String arg) => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_Fun(_id, arg);
-                    void global::IImported.NotifyEvt (global::System.String arg) => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_OnEvt(_id, arg);
+                    void global::IImported.Fun (global::System.String arg) => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_Fun(_id, arg);
                 }
             }
             """);
-        DoesNotContain("JSExported"); // Exported instances are authored by user and registered on initial interop.
+    }
+
+    [Fact]
+    public void DoesNotGenerateImplementationForExportedInstanceInterface ()
+    {
+        AddAssembly(With(
+            """
+            public record Record;
+
+            public interface IExported
+            {
+                event Action<Record?> OnRecordChanged;
+
+                Record? Record { get; set; }
+
+                void Fun (string arg);
+            }
+
+            public class Class
+            {
+                [Export] public static IExported GetExported () => default;
+            }
+            """));
+        Execute();
+        DoesNotContain("JSExported");
     }
 
     [Fact]
@@ -164,8 +203,8 @@ public class InterfacesTest : EmitTest
     {
         AddAssembly(With(
             """
-            [assembly:JSExport(typeof(Space.IExported))]
-            [assembly:JSImport(typeof(Space.IImported))]
+            [assembly:Export(typeof(Space.IExported))]
+            [assembly:Import(typeof(Space.IImported))]
 
             namespace Space;
 
@@ -201,7 +240,7 @@ public class InterfacesTest : EmitTest
                         JSExported.handler = handler;
                     }
 
-                    [JSInvokable] public static void Inv (global::Space.Record a) => handler.Inv(a);
+                    [Export] public static void Inv (global::Space.Record a) => handler.Inv(a);
                 }
             }
 
@@ -209,69 +248,7 @@ public class InterfacesTest : EmitTest
             {
                 public class JSImported : global::Space.IImported
                 {
-                    void global::Space.IImported.Fun (global::Space.Record a) => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_Space_JSImported_Fun(a);
-                }
-            }
-            """);
-    }
-
-    [Fact]
-    public void WhenImportedMethodStartsWithNotifyEmitsEvent ()
-    {
-        AddAssembly(With(
-            """
-            [assembly:JSImport(typeof(IImported))]
-
-            public interface IImported { void NotifyFoo (); }
-            """));
-        Execute();
-        Contains(
-            """
-            namespace Bootsharp.Generated.Imports
-            {
-                public class JSImported : global::IImported
-                {
-                    void global::IImported.NotifyFoo () => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_OnFoo();
-                }
-            }
-            """);
-    }
-
-    [Fact]
-    public void RespectsEventPreference ()
-    {
-        AddAssembly(With(
-            """
-            [assembly:JSPreferences(Event = [@"^Broadcast(\S+)", "On$1"])]
-            [assembly:JSImport(typeof(IImported))]
-
-            public interface IImported
-            {
-                void NotifyFoo ();
-                void BroadcastBar ();
-            }
-            """));
-        Execute();
-        Contains(
-            """
-            namespace Bootsharp.Generated
-            {
-                internal static class InterfaceRegistrations
-                {
-                    [System.Runtime.CompilerServices.ModuleInitializer]
-                    internal static void RegisterInterfaces ()
-                    {
-                        Interfaces.Register(typeof(global::IImported), new ImportInterface(new Bootsharp.Generated.Imports.JSImported()));
-                    }
-                }
-            }
-
-            namespace Bootsharp.Generated.Imports
-            {
-                public class JSImported : global::IImported
-                {
-                    void global::IImported.NotifyFoo () => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_NotifyFoo();
-                    void global::IImported.BroadcastBar () => global::Bootsharp.Generated.Interop.Proxy_Bootsharp_Generated_Imports_JSImported_OnBar();
+                    void global::Space.IImported.Fun (global::Space.Record a) => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_Space_JSImported_Fun(a);
                 }
             }
             """);
@@ -282,8 +259,8 @@ public class InterfacesTest : EmitTest
     {
         AddAssembly(With(
             """
-            [assembly:JSExport(typeof(IExportedStatic))]
-            [assembly:JSImport(typeof(IImportedStatic))]
+            [assembly:Export(typeof(IExportedStatic))]
+            [assembly:Import(typeof(IImportedStatic))]
 
             public interface IExportedStatic { int Foo () => 0; }
             public interface IImportedStatic { int Foo () => 0; }
@@ -292,8 +269,8 @@ public class InterfacesTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static IExportedInstanced GetExported () => default;
-                [JSFunction] public static IImportedInstanced GetImported () => default;
+                [Export] public static IExportedInstanced GetExported () => default;
+                [Import] public static IImportedInstanced GetImported () => default;
             }
             """));
         Execute();

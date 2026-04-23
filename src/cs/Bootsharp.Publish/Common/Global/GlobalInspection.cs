@@ -1,4 +1,5 @@
 global using static Bootsharp.Publish.GlobalInspection;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -27,6 +28,21 @@ internal static class GlobalInspection
     {
         if (type.IsArray) return false;
         return IsUserAssembly(type.Assembly.FullName!);
+    }
+
+    public static bool IsAutoProperty (PropertyInfo prop)
+    {
+        var backingFieldName = $"<{prop.Name}>k__BackingField";
+        var backingField = prop.DeclaringType!.GetField(backingFieldName,
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        return backingField != null;
+    }
+
+    public static bool IsInstancedInterface (Type type, [NotNullWhen(true)] out Type? instanceType)
+    {
+        if (IsTaskWithResult(type, out instanceType))
+            return IsInstancedInterface(instanceType, out instanceType);
+        return (instanceType = type.IsInterface && IsUserType(type) ? type : null) != null;
     }
 
     public static string WithPrefs (IReadOnlyCollection<Preference> prefs, string input, string @default)

@@ -18,11 +18,11 @@ When a value of non-natively supported type is specified in an interop API, Boot
 ```csharp
 public record User (long Id, string Name, DateTime Registered);
 
-[JSInvokable]
+[Export]
 public static void AddUser (User user) { }
 
-[JSEvent]
-public static partial void OnUserModified (User user);
+[Export]
+public static event Action<User>? OnUserModified;
 ```
 
 — Bootsharp will automatically emit C# and JavaScript code required to de-/serialize `User` record on both ends, so that you can consume the APIs as if they were initially authored in JavaScript:
@@ -44,7 +44,7 @@ Enums are marshalled as numbers for better performance, while additional name <-
 ```csharp
 public enum Options { Foo, Bar }
 
-[JSInvokable]
+[Export]
 public static Options GetOption () => Options.Bar;
 ```
 
@@ -65,7 +65,7 @@ console.log(Program.Options[1]); // "Bar"
 Bootsharp marshals C# dictionaries as ES6 [Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map):
 
 ```csharp
-[JSInvokable]
+[Export]
 public static Dictionary<string, bool> GetMap () =>
     new () { ["foo"] = true, ["bar"] = false };
 ```
@@ -85,7 +85,7 @@ console.log(map.get("bar")); // false
 It's common to use various collection interfaces, such as `IReadOnlyList` or `IReadOnlyDictionary` when authoring C# APIs. Bootsharp will accept any kind of array or dictionary compatible interface in the interop APIs and marshal them as plain arrays and maps by default:
 
 ```csharp
-[JSInvokable]
+[Export]
 public static IReadOnlyDictionary<string, float> Map (
     IReadOnlyList<string> a, IReadOnlyCollection<float> b) { }
 ```

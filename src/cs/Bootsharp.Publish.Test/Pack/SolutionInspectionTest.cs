@@ -6,7 +6,7 @@ public class SolutionInspectionTest : PackTest
     public void AllAssembliesAreInspected ()
     {
         AddAssembly("foo.dll",
-            WithClass("[JSInvokable] public static void Inv () {}")
+            WithClass("[Export] public static void Inv () {}")
         );
         Execute();
         Assert.Contains(Engine.Messages, w => w.Contains("foo"));
@@ -16,10 +16,10 @@ public class SolutionInspectionTest : PackTest
     public void WhenAssemblyInspectionFailsWarningIsLogged ()
     {
         AddAssembly("foo.dll",
-            WithClass("[JSInvokable] public static void InvFoo () {}")
+            WithClass("[Export] public static void InvFoo () {}")
         );
         AddAssembly("bar.dll",
-            WithClass("[JSInvokable] public static void InvBar () {}")
+            WithClass("[Export] public static void InvBar () {}")
         );
         File.WriteAllText(Path.Combine(Project.Root, "foo.dll"), "corrupted");
         Execute();
@@ -38,10 +38,10 @@ public class SolutionInspectionTest : PackTest
             File.WriteAllText($"{buildDir}/{Path.GetFileName(file)}", File.ReadAllText(file));
 
         AddAssembly("foo.dll",
-            WithClass("[JSInvokable] public static void InvFoo () {}")
+            WithClass("[Export] public static void InvFoo () {}")
         );
         AddAssembly("bar.dll",
-            WithClass("[JSInvokable] public static void InvBar () {}")
+            WithClass("[Export] public static void InvBar () {}")
         );
         Execute();
 
@@ -63,10 +63,10 @@ public class SolutionInspectionTest : PackTest
             File.WriteAllText($"{buildDir}/{Path.GetFileName(file)}", File.ReadAllText(file));
 
         AddAssembly("foo.dll",
-            WithClass("[JSInvokable] public static void InvFoo () {}")
+            WithClass("[Export] public static void InvFoo () {}")
         );
         AddAssembly("bar.dll",
-            WithClass("[JSInvokable] public static void InvBar () {}")
+            WithClass("[Export] public static void InvBar () {}")
         );
         Execute();
 

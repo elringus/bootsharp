@@ -1,3 +1,5 @@
+using System;
+
 namespace Backend;
 
 // In the domain assembly we outline the contract of a computer service.
@@ -6,6 +8,8 @@ namespace Backend;
 
 public interface IComputer
 {
+    event Action<bool> OnComputing;
+    event Action<long> OnComplete;
     void StartComputing ();
     void StopComputing ();
     bool IsComputing ();

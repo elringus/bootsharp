@@ -129,20 +129,21 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         builder.Append(';');
     }
 
+    private void AppendInstancedEvent (EventMeta evt)
+    {
+        builder.Append(docs.BuildEvent(evt, indent + 1));
+        var type = evt.Interop == InteropKind.Export ? "EventSubscriber" : "EventBroadcaster";
+        AppendLine(evt.JSName, indent + 1);
+        builder.Append($": {type}<[");
+        builder.AppendJoin(", ", evt.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
+        builder.Append("]>;");
+    }
+
     private void AppendInstancedProperty (PropertyMeta prop)
     {
         builder.Append(docs.BuildProperty(prop.Info, indent + 1));
         var name = prop.CanGet && !prop.CanSet ? $"readonly {prop.JSName}" : prop.JSName;
         AppendProperty(name, prop.Value.Type.Clr, prop.Value.Nullability);
-    }
-
-    private void AppendInstancedEvent (EventMeta meta)
-    {
-        builder.Append(docs.BuildEvent(meta, indent + 1));
-        AppendLine(meta.JSName, indent + 1);
-        builder.Append(": Event<[");
-        builder.AppendJoin(", ", meta.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
-        builder.Append("]>;");
     }
 
     private void AppendInstancedFunction (MethodMeta meta)
@@ -171,8 +172,8 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
     private string BuildTypeName (Type type)
     {
-        var name = BuildJSSpaceName(type);
-        if (!type.IsGenericType) return name;
+        if (!type.IsGenericType) return type.Name;
+        var name = TrimGeneric(type.Name);
         var args = string.Join(", ", type.GetGenericArguments().Select(BuildTypeName));
         return $"{name}<{args}>";
     }

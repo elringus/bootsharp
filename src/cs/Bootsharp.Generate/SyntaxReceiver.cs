@@ -5,34 +5,41 @@ namespace Bootsharp.Generate;
 
 internal sealed class SyntaxReceiver
 {
-    public List<PartialClass> FunctionClasses { get; } = [];
-    public List<PartialClass> EventClasses { get; } = [];
+    public List<ImportClass> ImportClasses { get; } = [];
 
-    public void VisitNode (SyntaxNode node, Compilation compilation)
+    public void VisitNode (SyntaxNode node, Compilation cmp)
     {
         if (node is ClassDeclarationSyntax classSyntax)
-            VisitClass(classSyntax, compilation);
+            VisitClass(classSyntax, cmp);
     }
 
-    private void VisitClass (ClassDeclarationSyntax syntax, Compilation compilation)
+    private void VisitClass (ClassDeclarationSyntax stx, Compilation cmp)
     {
-        var functions = GetMethodsWithAttribute(syntax, "JSFunction");
-        if (functions.Count > 0) FunctionClasses.Add(new(compilation, syntax, functions));
-        var events = GetMethodsWithAttribute(syntax, "JSEvent");
-        if (events.Count > 0) EventClasses.Add(new(compilation, syntax, events));
+        var methods = GetMethodsWithAttribute(stx, "Import");
+        var events = GetEventsWithAttribute(stx, "Import");
+        if (methods.Count > 0 || events.Count > 0)
+            ImportClasses.Add(new(cmp, stx, methods, events));
     }
 
-    private List<PartialMethod> GetMethodsWithAttribute (ClassDeclarationSyntax syntax, string attribute)
+    private List<ImportMethod> GetMethodsWithAttribute (ClassDeclarationSyntax stx, string attribute)
     {
-        return syntax.Members
+        return stx.Members
             .OfType<MethodDeclarationSyntax>()
             .Where(s => HasAttribute(s, attribute))
-            .Select(m => new PartialMethod(m)).ToList();
+            .Select(m => new ImportMethod(m)).ToList();
     }
 
-    private bool HasAttribute (MethodDeclarationSyntax syntax, string attributeName)
+    private List<ImportEvent> GetEventsWithAttribute (ClassDeclarationSyntax stx, string attribute)
     {
-        return syntax.AttributeLists
+        return stx.Members
+            .OfType<EventFieldDeclarationSyntax>()
+            .Where(s => s.Modifiers.Any(m => m.Text == "static") && HasAttribute(s, attribute))
+            .Select(e => new ImportEvent(e)).ToList();
+    }
+
+    private bool HasAttribute (MemberDeclarationSyntax stx, string attributeName)
+    {
+        return stx.AttributeLists
             .SelectMany(l => l.Attributes)
             .Any(a => a.ToString().Contains(attributeName));
     }

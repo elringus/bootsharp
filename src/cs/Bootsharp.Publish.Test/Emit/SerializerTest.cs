@@ -15,7 +15,7 @@ public class SerializerTest : EmitTest
     public void WhenNoSerializableTypesIsEmpty ()
     {
         AddAssembly(
-            WithClass("[JSInvokable] public static bool? Foo (int a, char b, DateTime c, DateTimeOffset d) => default;")
+            WithClass("[Export] public static bool? Foo (int a, char b, DateTime c, DateTimeOffset d) => default;")
         );
         Execute();
         DoesNotContain("Binary<");
@@ -56,7 +56,7 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static Node Echo (Node node) => node;
+                [Export] public static Node Echo (Node node) => node;
             }
             """));
         Execute();
@@ -100,7 +100,7 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static Node Echo (Node node) => node;
+                [Export] public static Node Echo (Node node) => node;
             }
             """));
         Execute();
@@ -121,7 +121,7 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static Node Echo (Node node) => node;
+                [Export] public static Node Echo (Node node) => node;
             }
             """));
         Execute();
@@ -147,8 +147,8 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static Node Echo (Node node) => node;
-                [JSInvokable] public static Task<byte[]> EchoBytesAsync (byte[] bytes) => default;
+                [Export] public static Node Echo (Node node) => node;
+                [Export] public static Task<byte[]> EchoBytesAsync (byte[] bytes) => default;
             }
             """));
         Execute();
@@ -179,7 +179,7 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static Info Echo (Info info) => info;
+                [Export] public static Info Echo (Info info) => info;
             }
             """));
         Execute();
@@ -200,7 +200,7 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static Node Echo (Node node) => node;
+                [Export] public static Node Echo (Node node) => node;
             }
             """));
         Execute();
@@ -223,7 +223,7 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static Node Echo (Node node) => node;
+                [Export] public static Node Echo (Node node) => node;
             }
             """));
         Execute();
@@ -244,7 +244,7 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static Node Echo (Node node) => node;
+                [Export] public static Node Echo (Node node) => node;
             }
             """));
         Execute();
@@ -264,7 +264,7 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static Node Echo (Node node) => node;
+                [Export] public static Node Echo (Node node) => node;
             }
             """));
         Execute();
@@ -290,8 +290,8 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static RecordA A (RecordA a) => a;
-                [JSInvokable] public static RecordB B (RecordB b) => b;
+                [Export] public static RecordA A (RecordA a) => a;
+                [Export] public static RecordB B (RecordB b) => b;
             }
             """));
         Execute();
@@ -314,7 +314,7 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static CompletionItem Echo (CompletionItem item) => item;
+                [Export] public static CompletionItem Echo (CompletionItem item) => item;
             }
             """));
         Execute();
@@ -334,7 +334,7 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static CompletionItem Echo (CompletionItem item) => item;
+                [Export] public static CompletionItem Echo (CompletionItem item) => item;
             }
             """));
         Execute();
@@ -354,7 +354,7 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static Node Echo (Node node) => node;
+                [Export] public static Node Echo (Node node) => node;
             }
             """));
         Execute();
@@ -374,7 +374,7 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static Node Echo (Node node) => node;
+                [Export] public static Node Echo (Node node) => node;
             }
             """));
         Execute();
@@ -394,7 +394,7 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static Node Echo (Node node) => node;
+                [Export] public static Node Echo (Node node) => node;
             }
             """));
         Execute();
@@ -413,7 +413,7 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static Node Echo (Node node) => node;
+                [Export] public static Node Echo (Node node) => node;
             }
             """));
         Execute();
@@ -421,7 +421,7 @@ public class SerializerTest : EmitTest
     }
 
     [Fact]
-    public void SerializesTypesFromInteropMethods ()
+    public void SerializesTypesFromStaticMethods ()
     {
         AddAssembly(With(
             """
@@ -431,8 +431,8 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static Task<RecordA[]> A (RecordC c) => default;
-                [JSFunction] public static RecordB[] B (RecordC[] c) => default;
+                [Export] public static Task<RecordA[]> A (RecordC c) => default;
+                [Import] public static RecordB[] B (RecordC[] c) => default;
             }
             """));
         Execute();
@@ -445,7 +445,7 @@ public class SerializerTest : EmitTest
     }
 
     [Fact]
-    public void SerializesTypesFromInteropInterfaces ()
+    public void SerializesTypesFromInstancedInterfaces ()
     {
         AddAssembly(With(
             """
@@ -457,7 +457,7 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSFunction] public static Task<IImported> GetImported (IExported arg) => default;
+                [Import] public static Task<IImported> GetImported (IExported arg) => default;
             }
             """));
         Execute();
@@ -467,7 +467,7 @@ public class SerializerTest : EmitTest
     }
 
     [Fact]
-    public void DoesntSerializeInstancedInteropInterfacesThemselves ()
+    public void DoesntSerializeInstancedInterfacesThemselves ()
     {
         AddAssembly(With(
             """
@@ -482,8 +482,8 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSInvokable] public static Space.IExported GetExported (Space.IImported arg) => default;
-                [JSFunction] public static Task<IImported> GetImported (IExported arg) => default;
+                [Export] public static Space.IExported GetExported (Space.IImported arg) => default;
+                [Import] public static Task<IImported> GetImported (IExported arg) => default;
             }
             """));
         Execute();
@@ -514,10 +514,10 @@ public class SerializerTest : EmitTest
 
             public class Class
             {
-                [JSFunction] public static IRegistry GetRegistry () => default;
-                [JSInvokable] public static Record Echo (Record r) => default;
-                [JSInvokable] public static Task<IReadOnlyList<Record?>> List (IReadOnlyList<Record?> r) => default;
-                [JSInvokable] public static Task<IReadOnlyDictionary<string, Record?>> Map (IReadOnlyDictionary<string, Record?> r) => default;
+                [Import] public static IRegistry GetRegistry () => default;
+                [Export] public static Record Echo (Record r) => default;
+                [Export] public static Task<IReadOnlyList<Record?>> List (IReadOnlyList<Record?> r) => default;
+                [Export] public static Task<IReadOnlyDictionary<string, Record?>> Map (IReadOnlyDictionary<string, Record?> r) => default;
             }
             """));
         Execute();
@@ -541,7 +541,7 @@ public class SerializerTest : EmitTest
             With("n", "public class Foo { public Struct S { get; } public ReadonlyStruct Rs { get; } }"),
             WithClass("n", "public class Bar : Foo { public ReadonlyRecordStruct Rrs { get; } public RecordClass Rc { get; } }"),
             With("n", "public class Baz { public List<Class.Bar?> Bars { get; } }"),
-            WithClass("n", "[JSInvokable] public static Task<Baz?> GetBaz (Enum e) => default;"));
+            WithClass("n", "[Export] public static Task<Baz?> GetBaz (Enum e) => default;"));
         Execute();
         Contains("Binary<global::y.Enum> ");
         Contains("Binary<global::n.Enum> ");

@@ -75,13 +75,13 @@ internal sealed class TypeSyntaxBuilder (Preferences prefs)
 
     private string BuildUser (Type type)
     {
-        if (type.IsGenericType)
-        {
-            EnterNullability();
-            var args = string.Join(", ", type.GenericTypeArguments.Select(Build));
-            return $"{BuildJSSpaceFullName(type, prefs)}<{args}>";
-        }
-        return BuildJSSpaceFullName(type, prefs);
+        var space = BuildJSSpace(type, prefs);
+        var name = TrimGeneric(type.Name);
+        var full = string.IsNullOrEmpty(space) ? name : $"{space}.{name}";
+        if (!type.IsGenericType) return full;
+        EnterNullability();
+        var args = string.Join(", ", type.GenericTypeArguments.Select(Build));
+        return $"{full}<{args}>";
     }
 
     private string BuildPrimitive (Type type)
