@@ -10,8 +10,9 @@ internal static class GlobalInspection
 {
     public static MetadataLoadContext CreateLoadContext (string directory)
     {
-        var assemblyPaths = Directory.GetFiles(RuntimeEnvironment.GetRuntimeDirectory(), "*.dll").ToList();
-        foreach (var path in Directory.GetFiles(directory, "*.dll"))
+        var runtimeDir = RuntimeEnvironment.GetRuntimeDirectory();
+        var assemblyPaths = Directory.GetFiles(runtimeDir, "*.dll").Order().ToList();
+        foreach (var path in Directory.GetFiles(directory, "*.dll").Order())
             if (assemblyPaths.All(p => Path.GetFileName(p) != Path.GetFileName(path)))
                 assemblyPaths.Add(path);
         var resolver = new PathAssemblyResolver(assemblyPaths);

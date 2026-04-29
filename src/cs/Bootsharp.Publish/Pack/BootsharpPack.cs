@@ -41,11 +41,13 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
 
         IEnumerable<string> GetFiles ()
         {
-            if (LLVM) return Directory.GetFiles(InspectedDirectory, "*.dll");
+            if (LLVM) return Directory.GetFiles(InspectedDirectory, "*.dll").Order();
             // Assemblies in publish dir are trimmed and don't contain some data (eg, method arg names).
             // While the inspected dir contains extra assemblies we don't need in build. Hence the filtering.
-            var included = Directory.GetFiles(BuildDirectory, "*.wasm").Select(Path.GetFileNameWithoutExtension).ToHashSet();
-            return Directory.GetFiles(InspectedDirectory, "*.dll").Where(p => included.Contains(Path.GetFileNameWithoutExtension(p)));
+            var included = Directory.GetFiles(BuildDirectory, "*.wasm")
+                .Select(Path.GetFileNameWithoutExtension).ToHashSet();
+            return Directory.GetFiles(InspectedDirectory, "*.dll").Order()
+                .Where(p => included.Contains(Path.GetFileNameWithoutExtension(p)));
         }
     }
 
