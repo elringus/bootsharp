@@ -44,7 +44,7 @@ public static class Instances
 
     /// <summary>
     /// Invokes the specified factory to create and register an imported instance wrapper associated with the ID,
-    /// unless an imported instance is already registered under the ID, in which case returns its wrapper. 
+    /// unless an imported instance is already registered under the ID, in which case returns its wrapper.
     /// </summary>
     public static T Import<T> (int id, Func<int, T> factory) where T : class
     {
