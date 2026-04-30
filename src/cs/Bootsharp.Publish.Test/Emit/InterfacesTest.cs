@@ -15,7 +15,10 @@ public class InterfacesTest : EmitTest
 
             public interface IExported
             {
+                delegate void SomethingChanged();
+
                 event Action<Record?> OnRecordChanged;
+                event SomethingChanged OnSomethingChanged;
 
                 Record? Record { get; set; }
 
@@ -51,9 +54,11 @@ public class InterfacesTest : EmitTest
                     {
                         JSExported.handler = handler;
                         handler.OnRecordChanged += OnRecordChanged.Invoke;
+                        handler.OnSomethingChanged += OnSomethingChanged.Invoke;
                     }
 
                     [Export] public static event global::System.Action<global::Record?> OnRecordChanged;
+                    [Export] public static event global::IExported.SomethingChanged OnSomethingChanged;
                     [Export] public static global::Record? GetPropertyRecord () => handler.Record;
                     [Export] public static void SetPropertyRecord (global::Record? value) => handler.Record = value;
                     [Export] public static void Inv (global::System.String? a) => handler.Inv(a);
@@ -77,7 +82,10 @@ public class InterfacesTest : EmitTest
 
             public interface IImported
             {
+                delegate void SomethingChanged();
+
                 event Action<Record?> OnRecordChanged;
+                event SomethingChanged OnSomethingChanged;
 
                 Record? Record { get; set; }
 
@@ -109,6 +117,8 @@ public class InterfacesTest : EmitTest
                 {
                     public event global::System.Action<global::Record?> OnRecordChanged;
                     internal void InvokeOnRecordChanged (global::Record? obj) => OnRecordChanged?.Invoke(obj);
+                    public event global::IImported.SomethingChanged OnSomethingChanged;
+                    internal void InvokeOnSomethingChanged () => OnSomethingChanged?.Invoke();
                     global::Record? global::IImported.Record
                     {
                         get => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_GetPropertyRecord();
@@ -133,7 +143,10 @@ public class InterfacesTest : EmitTest
 
             public interface IImported
             {
+                delegate void SomethingChanged();
+
                 event Action<Record?> OnRecordChanged;
+                event SomethingChanged OnSomethingChanged;
 
                 Record? Record { get; set; }
 
@@ -162,6 +175,8 @@ public class InterfacesTest : EmitTest
 
                     public event global::System.Action<global::Record?> OnRecordChanged;
                     internal void InvokeOnRecordChanged (global::Record? obj) => OnRecordChanged?.Invoke(obj);
+                    public event global::IImported.SomethingChanged OnSomethingChanged;
+                    internal void InvokeOnSomethingChanged () => OnSomethingChanged?.Invoke();
                     global::Record? global::IImported.Record
                     {
                         get => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_GetPropertyRecord(_id);
@@ -182,7 +197,10 @@ public class InterfacesTest : EmitTest
 
             public interface IExported
             {
+                delegate void SomethingChanged();
+
                 event Action<Record?> OnRecordChanged;
+                event SomethingChanged OnSomethingChanged;
 
                 Record? Record { get; set; }
 

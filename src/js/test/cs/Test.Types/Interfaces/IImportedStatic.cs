@@ -1,11 +1,12 @@
-using System;
 using System.Threading.Tasks;
 
 namespace Test.Types;
 
 public interface IImportedStatic
 {
-    event Action<Record?> OnRecordChanged;
+    delegate void RecordChanged (Record? record);
+
+    event RecordChanged OnRecordChanged;
 
     Record? Record { get; set; }
 

@@ -465,7 +465,7 @@ public class BindingTest : PackTest
             """
             export const n = {
                 Class: {
-                    getFoo: () => deserialize(exports.n_Class_GetFoo(), n_Foo),
+                    getFoo: () => deserialize(exports.n_Class_GetFoo(), n_Class_Foo),
                     Foo: { "0": "A", "1": "B", "A": 0, "B": 1 }
                 }
             };

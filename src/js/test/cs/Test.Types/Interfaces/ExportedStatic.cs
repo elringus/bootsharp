@@ -1,11 +1,10 @@
-using System;
 using System.Threading.Tasks;
 
 namespace Test.Types;
 
 public class ExportedStatic : IExportedStatic
 {
-    public event Action<Record?>? OnRecordChanged;
+    public event IExportedStatic.RecordChanged? OnRecordChanged;
 
     public Record? Record { get; set => OnRecordChanged?.Invoke(field = value); }
 

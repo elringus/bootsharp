@@ -120,6 +120,7 @@ internal static class GlobalType
 
         static string ResolveTypeName (Type type)
         {
+            if (type.IsNested) return $"{ResolveTypeName(type.DeclaringType!)}.{type.Name}";
             if (type.Namespace is null) return type.Name;
             return $"{type.Namespace}.{type.Name}";
         }
