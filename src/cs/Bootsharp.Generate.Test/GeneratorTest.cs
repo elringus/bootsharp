@@ -87,7 +87,7 @@ public class GeneratorTest
         {
             IncludeCommonExpected(ref expected[i].content);
             verifier.TestState.GeneratedSources.Add((typeof(SourceGenerator), expected[i].file,
-                SourceText.From(expected[i].content, Encoding.UTF8)));
+                SourceText.From(expected[i].content, Encoding.UTF8, SourceHashAlgorithm.Sha256)));
         }
         await verifier.RunAsync();
     }
