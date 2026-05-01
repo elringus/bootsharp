@@ -1,6 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-using static System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes;
-
 namespace Bootsharp.Publish;
 
 /// <summary>
@@ -24,6 +21,19 @@ internal sealed class DependencyGenerator (string entryAssembly)
 
               public static class Dependencies
               {
+                  private const DynamicallyAccessedMemberTypes types =
+                      DynamicallyAccessedMemberTypes.PublicMethods |
+                      DynamicallyAccessedMemberTypes.NonPublicMethods |
+                      DynamicallyAccessedMemberTypes.PublicFields |
+                      DynamicallyAccessedMemberTypes.NonPublicFields |
+                      DynamicallyAccessedMemberTypes.PublicNestedTypes |
+                      DynamicallyAccessedMemberTypes.NonPublicNestedTypes |
+                      DynamicallyAccessedMemberTypes.PublicProperties |
+                      DynamicallyAccessedMemberTypes.NonPublicProperties |
+                      DynamicallyAccessedMemberTypes.PublicEvents |
+                      DynamicallyAccessedMemberTypes.NonPublicEvents |
+                      DynamicallyAccessedMemberTypes.Interfaces;
+
                   [System.Runtime.CompilerServices.ModuleInitializer]
                   {{Fmt(added)}}
                   internal static void RegisterDynamicDependencies () { }
@@ -33,28 +43,28 @@ internal sealed class DependencyGenerator (string entryAssembly)
 
     private void AddGeneratedCommon ()
     {
-        Add(All, "Bootsharp.Generated.Dependencies", entryAssembly);
-        Add(All, "Bootsharp.Generated.Interop", entryAssembly);
+        Add("Bootsharp.Generated.Dependencies", entryAssembly);
+        Add("Bootsharp.Generated.Interop", entryAssembly);
     }
 
     private void AddGeneratedInteropClasses (SolutionInspection inspection)
     {
         foreach (var it in inspection.StaticInterfaces)
-            Add(All, it.FullName, entryAssembly);
+            Add(it.FullName, entryAssembly);
         foreach (var it in inspection.InstancedInterfaces)
             if (it.Interop == InteropKind.Import)
-                Add(All, it.FullName, entryAssembly);
+                Add(it.FullName, entryAssembly);
     }
 
     private void AddClassesWithInteropMethods (SolutionInspection inspection)
     {
         foreach (var member in inspection.StaticMembers)
-            Add(All, member.Space, member.Assembly);
+            Add(member.Space, member.Assembly);
     }
 
-    private void Add (DynamicallyAccessedMemberTypes types, string name, string assembly)
+    private void Add (string name, string assembly)
     {
         var asm = assembly.EndsWith(".dll", StringComparison.Ordinal) ? assembly[..^4] : assembly;
-        added.Add($"""[DynamicDependency(DynamicallyAccessedMemberTypes.{types}, "{name}", "{asm}")]""");
+        added.Add($"""[DynamicDependency(types, "{name}", "{asm}")]""");
     }
 }
