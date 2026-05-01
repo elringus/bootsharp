@@ -1,6 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-using static System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes;
-
 namespace Bootsharp.Publish.Test;
 
 public class DependenciesTest : EmitTest
@@ -13,17 +10,10 @@ public class DependenciesTest : EmitTest
         Execute();
         Contains(
             """
-            using System.Diagnostics.CodeAnalysis;
-
-            namespace Bootsharp.Generated;
-
-            public static class Dependencies
-            {
                 [System.Runtime.CompilerServices.ModuleInitializer]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.Generated.Dependencies", "System.Runtime")]
-                [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Bootsharp.Generated.Interop", "System.Runtime")]
+                [DynamicDependency(types, "Bootsharp.Generated.Dependencies", "System.Runtime")]
+                [DynamicDependency(types, "Bootsharp.Generated.Interop", "System.Runtime")]
                 internal static void RegisterDynamicDependencies () { }
-            }
             """);
     }
 
@@ -38,10 +28,10 @@ public class DependenciesTest : EmitTest
             With("Space", "public interface IExported {}"),
             With("Space", "public interface IImported {}"));
         Execute();
-        Added(All, "Bootsharp.Generated.Exports.JSExported");
-        Added(All, "Bootsharp.Generated.Exports.Space.JSExported");
-        Added(All, "Bootsharp.Generated.Imports.JSImported");
-        Added(All, "Bootsharp.Generated.Imports.Space.JSImported");
+        Added("Bootsharp.Generated.Exports.JSExported");
+        Added("Bootsharp.Generated.Exports.Space.JSExported");
+        Added("Bootsharp.Generated.Imports.JSImported");
+        Added("Bootsharp.Generated.Imports.Space.JSImported");
     }
 
     [Fact]
@@ -67,10 +57,10 @@ public class DependenciesTest : EmitTest
             }
             """));
         Execute();
-        Added(All, "Bootsharp.Generated.Exports.JSExportedStatic");
-        Added(All, "Bootsharp.Generated.Imports.JSImportedStatic");
-        Added(All, "Bootsharp.Generated.Imports.JSImportedInstancedA");
-        Added(All, "Bootsharp.Generated.Imports.JSImportedInstancedB");
+        Added("Bootsharp.Generated.Exports.JSExportedStatic");
+        Added("Bootsharp.Generated.Imports.JSImportedStatic");
+        Added("Bootsharp.Generated.Imports.JSImportedInstancedA");
+        Added("Bootsharp.Generated.Imports.JSImportedInstancedB");
         // Export interop instances are not generated in C#; they're authored by user.
         DoesNotContain("Bootsharp.Generated.Exports.JSExportedInstanced");
     }
@@ -83,16 +73,16 @@ public class DependenciesTest : EmitTest
             With("SpaceB.SpaceC", "public class ClassB { [Import] public static void Foo () {} }"),
             With("public class ClassC { [Export] public static event Action? Evt; }"));
         Execute();
-        Added(All, "SpaceA.ClassA", "Assembly.With.Dots");
-        Added(All, "SpaceB.SpaceC.ClassB", "Assembly.With.Dots");
-        Added(All, "ClassC", "Assembly.With.Dots");
+        Added("SpaceA.ClassA", "Assembly.With.Dots");
+        Added("SpaceB.SpaceC.ClassB", "Assembly.With.Dots");
+        Added("ClassC", "Assembly.With.Dots");
     }
 
-    private void Added (DynamicallyAccessedMemberTypes types, string name) =>
-        Added(types, name, Path.GetFileNameWithoutExtension(Task.EntryAssemblyName));
+    private void Added (string name) =>
+        Added(name, Path.GetFileNameWithoutExtension(Task.EntryAssemblyName));
 
-    private void Added (DynamicallyAccessedMemberTypes types, string name, string assembly)
+    private void Added (string name, string assembly)
     {
-        Contains($"""[DynamicDependency(DynamicallyAccessedMemberTypes.{types}, "{name}", "{assembly}")]""");
+        Contains($"""[DynamicDependency(types, "{name}", "{assembly}")]""");
     }
 }
