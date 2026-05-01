@@ -49,7 +49,7 @@ public class MockCompiler
 
     private static PortableExecutableReference[] GatherReferences (string directory)
     {
-        var paths = Directory.GetFiles(directory, "*.dll");
+        var paths = Directory.GetFiles(directory, "*.dll").Order();
         return paths.Select(p => MetadataReference.CreateFromFile(p)).ToArray();
     }
 }

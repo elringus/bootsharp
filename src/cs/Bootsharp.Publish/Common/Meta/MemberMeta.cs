@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Bootsharp.Publish;
@@ -71,19 +70,18 @@ internal record MethodMeta (MethodInfo Info) : MemberMeta
 }
 
 /// <summary>
-/// An interop event declared on a static API surface or interop interface (temporarily shares the method path).
+/// An interop event declared on a static API surface or interop interface.
 /// </summary>
-internal sealed record EventMeta : MethodMeta
+internal sealed record EventMeta (EventInfo Info) : MemberMeta
 {
     /// <summary>
-    /// C# interface method name. It may differ from <see cref="MemberMeta.Name"/> because event methods
-    /// on interfaces have special names, which are then renamed on the JS side. This will be removed once
-    /// we add proper support for events.
+    /// The reflected info of the event.
     /// </summary>
-    public string MethodName { get; }
-
-    [SetsRequiredMembers] // TODO: Remove after implementing proper support for events.
-    public EventMeta (MethodMeta method, string methodName) : base(method) => MethodName = methodName;
+    public override EventInfo Info { get; } = Info;
+    /// <summary>
+    /// Arguments carried by the event delegate.
+    /// </summary>
+    public required IReadOnlyList<ArgumentMeta> Arguments { get; init; }
 }
 
 /// <summary>
@@ -106,7 +104,7 @@ internal sealed record PropertyMeta (PropertyInfo Info) : MemberMeta
 }
 
 /// <summary>
-/// Interop method argument.
+/// An interop method or event delegate argument.
 /// </summary>
 internal sealed record ArgumentMeta (ParameterInfo Info)
 {

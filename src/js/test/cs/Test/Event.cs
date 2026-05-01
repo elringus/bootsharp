@@ -1,19 +1,36 @@
+using System;
+using System.Threading.Tasks;
 using Bootsharp;
 using Test.Types;
 
 namespace Test;
 
+public delegate void VehicleEvent (byte num, Vehicle? vehicle, TrackType type);
+
 public static partial class Event
 {
-    [JSInvokable]
-    public static void BroadcastEvent (string value) => OnEvent(value);
+    [Export] public static event VehicleEvent? OnVehicleEvent;
+    [Export] public static event Action<string>? OnImportedEventEchoed;
+    [Import] public static event Action<string>? OnImportedEvent;
 
-    [JSInvokable]
-    public static void BroadcastEventMultiple (byte num, Vehicle? vehicle, TrackType type) => OnEventMultiple(num, vehicle, type);
+    [Export]
+    public static void BroadcastVehicleEvent (byte num, Vehicle? vehicle, TrackType type)
+    {
+        OnVehicleEvent?.Invoke(num, vehicle, type);
+    }
 
-    [JSEvent]
-    public static partial string OnEvent (string value);
+    [Export]
+    public static Task EchoImportedEventAsync ()
+    {
+        var tcs = new TaskCompletionSource();
+        OnImportedEvent += Handle;
+        return tcs.Task;
 
-    [JSEvent]
-    public static partial string OnEventMultiple (byte num, Vehicle? vehicle, TrackType type);
+        void Handle (string value)
+        {
+            OnImportedEvent -= Handle;
+            OnImportedEventEchoed?.Invoke(value);
+            tcs.SetResult();
+        }
+    }
 }

@@ -54,7 +54,7 @@ public sealed class MockProject : IDisposable
         return [
             MetadataReference.CreateFromFile(Path.Combine(coreDir, "System.Runtime.dll")).FilePath,
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location).FilePath,
-            MetadataReference.CreateFromFile(typeof(JSExportAttribute).Assembly.Location).FilePath
+            MetadataReference.CreateFromFile(typeof(ExportAttribute).Assembly.Location).FilePath
         ];
     }
 }

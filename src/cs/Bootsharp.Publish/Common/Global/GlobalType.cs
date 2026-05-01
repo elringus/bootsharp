@@ -56,15 +56,9 @@ internal static class GlobalType
              type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyDictionary<,>).FullName);
     }
 
-    public static NullabilityInfo GetNullability (PropertyInfo prop)
-    {
-        return new NullabilityInfoContext().Create(prop);
-    }
-
-    public static NullabilityInfo GetNullability (ParameterInfo param)
-    {
-        return new NullabilityInfoContext().Create(param);
-    }
+    public static NullabilityInfo GetNullability (EventInfo evt) => new NullabilityInfoContext().Create(evt);
+    public static NullabilityInfo GetNullability (PropertyInfo prop) => new NullabilityInfoContext().Create(prop);
+    public static NullabilityInfo GetNullability (ParameterInfo param) => new NullabilityInfoContext().Create(param);
 
     public static bool IsNullable (Type type) => IsNullable(type, out _);
     public static bool IsNullable (Type type, NullabilityInfo? info) => IsNullable(type, info, out _);
@@ -78,21 +72,6 @@ internal static class GlobalType
         return value != null;
     }
 
-    public static bool IsAutoProperty (PropertyInfo prop)
-    {
-        var backingFieldName = $"<{prop.Name}>k__BackingField";
-        var backingField = prop.DeclaringType!.GetField(backingFieldName,
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        return backingField != null;
-    }
-
-    public static bool IsInstancedInteropInterface (Type type, [NotNullWhen(true)] out Type? instanceType)
-    {
-        if (IsTaskWithResult(type, out instanceType))
-            return IsInstancedInteropInterface(instanceType, out instanceType);
-        return (instanceType = type.IsInterface && IsUserType(type) ? type : null) != null;
-    }
-
     public static string BuildJSSpace (Type type, Preferences prefs)
     {
         var space = type.Namespace ?? "";
@@ -104,41 +83,10 @@ internal static class GlobalType
         return WithPrefs(prefs.Space, space, space);
     }
 
-    public static string BuildJSSpaceName (Type type)
-    {
-        return type.IsGenericType ? TrimGenericArgs(type.Name) : type.Name;
-    }
-
-    public static string BuildJSSpaceFullName (Type type, Preferences prefs)
-    {
-        var space = BuildJSSpace(type, prefs);
-        var name = BuildJSSpaceName(type);
-        return string.IsNullOrEmpty(space) ? name : $"{space}.{name}";
-    }
-
-    public static (string space, string name, string full) BuildInterfaceImplName
-        (Type instanceType, InteropKind interop)
-    {
-        var space = "Bootsharp.Generated." + (interop == InteropKind.Export ? "Exports" : "Imports");
-        if (instanceType.Namespace != null) space += $".{instanceType.Namespace}";
-        var name = "JS" + instanceType.Name[1..];
-        return (space, name, $"{space}.{name}");
-    }
-
-    public static string PrependInstanceIdArgName (string args)
+    public static string PrependIdArg (string args)
     {
         if (string.IsNullOrEmpty(args)) return "_id";
         return $"_id, {args}";
-    }
-
-    public static string PrependInstanceIdArgTypeAndName (string args)
-    {
-        return $"{BuildSyntax(typeof(int))} {PrependInstanceIdArgName(args)}";
-    }
-
-    public static string BuildJSInteropInstanceClassName (InterfaceMeta inter)
-    {
-        return inter.FullName.Replace("Bootsharp.Generated.Exports.", "").Replace(".", "_");
     }
 
     public static string BuildSerializedId (Type type)
@@ -165,21 +113,23 @@ internal static class GlobalType
         string BuildGeneric (Type type, Type[] args)
         {
             if (IsNullable(type, out var value)) return BuildSyntax(value, nul, true);
-            var name = TrimGenericArgs(ResolveTypeName(type));
+            var name = TrimGeneric(ResolveTypeName(type));
             var typeArgs = string.Join(", ", args.Select((a, i) => BuildSyntax(a, nul?.GenericTypeArguments[i])));
             return $"global::{name}<{typeArgs}>";
         }
 
         static string ResolveTypeName (Type type)
         {
+            if (type.IsNested) return $"{ResolveTypeName(type.DeclaringType!)}.{type.Name}";
             if (type.Namespace is null) return type.Name;
             return $"{type.Namespace}.{type.Name}";
         }
     }
 
-    public static string TrimGenericArgs (string typeName)
+    public static string TrimGeneric (string typeName)
     {
         var delimiterIndex = typeName.IndexOf('`');
+        if (delimiterIndex < 0) return typeName;
         return typeName[..delimiterIndex];
     }
 }

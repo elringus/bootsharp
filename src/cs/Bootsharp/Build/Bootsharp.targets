@@ -7,7 +7,6 @@
         <BsPublishAssembly>$(BsRoot)/tasks/Bootsharp.Publish.dll</BsPublishAssembly>
         <BsIntermediateDir>$(IntermediateOutputPath)bootsharp</BsIntermediateDir>
         <BsInterfacesFilePath>$(BsIntermediateDir)/Interfaces.g.cs</BsInterfacesFilePath>
-        <BsDependenciesFilePath>$(BsIntermediateDir)/Dependencies.g.cs</BsDependenciesFilePath>
         <BsSerializerFilePath>$(BsIntermediateDir)/Serializer.g.cs</BsSerializerFilePath>
         <BsInteropFilePath>$(BsIntermediateDir)/Interop.g.cs</BsInteropFilePath>
         <BsEntryAssembly>$(AssemblyName).dll</BsEntryAssembly>
@@ -62,16 +61,13 @@
         <BootsharpEmit InspectedDirectory="$(OutputPath)"
                        EntryAssemblyName="$(BsEntryAssembly)"
                        InterfacesFilePath="$(BsInterfacesFilePath)"
-                       DependenciesFilePath="$(BsDependenciesFilePath)"
                        SerializerFilePath="$(BsSerializerFilePath)"
                        InteropFilePath="$(BsInteropFilePath)"/>
         <ItemGroup>
             <Compile Remove="$(BsInterfacesFilePath)"/>
-            <Compile Remove="$(BsDependenciesFilePath)"/>
             <Compile Remove="$(BsSerializerFilePath)"/>
             <Compile Remove="$(BsInteropFilePath)"/>
             <Compile Include="$(BsInterfacesFilePath)"/>
-            <Compile Include="$(BsDependenciesFilePath)"/>
             <Compile Include="$(BsSerializerFilePath)"/>
             <Compile Include="$(BsInteropFilePath)"/>
         </ItemGroup>

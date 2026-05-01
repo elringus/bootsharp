@@ -26,31 +26,31 @@ public class GeneratorTest
     {
         await Verify(
             """
-            [assembly:JSImport([])]
-            public class JSImportAttribute : System.Attribute { public JSImportAttribute (Type[] _) { } }
+            [assembly:Import([])]
+            public class ImportAttribute : System.Attribute { public ImportAttribute (Type[] _) { } }
             """);
     }
 
     [Fact]
-    public async Task DoesntEmitDuplicateRegistrations ()
+    public async Task DoesntEmitDuplicateImportSources ()
     {
         verifier.TestBehaviors = TestBehaviors.SkipGeneratedSourcesCheck;
         await Verify(
             """
-            partial class FunctionAfterInvokable
+            partial class ImportMethodAfterExport
             {
-                [JSInvokable] static void Bar () { }
-                [JSFunction] partial void Baz ();
+                [Export] static void Bar () { }
+                [Import] partial void Baz ();
             }
-            partial class EventAfterInvokable
+            partial class ImportEventAfterExport
             {
-                [JSInvokable] static void Bar () { }
-                [JSEvent] partial void Baz ();
+                [Export] static void Bar () { }
+                [Import] static event Action? Baz;
             }
-            partial class EventAfterFunction
+            partial class ImportEventAfterMethod
             {
-                [JSFunction] partial void Bar ();
-                [JSEvent] partial void Baz ();
+                [Import] partial void Bar ();
+                [Import] static event Action? Baz;
             }
             """);
     }
@@ -63,21 +63,21 @@ public class GeneratorTest
             """
             public static partial class Foo
             {
-                [JSInvokable] public static void Bar () { }
-                [JSFunction] public static void Baz () { }
-                [JSEvent] public static void Nya () { }
+                [Export] public static void Bar () { }
+                [Import] public static void Baz () { }
+                [Import] public static event Action? Nya;
             }
             """));
         await Verify("");
     }
 
-    [Theory, MemberData(nameof(FunctionTest.Data), MemberType = typeof(FunctionTest))]
-    public Task PartialFunctionsImplemented (string source, string expected)
-        => Verify(source, ("FooFunctions.g.cs", expected));
+    [Theory, MemberData(nameof(ImportMethodTest.Data), MemberType = typeof(ImportMethodTest))]
+    public Task PartialImportMethodsImplemented (string source, string expected)
+        => Verify(source, ("FooImports.g.cs", expected));
 
-    [Theory, MemberData(nameof(EventTest.Data), MemberType = typeof(EventTest))]
-    public Task PartialEventsImplemented (string source, string expected)
-        => Verify(source, ("FooEvents.g.cs", expected));
+    [Theory, MemberData(nameof(ImportEventTest.Data), MemberType = typeof(ImportEventTest))]
+    public Task PartialImportEventsImplemented (string source, string expected)
+        => Verify(source, ("FooImports.g.cs", expected));
 
     private async Task Verify (string source, params (string file, string content)[] expected)
     {
@@ -87,7 +87,7 @@ public class GeneratorTest
         {
             IncludeCommonExpected(ref expected[i].content);
             verifier.TestState.GeneratedSources.Add((typeof(SourceGenerator), expected[i].file,
-                SourceText.From(expected[i].content, Encoding.UTF8)));
+                SourceText.From(expected[i].content, Encoding.UTF8, SourceHashAlgorithm.Sha256)));
         }
         await verifier.RunAsync();
     }

@@ -16,16 +16,15 @@ internal sealed class PreferencesResolver (string entryAssemblyName)
     private CustomAttributeData? FindPreferencesAttribute (Assembly assembly)
     {
         foreach (var attr in assembly.CustomAttributes)
-            if (attr.AttributeType.FullName == typeof(JSPreferencesAttribute).FullName)
+            if (attr.AttributeType.FullName == typeof(PreferencesAttribute).FullName)
                 return attr;
         return null;
     }
 
     private Preferences CreatePreferences (CustomAttributeData? attr) => new() {
-        Space = CreatePreferences(nameof(JSPreferencesAttribute.Space), attr) ?? [],
-        Type = CreatePreferences(nameof(JSPreferencesAttribute.Type), attr) ?? [],
-        Event = CreatePreferences(nameof(JSPreferencesAttribute.Event), attr) ?? [new(@"^Notify(\S+)", "On$1")],
-        Function = CreatePreferences(nameof(JSPreferencesAttribute.Function), attr) ?? []
+        Space = CreatePreferences(nameof(PreferencesAttribute.Space), attr) ?? [],
+        Type = CreatePreferences(nameof(PreferencesAttribute.Type), attr) ?? [],
+        Function = CreatePreferences(nameof(PreferencesAttribute.Function), attr) ?? []
     };
 
     private Preference[]? CreatePreferences (string name, CustomAttributeData? attr)

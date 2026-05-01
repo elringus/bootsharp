@@ -18,7 +18,7 @@ internal sealed class MemberDeclarationGenerator (Preferences prefs)
     public string Generate (SolutionInspection inspection)
     {
         docs = new(inspection.Documentation);
-        members = inspection.StaticMethods
+        members = inspection.StaticMembers
             .Concat(inspection.StaticInterfaces.SelectMany(i => i.Members))
             .OrderBy(m => m.JSSpace).ToArray();
         for (index = 0; index < members.Length; index++)
@@ -62,12 +62,21 @@ internal sealed class MemberDeclarationGenerator (Preferences prefs)
         builder.Append("\n}");
     }
 
+    private void DeclareEvent (EventMeta evt)
+    {
+        builder.Append(docs.BuildEvent(evt, 1));
+        var type = evt.Interop == InteropKind.Export ? "EventSubscriber" : "EventBroadcaster";
+        builder.Append($"\n    export const {evt.JSName}: {type}<[");
+        builder.AppendJoin(", ", evt.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
+        builder.Append("]>;");
+    }
+
     private void DeclareProperty (PropertyMeta prop)
     {
         builder.Append(docs.BuildProperty(prop.Info, 1));
         builder.Append($"\n    export {(prop.CanGet && !prop.CanSet ? "const" : "let")} {prop.JSName}: ");
         builder.Append(typeBuilder.Build(prop.Value.Type.Clr, prop.Value.Nullability));
-        if (prop.Value.Nullable) builder.Append(" | null");
+        if (prop.Value.Nullable) builder.Append(" | undefined");
         builder.Append(';');
     }
 
@@ -85,13 +94,5 @@ internal sealed class MemberDeclarationGenerator (Preferences prefs)
         builder.Append($"\n    export let {method.JSName}: (");
         builder.AppendJoin(", ", method.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
         builder.Append($") => {typeBuilder.BuildReturn(method)};");
-    }
-
-    private void DeclareEvent (EventMeta @event)
-    {
-        builder.Append(docs.BuildEvent(@event, 1));
-        builder.Append($"\n    export const {@event.JSName}: Event<[");
-        builder.AppendJoin(", ", @event.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
-        builder.Append("]>;");
     }
 }

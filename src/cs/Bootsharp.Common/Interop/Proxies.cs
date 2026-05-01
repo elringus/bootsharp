@@ -5,14 +5,14 @@ namespace Bootsharp;
 /// </summary>
 /// <remarks>
 /// <b>Below is for internal reference; end users are not expected to use this API.</b><br/>
-/// Partial interop methods (<see cref="JSFunctionAttribute"/> and <see cref="JSEventAttribute"/>)
+/// Partial interop methods declared with <see cref="ImportAttribute"/>
 /// are accessed via delegates registered by associated IDs, where ID is the full name of
 /// the declaring type of the interop method joined with the method's name by a dot. Eg, given:<br/>
 /// <code>
 /// namespace Space;
 /// public static partial class Class
 /// {
-///     [JSFunction] public static partial int Foo (string arg);
+///     [Import] public static partial int Foo (string arg);
 /// }
 /// </code><br/>
 /// Proxy for the "Foo" method is registered as follows (emitted at build;
@@ -45,8 +45,7 @@ public static class Proxies
     /// Returns interop delegate of specified ID and type.
     /// </summary>
     /// <remarks>
-    /// Used in sources generated for partial <see cref="JSFunctionAttribute"/>
-    /// and <see cref="JSEventAttribute"/> methods.
+    /// Used in sources generated for partial <see cref="ImportAttribute"/> methods.
     /// </remarks>
     public static T Get<T> (string id) where T : Delegate
     {

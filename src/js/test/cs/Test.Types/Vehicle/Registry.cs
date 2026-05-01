@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,20 +8,17 @@ namespace Test.Types;
 
 public partial class Registry
 {
+    [Export] public static event Action<Vehicle?>? OnVehicleBroadcast;
+
     public static IRegistryProvider Provider { get; set; } = null!;
     public List<Wheeled?> Wheeled { get; set; } = null!;
     public List<Tracked?> Tracked { get; set; } = null!;
 
-    [JSInvokable]
-    public static Registry EchoRegistry (Registry registry) => registry;
+    [Export] public static Registry EchoRegistry (Registry registry) => registry;
+    [Export] public static Vehicle?[]? EchoVehicles (Vehicle?[]? value) => value;
+    [Export] public static Record?[]? EchoRecords (Record?[]? value) => value;
 
-    [JSInvokable]
-    public static Vehicle?[]? EchoVehicles (Vehicle?[]? value) => value;
-
-    [JSInvokable]
-    public static Record?[]? EchoRecords (Record?[]? value) => value;
-
-    [JSInvokable]
+    [Export]
     public static float CountTotalSpeed ()
     {
         var registry = Provider.GetRegistry();
@@ -28,32 +26,23 @@ public partial class Registry
                registry.Wheeled.Sum(t => t?.MaxSpeed ?? 0);
     }
 
-    [JSInvokable]
+    [Export]
     public static async Task<IReadOnlyList<Registry?>> ConcatRegistriesAsync (IReadOnlyList<Registry?> registries)
     {
         await Task.Delay(1);
         return registries.Concat(Provider.GetRegistries()).ToArray();
     }
 
-    [JSInvokable]
-    public static async Task<IReadOnlyDictionary<string, Registry>> MapRegistriesAsync (IReadOnlyDictionary<string, Registry> map)
+    [Export]
+    public static async Task<IReadOnlyDictionary<string, Registry>> MapRegistriesAsync
+        (IReadOnlyDictionary<string, Registry> map)
     {
         await Task.Delay(1);
         return map.Concat(Provider.GetRegistryMap()).ToDictionary(kv => kv.Key, kv => kv.Value);
     }
 
-    [JSInvokable]
-    public static Vehicle GetWithEmptyId () => new() { Id = "" };
-
-    [JSFunction]
-    public static partial Vehicle CreateVehicle (string id, float maxSpeed);
-
-    [JSEvent]
-    public static partial void OnVehicleBroadcast (Vehicle vehicle);
-
-    [JSInvokable]
-    public static Vehicle GetVehicle (string id, float maxSpeed) => CreateVehicle(id, maxSpeed);
-
-    [JSInvokable]
-    public static void BroadcastVehicle (Vehicle vehicle) => OnVehicleBroadcast(vehicle);
+    [Export] public static void BroadcastVehicle (Vehicle? vehicle) => OnVehicleBroadcast?.Invoke(vehicle);
+    [Export] public static Vehicle GetVehicleWithEmptyId () => new() { Id = "" };
+    [Export] public static Vehicle GetVehicle (string id, float maxSpeed) => CreateVehicle(id, maxSpeed);
+    [Import] public static partial Vehicle CreateVehicle (string id, float maxSpeed);
 }

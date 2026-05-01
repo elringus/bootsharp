@@ -1,8 +1,8 @@
 namespace Bootsharp.Publish;
 
 /// <summary>
-/// Interface supplied by user under either <see cref="JSExportAttribute"/>
-/// or <see cref="JSImportAttribute"/> representing static interop API, or in
+/// Interface supplied by user under either <see cref="ExportAttribute"/>
+/// or <see cref="ImportAttribute"/> representing static interop API, or in
 /// an interop method, representing instanced interop API.
 /// </summary>
 internal sealed record InterfaceMeta
@@ -21,20 +21,23 @@ internal sealed record InterfaceMeta
     /// </summary>
     public required string TypeSyntax { get; init; }
     /// <summary>
-    /// Namespace of the generated interop class implementation.
+    /// C# namespace of the generated interop class implementation.
     /// </summary>
     public required string Namespace { get; init; }
     /// <summary>
-    /// Name of the generated interop class implementation.
+    /// C# name of the generated interop class implementation.
     /// </summary>
     public required string Name { get; init; }
     /// <summary>
-    /// Full type name of the generated interop class implementation.
+    /// Full C# type name of the generated interop class implementation.
     /// </summary>
-    public string FullName => $"{Namespace}.{Name}";
+    public required string FullName { get; init; }
+    /// <summary>
+    /// JS name of the generated interop class implementation.
+    /// </summary>
+    public required string JSName { get; init; }
     /// <summary>
     /// Members declared on the interface, representing the interop API.
     /// </summary>
     public required IReadOnlyCollection<MemberMeta> Members { get; init; }
 }
-

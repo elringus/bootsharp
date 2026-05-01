@@ -4,6 +4,33 @@ namespace Bootsharp.Publish;
 
 internal sealed class MemberInspector (Preferences prefs, TypeInspector types, SerializedInspector serde)
 {
+    public EventMeta Inspect (EventInfo evt, InteropKind interop)
+    {
+        var inv = evt.EventHandlerType!.GetMethod("Invoke")!;
+        return new(evt) {
+            Interop = interop,
+            Assembly = evt.DeclaringType!.Assembly.GetName().Name!,
+            Space = evt.DeclaringType.FullName!,
+            Name = evt.Name,
+            Arguments = inv.GetParameters().Select((p, i) => CreateArg(p, GetArgNullability(p, i))).ToArray(),
+            JSSpace = BuildJSSpace(evt.DeclaringType),
+            JSName = WithPrefs(prefs.Function, evt.Name, ToFirstLower(evt.Name)),
+            Value = CreateValue(inv.ReturnParameter.ParameterType, GetNullability(inv.ReturnParameter))
+        };
+
+        NullabilityInfo GetArgNullability (ParameterInfo param, int index)
+        {
+            if (evt.EventHandlerType!.IsGenericType)
+            {
+                var genType = evt.EventHandlerType.GetGenericTypeDefinition()
+                    .GetMethod("Invoke")!.GetParameters()[index].ParameterType;
+                if (genType.IsGenericParameter)
+                    return GetNullability(evt).GenericTypeArguments[genType.GenericParameterPosition];
+            }
+            return GetNullability(param);
+        }
+    }
+
     public PropertyMeta Inspect (PropertyInfo prop, InteropKind interop) => new(prop) {
         Interop = interop,
         Assembly = prop.DeclaringType!.Assembly.GetName().Name!,
@@ -21,7 +48,7 @@ internal sealed class MemberInspector (Preferences prefs, TypeInspector types, S
         Assembly = method.DeclaringType!.Assembly.GetName().Name!,
         Space = method.DeclaringType.FullName!,
         Name = method.Name,
-        Arguments = method.GetParameters().Select(CreateArgument).ToArray(),
+        Arguments = method.GetParameters().Select(p => CreateArg(p, GetNullability(p))).ToArray(),
         JSSpace = BuildJSSpace(method.DeclaringType),
         JSName = WithPrefs(prefs.Function, method.Name, ToFirstLower(method.Name)),
         Value = CreateValue(method.ReturnParameter.ParameterType, GetNullability(method.ReturnParameter)),
@@ -29,15 +56,15 @@ internal sealed class MemberInspector (Preferences prefs, TypeInspector types, S
         Async = IsTaskLike(method.ReturnParameter.ParameterType)
     };
 
-    private ArgumentMeta CreateArgument (ParameterInfo param) => new(param) {
+    private ArgumentMeta CreateArg (ParameterInfo param, NullabilityInfo nil) => new(param) {
         Name = param.Name!,
         JSName = param.Name == "function" ? "fn" : param.Name!,
-        Value = CreateValue(param.ParameterType, GetNullability(param))
+        Value = CreateValue(param.ParameterType, nil)
     };
 
     private ValueMeta CreateValue (Type type, NullabilityInfo nil)
     {
-        IsInstancedInteropInterface(type, out var instanceType);
+        IsInstancedInterface(type, out var instanceType);
         return new() {
             Type = types.Inspect(type),
             TypeSyntax = BuildSyntax(type, nil),
@@ -48,11 +75,11 @@ internal sealed class MemberInspector (Preferences prefs, TypeInspector types, S
         };
     }
 
-    private string BuildJSSpace (Type type)
+    private string BuildJSSpace (Type decl)
     {
-        var space = type.Namespace ?? "";
-        var name = BuildJSSpaceName(type);
-        if (type.IsInterface) name = name[1..];
+        var space = decl.Namespace ?? "";
+        var name = TrimGeneric(decl.Name);
+        if (decl.IsInterface) name = name[1..];
         var fullname = string.IsNullOrEmpty(space) ? name : $"{space}.{name}";
         return WithPrefs(prefs.Space, fullname, fullname);
     }

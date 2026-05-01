@@ -55,25 +55,25 @@ public sealed record Computed
 
 public static class Serialization
 {
-    [JSInvokable] public static Primitives?[]? EchoPrimitives (Primitives?[]? value) => value;
-    [JSInvokable] public static Union?[]? EchoUnions (Union?[]? value) => value;
-    [JSInvokable] public static Computed EchoComputed (Computed value) => value;
-    [JSInvokable] public static Computed?[]? EchoComputedArray (Computed?[]? value) => value;
-    [JSInvokable] public static byte[]? EchoBytes (byte[]? value) => value;
-    [JSInvokable] public static int[]? EchoIntArray (int[]? value) => value;
-    [JSInvokable] public static double[]? EchoDoubleArray (double[]? value) => value;
-    [JSInvokable] public static string?[]? EchoStringArray (string?[]? value) => value;
-    [JSInvokable] public static int?[]? EchoNullableIntArray (int?[]? value) => value;
-    [JSInvokable] public static int[]?[]? EchoNestedIntArray (int[]?[]? value) => value;
-    [JSInvokable] public static List<int>? EchoIntList (List<int>? value) => value;
-    [JSInvokable] public static List<string?>? EchoStringList (List<string?>? value) => value;
-    [JSInvokable] public static List<int>?[]? EchoNestedIntList (List<int>?[]? value) => value;
-    [JSInvokable] public static Dictionary<string, string?>? EchoDictionary (Dictionary<string, string?>? value) => value;
-    [JSInvokable] public static Dictionary<string, string?>?[]? EchoNestedDictionary (Dictionary<string, string?>?[]? value) => value;
-    [JSInvokable] public static IList<int> EchoListInterface (IList<int> value) => value;
-    [JSInvokable] public static IReadOnlyList<int> EchoReadOnlyList (IReadOnlyList<int> value) => value;
-    [JSInvokable] public static ICollection<int> EchoCollection (ICollection<int> value) => value;
-    [JSInvokable] public static IReadOnlyCollection<int> EchoReadOnlyCollection (IReadOnlyCollection<int> value) => value;
-    [JSInvokable] public static IDictionary<int, int> EchoDictionaryInterface (IDictionary<int, int> value) => value;
-    [JSInvokable] public static IReadOnlyDictionary<int, int> EchoReadOnlyDictionary (IReadOnlyDictionary<int, int> value) => value;
+    [Export] public static Primitives?[]? EchoPrimitives (Primitives?[]? value) => value;
+    [Export] public static Union?[]? EchoUnions (Union?[]? value) => value;
+    [Export] public static Computed EchoComputed (Computed value) => value;
+    [Export] public static Computed?[]? EchoComputedArray (Computed?[]? value) => value;
+    [Export] public static byte[]? EchoBytes (byte[]? value) => value;
+    [Export] public static int[]? EchoIntArray (int[]? value) => value;
+    [Export] public static double[]? EchoDoubleArray (double[]? value) => value;
+    [Export] public static string?[]? EchoStringArray (string?[]? value) => value;
+    [Export] public static int?[]? EchoNullableIntArray (int?[]? value) => value;
+    [Export] public static int[]?[]? EchoNestedIntArray (int[]?[]? value) => value;
+    [Export] public static List<int>? EchoIntList (List<int>? value) => value;
+    [Export] public static List<string?>? EchoStringList (List<string?>? value) => value;
+    [Export] public static List<int>?[]? EchoNestedIntList (List<int>?[]? value) => value;
+    [Export] public static Dictionary<string, string?>? EchoDictionary (Dictionary<string, string?>? value) => value;
+    [Export] public static Dictionary<string, string?>?[]? EchoNestedDictionary (Dictionary<string, string?>?[]? value) => value;
+    [Export] public static IList<int> EchoListInterface (IList<int> value) => value;
+    [Export] public static IReadOnlyList<int> EchoReadOnlyList (IReadOnlyList<int> value) => value;
+    [Export] public static ICollection<int> EchoCollection (ICollection<int> value) => value;
+    [Export] public static IReadOnlyCollection<int> EchoReadOnlyCollection (IReadOnlyCollection<int> value) => value;
+    [Export] public static IDictionary<int, int> EchoDictionaryInterface (IDictionary<int, int> value) => value;
+    [Export] public static IReadOnlyDictionary<int, int> EchoReadOnlyDictionary (IReadOnlyDictionary<int, int> value) => value;
 }

@@ -4,12 +4,10 @@ public class EmitTest : TaskTest
 {
     protected BootsharpEmit Task { get; }
     protected string GeneratedInterfaces => ReadProjectFile(interfacesPath);
-    protected string GeneratedDependencies => ReadProjectFile(dependenciesPath);
     protected string GeneratedSerializer => ReadProjectFile(serializerPath);
     protected string GeneratedInterop => ReadProjectFile(interopPath);
 
     private string interfacesPath => $"{Project.Root}/Interfaces.g.cs";
-    private string dependenciesPath => $"{Project.Root}/Dependencies.g.cs";
     private string serializerPath => $"{Project.Root}/Serializer.g.cs";
     private string interopPath => $"{Project.Root}/Interop.g.cs";
 
@@ -29,7 +27,6 @@ public class EmitTest : TaskTest
         InspectedDirectory = Project.Root,
         EntryAssemblyName = "System.Runtime.dll",
         InterfacesFilePath = interfacesPath,
-        DependenciesFilePath = dependenciesPath,
         SerializerFilePath = serializerPath,
         InteropFilePath = interopPath,
         BuildEngine = Engine

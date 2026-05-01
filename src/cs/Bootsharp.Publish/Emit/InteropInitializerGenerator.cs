@@ -2,60 +2,35 @@ namespace Bootsharp.Publish;
 
 internal sealed class InteropInitializerGenerator
 {
-    public string Generate (IEnumerable<MethodMeta> methods)
+    public string Generate (SolutionInspection inspection)
     {
-        var interop = methods.Where(m => m.Interop == InteropKind.Import)
-            .OrderBy(BuildProxyName).ToArray();
-        if (interop.Length == 0) return "";
+        var events = inspection.StaticMembers.OfType<EventMeta>()
+            .Concat(inspection.StaticInterfaces.SelectMany(i => i.Members.OfType<EventMeta>()))
+            .Where(e => e.Interop == InteropKind.Export).ToArray();
+        var methods = inspection.StaticMembers.OfType<MethodMeta>()
+            .Where(m => m.Interop == InteropKind.Import).ToArray();
+        if (methods.Length == 0 && events.Length == 0) return "";
         return $$"""
-                 {{JoinLines(interop.Select(BuildAccessor))}}
-
                      [ModuleInitializer]
                      internal static unsafe void Initialize ()
                      {
-                         {{JoinLines(interop.Select(BuildAssignment), 2)}}
+                         {{Fmt(2, [
+                             ..events.Select(BuildEventSubscription),
+                             ..methods.Select(BuildMethodAssignment)
+                         ])}}
                      }
                  """;
     }
 
-    private static string BuildAccessor (MethodMeta method)
+    private static string BuildEventSubscription (EventMeta evt)
     {
-        var proxy = BuildProxyName(method);
-        var ptrType = BuildPointerType(method);
-        var target = BuildTargetName(method);
-        var accessor = BuildAccessorName(method);
-        return $"""
-                [UnsafeAccessor(UnsafeAccessorKind.StaticField, Name = "{proxy}")]
-                private static extern unsafe ref {ptrType} {accessor} ([UnsafeAccessorType("{target}")] object? _);
-                """;
+        var handler = $"Handle_{evt.Space.Replace('.', '_')}_{evt.Name}";
+        return $"global::{evt.Space}.{evt.Name} += {handler};";
     }
 
-    private static string BuildAssignment (MethodMeta method)
+    private static string BuildMethodAssignment (MethodMeta method)
     {
-        var proxy = BuildProxyName(method);
-        return $"{BuildAccessorName(method)}(default) = &{proxy};";
-    }
-
-    private static string BuildPointerType (MethodMeta method)
-    {
-        var args = method.Arguments.Select(a => a.Value.TypeSyntax).ToList();
-        args.Add(method.Value.TypeSyntax);
-        return $"delegate* managed<{string.Join(", ", args)}>";
-    }
-
-    private static string BuildAccessorName (MethodMeta method)
-    {
-        return $"Get_{BuildProxyName(method)}";
-    }
-
-    private static string BuildProxyName (MethodMeta method)
-    {
-        return string.Concat($"Proxy_{method.Space}_{method.Name}"
-            .Select(c => char.IsLetterOrDigit(c) || c == '_' ? c : '_'));
-    }
-
-    private static string BuildTargetName (MethodMeta method)
-    {
-        return $"{method.Space}, {method.Assembly}";
+        var name = $"{method.Space.Replace('.', '_')}_{method.Name}";
+        return $"global::{method.Space}.Bootsharp_{method.Name} = &{name};";
     }
 }

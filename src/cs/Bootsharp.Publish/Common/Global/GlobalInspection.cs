@@ -1,4 +1,5 @@
 global using static Bootsharp.Publish.GlobalInspection;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -9,8 +10,9 @@ internal static class GlobalInspection
 {
     public static MetadataLoadContext CreateLoadContext (string directory)
     {
-        var assemblyPaths = Directory.GetFiles(RuntimeEnvironment.GetRuntimeDirectory(), "*.dll").ToList();
-        foreach (var path in Directory.GetFiles(directory, "*.dll"))
+        var runtimeDir = RuntimeEnvironment.GetRuntimeDirectory();
+        var assemblyPaths = Directory.GetFiles(runtimeDir, "*.dll").Order().ToList();
+        foreach (var path in Directory.GetFiles(directory, "*.dll").Order())
             if (assemblyPaths.All(p => Path.GetFileName(p) != Path.GetFileName(path)))
                 assemblyPaths.Add(path);
         var resolver = new PathAssemblyResolver(assemblyPaths);
@@ -27,6 +29,21 @@ internal static class GlobalInspection
     {
         if (type.IsArray) return false;
         return IsUserAssembly(type.Assembly.FullName!);
+    }
+
+    public static bool IsAutoProperty (PropertyInfo prop)
+    {
+        var backingFieldName = $"<{prop.Name}>k__BackingField";
+        var backingField = prop.DeclaringType!.GetField(backingFieldName,
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        return backingField != null;
+    }
+
+    public static bool IsInstancedInterface (Type type, [NotNullWhen(true)] out Type? instanceType)
+    {
+        if (IsTaskWithResult(type, out instanceType))
+            return IsInstancedInterface(instanceType, out instanceType);
+        return (instanceType = type.IsInterface && IsUserType(type) ? type : null) != null;
     }
 
     public static string WithPrefs (IReadOnlyCollection<Preference> prefs, string input, string @default)
