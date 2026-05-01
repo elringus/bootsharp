@@ -35,7 +35,7 @@ public class InteropTest : EmitTest
                 {
                     [Export] public static event Action<string>? Evt;
                     // (the fields are emitted by the source generators)
-                    private static unsafe delegate* managed<int, string> Bootsharp_GetLabel;
+                    public static unsafe delegate* managed<int, string> Bootsharp_GetLabel;
                     [Import] public static string GetLabel (int count) => default!;
                 }
                 """));
@@ -45,24 +45,19 @@ public class InteropTest : EmitTest
                 public static class App
                 {
                     // (the field is emitted by the source generators)
-                    private static unsafe delegate* managed<string> Bootsharp_GetName;
+                    public static unsafe delegate* managed<string> Bootsharp_GetName;
                     [Import] public static string GetName () => default!;
                 }
                 """));
         Execute();
         Contains(
             """
-                [UnsafeAccessor(UnsafeAccessorKind.StaticField, Name = "Bootsharp_GetName")]
-                private static extern unsafe ref delegate* managed<global::System.String> Access_Entry_App_GetName ([UnsafeAccessorType("Entry.App, Entry")] object? _);
-                [UnsafeAccessor(UnsafeAccessorKind.StaticField, Name = "Bootsharp_GetLabel")]
-                private static extern unsafe ref delegate* managed<global::System.Int32, global::System.String> Access_Library_Registry_GetLabel ([UnsafeAccessorType("Library.Registry, Library")] object? _);
-
                 [ModuleInitializer]
                 internal static unsafe void Initialize ()
                 {
                     global::Library.Registry.Evt += Handle_Library_Registry_Evt;
-                    Access_Entry_App_GetName(default) = &Entry_App_GetName;
-                    Access_Library_Registry_GetLabel(default) = &Library_Registry_GetLabel;
+                    global::Entry.App.Bootsharp_GetName = &Entry_App_GetName;
+                    global::Library.Registry.Bootsharp_GetLabel = &Library_Registry_GetLabel;
                 }
             """);
     }

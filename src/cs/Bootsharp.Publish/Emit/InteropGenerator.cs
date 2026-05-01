@@ -28,7 +28,7 @@ internal sealed class InteropGenerator
                   [JSExport] internal static void DisposeExportedInstance (int id) => Instances.DisposeExported(id);
                   [JSImport("instances.disposeImported", "Bootsharp")] internal static partial void DisposeImportedInstance (int id);
 
-                  {{new InteropInitializerGenerator().Generate(inspection)}}
+              {{new InteropInitializerGenerator().Generate(inspection)}}
 
                   {{Fmt(inspection.StaticMembers.SelectMany(EmitMember))}}
                   {{Fmt(inspection.StaticInterfaces.SelectMany(i => i.Members.SelectMany(EmitMember)))}}

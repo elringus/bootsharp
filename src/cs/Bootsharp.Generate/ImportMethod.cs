@@ -12,7 +12,7 @@ internal sealed class ImportMethod (MethodDeclarationSyntax stx)
     {
         method = cmp.GetSemanticModel(stx.SyntaxTree).GetDeclaredSymbol(stx)!;
         return $"""
-                private static delegate* managed<{EmitPointerSignature()}> Bootsharp_{method.Name};
+                public static delegate* managed<{EmitPointerSignature()}> Bootsharp_{method.Name};
                     {stx.Modifiers} {EmitMethodSignature()} => Bootsharp_{method.Name}({EmitArgs()});
                 """;
     }

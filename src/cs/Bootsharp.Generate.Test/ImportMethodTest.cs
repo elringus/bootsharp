@@ -14,7 +14,7 @@ public static class ImportMethodTest
             """
             unsafe partial class Foo
             {
-                private static delegate* managed<void> Bootsharp_Bar;
+                public static delegate* managed<void> Bootsharp_Bar;
                 partial void Bar () => Bootsharp_Bar();
             }
             """
@@ -38,7 +38,7 @@ public static class ImportMethodTest
 
             public static unsafe partial class Foo
             {
-                private static delegate* managed<global::System.String[], global::System.Int32?, global::System.Threading.Tasks.Task> Bootsharp_BarAsync;
+                public static delegate* managed<global::System.String[], global::System.Int32?, global::System.Threading.Tasks.Task> Bootsharp_BarAsync;
                 private static partial global::System.Threading.Tasks.Task BarAsync (global::System.String[] a, global::System.Int32? b) => Bootsharp_BarAsync(a, b);
             }
             """
@@ -62,7 +62,7 @@ public static class ImportMethodTest
 
             public static unsafe partial class Foo
             {
-                private static delegate* managed<global::System.Threading.Tasks.Task<global::System.String?>> Bootsharp_BarAsync;
+                public static delegate* managed<global::System.Threading.Tasks.Task<global::System.String?>> Bootsharp_BarAsync;
                 private static partial global::System.Threading.Tasks.Task<global::System.String?> BarAsync () => Bootsharp_BarAsync();
             }
             """
@@ -80,7 +80,7 @@ public static class ImportMethodTest
             """
             unsafe partial class Foo
             {
-                private static delegate* managed<global::Record, void> Bootsharp_Bar;
+                public static delegate* managed<global::Record, void> Bootsharp_Bar;
                 partial void Bar (global::Record a) => Bootsharp_Bar(a);
             }
             """
@@ -108,9 +108,9 @@ public static class ImportMethodTest
             {
                 unsafe partial class Foo
                 {
-                    private static delegate* managed<global::System.DateTime, global::System.DateTime> Bootsharp_GetTime;
+                    public static delegate* managed<global::System.DateTime, global::System.DateTime> Bootsharp_GetTime;
                     public partial global::System.DateTime GetTime (global::System.DateTime time) => Bootsharp_GetTime(time);
-                    private static delegate* managed<global::System.DateTime, global::System.Threading.Tasks.Task<global::System.DateTime>> Bootsharp_GetTimeAsync;
+                    public static delegate* managed<global::System.DateTime, global::System.Threading.Tasks.Task<global::System.DateTime>> Bootsharp_GetTimeAsync;
                     public partial global::System.Threading.Tasks.Task<global::System.DateTime> GetTimeAsync (global::System.DateTime time) => Bootsharp_GetTimeAsync(time);
                 }
             }
@@ -131,7 +131,7 @@ public static class ImportMethodTest
 
             unsafe partial class Foo
             {
-                private static delegate* managed<void> Bootsharp_Bar;
+                public static delegate* managed<void> Bootsharp_Bar;
                 partial void Bar () => Bootsharp_Bar();
             }
             """
@@ -147,7 +147,7 @@ public static class ImportMethodTest
             """
             unsafe partial class Foo
             {
-                private static delegate* managed<void> Bootsharp_Bar;
+                public static delegate* managed<void> Bootsharp_Bar;
                 partial void Bar () => Bootsharp_Bar();
             }
             """

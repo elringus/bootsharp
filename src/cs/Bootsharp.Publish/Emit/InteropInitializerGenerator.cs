@@ -11,8 +11,6 @@ internal sealed class InteropInitializerGenerator
             .Where(m => m.Interop == InteropKind.Import).ToArray();
         if (methods.Length == 0 && events.Length == 0) return "";
         return $$"""
-                 {{Fmt(methods.Select(BuildMethodAccessor))}}
-
                      [ModuleInitializer]
                      internal static unsafe void Initialize ()
                      {
@@ -24,18 +22,6 @@ internal sealed class InteropInitializerGenerator
                  """;
     }
 
-    private static string BuildMethodAccessor (MethodMeta method)
-    {
-        var name = $"{method.Space.Replace('.', '_')}_{method.Name}";
-        var argType = string.Join(", ", [..method.Arguments.Select(a => a.Value.TypeSyntax), method.Value.TypeSyntax]);
-        var ptrType = $"delegate* managed<{argType}>";
-        var accessor = $"""[UnsafeAccessorType("{method.Space}, {method.Assembly}")]""";
-        return $"""
-                [UnsafeAccessor(UnsafeAccessorKind.StaticField, Name = "Bootsharp_{method.Name}")]
-                private static extern unsafe ref {ptrType} Access_{name} ({accessor} object? _);
-                """;
-    }
-
     private static string BuildEventSubscription (EventMeta evt)
     {
         var handler = $"Handle_{evt.Space.Replace('.', '_')}_{evt.Name}";
@@ -45,6 +31,6 @@ internal sealed class InteropInitializerGenerator
     private static string BuildMethodAssignment (MethodMeta method)
     {
         var name = $"{method.Space.Replace('.', '_')}_{method.Name}";
-        return $"Access_{name}(default) = &{name};";
+        return $"global::{method.Space}.Bootsharp_{method.Name} = &{name};";
     }
 }
