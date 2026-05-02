@@ -126,7 +126,7 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
-    public void GeneratesForMethodsInStaticInterfaces ()
+    public void GeneratesForMethodsInModules ()
     {
         AddAssembly(With(
             """
@@ -171,7 +171,7 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
-    public void GeneratesForPropertiesInStaticInterfaces ()
+    public void GeneratesForPropertiesInModules ()
     {
         AddAssembly(With(
             """
@@ -251,7 +251,7 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
-    public void GeneratesForEventsInStaticInterfaces ()
+    public void GeneratesForEventsInModules ()
     {
         AddAssembly(With(
             """
@@ -276,7 +276,7 @@ public class InteropTest : EmitTest
             """);
         Contains("void Handle_Bootsharp_Generated_Exports_Space_JSExported_Evt (global::Space.Info obj) => Space_Exported_BroadcastEvt_Serialized(Serializer.Serialize(obj, SerializerContext.Space_Info));");
         Contains("""[JSImport("Space.Exported.broadcastEvtSerialized", "Bootsharp")] internal static partial void Space_Exported_BroadcastEvt_Serialized ([JSMarshalAs<JSType.BigInt>] global::System.Int64 obj);""");
-        Contains("[JSExport] internal static void Bootsharp_Generated_Imports_Space_JSImported_InvokeEvt ([JSMarshalAs<JSType.BigInt>] global::System.Int64 obj) => ((global::Bootsharp.Generated.Imports.Space.JSImported)Interfaces.Imports[typeof(global::Space.IImported)].Instance).InvokeEvt(Serializer.Deserialize(obj, SerializerContext.Space_Info));");
+        Contains("[JSExport] internal static void Bootsharp_Generated_Imports_Space_JSImported_InvokeEvt ([JSMarshalAs<JSType.BigInt>] global::System.Int64 obj) => ((global::Bootsharp.Generated.Imports.Space.JSImported)Modules.Imports[typeof(global::Space.IImported)].Instance).InvokeEvt(Serializer.Deserialize(obj, SerializerContext.Space_Info));");
     }
 
     [Fact]
@@ -345,7 +345,7 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
-    public void DoesNotEmitDuplicateInterfaceRegistrations ()
+    public void DoesNotEmitDuplicateModuleRegistrations ()
     {
         AddAssembly(With(
             """

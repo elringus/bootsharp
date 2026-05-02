@@ -82,6 +82,6 @@ public static class Interfaces
 
     private static IImportedStatic GetImportedStatic ()
     {
-        return (IImportedStatic)Bootsharp.Interfaces.Imports[typeof(IImportedStatic)].Instance;
+        return (IImportedStatic)Modules.Imports[typeof(IImportedStatic)].Instance;
     }
 }

@@ -21,7 +21,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     public string Generate (SolutionInspection inspection)
     {
         docs = new(inspection.Documentation);
-        instanced = [..inspection.InstancedInterfaces];
+        instanced = [..inspection.Instanced];
         types = inspection.Types.Select(t => t.Clr).Where(IsUserType).OrderBy(GetNamespace).ToArray();
         for (index = 0; index < types.Length; index++)
             DeclareType();

@@ -535,7 +535,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void RespectsSpacePreferenceInStaticInterfaces ()
+    public void RespectsSpacePreferenceInModules ()
     {
         AddAssembly(With(
             """
@@ -592,7 +592,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForMethodsInStaticInterfaces ()
+    public void GeneratesForMethodsInModules ()
     {
         AddAssembly(With(
             """
@@ -662,7 +662,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForPropertiesInStaticInterfaces ()
+    public void GeneratesForPropertiesInModules ()
     {
         AddAssembly(With(
             """
@@ -766,7 +766,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForEventsInStaticInterfaces ()
+    public void GeneratesForEventsInModules ()
     {
         AddAssembly(With(
             """
@@ -846,7 +846,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void DoesNotEmitDuplicateInterfaceRegistrations ()
+    public void DoesNotEmitDuplicateModuleRegistrations ()
     {
         AddAssembly(With(
             """

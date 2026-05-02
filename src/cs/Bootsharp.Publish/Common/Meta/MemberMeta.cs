@@ -3,7 +3,7 @@ using System.Reflection;
 namespace Bootsharp.Publish;
 
 /// <summary>
-/// An interop member declared on a static API surface or interop interface.
+/// An interop member declared on a static, module or instanced API surface.
 /// </summary>
 internal abstract record MemberMeta
 {
@@ -44,7 +44,7 @@ internal abstract record MemberMeta
 }
 
 /// <summary>
-/// An interop method declared on a static API surface or interop interface.
+/// An interop method declared on a static, module or instanced API surface.
 /// </summary>
 /// <remarks>
 /// Return value of the method is described in <see cref="MemberMeta.Value"/>.
@@ -70,7 +70,7 @@ internal record MethodMeta (MethodInfo Info) : MemberMeta
 }
 
 /// <summary>
-/// An interop event declared on a static API surface or interop interface.
+/// An interop event declared on a static, module or instanced API surface.
 /// </summary>
 internal sealed record EventMeta (EventInfo Info) : MemberMeta
 {
@@ -85,7 +85,7 @@ internal sealed record EventMeta (EventInfo Info) : MemberMeta
 }
 
 /// <summary>
-/// An interop property declared on an interop interface.
+/// An interop property declared on a module or instanced API surface.
 /// </summary>
 internal sealed record PropertyMeta (PropertyInfo Info) : MemberMeta
 {

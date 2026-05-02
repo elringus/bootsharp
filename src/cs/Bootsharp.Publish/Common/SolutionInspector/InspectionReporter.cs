@@ -18,17 +18,17 @@ internal sealed class InspectionReporter (TaskLoggingHelper logger)
 
     private HashSet<string> GetDiscoveredAssemblies (SolutionInspection inspection)
     {
-        return inspection.StaticMembers.Select(m => m.Assembly)
-            .Concat(inspection.StaticInterfaces.SelectMany(i => i.Members.Select(m => m.Assembly)))
-            .Concat(inspection.InstancedInterfaces.SelectMany(i => i.Members.Select(m => m.Assembly)))
+        return inspection.Static.Select(m => m.Assembly)
+            .Concat(inspection.Modules.SelectMany(i => i.Members.Select(m => m.Assembly)))
+            .Concat(inspection.Instanced.SelectMany(i => i.Members.Select(m => m.Assembly)))
             .ToHashSet();
     }
 
     private HashSet<string> GetDiscoveredMembers (SolutionInspection inspection)
     {
-        return inspection.StaticMembers
-            .Concat(inspection.StaticInterfaces.SelectMany(i => i.Members))
-            .Concat(inspection.InstancedInterfaces.SelectMany(i => i.Members))
+        return inspection.Static
+            .Concat(inspection.Modules.SelectMany(i => i.Members))
+            .Concat(inspection.Instanced.SelectMany(i => i.Members))
             .Select(m => m.ToString())
             .ToHashSet();
     }

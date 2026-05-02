@@ -722,7 +722,7 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForMethodsInStaticInterfaces ()
+    public void GeneratesForMethodsInModules ()
     {
         AddAssembly(With(
             """
@@ -788,7 +788,7 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForPropertiesInStaticInterfaces ()
+    public void GeneratesForPropertiesInModules ()
     {
         AddAssembly(With(
             """
@@ -892,7 +892,7 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForEventsInStaticInterfaces ()
+    public void GeneratesForEventsInModules ()
     {
         AddAssembly(With(
             """
@@ -1125,7 +1125,7 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void RespectsSpacePrefInStaticInterfaces ()
+    public void RespectsSpacePrefInModules ()
     {
         AddAssembly(With(
             """
