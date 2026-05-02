@@ -24,17 +24,17 @@ Facilitating high-level interoperation between C# and TypeScript, Bootsharp lets
 
 ✨ High-level C# <-> TypeScript interop
 
-📦 Embeds binaries to single-file ES module
+📦 Produces modern ES package with modules and types
 
 🗺️ Works in browsers and JS runtimes (Node, Deno, Bun)
 
-⚡ Generates bindings and types over C# interfaces
+🧩 Generates bindings over abstract C# API surfaces
 
-🏷️ Supports interop over object instances
+🧬 Intelligently handles any type on the interop surface
 
-🛠️ Allows customizing emitted bindings
+🛠️ Allows customizing emitted interop API patterns
 
-🔥 Supports multi-threading, NativeAOT-LLVM, trimming
+⚡ Compiles optimized WASM with NativeAOT-LLVM and Binaryen
 
 ## 🎬 Get Started
 

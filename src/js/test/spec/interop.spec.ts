@@ -223,7 +223,7 @@ describe("while bootsharp is booted", () => {
         expect(Test.Invokable.getIdxEnumOne() === Test.IdxEnum.One).toBeTruthy();
         expect(Test.Invokable.getIdxEnumOne() === Test.IdxEnum.Two).not.toBeTruthy();
     });
-    it("can interop with imported static interfaces", async () => {
+    it("can interop with imported modules", async () => {
         Test.Types.ImportedStatic.record = { id: "baz" };
         expect(Test.Types.Interfaces.getImportedStaticRecordIdAndSet({ id: "qux" })).toStrictEqual("baz");
         expect(Test.Types.ImportedStatic.record).toStrictEqual({ id: "qux" });
@@ -241,7 +241,7 @@ describe("while bootsharp is booted", () => {
         expect(handler).toHaveBeenCalledWith(undefined);
         Test.Types.Interfaces.onImportedStaticRecordEchoed.unsubscribe(handler);
     });
-    it("can interop with imported interface instances", async () => {
+    it("can interop with imported instances", async () => {
         Test.Types.ImportedStatic.getInstanceAsync = async (arg) => {
             await new Promise(res => setTimeout(res, 1));
             return new Imported(arg);
@@ -265,7 +265,7 @@ describe("while bootsharp is booted", () => {
         expect(handler).toHaveBeenCalledWith(undefined);
         Test.Types.Interfaces.onImportedInstanceRecordEchoed.unsubscribe(handler);
     });
-    it("can interop with exported static interfaces", () => {
+    it("can interop with exported modules", () => {
         const record = { id: "foo" };
         const handler = vi.fn();
         Test.Types.ExportedStatic.onRecordChanged.subscribe(handler);
@@ -280,7 +280,7 @@ describe("while bootsharp is booted", () => {
         expect(handler).toHaveBeenCalledWith(undefined);
         Test.Types.ExportedStatic.onRecordChanged.unsubscribe(handler);
     });
-    it("can interop with exported interface instances", async () => {
+    it("can interop with exported instances", async () => {
         const exported = await Test.Types.ExportedStatic.getInstanceAsync("bar");
         const handler = vi.fn();
         expect(exported.getInstanceArg()).toStrictEqual("bar");
