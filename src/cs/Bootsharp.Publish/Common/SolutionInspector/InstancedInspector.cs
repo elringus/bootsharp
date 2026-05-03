@@ -10,7 +10,11 @@ internal sealed class InstancedInspector (TypeInspector types)
     {
         if (byType.TryGetValue(type, out var meta)) return meta;
         if (IsTaskWithResult(type, out var result)) return Inspect(result, ik, members);
+        if (IsList(type, out var element)) return Inspect(element, ik, members);
+        if (IsDictionary(type, out _, out var value)) return Inspect(value, ik, members);
         if (!IsInstancedType(type)) return null;
+        if (type.BaseType is { } b && Inspect(b, ik, members) is { } bm) byType[b] = bm;
+        // TODO: I dont like this crawling shit here, especially the base type.
         return CollectMembers(byType[type] = InspectType(type, ik), members);
     }
 

@@ -4,8 +4,8 @@ namespace Bootsharp.Publish;
 
 internal sealed class MemberDeclarationGenerator (Preferences prefs)
 {
-    private readonly StringBuilder builder = new();
-    private readonly TypeSyntaxBuilder typeBuilder = new(prefs);
+    private readonly StringBuilder bld = new();
+    private readonly TypeSyntaxBuilder ts = new(prefs);
 
     private MemberMeta member => members[index];
     private MemberMeta? prevMember => index == 0 ? null : members[index - 1];
@@ -23,7 +23,7 @@ internal sealed class MemberDeclarationGenerator (Preferences prefs)
             .OrderBy(m => m.JSSpace).ToArray();
         for (index = 0; index < members.Length; index++)
             DeclareMember();
-        return builder.ToString();
+        return bld.ToString();
     }
 
     private void DeclareMember ()
@@ -47,8 +47,8 @@ internal sealed class MemberDeclarationGenerator (Preferences prefs)
 
     private void OpenNamespace ()
     {
-        builder.Append(docs.BuildType(member.Info.DeclaringType!, 0));
-        builder.Append($"\nexport namespace {member.JSSpace} {{");
+        bld.Append(docs.BuildType(member.Info.DeclaringType!, 0));
+        bld.Append($"\nexport namespace {member.JSSpace} {{");
     }
 
     private bool ShouldCloseNamespace ()
@@ -59,41 +59,41 @@ internal sealed class MemberDeclarationGenerator (Preferences prefs)
 
     private void CloseNamespace ()
     {
-        builder.Append("\n}");
+        bld.Append("\n}");
     }
 
     private void DeclareEvent (EventMeta evt)
     {
-        builder.Append(docs.BuildEvent(evt, 1));
+        bld.Append(docs.BuildEvent(evt, 1));
         var type = evt.Interop == InteropKind.Export ? "EventSubscriber" : "EventBroadcaster";
-        builder.Append($"\n    export const {evt.JSName}: {type}<[");
-        builder.AppendJoin(", ", evt.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
-        builder.Append("]>;");
+        bld.Append($"\n    export const {evt.JSName}: {type}<[");
+        bld.AppendJoin(", ", evt.Arguments.Select(a => $"{a.JSName}: {ts.BuildArg(a)}"));
+        bld.Append("]>;");
     }
 
     private void DeclareProperty (PropertyMeta prop)
     {
         var value = prop.GetValue ?? prop.SetValue!;
-        builder.Append(docs.BuildProperty(prop.Info, 1));
-        builder.Append($"\n    export {(prop.CanGet && !prop.CanSet ? "const" : "let")} {prop.JSName}: ");
-        builder.Append(typeBuilder.Build(value.Type.Clr, value.Nullability));
-        if (value.Nullable) builder.Append(" | undefined");
-        builder.Append(';');
+        bld.Append(docs.BuildProperty(prop.Info, 1));
+        bld.Append($"\n    export {(prop.CanGet && !prop.CanSet ? "const" : "let")} {prop.JSName}: ");
+        bld.Append(ts.Build(value.Type.Clr, value.Nullability));
+        if (value.Nullable) bld.Append(" | undefined");
+        bld.Append(';');
     }
 
     private void DeclareMethodExport (MethodMeta method)
     {
-        builder.Append(docs.BuildFunction(method, 1));
-        builder.Append($"\n    export function {method.JSName}(");
-        builder.AppendJoin(", ", method.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
-        builder.Append($"): {typeBuilder.BuildReturn(method)};");
+        bld.Append(docs.BuildFunction(method, 1));
+        bld.Append($"\n    export function {method.JSName}(");
+        bld.AppendJoin(", ", method.Arguments.Select(a => $"{a.JSName}: {ts.BuildArg(a)}"));
+        bld.Append($"): {ts.BuildReturn(method)};");
     }
 
     private void DeclareMethodImport (MethodMeta method)
     {
-        builder.Append(docs.BuildFunction(method, 1));
-        builder.Append($"\n    export let {method.JSName}: (");
-        builder.AppendJoin(", ", method.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
-        builder.Append($") => {typeBuilder.BuildReturn(method)};");
+        bld.Append(docs.BuildFunction(method, 1));
+        bld.Append($"\n    export let {method.JSName}: (");
+        bld.AppendJoin(", ", method.Arguments.Select(a => $"{a.JSName}: {ts.BuildArg(a)}"));
+        bld.Append($") => {ts.BuildReturn(method)};");
     }
 }

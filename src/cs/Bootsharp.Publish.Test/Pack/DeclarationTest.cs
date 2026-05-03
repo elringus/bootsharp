@@ -47,8 +47,8 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
-            export interface Record {
-            }
+            export type Record = Readonly<{
+            }>;
             export enum Enum {
                 A,
                 B
@@ -70,8 +70,8 @@ public class DeclarationTest : PackTest
         Contains(
             """
             export namespace Foo {
-                export interface Bar {
-                }
+                export type Bar = Readonly<{
+                }>;
             }
 
             export namespace Class {
@@ -635,12 +635,13 @@ public class DeclarationTest : PackTest
                 public struct Struct { public double A { get; set; } }
                 public readonly struct ReadonlyStruct { public double A { get; init; } }
                 public readonly record struct ReadonlyRecordStruct(double A);
-                public record class RecordClass(double A);
+                public record class RecordClassA (double A, ReadonlyRecordStruct Str);
+                public record class RecordClassB (double B) : RecordClassA(42, new(24));
                 public enum Enum { A, B }
                 public class Foo { public Struct S { get; } public ReadonlyStruct Rs { get; } }
-                public class Bar : Foo { public ReadonlyRecordStruct Rrs { get; } public RecordClass Rc { get; } }
+                public class Bar : Foo { public Dictionary<string, RecordClassB> Rc { get; } }
                 public class Baz { public List<Bar> Bars { get; } public Enum E { get; } }
-                public class Class { [Export] public static Baz GetBaz () => default; }
+                public class Class { [Export] public static Dictionary<string, Baz> GetBaz () => default; }
                 """));
         Execute();
         Contains(
@@ -651,24 +652,27 @@ public class DeclarationTest : PackTest
                     readonly e: Space.Enum;
                 }
                 export interface Bar extends Space.Foo {
-                    rrs: Space.ReadonlyRecordStruct;
-                    rc: Space.RecordClass;
+                    readonly rc: Map<string, Space.RecordClassB>;
                 }
-                export interface ReadonlyRecordStruct {
+                export type RecordClassB = Space.RecordClassA & Readonly<{
+                    b: number;
+                }>;
+                export type ReadonlyRecordStruct = Readonly<{
                     a: number;
-                }
-                export interface RecordClass {
+                }>;
+                export type RecordClassA = Readonly<{
                     a: number;
-                }
-                export interface Struct {
+                    str: Space.ReadonlyRecordStruct;
+                }>;
+                export type Struct = Readonly<{
                     a: number;
-                }
-                export interface ReadonlyStruct {
+                }>;
+                export type ReadonlyStruct = Readonly<{
                     a: number;
-                }
+                }>;
                 export interface Foo {
-                    s: Space.Struct;
-                    rs: Space.ReadonlyStruct;
+                    readonly s: Space.Struct;
+                    readonly rs: Space.ReadonlyStruct;
                 }
                 export enum Enum {
                     A,
@@ -677,13 +681,13 @@ public class DeclarationTest : PackTest
             }
 
             export namespace Space.Class {
-                export function getBaz(): Space.Baz;
+                export function getBaz(): Map<string, Space.Baz>;
             }
             """);
     }
 
     [Fact]
-    public void StaticPropertiesAreNotIncluded ()
+    public void StaticPropertiesAreIncluded ()
     {
         AddAssembly(
             WithClass("public class Foo { public static string Soo { get; } }"),
@@ -700,14 +704,12 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void ComputedPropertiesAreIncluded ()
+    public void IndexerPropertiesAreNotIncluded ()
     {
         AddAssembly(WithClass(
             """
             public record Foo
             {
-                public bool Boo => true;
-                public bool SetOnly { set { } }
                 public bool this[int index] => true;
             }
 
@@ -717,9 +719,53 @@ public class DeclarationTest : PackTest
         Contains(
             """
             export namespace Class {
-                export interface Foo {
+                export type Foo = Readonly<{
+                }>;
+            }
+            """);
+    }
+
+    [Fact]
+    public void SetOnlyPropertiesAreNotIncluded ()
+    {
+        AddAssembly(WithClass(
+            """
+            public record Foo
+            {
+                public bool SetOnly { set { } }
+            }
+
+            [Export] public static Foo Bar () => default;
+            """));
+        Execute();
+        Contains(
+            """
+            export namespace Class {
+                export type Foo = Readonly<{
+                }>;
+            }
+            """);
+    }
+
+    [Fact]
+    public void ComputedPropertiesAreIncluded ()
+    {
+        AddAssembly(WithClass(
+            """
+            public record Foo
+            {
+                public bool Boo => true;
+            }
+
+            [Export] public static Foo Bar () => default;
+            """));
+        Execute();
+        Contains(
+            """
+            export namespace Class {
+                export type Foo = Readonly<{
                     boo: boolean;
-                }
+                }>;
             }
             """);
     }
@@ -740,9 +786,9 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
-            export interface Info {
+            export type Info = Readonly<{
                 value: string;
-            }
+            }>;
 
             export namespace Exported {
                 export function inv(str: string, info: Info): Info;
@@ -775,9 +821,9 @@ public class DeclarationTest : PackTest
             export interface IImported {
                 fun(info: Info, str: string): Info;
             }
-            export interface Info {
+            export type Info = Readonly<{
                 value: string;
-            }
+            }>;
             export interface IExported {
                 inv(str: string, info: Info): Info;
                 reset(): void;
@@ -821,9 +867,9 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
-            export interface Info {
+            export type Info = Readonly<{
                 value: string;
-            }
+            }>;
             export interface IExportedInstanced {
             }
             export interface IImportedInstanced {
@@ -878,9 +924,9 @@ public class DeclarationTest : PackTest
                 readonly imported: IImported;
                 exported: IExported;
             }
-            export interface Info {
+            export type Info = Readonly<{
                 value: string;
-            }
+            }>;
             export interface IExported {
                 state: Info;
                 readonly exported: IExported;
@@ -913,9 +959,9 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
-            export interface Info {
+            export type Info = Readonly<{
                 value: string;
-            }
+            }>;
             export interface IExportedInstanced {
             }
             export interface IImportedInstanced {
@@ -952,9 +998,9 @@ public class DeclarationTest : PackTest
             export interface IImported {
                 changed: EventBroadcaster<[arg1: IImported, arg2: Info, arg3: string]>;
             }
-            export interface Info {
+            export type Info = Readonly<{
                 value: string;
-            }
+            }>;
             export interface IExported {
                 changed: EventSubscriber<[obj: Info]>;
                 done: EventSubscriber<[]>;
@@ -1180,10 +1226,10 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
-            export interface Record {
-            }
-            export interface Generic<T> {
-            }
+            export type Record = Readonly<{
+            }>;
+            export type Generic<T> = Readonly<{
+            }>;
 
             export namespace Class {
                 export function inv(r: Foo, g: Bar): void;
@@ -1336,12 +1382,12 @@ public class DeclarationTest : PackTest
             /**
              * A payload sent across interop.
              */
-            export interface Payload {
+            export type Payload = Readonly<{
                 /**
                  * The payload name.
                  */
                 name: string;
-            }
+            }>;
             """);
         Contains(
             """

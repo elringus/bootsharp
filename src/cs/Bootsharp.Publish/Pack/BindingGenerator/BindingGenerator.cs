@@ -11,7 +11,7 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
     private Binding? prevBinding => index == 0 ? null : bindings[index - 1];
     private Binding? nextBinding => index == bindings.Length - 1 ? null : bindings[index + 1];
 
-    private readonly StringBuilder builder = new();
+    private readonly StringBuilder bld = new();
     [MemberNotNullWhen(true, nameof(it))] private bool isIt => it != null;
     private InstancedMeta? it => binding.It;
     private Binding[] bindings = [];
@@ -31,37 +31,37 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
         if (bindings.Length == 0) return "";
 
         EmitImports();
-        builder.Append("\n\n");
+        bld.Append("\n\n");
 
         if (debug)
         {
             EmitDebugHelpers();
-            builder.Append("\n\n");
+            bld.Append("\n\n");
         }
 
         EmitHelpers();
-        builder.Append("\n\n");
+        bld.Append("\n\n");
 
-        builder.Append(new BindingSerializerGenerator().Generate(spec.Serialized));
-        builder.Append("\n\n");
+        bld.Append(new BindingSerializerGenerator().Generate(spec.Serialized));
+        bld.Append("\n\n");
 
         foreach (var instance in spec.Instanced
                      .Where(i => i.Interop == InteropKind.Import && i.Members.OfType<EventMeta>().Any()))
             EmitInstanceRegistrar(instance);
-        builder.Append("\n\n");
+        bld.Append("\n\n");
 
         if (spec.Instanced.Count > 0)
-            builder.Append(new BindingClassGenerator().Generate(spec));
+            bld.Append(new BindingClassGenerator().Generate(spec));
 
         for (index = 0; index < bindings.Length; index++)
             EmitBinding();
 
-        return builder.ToString();
+        return bld.ToString();
     }
 
     private void EmitImports ()
     {
-        builder.Append(
+        bld.Append(
             """
             import { exports } from "./exports";
             import { Event } from "./event";
@@ -73,7 +73,7 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
 
     private void EmitDebugHelpers ()
     {
-        builder.Append(
+        bld.Append(
             """
             function getExport(name) {
                 return (...args) => {
@@ -97,7 +97,7 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
 
     private void EmitHelpers ()
     {
-        builder.Append(
+        bld.Append(
             """
             function importEvent(handler) {
                 const event = new Event();
@@ -130,8 +130,8 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
         var parts = binding.Namespace.Split('.');
         while (prevParts.ElementAtOrDefault(level) == parts[level]) level++;
         for (var i = level; i < parts.Length; level = i, i++)
-            if (i == 0) builder.Append($"\nexport const {parts[i]} = {{");
-            else builder.Append($"{Comma}\n{Pad(i)}{parts[i]}: {{");
+            if (i == 0) bld.Append($"\nexport const {parts[i]} = {{");
+            else bld.Append($"{Comma}\n{Pad(i)}{parts[i]}: {{");
     }
 
     private bool ShouldCloseNamespace ()
@@ -144,8 +144,8 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
     {
         var target = GetCloseLevel();
         for (; level >= target; level--)
-            if (level == 0) builder.Append("\n};");
-            else builder.Append($"\n{Pad(level)}}}");
+            if (level == 0) bld.Append("\n};");
+            else bld.Append($"\n{Pad(level)}}}");
 
         int GetCloseLevel ()
         {
@@ -184,13 +184,13 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
         if (isIt)
         {
             var invName = $"instances.export(_id, id => new {it.JSName}(id)).broadcast{evt.Name}";
-            builder.Append($"{Br}{name}({PrependIdArg(args)}) {{ {invName}({invArgs}); }}");
+            bld.Append($"{Br}{name}({PrependIdArg(args)}) {{ {invName}({invArgs}); }}");
         }
         else
         {
             var invName = $"{evt.JSSpace}.{evt.JSName}.broadcast";
-            builder.Append($"{Br}{evt.JSName}: new Event()");
-            builder.Append($"{Br}{name}: ({args}) => {invName}({invArgs})");
+            bld.Append($"{Br}{evt.JSName}: new Event()");
+            bld.Append($"{Br}{name}: ({args}) => {invName}({invArgs})");
         }
     }
 
@@ -201,7 +201,7 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
         var invName = debug ? $"""getExport("{name}")""" : $"exports.{name}";
         var args = string.Join(", ", evt.Arguments.Select(a => a.JSName));
         var invArgs = string.Join(", ", evt.Arguments.Select(Serialize));
-        builder.Append($"{Br}{evt.JSName}: importEvent(({args}) => {invName}({invArgs}))");
+        bld.Append($"{Br}{evt.JSName}: importEvent(({args}) => {invName}({invArgs}))");
     }
 
     private void EmitPropertyExport (PropertyMeta prop)
@@ -212,8 +212,8 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
             var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
             var body = Deserialize(prop.GetValue, isIt ? $"{invName}(_id)" : $"{invName}()");
             if (prop.GetValue.Nullable && !prop.GetValue.IsInstanced) body += " ?? undefined";
-            if (isIt) builder.Append($"{Br}getProperty{prop.Name}(_id) {{ return {body}; }}");
-            else builder.Append($"{Br}get {prop.JSName}() {{ return {body}; }}");
+            if (isIt) bld.Append($"{Br}getProperty{prop.Name}(_id) {{ return {body}; }}");
+            else bld.Append($"{Br}get {prop.JSName}() {{ return {body}; }}");
         }
         if (prop.CanSet)
         {
@@ -221,8 +221,8 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
             var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
             var value = Serialize(prop.SetValue, "value");
             var body = isIt ? $"{invName}(_id, {value})" : $"{invName}({value})";
-            if (isIt) builder.Append($"{Br}setProperty{prop.Name}(_id, value) {{ {body}; }}");
-            else builder.Append($"{Br}set {prop.JSName}(value) {{ {body}; }}");
+            if (isIt) bld.Append($"{Br}setProperty{prop.Name}(_id, value) {{ {body}; }}");
+            else bld.Append($"{Br}set {prop.JSName}(value) {{ {body}; }}");
         }
     }
 
@@ -230,18 +230,18 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
     {
         if (prop.CanGet)
         {
-            if (!isIt) builder.Append($"{Br}get {prop.JSName}() {{ return this._{prop.JSName}; }}");
+            if (!isIt) bld.Append($"{Br}get {prop.JSName}() {{ return this._{prop.JSName}; }}");
             var args = isIt ? "_id" : "";
             var body = Serialize(prop.GetValue, isIt ? $"instances.imported(_id).{prop.JSName}" : $"this.{prop.JSName}");
-            builder.Append($"{Br}getProperty{prop.Name}Serialized({args}) {{ return {body}; }}");
+            bld.Append($"{Br}getProperty{prop.Name}Serialized({args}) {{ return {body}; }}");
         }
         if (prop.CanSet)
         {
-            if (!isIt) builder.Append($"{Br}set {prop.JSName}(value) {{ this._{prop.JSName} = value; }}");
+            if (!isIt) bld.Append($"{Br}set {prop.JSName}(value) {{ this._{prop.JSName} = value; }}");
             var value = Deserialize(prop.SetValue, "value");
             var args = isIt ? "_id, value" : "value";
             var body = isIt ? $"instances.imported(_id).{prop.JSName} = {value}" : $"this.{prop.JSName} = {value}";
-            builder.Append($"{Br}setProperty{prop.Name}Serialized({args}) {{ {body}; }}");
+            bld.Append($"{Br}setProperty{prop.Name}Serialized({args}) {{ {body}; }}");
         }
     }
 
@@ -255,7 +255,7 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
         var invArgs = string.Join(", ", method.Arguments.Select(Serialize));
         if (isIt) invArgs = PrependIdArg(invArgs);
         var body = Deserialize(method.Return, $"{(wait ? "await " : "")}{invName}({invArgs})");
-        builder.Append($"{Br}{method.JSName}: {(wait ? "async " : "")}({args}) => {body}");
+        bld.Append($"{Br}{method.JSName}: {(wait ? "async " : "")}({args}) => {body}");
     }
 
     private void EmitMethodImport (MethodMeta method)
@@ -268,14 +268,14 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
         var invName = isIt ? $"instances.imported(_id).{name}" : $"this.{name}Handler";
         var body = Serialize(method.Return, $"{(wait ? "await " : "")}{invName}({invArgs})");
         var serdeHandler = $"{(wait ? "async " : "")}({args}) => {body}";
-        if (isIt) builder.Append($"{Br}{name}Serialized: {serdeHandler}");
+        if (isIt) bld.Append($"{Br}{name}Serialized: {serdeHandler}");
         else
         {
             var serde = $"this.{name}SerializedHandler";
             var serdeExp = debug ? $"getImport({invName}, {serde}, \"{binding.Namespace}.{name}\")" : serde;
-            builder.Append($"{Br}get {name}() {{ return {invName}; }}");
-            builder.Append($"{Br}set {name}(handler) {{ {invName} = handler; {serde} = {serdeHandler}; }}");
-            builder.Append($"{Br}get {name}Serialized() {{ return {serdeExp}; }}");
+            bld.Append($"{Br}get {name}() {{ return {invName}; }}");
+            bld.Append($"{Br}set {name}(handler) {{ {invName} = handler; {serde} = {serdeHandler}; }}");
+            bld.Append($"{Br}get {name}Serialized() {{ return {serdeExp}; }}");
         }
     }
 
@@ -285,13 +285,13 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
         var fields = string.Join(", ", values
             .Select(v => $"\"{v}\": \"{Enum.GetName(@enum, v)}\"")
             .Concat(values.Select(v => $"\"{Enum.GetName(@enum, v)}\": {v}")));
-        builder.Append($"{Br}{@enum.Name}: {{ {fields} }}");
+        bld.Append($"{Br}{@enum.Name}: {{ {fields} }}");
     }
 
     private void EmitInstanceRegistrar (InstancedMeta instance)
     {
         var events = instance.Members.OfType<EventMeta>().ToArray();
-        builder.Append(
+        bld.Append(
             $$"""
               function {{BuildRegistrarName(instance)}}(instance) {
                   return instances.import(instance, _id => {
@@ -354,5 +354,5 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
 
     private string Br => $"{Comma}\n{Pad(level + 1)}";
     private string Pad (int level) => new(' ', level * 4);
-    private string Comma => builder[^1] == '{' ? "" : ",";
+    private string Comma => bld[^1] == '{' ? "" : ",";
 }
