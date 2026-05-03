@@ -6,7 +6,7 @@ namespace Bootsharp.Publish;
 internal sealed class TypeDeclarationGenerator (Preferences prefs)
 {
     private readonly StringBuilder builder = new();
-    private readonly TypeSyntaxBuilder typeBuilder = new(prefs);
+    private readonly TypeSyntaxBuilder ts = new(prefs);
 
     private Type type => GetTypeAt(index);
     private Type? prevType => index == 0 ? null : GetTypeAt(index - 1);
@@ -14,15 +14,15 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     private int indent => !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
 
     private DocumentationBuilder docs = null!;
-    private InterfaceMeta[] instanced = null!;
+    private InstancedMeta[] instanced = null!;
     private Type[] types = null!;
     private int index;
 
-    public string Generate (SolutionInspection inspection)
+    public string Generate (SolutionInspection spec)
     {
-        docs = new(inspection.Documentation);
-        instanced = [..inspection.Instanced];
-        types = inspection.Types.Select(t => t.Clr).Where(IsUserType).OrderBy(GetNamespace).ToArray();
+        docs = new(spec.Documentation);
+        instanced = [..spec.Instanced];
+        types = spec.Types.Select(t => t.Clr).Where(IsUserType).OrderBy(GetNamespace).ToArray();
         for (index = 0; index < types.Length; index++)
             DeclareType();
         return builder.ToString();
@@ -87,8 +87,8 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         AppendLine($"export interface {BuildTypeName(type)}", indent);
         AppendExtensions();
         builder.Append(" {");
-        if (instanced.FirstOrDefault(i => i.Type == type) is { } inst)
-            foreach (var member in inst.Members)
+        if (instanced.FirstOrDefault(i => i.Type.Clr == type) is { } it)
+            foreach (var member in it.Members)
                 switch (member)
                 {
                     case EventMeta e: AppendInstancedEvent(e); break;
@@ -105,7 +105,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         if (type.BaseType is { } baseType && types.Contains(baseType))
             extTypes.Insert(0, baseType);
         if (extTypes.Count > 0)
-            builder.Append(" extends ").AppendJoin(", ", extTypes.Select(t => typeBuilder.Build(t, null)));
+            builder.Append(" extends ").AppendJoin(", ", extTypes.Select(t => ts.Build(t, null)));
     }
 
     private void AppendProperties ()
@@ -125,7 +125,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         if (IsNullable(type, nullability)) builder.Append('?');
         builder.Append(": ");
         if (type.IsGenericTypeParameter) builder.Append(type.Name);
-        else builder.Append(typeBuilder.Build(type, nullability));
+        else builder.Append(ts.Build(type, nullability));
         builder.Append(';');
     }
 
@@ -135,15 +135,16 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         var type = evt.Interop == InteropKind.Export ? "EventSubscriber" : "EventBroadcaster";
         AppendLine(evt.JSName, indent + 1);
         builder.Append($": {type}<[");
-        builder.AppendJoin(", ", evt.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
+        builder.AppendJoin(", ", evt.Arguments.Select(a => $"{a.JSName}: {ts.BuildArg(a)}"));
         builder.Append("]>;");
     }
 
     private void AppendInstancedProperty (PropertyMeta prop)
     {
+        var value = prop.GetValue ?? prop.SetValue!;
         builder.Append(docs.BuildProperty(prop.Info, indent + 1));
         var name = prop.CanGet && !prop.CanSet ? $"readonly {prop.JSName}" : prop.JSName;
-        AppendProperty(name, prop.Value.Type.Clr, prop.Value.Nullability);
+        AppendProperty(name, value.Type.Clr, value.Nullability);
     }
 
     private void AppendInstancedFunction (MethodMeta meta)
@@ -151,9 +152,9 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         builder.Append(docs.BuildFunction(meta, indent + 1));
         AppendLine(meta.JSName, indent + 1);
         builder.Append('(');
-        builder.AppendJoin(", ", meta.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
+        builder.AppendJoin(", ", meta.Arguments.Select(a => $"{a.JSName}: {ts.BuildArg(a)}"));
         builder.Append("): ");
-        builder.Append(typeBuilder.BuildReturn(meta));
+        builder.Append(ts.BuildReturn(meta));
         builder.Append(';');
     }
 

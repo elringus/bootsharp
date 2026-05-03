@@ -39,16 +39,7 @@ To check JS coverage, run `npm run cover` under `src/js`.
 
 # Inspecting Generated Output
 
-C# tests under `Bootsharp.Publish.Test` generate files inside a temporary `MockProject` root, which is deleted when the test is disposed. When you need to inspect the generated content, write it to a scratch file outside the mock project, for example:
-
-```csharp
-AddAssembly(With("// fixture source code"));
-Execute();
-File.WriteAllText(Path.Combine(Path.GetTempPath(), "scratch.txt"), GeneratedDeclarations);
-Contains("// asserted generated content");
-```
-
-Then run the focused test, read the scratch file and remove the probe before finalizing. Do not commit debug dumps or temporary file writes.
+C# tests under `Bootsharp.Publish.Test` generate files inside a temporary `MockProject` root, which is deleted when the test is disposed. When you need to inspect the generated content of the last failed test, read the `src/cs/Bootsharp.Publish.Test/last-failed-test-dump.txt` file.
 
 # Running Shell Scripts
 

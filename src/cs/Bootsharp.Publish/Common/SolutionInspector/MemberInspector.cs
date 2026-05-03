@@ -2,28 +2,27 @@ using System.Reflection;
 
 namespace Bootsharp.Publish;
 
-internal sealed class MemberInspector (Preferences prefs, TypeInspector types, SerializedInspector serde)
+internal sealed class MemberInspector (Preferences prefs, TypeInspector types,
+    SerializedInspector serde, InstancedInspector instanced)
 {
-    public EventMeta Inspect (EventInfo evt, InteropKind interop)
+    public EventMeta Inspect (EventInfo evt, InteropKind ik, InstancedMeta? host)
     {
-        var inv = evt.EventHandlerType!.GetMethod("Invoke")!;
         return new(evt) {
-            Interop = interop,
-            Assembly = evt.DeclaringType!.Assembly.GetName().Name!,
-            Space = evt.DeclaringType.FullName!,
+            Interop = ik,
+            Space = BuildSpace(evt.DeclaringType!, host),
+            JSSpace = BuildJSSpace(evt.DeclaringType!),
             Name = evt.Name,
-            Arguments = inv.GetParameters().Select((p, i) => CreateArg(p, GetArgNullability(p, i))).ToArray(),
-            JSSpace = BuildJSSpace(evt.DeclaringType),
             JSName = WithPrefs(prefs.Function, evt.Name, ToFirstLower(evt.Name)),
-            Value = CreateValue(inv.ReturnParameter.ParameterType, GetNullability(inv.ReturnParameter))
+            Arguments = evt.EventHandlerType!.GetMethod("Invoke")!.GetParameters()
+                .Select((p, i) => CreateArg(p, GetArgNullability(p, i), ik)).ToArray()
         };
 
-        NullabilityInfo GetArgNullability (ParameterInfo param, int index)
+        NullabilityInfo GetArgNullability (ParameterInfo param, int idx)
         {
             if (evt.EventHandlerType!.IsGenericType)
             {
                 var genType = evt.EventHandlerType.GetGenericTypeDefinition()
-                    .GetMethod("Invoke")!.GetParameters()[index].ParameterType;
+                    .GetMethod("Invoke")!.GetParameters()[idx].ParameterType;
                 if (genType.IsGenericParameter)
                     return GetNullability(evt).GenericTypeArguments[genType.GenericParameterPosition];
             }
@@ -31,48 +30,57 @@ internal sealed class MemberInspector (Preferences prefs, TypeInspector types, S
         }
     }
 
-    public PropertyMeta Inspect (PropertyInfo prop, InteropKind interop) => new(prop) {
-        Interop = interop,
-        Assembly = prop.DeclaringType!.Assembly.GetName().Name!,
-        Space = prop.DeclaringType.FullName!,
-        JSSpace = BuildJSSpace(prop.DeclaringType),
-        Name = prop.Name,
-        JSName = ToFirstLower(prop.Name),
-        Value = CreateValue(prop.PropertyType, GetNullability(prop)),
-        CanGet = prop.GetMethod != null,
-        CanSet = prop.SetMethod != null
-    };
+    public PropertyMeta Inspect (PropertyInfo prop, InteropKind ik, InstancedMeta? host)
+    {
+        return new PropertyMeta(prop) {
+            Interop = ik,
+            Space = BuildSpace(prop.DeclaringType!, host),
+            JSSpace = BuildJSSpace(prop.DeclaringType!),
+            Name = prop.Name,
+            JSName = ToFirstLower(prop.Name),
+            GetValue = CreateValue(prop.GetMethod, ik),
+            SetValue = CreateValue(prop.SetMethod, ik.Invert()),
+        };
 
-    public MethodMeta Inspect (MethodInfo method, InteropKind interop) => new(method) {
-        Interop = interop,
-        Assembly = method.DeclaringType!.Assembly.GetName().Name!,
-        Space = method.DeclaringType.FullName!,
+        ValueMeta? CreateValue (MethodInfo? method, InteropKind ik)
+        {
+            if (method is null) return null;
+            if (prop.DeclaringType!.IsInterface && !method.IsAbstract) return null;
+            return this.CreateValue(prop.PropertyType, GetNullability(prop), ik);
+        }
+    }
+
+    public MethodMeta Inspect (MethodInfo method, InteropKind ik, InstancedMeta? host) => new(method) {
+        Interop = ik,
+        Space = BuildSpace(method.DeclaringType!, host),
+        JSSpace = BuildJSSpace(method.DeclaringType!),
         Name = method.Name,
-        Arguments = method.GetParameters().Select(p => CreateArg(p, GetNullability(p))).ToArray(),
-        JSSpace = BuildJSSpace(method.DeclaringType),
         JSName = WithPrefs(prefs.Function, method.Name, ToFirstLower(method.Name)),
-        Value = CreateValue(method.ReturnParameter.ParameterType, GetNullability(method.ReturnParameter)),
+        Arguments = method.GetParameters().Select(p => CreateArg(p, GetNullability(p), ik.Invert())).ToArray(),
+        Return = CreateValue(method.ReturnParameter.ParameterType, GetNullability(method.ReturnParameter), ik),
         Void = IsVoid(method.ReturnParameter.ParameterType),
         Async = IsTaskLike(method.ReturnParameter.ParameterType)
     };
 
-    private ArgumentMeta CreateArg (ParameterInfo param, NullabilityInfo nil) => new(param) {
+    private ArgumentMeta CreateArg (ParameterInfo param, NullabilityInfo nil, InteropKind ik) => new(param) {
         Name = param.Name!,
         JSName = param.Name == "function" ? "fn" : param.Name!,
-        Value = CreateValue(param.ParameterType, nil)
+        Value = CreateValue(param.ParameterType, nil, ik)
     };
 
-    private ValueMeta CreateValue (Type type, NullabilityInfo nil)
+    private ValueMeta CreateValue (Type type, NullabilityInfo nil, InteropKind ik) => new() {
+        Type = types.Inspect(type),
+        TypeSyntax = BuildSyntax(type, nil),
+        Nullable = IsNullable(type, nil),
+        Nullability = nil,
+        Serialized = serde.Inspect(type),
+        Instanced = instanced.Inspect(type, ik, this)
+    };
+
+    private string BuildSpace (Type decl, InstancedMeta? host)
     {
-        IsInstancedInterface(type, out var instanceType);
-        return new() {
-            Type = types.Inspect(type),
-            TypeSyntax = BuildSyntax(type, nil),
-            Nullable = IsNullable(type, nil),
-            Nullability = nil,
-            Serialized = serde.Inspect(type),
-            InstanceType = instanceType
-        };
+        if (host != null) return host.FullName;
+        return decl.FullName!;
     }
 
     private string BuildJSSpace (Type decl)

@@ -2,9 +2,9 @@ namespace Bootsharp.Publish;
 
 internal sealed class SerializerGenerator
 {
-    public string Generate (SolutionInspection inspection)
+    public string Generate (SolutionInspection spec)
     {
-        var serialized = inspection.Serialized;
+        var serialized = spec.Serialized;
         if (serialized.Count == 0) return "";
         return $$"""
                  using System.Runtime.CompilerServices;

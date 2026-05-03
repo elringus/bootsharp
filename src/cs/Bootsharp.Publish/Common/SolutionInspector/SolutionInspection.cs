@@ -14,30 +14,27 @@ namespace Bootsharp.Publish;
 internal sealed class SolutionInspection (MetadataLoadContext ctx) : IDisposable
 {
     /// <summary>
-    /// Static interop members, ie methods or events with <see cref="ExportAttribute"/>
+    /// Individual interop members, ie methods or events with <see cref="ExportAttribute"/>
     /// or <see cref="ImportAttribute"/> found on user-defined static classes.
     /// </summary>
     public required IReadOnlyCollection<MemberMeta> Static { get; init; }
     /// <summary>
-    /// Interop modules specified under <see cref="ImportAttribute"/> or
-    /// <see cref="ExportAttribute"/> for which binding wrappers have to be emitted.
+    /// Interop API surfaces specified under assembly-level <see cref="ExportAttribute"/>
+    /// or <see cref="ImportAttribute"/> attributes.
     /// </summary>
-    public required IReadOnlyCollection<InterfaceMeta> Modules { get; init; }
+    public required IReadOnlyCollection<InstancedMeta> Modules { get; init; }
     /// <summary>
-    /// Interop interfaces found in interop method arguments or return values.
-    /// Such interfaces are considered instanced interop APIs, ie stateful objects with
-    /// interop methods and properties. Both members of <see cref="Modules"/>
-    /// and <see cref="Static"/> can be sources of the instanced interfaces.
-    /// </summary>
-    public required IReadOnlyCollection<InterfaceMeta> Instanced { get; init; }
-    /// <summary>
-    /// All the types that cross the interop boundary or referenced by them.
+    /// All the types that either directly cross the interop boundary or are referenced by such types.
     /// </summary>
     public required IReadOnlyCollection<TypeMeta> Types { get; init; }
     /// <summary>
-    /// All the types that require serialization to cross the interop boundary.
+    /// All the immutable types that are serialized and copied by value when crossing the interop boundary.
     /// </summary>
     public required IReadOnlyCollection<SerializedMeta> Serialized { get; init; }
+    /// <summary>
+    /// All the mutable types that are passed by instance reference when crossing the interop boundary.
+    /// </summary>
+    public required IReadOnlyCollection<InstancedMeta> Instanced { get; init; }
     /// <summary>
     /// C# XML documentation for the inspected assemblies.
     /// </summary>

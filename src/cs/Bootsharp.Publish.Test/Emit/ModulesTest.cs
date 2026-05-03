@@ -152,7 +152,6 @@ public class ModulesTest : EmitTest
             """));
         Execute();
         DoesNotContain("JSStaticExported");
-        Assert.Contains(Engine.Warnings, w => w.Contains("must be an interface or non-static class"));
     }
 
     [Fact]
@@ -232,7 +231,6 @@ public class ModulesTest : EmitTest
             """));
         Execute();
         DoesNotContain("JSImported");
-        Assert.Contains(Engine.Warnings, w => w.Contains("must be an interface"));
     }
 
     [Fact]

@@ -5,9 +5,9 @@ namespace Bootsharp.Publish;
 /// </summary>
 internal sealed class ModuleGenerator
 {
-    private InterfaceMeta it = null!;
+    private InstancedMeta it = null!;
 
-    public string Generate (SolutionInspection inspection) =>
+    public string Generate (SolutionInspection spec) =>
         $$"""
           #nullable enable
           #pragma warning disable
@@ -19,26 +19,26 @@ internal sealed class ModuleGenerator
                   [System.Runtime.CompilerServices.ModuleInitializer]
                   internal static void RegisterModules ()
                   {
-                      {{Fmt(inspection.Modules.Select(EmitRegistration), 3)}}
+                      {{Fmt(spec.Modules.Select(EmitRegistration), 3)}}
                   }
               }
           }
 
-          {{Fmt(inspection.Modules.Select(EmitModule), 0, "\n\n")}}
+          {{Fmt(spec.Modules.Select(EmitModule), 0, "\n\n")}}
           """;
 
-    private string EmitRegistration (InterfaceMeta it)
+    private string EmitRegistration (InstancedMeta it)
     {
         var type = it.Interop == InteropKind.Import
-            ? $"typeof({it.TypeSyntax})"
+            ? $"typeof({it.Type.Syntax})"
             : $"typeof({it.FullName})";
         var factory = it.Interop == InteropKind.Import
             ? $"new ImportModule(new {it.FullName}())"
-            : $"new ExportModule(typeof({it.TypeSyntax}), handler => new {it.FullName}(({it.TypeSyntax})handler))";
+            : $"new ExportModule(typeof({it.Type.Syntax}), handler => new {it.FullName}(({it.Type.Syntax})handler))";
         return $"Modules.Register({type}, {factory});";
     }
 
-    private string EmitModule (InterfaceMeta it)
+    private string EmitModule (InstancedMeta it)
     {
         this.it = it;
         if (it.Interop == InteropKind.Export) return EmitModuleExport();
@@ -51,9 +51,9 @@ internal sealed class ModuleGenerator
           {
               public class {{it.Name}}
               {
-                  private static {{it.TypeSyntax}} handler = null!;
+                  private static {{it.Type.Syntax}} handler = null!;
 
-                  public {{it.Name}} ({{it.TypeSyntax}} handler)
+                  public {{it.Name}} ({{it.Type.Syntax}} handler)
                   {
                       {{Fmt([
                           $"{it.Name}.handler = handler;",
@@ -70,7 +70,7 @@ internal sealed class ModuleGenerator
         $$"""
           namespace {{it.Namespace}}
           {
-              public class {{it.Name}} : {{it.TypeSyntax}}
+              public class {{it.Name}} : {{it.Type.Syntax}}
               {
                   {{Fmt(it.Members.Select(EmitMemberImport), 2)}}
               }
@@ -109,7 +109,7 @@ internal sealed class ModuleGenerator
     private string EmitPropertyExport (PropertyMeta prop)
     {
         var name = prop.Name;
-        var type = prop.Value.TypeSyntax;
+        var type = (prop.GetValue ?? prop.SetValue!).TypeSyntax;
         var get = $"[Export] public static {type} GetProperty{name} () => handler.{name};";
         var set = $"[Export] public static void SetProperty{name} ({type} value) => handler.{name} = value;";
         return Fmt(0, prop.CanGet ? get : null, prop.CanSet ? set : null);
@@ -117,10 +117,11 @@ internal sealed class ModuleGenerator
 
     private string EmitPropertyImport (PropertyMeta prop)
     {
-        var space = $"global::Bootsharp.Generated.Interop.{prop.Space.Replace('.', '_')}";
+        var space = $"global::Bootsharp.Generated.Interop.{it.FullName.Replace('.', '_')}";
+        var type = (prop.GetValue ?? prop.SetValue!).TypeSyntax;
         return
             $$"""
-              {{prop.Value.TypeSyntax}} {{it.TypeSyntax}}.{{prop.Name}}
+              {{type}} {{it.Type.Syntax}}.{{prop.Name}}
               {
                   {{Fmt(
                       prop.CanGet ? $"get => {space}_GetProperty{prop.Name}();" : null,
@@ -133,7 +134,7 @@ internal sealed class ModuleGenerator
     private string EmitMethodExport (MethodMeta method)
     {
         var args = string.Join(", ", method.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
-        var sig = $"public static {method.Value.TypeSyntax} {method.Name} ({args})";
+        var sig = $"public static {method.Return.TypeSyntax} {method.Name} ({args})";
         var callArgs = string.Join(", ", method.Arguments.Select(a => a.Name));
         return $"[Export] {sig} => handler.{method.Name}({callArgs});";
     }
@@ -142,8 +143,8 @@ internal sealed class ModuleGenerator
     {
         var args = string.Join(", ", method.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         var callArgs = string.Join(", ", method.Arguments.Select(a => a.Name));
-        var name = $"{method.Space.Replace('.', '_')}_{method.Name}";
-        return $"{method.Value.TypeSyntax} {it.TypeSyntax}.{method.Name} ({args}) => " +
+        var name = $"{it.FullName.Replace('.', '_')}_{method.Name}";
+        return $"{method.Return.TypeSyntax} {it.Type.Syntax}.{method.Name} ({args}) => " +
                $"global::Bootsharp.Generated.Interop.{name}({callArgs});";
     }
 }

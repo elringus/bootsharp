@@ -170,7 +170,7 @@ public class SerializerTest : EmitTest
             """
             namespace Space;
 
-            public class Item
+            public record Item
             {
                 public string? Value { get; init; }
             }
@@ -215,7 +215,7 @@ public class SerializerTest : EmitTest
     {
         AddAssembly(With(
             """
-            public class Node
+            public record Node
             {
                 public Node (string id) => Id = id;
                 public string Id { get; }
@@ -235,7 +235,7 @@ public class SerializerTest : EmitTest
     {
         AddAssembly(With(
             """
-            public class Node
+            public record Node
             {
                 public Node () { }
                 public Node (string id) => Id = id;
@@ -257,7 +257,7 @@ public class SerializerTest : EmitTest
     {
         AddAssembly(With(
             """
-            public class Node
+            public record Node
             {
                 public string Id { get; init; } = string.Empty;
             }
@@ -276,12 +276,12 @@ public class SerializerTest : EmitTest
     {
         AddAssembly(With(
             """
-            public class RecordA (string Id)
+            public record RecordA (string Id)
             {
                 public string Id { get; init; } = Id;
             }
 
-            public class RecordB
+            public record RecordB
             {
                 public string Id { get; set; }
 
@@ -326,7 +326,7 @@ public class SerializerTest : EmitTest
     {
         AddAssembly(With(
             """
-            public class CompletionItem
+            public record CompletionItem
             {
                 public CompletionItem () { }
                 public required string Label { get; set; }
@@ -538,9 +538,9 @@ public class SerializerTest : EmitTest
             With("n", "public readonly record struct ReadonlyRecordStruct(double A);"),
             With("n", "public record class RecordClass(double A);"),
             With("n", "public enum Enum { A, B }"),
-            With("n", "public class Foo { public Struct S { get; } public ReadonlyStruct Rs { get; } }"),
-            WithClass("n", "public class Bar : Foo { public ReadonlyRecordStruct Rrs { get; } public RecordClass Rc { get; } }"),
-            With("n", "public class Baz { public List<Class.Bar?> Bars { get; } }"),
+            With("n", "public record Foo { public Struct S { get; } public ReadonlyStruct Rs { get; } }"),
+            WithClass("n", "public record Bar : Foo { public ReadonlyRecordStruct Rrs { get; } public RecordClass Rc { get; } }"),
+            With("n", "public record Baz { public List<Class.Bar?> Bars { get; } }"),
             WithClass("n", "[Export] public static Task<Baz?> GetBaz (Enum e) => default;"));
         Execute();
         Contains("Binary<global::y.Enum> ");

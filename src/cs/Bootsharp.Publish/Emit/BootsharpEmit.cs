@@ -7,16 +7,18 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
 {
     public required string InspectedDirectory { get; set; }
     public required string EntryAssemblyName { get; set; }
-    public required string InterfacesFilePath { get; set; }
     public required string SerializerFilePath { get; set; }
+    public required string InstancesFilePath { get; set; }
+    public required string ModulesFilePath { get; set; }
     public required string InteropFilePath { get; set; }
 
     public override bool Execute ()
     {
         var prefs = ResolvePreferences();
         using var inspection = InspectSolution(prefs);
-        GenerateInterfaces(inspection);
         GenerateSerializer(inspection);
+        GenerateInstances(inspection);
+        GenerateModules(inspection);
         GenerateInterop(inspection);
         return true;
     }
@@ -29,31 +31,38 @@ public sealed class BootsharpEmit : Microsoft.Build.Utilities.Task
 
     private SolutionInspection InspectSolution (Preferences prefs)
     {
-        var inspector = new SolutionInspector(prefs, EntryAssemblyName);
+        var inspector = new SolutionInspector(prefs);
         var inspected = Directory.GetFiles(InspectedDirectory, "*.dll").Order();
         var inspection = inspector.Inspect(InspectedDirectory, inspected);
         new InspectionReporter(Log).Report(inspection);
         return inspection;
     }
 
-    private void GenerateInterfaces (SolutionInspection inspection)
-    {
-        var generator = new InterfaceGenerator();
-        var content = generator.Generate(inspection);
-        WriteGenerated(InterfacesFilePath, content);
-    }
-
-    private void GenerateSerializer (SolutionInspection inspection)
+    private void GenerateSerializer (SolutionInspection spec)
     {
         var generator = new SerializerGenerator();
-        var content = generator.Generate(inspection);
+        var content = generator.Generate(spec);
         WriteGenerated(SerializerFilePath, content);
     }
 
-    private void GenerateInterop (SolutionInspection inspection)
+    private void GenerateInstances (SolutionInspection spec)
+    {
+        var generator = new InstanceGenerator();
+        var content = generator.Generate(spec);
+        WriteGenerated(InstancesFilePath, content);
+    }
+
+    private void GenerateModules (SolutionInspection spec)
+    {
+        var generator = new ModuleGenerator();
+        var content = generator.Generate(spec);
+        WriteGenerated(ModulesFilePath, content);
+    }
+
+    private void GenerateInterop (SolutionInspection spec)
     {
         var generator = new InteropGenerator();
-        var content = generator.Generate(inspection);
+        var content = generator.Generate(spec);
         WriteGenerated(InteropFilePath, content);
     }
 

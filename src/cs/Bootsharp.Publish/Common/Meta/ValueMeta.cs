@@ -9,7 +9,7 @@ namespace Bootsharp.Publish;
 internal sealed record ValueMeta
 {
     /// <summary>
-    /// The type of the value.
+    /// Type info of the value.
     /// </summary>
     public required TypeMeta Type { get; init; }
     /// <summary>
@@ -30,9 +30,9 @@ internal sealed record ValueMeta
     /// </summary>
     public required SerializedMeta? Serialized { get; init; }
     /// <summary>
-    /// Associated interop interface instance type when <see cref="IsInstance"/>, null otherwise.
+    /// Instance info when <see cref="IsInstanced"/>, null otherwise.
     /// </summary>
-    public required Type? InstanceType { get; init; }
+    public required InstancedMeta? Instanced { get; init; }
     /// <summary>
     /// Whether the value has to be serialized to cross the interop boundary.
     /// </summary>
@@ -41,6 +41,6 @@ internal sealed record ValueMeta
     /// <summary>
     /// Whether the value is an interop instance.
     /// </summary>
-    [MemberNotNullWhen(true, nameof(InstanceType))]
-    public bool IsInstance => InstanceType != null;
+    [MemberNotNullWhen(true, nameof(Instanced))]
+    public bool IsInstanced => Instanced != null;
 }

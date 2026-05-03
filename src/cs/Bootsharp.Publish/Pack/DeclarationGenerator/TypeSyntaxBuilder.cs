@@ -14,8 +14,8 @@ internal sealed class TypeSyntaxBuilder (Preferences prefs)
 
     public string BuildReturn (MethodMeta method)
     {
-        var nil = method.Value.Nullable ? " | null" : "";
-        return Build(method.Value.Type.Clr, method.Value.Nullability) + nil;
+        var nil = method.Return.Nullable ? " | null" : "";
+        return Build(method.Return.Type.Clr, method.Return.Nullability) + nil;
     }
 
     public string Build (Type type, NullabilityInfo? nullability)

@@ -15,11 +15,11 @@ internal sealed class MemberDeclarationGenerator (Preferences prefs)
     private MemberMeta[] members = null!;
     private int index;
 
-    public string Generate (SolutionInspection inspection)
+    public string Generate (SolutionInspection spec)
     {
-        docs = new(inspection.Documentation);
-        members = inspection.StaticMembers
-            .Concat(inspection.StaticInterfaces.SelectMany(i => i.Members))
+        docs = new(spec.Documentation);
+        members = spec.Static
+            .Concat(spec.Modules.SelectMany(i => i.Members))
             .OrderBy(m => m.JSSpace).ToArray();
         for (index = 0; index < members.Length; index++)
             DeclareMember();
@@ -73,10 +73,11 @@ internal sealed class MemberDeclarationGenerator (Preferences prefs)
 
     private void DeclareProperty (PropertyMeta prop)
     {
+        var value = prop.GetValue ?? prop.SetValue!;
         builder.Append(docs.BuildProperty(prop.Info, 1));
         builder.Append($"\n    export {(prop.CanGet && !prop.CanSet ? "const" : "let")} {prop.JSName}: ");
-        builder.Append(typeBuilder.Build(prop.Value.Type.Clr, prop.Value.Nullability));
-        if (prop.Value.Nullable) builder.Append(" | undefined");
+        builder.Append(typeBuilder.Build(value.Type.Clr, value.Nullability));
+        if (value.Nullable) builder.Append(" | undefined");
         builder.Append(';');
     }
 

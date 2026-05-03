@@ -348,10 +348,12 @@ public class DeclarationTest : PackTest
                 export interface Base {
                 }
                 export interface Derived extends n.Base, n.Interface {
-                    foo: n.Interface;
+                    readonly foo: n.Interface;
+                    bar(b: n.Interface): void;
                 }
                 export interface Interface {
-                    foo: n.Interface;
+                    readonly foo: n.Interface;
+                    bar(b: n.Interface): void;
                 }
             }
 
@@ -375,7 +377,7 @@ public class DeclarationTest : PackTest
                 export interface Item {
                 }
                 export interface Container {
-                    items: Array<n.Item>;
+                    readonly items: Array<n.Item>;
                 }
             }
 
@@ -397,7 +399,7 @@ public class DeclarationTest : PackTest
             """
             export namespace n {
                 export interface Container {
-                    items: Array<Array<n.Item>>;
+                    readonly items: Array<Array<n.Item>>;
                 }
                 export interface Item {
                 }
@@ -423,7 +425,7 @@ public class DeclarationTest : PackTest
                 export interface Item {
                 }
                 export interface Container {
-                    items: Array<n.Item>;
+                    readonly items: Array<n.Item>;
                 }
             }
 
@@ -447,7 +449,7 @@ public class DeclarationTest : PackTest
                 export interface Item {
                 }
                 export interface Container {
-                    items: Map<string, n.Item>;
+                    readonly items: Map<string, n.Item>;
                 }
             }
 
@@ -471,7 +473,7 @@ public class DeclarationTest : PackTest
                 export interface Item {
                 }
                 export interface Container {
-                    items: Map<string, n.Item>;
+                    readonly items: Map<string, n.Item>;
                 }
             }
 
@@ -495,7 +497,7 @@ public class DeclarationTest : PackTest
                 export interface Item {
                 }
                 export interface Container {
-                    items: Array<n.Item>;
+                    readonly items: Array<n.Item>;
                 }
             }
 
@@ -519,7 +521,7 @@ public class DeclarationTest : PackTest
                 export interface Item {
                 }
                 export interface Container {
-                    items: Array<n.Item>;
+                    readonly items: Array<n.Item>;
                 }
             }
 
@@ -645,8 +647,8 @@ public class DeclarationTest : PackTest
             """
             export namespace Space {
                 export interface Baz {
-                    bars: Array<Space.Bar>;
-                    e: Space.Enum;
+                    readonly bars: Array<Space.Bar>;
+                    readonly e: Space.Enum;
                 }
                 export interface Bar extends Space.Foo {
                     rrs: Space.ReadonlyRecordStruct;
@@ -691,6 +693,7 @@ public class DeclarationTest : PackTest
             """
             export namespace Class {
                 export interface Foo {
+                    readonly soo: string;
                 }
             }
             """);
@@ -772,12 +775,12 @@ public class DeclarationTest : PackTest
             export interface IImported {
                 fun(info: Info, str: string): Info;
             }
+            export interface Info {
+                value: string;
+            }
             export interface IExported {
                 inv(str: string, info: Info): Info;
                 reset(): void;
-            }
-            export interface Info {
-                value: string;
             }
 
             export namespace Class {
@@ -949,12 +952,12 @@ public class DeclarationTest : PackTest
             export interface IImported {
                 changed: EventBroadcaster<[arg1: IImported, arg2: Info, arg3: string]>;
             }
+            export interface Info {
+                value: string;
+            }
             export interface IExported {
                 changed: EventSubscriber<[obj: Info]>;
                 done: EventSubscriber<[]>;
-            }
-            export interface Info {
-                value: string;
             }
 
             export namespace Class {
@@ -1043,10 +1046,10 @@ public class DeclarationTest : PackTest
             """
             export namespace n {
                 export interface Bar {
-                    foo?: n.Foo;
+                    readonly foo?: n.Foo;
                 }
                 export interface Foo {
-                    bool?: boolean;
+                    readonly bool?: boolean;
                 }
             }
 
@@ -1068,7 +1071,7 @@ public class DeclarationTest : PackTest
             """
             export namespace n {
                 export interface Bar {
-                    foo?: n.Foo;
+                    readonly foo?: n.Foo;
                 }
                 export enum Foo {
                     A,

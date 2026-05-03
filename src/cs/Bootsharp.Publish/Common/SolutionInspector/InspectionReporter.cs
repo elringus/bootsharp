@@ -5,31 +5,36 @@ namespace Bootsharp.Publish;
 
 internal sealed class InspectionReporter (TaskLoggingHelper logger)
 {
-    public void Report (SolutionInspection inspection)
+    public void Report (SolutionInspection spec)
     {
         logger.LogMessage(MessageImportance.Normal, "Bootsharp assembly inspection result:");
         logger.LogMessage(MessageImportance.Normal, Fmt("Discovered assemblies:",
-            Fmt(GetDiscoveredAssemblies(inspection))));
+            Fmt(GetDiscoveredAssemblies(spec))));
         logger.LogMessage(MessageImportance.Normal, Fmt("Discovered interop members:",
-            Fmt(GetDiscoveredMembers(inspection))));
-        foreach (var warning in inspection.Warnings)
+            Fmt(GetDiscoveredMembers(spec))));
+        foreach (var warning in spec.Warnings)
             logger.LogWarning(warning);
     }
 
-    private HashSet<string> GetDiscoveredAssemblies (SolutionInspection inspection)
+    private HashSet<string> GetDiscoveredAssemblies (SolutionInspection spec)
     {
-        return inspection.Static.Select(m => m.Assembly)
-            .Concat(inspection.Modules.SelectMany(i => i.Members.Select(m => m.Assembly)))
-            .Concat(inspection.Instanced.SelectMany(i => i.Members.Select(m => m.Assembly)))
+        return spec.Static.Select(GetAssemblyName)
+            .Concat(spec.Modules.SelectMany(i => i.Members.Select(GetAssemblyName)))
+            .Concat(spec.Instanced.SelectMany(i => i.Members.Select(GetAssemblyName)))
             .ToHashSet();
     }
 
-    private HashSet<string> GetDiscoveredMembers (SolutionInspection inspection)
+    private HashSet<string> GetDiscoveredMembers (SolutionInspection spec)
     {
-        return inspection.Static
-            .Concat(inspection.Modules.SelectMany(i => i.Members))
-            .Concat(inspection.Instanced.SelectMany(i => i.Members))
+        return spec.Static
+            .Concat(spec.Modules.SelectMany(i => i.Members))
+            .Concat(spec.Instanced.SelectMany(i => i.Members))
             .Select(m => m.ToString())
             .ToHashSet();
+    }
+
+    private string GetAssemblyName (MemberMeta member)
+    {
+        return member.Info.DeclaringType!.Assembly.GetName().Name!;
     }
 }

@@ -40,7 +40,7 @@ internal sealed class SerializedInspector
         if (IsVoid(type)) return false;
         if (IsNullable(type, out var value)) return ShouldSerialize(value);
         if (IsTaskWithResult(type, out var result)) return ShouldSerialize(result);
-        if (IsInstancedInterface(type, out _)) return false;
+        if (IsInstancedType(type)) return false;
         return !native.Contains(type.FullName!);
     }
 

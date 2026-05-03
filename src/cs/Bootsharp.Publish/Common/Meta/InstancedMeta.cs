@@ -5,7 +5,7 @@ namespace Bootsharp.Publish;
 /// or <see cref="ImportAttribute"/> representing static interop API, or in
 /// an interop method, representing instanced interop API.
 /// </summary>
-internal sealed record InterfaceMeta
+internal sealed record InstancedMeta
 {
     /// <summary>
     /// Whether the interface represents C# API consumed in
@@ -13,13 +13,9 @@ internal sealed record InterfaceMeta
     /// </summary>
     public required InteropKind Interop { get; init; }
     /// <summary>
-    /// C# type of the interface.
+    /// Type info of the instance.
     /// </summary>
-    public required Type Type { get; init; }
-    /// <summary>
-    /// C# syntax of the interface type, as specified in source code.
-    /// </summary>
-    public required string TypeSyntax { get; init; }
+    public required TypeMeta Type { get; init; }
     /// <summary>
     /// C# namespace of the generated interop class implementation.
     /// </summary>
@@ -31,7 +27,7 @@ internal sealed record InterfaceMeta
     /// <summary>
     /// Full C# type name of the generated interop class implementation.
     /// </summary>
-    public required string FullName { get; init; }
+    public string FullName => $"{Namespace}.{Name}";
     /// <summary>
     /// JS name of the generated interop class implementation.
     /// </summary>

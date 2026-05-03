@@ -2,12 +2,12 @@ namespace Bootsharp.Publish;
 
 internal sealed class DeclarationGenerator (Preferences prefs)
 {
-    private readonly MemberDeclarationGenerator membersGenerator = new(prefs);
-    private readonly TypeDeclarationGenerator typesGenerator = new(prefs);
+    private readonly MemberDeclarationGenerator members = new(prefs);
+    private readonly TypeDeclarationGenerator types = new(prefs);
 
-    public string Generate (SolutionInspection inspection) => Fmt(0,
+    public string Generate (SolutionInspection spec) => Fmt(0,
         """import type { EventBroadcaster, EventSubscriber } from "./event";""",
-        typesGenerator.Generate(inspection),
-        membersGenerator.Generate(inspection)
+        types.Generate(spec),
+        members.Generate(spec)
     ) + "\n";
 }

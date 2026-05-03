@@ -5,25 +5,23 @@ namespace Bootsharp.Publish;
 /// </summary>
 internal sealed class InstanceGenerator
 {
-    private InterfaceMeta it = null!;
+    private InstancedMeta it = null!;
 
-    public string Generate (SolutionInspection inspection)
-    {
-        var its = inspection.Instanced.Where(i => i.Interop == InteropKind.Import);
-        return
-            $"""
-             #nullable enable
-             #pragma warning disable
+    public string Generate (SolutionInspection spec) =>
+        $"""
+         #nullable enable
+         #pragma warning disable
 
-             {Fmt(its.Select(EmitWrapper), 0, "\n\n")}
-             """;
-    }
+         {Fmt(spec.Instanced
+             .Where(i => i.Interop == InteropKind.Import)
+             .Select(EmitWrapper), 0, "\n\n")}
+         """;
 
-    private string EmitWrapper (InterfaceMeta it) =>
+    private string EmitWrapper (InstancedMeta it) =>
         $$"""
           namespace {{(this.it = it).Namespace}}
           {
-              public class {{it.Name}} (global::System.Int32 id) : {{it.TypeSyntax}}
+              public class {{it.Name}} (global::System.Int32 id) : {{it.Type.Syntax}}
               {
                   internal readonly global::System.Int32 _id = id;
 
@@ -57,12 +55,13 @@ internal sealed class InstanceGenerator
 
     private string EmitPropertyImport (PropertyMeta prop)
     {
+        var type = (prop.GetValue ?? prop.SetValue!).TypeSyntax;
         var space = $"global::Bootsharp.Generated.Interop.{prop.Space.Replace('.', '_')}";
         var getArgs = PrependIdArg("");
         var setArgs = PrependIdArg("value");
         return
             $$"""
-              {{prop.Value.TypeSyntax}} {{it.TypeSyntax}}.{{prop.Name}}
+              {{type}} {{it.Type.Syntax}}.{{prop.Name}}
               {
                   {{Fmt(
                       prop.CanGet ? $"get => {space}_GetProperty{prop.Name}({getArgs});" : null,
@@ -77,7 +76,7 @@ internal sealed class InstanceGenerator
         var args = string.Join(", ", method.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         var callArgs = PrependIdArg(string.Join(", ", method.Arguments.Select(a => a.Name)));
         var name = $"{method.Space.Replace('.', '_')}_{method.Name}";
-        return $"{method.Value.TypeSyntax} {it.TypeSyntax}.{method.Name} ({args}) => " +
+        return $"{method.Return.TypeSyntax} {it.Type.Syntax}.{method.Name} ({args}) => " +
                $"global::Bootsharp.Generated.Interop.{name}({callArgs});";
     }
 }

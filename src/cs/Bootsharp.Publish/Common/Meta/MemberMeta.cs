@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Bootsharp.Publish;
@@ -17,10 +18,6 @@ internal abstract record MemberMeta
     /// </summary>
     public required InteropKind Interop { get; init; }
     /// <summary>
-    /// C# assembly name (DLL file name, w/o the extension), under which the member is declared.
-    /// </summary>
-    public required string Assembly { get; init; }
-    /// <summary>
     /// Full name of the C# type (including namespace), under which the member is declared.
     /// </summary>
     public required string Space { get; init; }
@@ -37,18 +34,11 @@ internal abstract record MemberMeta
     /// JavaScript name of the member as will be specified in source code.
     /// </summary>
     public required string JSName { get; init; }
-    /// <summary>
-    /// Metadata of the value carried by the member.
-    /// </summary>
-    public required ValueMeta Value { get; init; }
 }
 
 /// <summary>
 /// An interop method declared on a static, module or instanced API surface.
 /// </summary>
-/// <remarks>
-/// Return value of the method is described in <see cref="MemberMeta.Value"/>.
-/// </remarks>
 internal record MethodMeta (MethodInfo Info) : MemberMeta
 {
     /// <summary>
@@ -59,6 +49,10 @@ internal record MethodMeta (MethodInfo Info) : MemberMeta
     /// Arguments of the method.
     /// </summary>
     public required IReadOnlyList<ArgumentMeta> Arguments { get; init; }
+    /// <summary>
+    /// Method's return value.
+    /// </summary>
+    public required ValueMeta Return { get; init; }
     /// <summary>
     /// Whether the method returns void.
     /// </summary>
@@ -94,13 +88,23 @@ internal sealed record PropertyMeta (PropertyInfo Info) : MemberMeta
     /// </summary>
     public override PropertyInfo Info { get; } = Info;
     /// <summary>
+    /// Get value of the property or null when getter is not accessible.
+    /// </summary>
+    public required ValueMeta? GetValue { get; init; }
+    /// <summary>
+    /// Set value of the property or null when setter is not accessible.
+    /// </summary>
+    public required ValueMeta? SetValue { get; init; }
+    /// <summary>
     /// Whether the property has an accessible getter.
     /// </summary>
-    public required bool CanGet { get; init; }
+    [MemberNotNullWhen(true, nameof(GetValue))]
+    public bool CanGet => GetValue != null;
     /// <summary>
     /// Whether the property has an accessible setter.
     /// </summary>
-    public required bool CanSet { get; init; }
+    [MemberNotNullWhen(true, nameof(SetValue))]
+    public bool CanSet => SetValue != null;
 }
 
 /// <summary>

@@ -5,20 +5,19 @@ namespace Bootsharp.Publish;
 
 internal sealed class SolutionInspector
 {
-    private readonly List<InterfaceMeta> staticInterfaces = [];
-    private readonly List<InterfaceMeta> instancedInterfaces = [];
-    private readonly List<MemberMeta> staticMembers = [];
+    private readonly List<MemberMeta> statics = [];
+    private readonly List<InstancedMeta> modules = [];
     private readonly List<DocumentationMeta> docs = [];
     private readonly List<string> warnings = [];
-    private readonly TypeInspector typeInspector = new();
-    private readonly SerializedInspector serdeInspector = new();
-    private readonly MemberInspector memberInspector;
-    private readonly InterfaceInspector interfaceInspector;
+    private readonly TypeInspector types = new();
+    private readonly SerializedInspector serde = new();
+    private readonly InstancedInspector instanced;
+    private readonly MemberInspector members;
 
-    public SolutionInspector (Preferences prefs, string entryAssemblyName)
+    public SolutionInspector (Preferences prefs)
     {
-        memberInspector = new(prefs, typeInspector, serdeInspector);
-        interfaceInspector = new(memberInspector, entryAssemblyName);
+        instanced = new(types);
+        members = new(prefs, types, serde, instanced);
     }
 
     /// <summary>
@@ -52,11 +51,11 @@ internal sealed class SolutionInspector
     }
 
     private SolutionInspection CreateInspection (MetadataLoadContext ctx) => new(ctx) {
-        StaticInterfaces = staticInterfaces.DistinctBy(i => i.FullName).ToArray(),
-        InstancedInterfaces = instancedInterfaces.DistinctBy(i => i.FullName).ToArray(),
-        StaticMembers = staticMembers.ToArray(),
-        Types = typeInspector.Collect(),
-        Serialized = serdeInspector.Collect(),
+        Static = statics.ToArray(),
+        Modules = modules.ToArray(),
+        Types = types.Collect().Where(t => !modules.Any(m => m.Type == t)).ToArray(),
+        Instanced = instanced.Collect().Except(modules).ToArray(),
+        Serialized = serde.Collect(),
         Documentation = docs.ToArray(),
         Warnings = warnings.ToArray()
     };
@@ -69,91 +68,44 @@ internal sealed class SolutionInspector
 
     private void InspectAssembly (Assembly assembly)
     {
-        foreach (var exported in assembly.GetExportedTypes())
-            InspectExportedType(exported);
-        foreach (var attribute in assembly.CustomAttributes)
-            InspectAssemblyAttribute(attribute);
+        foreach (var type in assembly.GetExportedTypes())
+            InspectStatic(type);
+        foreach (var attr in assembly.CustomAttributes)
+            InspectModules(attr);
     }
 
-    private void InspectExportedType (Type type)
+    private void InspectStatic (Type type)
     {
         if (type.Namespace?.StartsWith("Bootsharp.Generated") ?? false) return;
         foreach (var evt in type.GetEvents(BindingFlags.Public | BindingFlags.Static))
-            InspectStaticEvent(evt);
+            if (ResolveInterop(evt) is { } interop)
+                statics.Add(members.Inspect(evt, interop, null));
         foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
-            InspectStaticMethod(method);
+            if (ResolveInterop(method) is { } interop)
+                statics.Add(members.Inspect(method, interop, null));
     }
 
-    private void InspectAssemblyAttribute (CustomAttributeData attr)
+    private void InspectModules (CustomAttributeData attr)
     {
-        var interop = default(InteropKind);
-        var name = attr.AttributeType.FullName;
-        if (name == typeof(ExportAttribute).FullName) interop = InteropKind.Export;
-        else if (name == typeof(ImportAttribute).FullName) interop = InteropKind.Import;
-        else return;
+        if (ResolveInterop(attr) is not { } interop) return;
         foreach (var arg in (IEnumerable<CustomAttributeTypedArgument>)attr.ConstructorArguments[0].Value!)
-            InspectStaticInterface((Type)arg.Value!, interop);
+            if (instanced.Inspect((Type)arg.Value!, interop, members) is { } it)
+                if (interop == InteropKind.Export || it.Type.Clr.IsInterface)
+                    modules.Add(it);
     }
 
-    private void InspectStaticMethod (MethodInfo info)
+    private InteropKind? ResolveInterop (MemberInfo info)
     {
-        var interop = default(InteropKind?);
-        foreach (var attr in info.CustomAttributes.Select(a => a.AttributeType.FullName))
-            if (attr == typeof(ExportAttribute).FullName) interop = InteropKind.Export;
-            else if (attr == typeof(ImportAttribute).FullName) interop = InteropKind.Import;
-        if (interop is { } ik)
-        {
-            var method = memberInspector.Inspect(info, ik);
-            staticMembers.Add(method);
-            InspectMember(method);
-        }
+        foreach (var attr in info.CustomAttributes)
+            if (ResolveInterop(attr) is { } interop)
+                return interop;
+        return null;
     }
 
-    private void InspectStaticEvent (EventInfo info)
+    private InteropKind? ResolveInterop (CustomAttributeData attr)
     {
-        var interop = default(InteropKind?);
-        foreach (var attr in info.CustomAttributes.Select(a => a.AttributeType.FullName))
-            if (attr == typeof(ExportAttribute).FullName) interop = InteropKind.Export;
-            else if (attr == typeof(ImportAttribute).FullName) interop = InteropKind.Import;
-        if (interop is { } ik)
-        {
-            var evt = memberInspector.Inspect(info, ik);
-            staticMembers.Add(evt);
-            InspectMember(evt);
-        }
-    }
-
-    private void InspectStaticInterface (Type type, InteropKind interop)
-    {
-        var interfaceMeta = interfaceInspector.Inspect(type, interop);
-        staticInterfaces.Add(interfaceMeta);
-        foreach (var member in interfaceMeta.Members)
-            InspectMember(member);
-    }
-
-    private void InspectMember (MemberMeta meta)
-    {
-        // When interop instance is an argument of exported method, it's imported (JS) API and vice versa.
-        var interop = meta.Interop == InteropKind.Export ? InteropKind.Import : InteropKind.Export;
-        if (meta is PropertyMeta prop)
-        {
-            if (prop.CanSet) InspectType(prop.Value.Type.Clr, interop);
-            if (prop.CanGet) InspectType(prop.Value.Type.Clr, prop.Interop);
-        }
-        else if (meta is MethodMeta method)
-        {
-            foreach (var arg in method.Arguments)
-                InspectType(arg.Value.Type.Clr, interop);
-            if (!method.Void) InspectType(method.Value.Type.Clr, method.Interop);
-        }
-        else if (meta is EventMeta evt)
-            foreach (var arg in evt.Arguments)
-                InspectType(arg.Value.Type.Clr, evt.Interop);
-    }
-
-    private void InspectType (Type type, InteropKind interop)
-    {
-        if (IsInstancedInterface(type, out var instanceType))
-            instancedInterfaces.Add(interfaceInspector.Inspect(instanceType, interop));
+        if (attr.AttributeType.FullName == typeof(ExportAttribute).FullName) return InteropKind.Export;
+        if (attr.AttributeType.FullName == typeof(ImportAttribute).FullName) return InteropKind.Import;
+        return null;
     }
 }

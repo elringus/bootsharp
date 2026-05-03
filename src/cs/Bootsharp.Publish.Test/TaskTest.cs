@@ -51,28 +51,39 @@ public abstract class TaskTest : IDisposable
 
     protected void Contains (string content)
     {
-        Assert.Contains(content, TestedContent);
+        try { Assert.Contains(content, TestedContent); }
+        catch (Exception ex) { DumpAndThrow(ex); }
     }
 
     protected void DoesNotContain (string content)
     {
-        Assert.DoesNotContain(content, TestedContent, StringComparison.OrdinalIgnoreCase);
+        try { Assert.DoesNotContain(content, TestedContent, StringComparison.OrdinalIgnoreCase); }
+        catch (Exception ex) { DumpAndThrow(ex); }
     }
 
     protected MatchCollection Matches (string pattern)
     {
-        Assert.Matches(pattern, TestedContent);
+        try { Assert.Matches(pattern, TestedContent); }
+        catch (Exception ex) { DumpAndThrow(ex); }
         return Regex.Matches(TestedContent, pattern);
     }
 
     protected void Once (string pattern)
     {
-        Assert.Single(Matches(pattern));
+        try { Assert.Single(Matches(pattern)); }
+        catch (Exception ex) { DumpAndThrow(ex); }
     }
 
     protected string ReadProjectFile (string fileName)
     {
         var filePath = Path.Combine(Project.Root, fileName);
         return File.Exists(filePath) ? File.ReadAllText(filePath) : null;
+    }
+
+    private void DumpAndThrow (Exception ex)
+    {
+        var path = Path.Combine(Project.Root, "..", "..", "..", "..", "last-failed-test-dump.txt");
+        File.WriteAllText(path, TestedContent);
+        throw ex;
     }
 }

@@ -1,5 +1,4 @@
 global using static Bootsharp.Publish.GlobalInspection;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -31,19 +30,24 @@ internal static class GlobalInspection
         return IsUserAssembly(type.Assembly.FullName!);
     }
 
+    public static bool IsInstancedType (Type type)
+    {
+        // Instanced types are mutable user types that are passed by reference when crossing the
+        // interop boundary (as opposed to serialized immutable types, which are copied by value).
+        if (!IsUserType(type)) return false;
+        if (type.IsInterface) return true;
+        var isRecord = type.GetMethod("<Clone>$", // records are immutable by convention
+            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) != null;
+        var isStatic = type.IsAbstract && type.IsSealed;
+        return type.IsClass && !isStatic && !isRecord;
+    }
+
     public static bool IsAutoProperty (PropertyInfo prop)
     {
         var backingFieldName = $"<{prop.Name}>k__BackingField";
         var backingField = prop.DeclaringType!.GetField(backingFieldName,
             BindingFlags.NonPublic | BindingFlags.Instance);
         return backingField != null;
-    }
-
-    public static bool IsInstancedInterface (Type type, [NotNullWhen(true)] out Type? instanceType)
-    {
-        if (IsTaskWithResult(type, out instanceType))
-            return IsInstancedInterface(instanceType, out instanceType);
-        return (instanceType = type.IsInterface && IsUserType(type) ? type : null) != null;
     }
 
     public static string WithPrefs (IReadOnlyCollection<Preference> prefs, string input, string @default)
