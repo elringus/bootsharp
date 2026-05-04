@@ -535,8 +535,8 @@ public class DeclarationTest : PackTest
     public void DefinitionIsGeneratedForGenericClass ()
     {
         AddAssembly(
-            With("n", "public class Generic<T> where T: notnull { public T Value { get; set; } }"),
-            With("n", "public class GenericNull<T> { public T Value { get; set; } }"),
+            With("n", "public class Generic<T> where T: notnull { public required T Value { get; set; } }"),
+            With("n", "public class GenericNull<T> { public T? Value { get; } public T? Foo (T? t) => default; }"),
             WithClass("n", "[Export] public static void Method (Generic<string> a, GenericNull<int> b) { }"));
         Execute();
         Contains(
@@ -546,8 +546,34 @@ public class DeclarationTest : PackTest
                     value: T;
                 }
                 export interface GenericNull<T> {
-                    value?: T;
+                    readonly value?: T;
+                    foo(t: T | undefined): T | null;
                 }
+            }
+
+            export namespace n.Class {
+                export function method(a: n.Generic<string>, b: n.GenericNull<number>): void;
+            }
+            """);
+    }
+
+    [Fact]
+    public void DefinitionIsGeneratedForGenericRecord ()
+    {
+        AddAssembly(
+            With("n", "public record Generic<T> where T: notnull { public T Value { get; set; } }"),
+            With("n", "public record GenericNull<T> { public T? Value { get; set; } }"),
+            WithClass("n", "[Export] public static void Method (Generic<string> a, GenericNull<int> b) { }"));
+        Execute();
+        Contains(
+            """
+            export namespace n {
+                export type Generic<T> = Readonly<{
+                    value: T;
+                }>;
+                export type GenericNull<T> = Readonly<{
+                    value?: T;
+                }>;
             }
 
             export namespace n.Class {
@@ -1212,7 +1238,7 @@ public class DeclarationTest : PackTest
         AddAssembly(With(
             """
             [assembly: Bootsharp.Preferences(
-                Type = [@"Record", "Foo", @".+`.+", "Bar"]
+                Type = [@"Record", "Foo", @".+`.+", "Bar<T>"]
             )]
 
             public record Record;
@@ -1226,13 +1252,13 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
-            export type Record = Readonly<{
+            export type Foo = Readonly<{
             }>;
-            export type Generic<T> = Readonly<{
+            export type Bar<T> = Readonly<{
             }>;
 
             export namespace Class {
-                export function inv(r: Foo, g: Bar): void;
+                export function inv(r: Foo, g: Bar<T>): void;
             }
             """);
     }

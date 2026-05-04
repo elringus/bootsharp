@@ -2,7 +2,7 @@ using System.Text;
 
 namespace Bootsharp.Publish;
 
-internal sealed class MemberDeclarationGenerator (Preferences prefs)
+internal sealed class ModuleDeclarationGenerator (Preferences prefs)
 {
     private readonly StringBuilder bld = new();
     private readonly TypeSyntaxBuilder ts = new(prefs);
@@ -67,17 +67,15 @@ internal sealed class MemberDeclarationGenerator (Preferences prefs)
         bld.Append(docs.BuildEvent(evt, 1));
         var type = evt.Interop == InteropKind.Export ? "EventSubscriber" : "EventBroadcaster";
         bld.Append($"\n    export const {evt.JSName}: {type}<[");
-        bld.AppendJoin(", ", evt.Arguments.Select(a => $"{a.JSName}: {ts.BuildArg(a)}"));
+        bld.AppendJoin(", ", evt.Arguments.Select(a => $"{a.JSName}: {ts.BuildArg(evt.Info, a.Info)}"));
         bld.Append("]>;");
     }
 
     private void DeclareProperty (PropertyMeta prop)
     {
-        var value = prop.GetValue ?? prop.SetValue!;
         bld.Append(docs.BuildProperty(prop.Info, 1));
         bld.Append($"\n    export {(prop.CanGet && !prop.CanSet ? "const" : "let")} {prop.JSName}: ");
-        bld.Append(ts.Build(value.Type.Clr, value.Nullability));
-        if (value.Nullable) bld.Append(" | undefined");
+        bld.Append(ts.BuildVariable(prop.Info));
         bld.Append(';');
     }
 
@@ -85,15 +83,15 @@ internal sealed class MemberDeclarationGenerator (Preferences prefs)
     {
         bld.Append(docs.BuildFunction(method, 1));
         bld.Append($"\n    export function {method.JSName}(");
-        bld.AppendJoin(", ", method.Arguments.Select(a => $"{a.JSName}: {ts.BuildArg(a)}"));
-        bld.Append($"): {ts.BuildReturn(method)};");
+        bld.AppendJoin(", ", method.Arguments.Select(a => $"{a.JSName}: {ts.BuildArg(a.Info)}"));
+        bld.Append($"): {ts.BuildReturn(method.Info)};");
     }
 
     private void DeclareMethodImport (MethodMeta method)
     {
         bld.Append(docs.BuildFunction(method, 1));
         bld.Append($"\n    export let {method.JSName}: (");
-        bld.AppendJoin(", ", method.Arguments.Select(a => $"{a.JSName}: {ts.BuildArg(a)}"));
-        bld.Append($") => {ts.BuildReturn(method)};");
+        bld.AppendJoin(", ", method.Arguments.Select(a => $"{a.JSName}: {ts.BuildArg(a.Info)}"));
+        bld.Append($") => {ts.BuildReturn(method.Info)};");
     }
 }

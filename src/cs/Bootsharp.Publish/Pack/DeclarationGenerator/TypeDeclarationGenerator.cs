@@ -79,24 +79,29 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     private void DeclareSerialized ()
     {
         bld.Append(docs.BuildType(type, indent));
-        AppendLine($"export type {BuildTypeName(type)} = ", indent);
+        AppendLine($"export type {ts.BuildName(type)} = ", indent);
         if (type.BaseType is { } baseType && types.Contains(baseType))
-            bld.Append(ts.Build(baseType, null)).Append(" & ");
+            bld.Append(ts.BuildFullName(baseType)).Append(" & ");
         bld.Append("Readonly<{");
         var flags = BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance;
         foreach (var prop in type.GetProperties(flags))
             if (prop.GetMethod != null && prop.GetIndexParameters().Length == 0)
-            {
-                bld.Append(docs.BuildProperty(prop, indent + 1));
-                AppendProperty(ToFirstLower(prop.Name), prop.PropertyType, GetNullability(prop));
-            }
+                AppendProperty(prop);
         AppendLine("}>;", indent);
+
+        void AppendProperty (PropertyInfo prop)
+        {
+            bld.Append(docs.BuildProperty(prop, indent + 1));
+            AppendLine(ToFirstLower(prop.Name), indent + 1);
+            bld.Append(ts.BuildProperty(prop));
+            bld.Append(';');
+        }
     }
 
     private void DeclareInstanced (InstancedMeta it)
     {
         bld.Append(docs.BuildType(type, indent));
-        AppendLine($"export interface {BuildTypeName(type)}", indent);
+        AppendLine($"export interface {ts.BuildName(type)}", indent);
         AppendExtensions();
         bld.Append(" {");
         foreach (var member in it.Members.Where(m => m.Info.DeclaringType == it.Type.Clr))
@@ -111,7 +116,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
             if (type.BaseType is { } baseType && types.Contains(baseType))
                 extTypes.Insert(0, baseType);
             if (extTypes.Count > 0)
-                bld.Append(" extends ").AppendJoin(", ", extTypes.Select(t => ts.Build(t, null)));
+                bld.Append(" extends ").AppendJoin(", ", extTypes.Select(ts.BuildFullName));
         }
 
         void AppendEvent (EventMeta evt)
@@ -120,7 +125,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
             AppendLine(evt.JSName, indent + 1);
             var type = evt.Interop == InteropKind.Export ? "EventSubscriber" : "EventBroadcaster";
             bld.Append($": {type}<[");
-            bld.AppendJoin(", ", evt.Arguments.Select(a => $"{a.JSName}: {ts.BuildArg(a)}"));
+            bld.AppendJoin(", ", evt.Arguments.Select(a => $"{a.JSName}: {ts.BuildArg(evt.Info, a.Info)}"));
             bld.Append("]>;");
         }
 
@@ -128,8 +133,9 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         {
             bld.Append(docs.BuildProperty(prop.Info, indent + 1));
             var name = !prop.CanSet ? $"readonly {prop.JSName}" : prop.JSName;
-            var value = prop.GetValue ?? prop.SetValue!;
-            this.AppendProperty(name, value.Type.Clr, value.Nullability);
+            AppendLine(name, indent + 1);
+            bld.Append(ts.BuildProperty(prop.Info));
+            bld.Append(';');
         }
 
         void AppendMethod (MethodMeta meta)
@@ -137,21 +143,11 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
             bld.Append(docs.BuildFunction(meta, indent + 1));
             AppendLine(meta.JSName, indent + 1);
             bld.Append('(');
-            bld.AppendJoin(", ", meta.Arguments.Select(a => $"{a.JSName}: {ts.BuildArg(a)}"));
+            bld.AppendJoin(", ", meta.Arguments.Select(a => $"{a.JSName}: {ts.BuildArg(a.Info)}"));
             bld.Append("): ");
-            bld.Append(ts.BuildReturn(meta));
+            bld.Append(ts.BuildReturn(meta.Info));
             bld.Append(';');
         }
-    }
-
-    private void AppendProperty (string name, Type type, NullabilityInfo? nullability)
-    {
-        AppendLine(name, indent + 1);
-        if (IsNullable(type, nullability)) bld.Append('?');
-        bld.Append(": ");
-        if (type.IsGenericTypeParameter) bld.Append(type.GetGenericTypeDefinition().Name);
-        else bld.Append(ts.Build(type, nullability));
-        bld.Append(';');
     }
 
     private void AppendLine (string content, int level)
@@ -165,15 +161,6 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         for (int i = 0; i < level * 4; i++)
             bld.Append(' ');
         bld.Append(content);
-    }
-
-    private string BuildTypeName (Type type)
-    {
-        if (!type.IsGenericType) return type.Name;
-        type = type.GetGenericTypeDefinition();
-        var name = TrimGeneric(type.Name);
-        var args = string.Join(", ", type.GetGenericArguments().Select(BuildTypeName));
-        return $"{name}<{args}>";
     }
 
     private string GetNamespace (Type type)

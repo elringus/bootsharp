@@ -6,28 +6,78 @@ internal sealed class TypeSyntaxBuilder (Preferences prefs)
 {
     private NullabilityInfo? nullability;
 
-    public string BuildArg (ArgumentMeta arg)
+    public string BuildName (Type type)
     {
-        var nil = arg.Value.Nullable ? " | undefined" : "";
-        return Build(arg.Value.Type.Clr, arg.Value.Nullability) + nil;
+        var full = BuildFullName(type);
+        var dotIdx = full.LastIndexOf('.');
+        return dotIdx > 0 ? full[(dotIdx + 1)..] : full;
     }
 
-    public string BuildReturn (MethodMeta method)
+    public string BuildFullName (Type type)
     {
-        var nil = method.Return.Nullable ? " | null" : "";
-        return Build(method.Return.Type.Clr, method.Return.Nullability) + nil;
+        if (type.IsGenericType) type = type.GetGenericTypeDefinition();
+        return Build(type, null);
     }
 
-    public string Build (Type type, NullabilityInfo? nullability)
+    public string BuildArg (ParameterInfo param)
+    {
+        if (param.Member.DeclaringType!.IsGenericType)
+            param = param.Member.DeclaringType.GetGenericTypeDefinition()
+                .GetMethod(param.Member.Name)!.GetParameters()[param.Position];
+        var nul = GetNullability(param);
+        var post = IsNullable(param.ParameterType, nul) ? " | undefined" : "";
+        return Build(param.ParameterType, nul) + post;
+    }
+
+    public string BuildArg (EventInfo evt, ParameterInfo param)
+    {
+        var nul = GetNullability(param);
+        if (evt.EventHandlerType!.IsGenericType)
+        {
+            var arg = evt.EventHandlerType.GetGenericTypeDefinition()
+                .GetMethod("Invoke")!.GetParameters()[param.Position].ParameterType;
+            if (arg.IsGenericParameter) nul = GetNullability(evt).GenericTypeArguments[arg.GenericParameterPosition];
+        }
+        var post = IsNullable(param.ParameterType, nul) ? " | undefined" : "";
+        return Build(param.ParameterType, nul) + post;
+    }
+
+    public string BuildReturn (MethodInfo method)
+    {
+        if (method.DeclaringType!.IsGenericType)
+            method = method.DeclaringType.GetGenericTypeDefinition().GetMethod(method.Name)!;
+        var nul = GetNullability(method.ReturnParameter);
+        var post = IsNullable(method.ReturnType, nul) ? " | null" : "";
+        return Build(method.ReturnType, nul) + post;
+    }
+
+    public string BuildProperty (PropertyInfo prop)
+    {
+        if (prop.DeclaringType!.IsGenericType)
+            prop = prop.DeclaringType.GetGenericTypeDefinition().GetProperty(prop.Name)!;
+        var nul = GetNullability(prop);
+        var pre = IsNullable(prop.PropertyType, nul) ? "?: " : ": ";
+        return pre + Build(prop.PropertyType, nul);
+    }
+
+    public string BuildVariable (PropertyInfo prop)
+    {
+        var nul = GetNullability(prop);
+        var post = IsNullable(prop.PropertyType, nul) ? " | undefined" : "";
+        return Build(prop.PropertyType, nul) + post;
+    }
+
+    private string Build (Type type, NullabilityInfo? nullability)
     {
         this.nullability = nullability;
-        // nullability of topmost declarations is handled upstream (?/undefined/null)
+        // nullability of topmost declarations is handled downstream (?/undefined/null)
         if (IsNullable(type, nullability, out var value)) type = value;
         return WithPrefs(prefs.Type, type.FullName!, Build(type));
     }
 
     private string Build (Type type)
     {
+        if (type.IsGenericTypeParameter) return type.Name;
         if (IsNullable(type, out var nullValue)) return BuildNullable(nullValue);
         if (IsTaskLike(type)) return BuildTask(type);
         if (IsList(type, out var element)) return BuildList(type, element);
@@ -80,7 +130,7 @@ internal sealed class TypeSyntaxBuilder (Preferences prefs)
         var full = string.IsNullOrEmpty(space) ? name : $"{space}.{name}";
         if (!type.IsGenericType) return full;
         EnterNullability();
-        var args = string.Join(", ", type.GenericTypeArguments.Select(Build));
+        var args = string.Join(", ", type.GetGenericArguments().Select(Build));
         return $"{full}<{args}>";
     }
 
