@@ -40,6 +40,7 @@ internal sealed class InteropGenerator
                           .Select(EmitMethodAssignment)
                   ], 2)}}
               }
+
               {{Fmt(spec.Static.SelectMany(m => EmitMember(m, null, null)))}}
               {{Fmt(spec.Modules.SelectMany(md => md.Members.SelectMany(m => EmitMember(m, null, md))))}}
               {{Fmt(spec.Instanced.SelectMany(it => it.Members.SelectMany(m => EmitMember(m, it, null))))}}

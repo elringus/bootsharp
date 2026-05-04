@@ -56,9 +56,20 @@ internal static class GlobalType
              type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyDictionary<,>).FullName);
     }
 
-    public static NullabilityInfo GetNullability (EventInfo evt) => new NullabilityInfoContext().Create(evt);
     public static NullabilityInfo GetNullability (PropertyInfo prop) => new NullabilityInfoContext().Create(prop);
     public static NullabilityInfo GetNullability (ParameterInfo param) => new NullabilityInfoContext().Create(param);
+    public static NullabilityInfo GetNullability (EventInfo evt) => new NullabilityInfoContext().Create(evt);
+    public static NullabilityInfo GetNullability (EventInfo evt, ParameterInfo param)
+    {
+        if (evt.EventHandlerType!.IsGenericType)
+        {
+            var arg = evt.EventHandlerType.GetGenericTypeDefinition()
+                .GetMethod("Invoke")!.GetParameters()[param.Position].ParameterType;
+            if (arg.IsGenericParameter)
+                return GetNullability(evt).GenericTypeArguments[arg.GenericParameterPosition];
+        }
+        return GetNullability(param);
+    }
 
     public static bool IsNullable (Type type) => IsNullable(type, out _);
     public static bool IsNullable (Type type, NullabilityInfo? info) => IsNullable(type, info, out _);

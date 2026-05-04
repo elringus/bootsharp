@@ -1,7 +1,7 @@
 namespace Bootsharp.Publish;
 
 /// <summary>
-/// Generates interop wrappers for imported instanced interfaces.
+/// Generates interop wrappers for imported instances.
 /// </summary>
 internal sealed class InstanceGenerator
 {

@@ -320,15 +320,17 @@ public class InteropTest : EmitTest
 
             public interface IExportedStatic
             {
-                int Ignored { get => 0; }
-                int IgnoredToo { set { } }
+                int DefaultGet { get => 0; }
+                int DefaultSet { set { } }
+                int BothDefault { get => 0; set { } }
                 int this[int index] { get; set; }
             }
 
             public interface IExportedInstanced
             {
-                int Ignored { get => 0; }
-                int IgnoredToo { set { } }
+                int DefaultGet { get => 0; }
+                int DefaultSet { set { } }
+                int BothDefault { get => 0; set { } }
                 int this[int index] { get; set; }
             }
 
@@ -338,8 +340,9 @@ public class InteropTest : EmitTest
             }
             """));
         Execute();
-        DoesNotContain("Ignored");
-        DoesNotContain("IgnoredToo");
+        DoesNotContain("DefaultGet");
+        DoesNotContain("DefaultSet");
+        DoesNotContain("BothDefault");
         DoesNotContain("GetPropertyItem");
         DoesNotContain("SetPropertyItem");
     }

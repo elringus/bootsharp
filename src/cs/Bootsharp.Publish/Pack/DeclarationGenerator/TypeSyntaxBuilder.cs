@@ -31,13 +31,7 @@ internal sealed class TypeSyntaxBuilder (Preferences prefs)
 
     public string BuildArg (EventInfo evt, ParameterInfo param)
     {
-        var nul = GetNullability(param);
-        if (evt.EventHandlerType!.IsGenericType)
-        {
-            var arg = evt.EventHandlerType.GetGenericTypeDefinition()
-                .GetMethod("Invoke")!.GetParameters()[param.Position].ParameterType;
-            if (arg.IsGenericParameter) nul = GetNullability(evt).GenericTypeArguments[arg.GenericParameterPosition];
-        }
+        var nul = GetNullability(evt, param);
         var post = IsNullable(param.ParameterType, nul) ? " | undefined" : "";
         return Build(param.ParameterType, nul) + post;
     }

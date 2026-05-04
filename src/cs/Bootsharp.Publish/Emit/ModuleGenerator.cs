@@ -1,7 +1,7 @@
 namespace Bootsharp.Publish;
 
 /// <summary>
-/// Generates implementations for interop modules and wrappers for instanced interfaces.
+/// Generates implementations for interop modules.
 /// </summary>
 internal sealed class ModuleGenerator
 {

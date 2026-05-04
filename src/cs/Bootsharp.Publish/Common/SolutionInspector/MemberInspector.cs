@@ -5,50 +5,25 @@ namespace Bootsharp.Publish;
 internal sealed class MemberInspector (Preferences prefs, TypeInspector types,
     SerializedInspector serde, InstancedInspector instanced)
 {
-    public EventMeta Inspect (EventInfo evt, InteropKind ik, InstancedMeta? host)
-    {
-        return new(evt) {
-            Interop = ik,
-            Space = BuildSpace(evt.DeclaringType!, host),
-            JSSpace = BuildJSSpace(evt.DeclaringType!),
-            Name = evt.Name,
-            JSName = WithPrefs(prefs.Function, evt.Name, ToFirstLower(evt.Name)),
-            Arguments = evt.EventHandlerType!.GetMethod("Invoke")!.GetParameters()
-                .Select((p, i) => CreateArg(p, GetArgNullability(p, i), ik)).ToArray()
-        };
+    public EventMeta Inspect (EventInfo evt, InteropKind ik, InstancedMeta? host) => new(evt) {
+        Interop = ik,
+        Space = BuildSpace(evt.DeclaringType!, host),
+        JSSpace = BuildJSSpace(evt.DeclaringType!),
+        Name = evt.Name,
+        JSName = ToFirstLower(evt.Name),
+        Arguments = evt.EventHandlerType!.GetMethod("Invoke")!.GetParameters()
+            .Select(p => CreateArg(p, GetNullability(evt, p), ik)).ToArray()
+    };
 
-        NullabilityInfo GetArgNullability (ParameterInfo param, int idx)
-        {
-            if (evt.EventHandlerType!.IsGenericType)
-            {
-                var genType = evt.EventHandlerType.GetGenericTypeDefinition()
-                    .GetMethod("Invoke")!.GetParameters()[idx].ParameterType;
-                if (genType.IsGenericParameter)
-                    return GetNullability(evt).GenericTypeArguments[genType.GenericParameterPosition];
-            }
-            return GetNullability(param);
-        }
-    }
-
-    public PropertyMeta Inspect (PropertyInfo prop, InteropKind ik, InstancedMeta? host)
-    {
-        return new PropertyMeta(prop) {
-            Interop = ik,
-            Space = BuildSpace(prop.DeclaringType!, host),
-            JSSpace = BuildJSSpace(prop.DeclaringType!),
-            Name = prop.Name,
-            JSName = ToFirstLower(prop.Name),
-            GetValue = CreateValue(prop.GetMethod, ik),
-            SetValue = CreateValue(prop.SetMethod, ik.Invert()),
-        };
-
-        ValueMeta? CreateValue (MethodInfo? method, InteropKind ik)
-        {
-            if (method is null) return null;
-            if (prop.DeclaringType!.IsInterface && !method.IsAbstract) return null;
-            return this.CreateValue(prop.PropertyType, GetNullability(prop), ik);
-        }
-    }
+    public PropertyMeta Inspect (PropertyInfo prop, InteropKind ik, InstancedMeta? host) => new(prop) {
+        Interop = ik,
+        Space = BuildSpace(prop.DeclaringType!, host),
+        JSSpace = BuildJSSpace(prop.DeclaringType!),
+        Name = prop.Name,
+        JSName = ToFirstLower(prop.Name),
+        GetValue = prop.GetMethod != null ? CreateValue(prop.PropertyType, GetNullability(prop), ik) : null,
+        SetValue = prop.SetMethod != null ? CreateValue(prop.PropertyType, GetNullability(prop), ik.Invert()) : null
+    };
 
     public MethodMeta Inspect (MethodInfo method, InteropKind ik, InstancedMeta? host) => new(method) {
         Interop = ik,
