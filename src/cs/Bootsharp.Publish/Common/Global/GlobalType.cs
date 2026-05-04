@@ -94,6 +94,12 @@ internal static class GlobalType
         return WithPrefs(prefs.Space, space, space);
     }
 
+    public static string BuildJSName (string name)
+    {
+        name = ToFirstLower(name);
+        return name == "function" ? "fn" : name;
+    }
+
     public static string PrependIdArg (string args)
     {
         if (string.IsNullOrEmpty(args)) return "_id";

@@ -10,7 +10,7 @@ internal sealed class MemberInspector (Preferences prefs, TypeInspector types,
         Space = BuildSpace(evt.DeclaringType!, host),
         JSSpace = BuildJSSpace(evt.DeclaringType!),
         Name = evt.Name,
-        JSName = ToFirstLower(evt.Name),
+        JSName = BuildJSName(evt.Name),
         Arguments = evt.EventHandlerType!.GetMethod("Invoke")!.GetParameters()
             .Select(p => CreateArg(p, GetNullability(evt, p), ik)).ToArray()
     };
@@ -20,7 +20,7 @@ internal sealed class MemberInspector (Preferences prefs, TypeInspector types,
         Space = BuildSpace(prop.DeclaringType!, host),
         JSSpace = BuildJSSpace(prop.DeclaringType!),
         Name = prop.Name,
-        JSName = ToFirstLower(prop.Name),
+        JSName = BuildJSName(prop.Name),
         GetValue = prop.GetMethod != null ? CreateValue(prop.PropertyType, GetNullability(prop), ik) : null,
         SetValue = prop.SetMethod != null ? CreateValue(prop.PropertyType, GetNullability(prop), ik.Invert()) : null
     };
@@ -30,7 +30,7 @@ internal sealed class MemberInspector (Preferences prefs, TypeInspector types,
         Space = BuildSpace(method.DeclaringType!, host),
         JSSpace = BuildJSSpace(method.DeclaringType!),
         Name = method.Name,
-        JSName = WithPrefs(prefs.Function, method.Name, ToFirstLower(method.Name)),
+        JSName = WithPrefs(prefs.Function, method.Name, BuildJSName(method.Name)),
         Arguments = method.GetParameters().Select(p => CreateArg(p, GetNullability(p), ik.Invert())).ToArray(),
         Return = CreateValue(method.ReturnParameter.ParameterType, GetNullability(method.ReturnParameter), ik),
         Void = IsVoid(method.ReturnParameter.ParameterType),
@@ -39,7 +39,7 @@ internal sealed class MemberInspector (Preferences prefs, TypeInspector types,
 
     private ArgumentMeta CreateArg (ParameterInfo param, NullabilityInfo nil, InteropKind ik) => new(param) {
         Name = param.Name!,
-        JSName = param.Name == "function" ? "fn" : param.Name!,
+        JSName = BuildJSName(param.Name!),
         Value = CreateValue(param.ParameterType, nil, ik)
     };
 

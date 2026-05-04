@@ -92,7 +92,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         void AppendProperty (PropertyInfo prop)
         {
             bld.Append(docs.BuildProperty(prop, indent + 1));
-            AppendLine(ToFirstLower(prop.Name), indent + 1);
+            AppendLine(BuildJSName(prop.Name), indent + 1);
             bld.Append(ts.BuildProperty(prop));
             bld.Append(';');
         }
