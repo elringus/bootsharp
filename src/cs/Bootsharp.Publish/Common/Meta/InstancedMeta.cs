@@ -1,21 +1,14 @@
 namespace Bootsharp.Publish;
 
 /// <summary>
-/// Interface supplied by user under either <see cref="ExportAttribute"/>
-/// or <see cref="ImportAttribute"/> representing static interop API, or in
-/// an interop method, representing instanced interop API.
+/// Describes a mutable CLR type whose instances are passed by reference when crossing the interop boundary.
 /// </summary>
-internal sealed record InstancedMeta
+internal sealed record InstancedMeta (Type Clr) : TypeMeta(Clr)
 {
     /// <summary>
-    /// Whether the interface represents C# API consumed in
-    /// JavaScript (export) or vice versa (import).
+    /// Whether the type's instances are exported from C# or imported from JavaScript.
     /// </summary>
     public required InteropKind Interop { get; init; }
-    /// <summary>
-    /// Type info of the instance.
-    /// </summary>
-    public required TypeMeta Type { get; init; }
     /// <summary>
     /// C# namespace of the generated interop class implementation.
     /// </summary>
@@ -33,7 +26,7 @@ internal sealed record InstancedMeta
     /// </summary>
     public required string JSName { get; init; }
     /// <summary>
-    /// Members declared on the interface, representing the interop API.
+    /// Members declared on the instance.
     /// </summary>
     public required IReadOnlyCollection<MemberMeta> Members { get; init; }
 }

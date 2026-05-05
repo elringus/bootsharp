@@ -11,12 +11,11 @@ internal sealed class SolutionInspector
     private readonly List<string> warnings = [];
     private readonly TypeInspector types = new();
     private readonly SerializedInspector serde = new();
-    private readonly InstancedInspector instanced;
+    private readonly InstancedInspector instanced = new();
     private readonly MemberInspector members;
 
     public SolutionInspector (Preferences prefs)
     {
-        instanced = new(types);
         members = new(prefs, types, serde, instanced);
     }
 
@@ -53,7 +52,7 @@ internal sealed class SolutionInspector
     private SolutionInspection CreateInspection (MetadataLoadContext ctx) => new(ctx) {
         Static = statics.ToArray(),
         Modules = modules.ToArray(),
-        Types = types.Collect().Where(t => !modules.Any(m => m.Type == t)).ToArray(),
+        Types = types.Collect().Where(t => !modules.Any(m => m == t)).ToArray(),
         Instanced = instanced.Collect().Except(modules).ToArray(),
         Serialized = serde.Collect(),
         Documentation = docs.ToArray(),
@@ -90,7 +89,7 @@ internal sealed class SolutionInspector
         if (ResolveInterop(attr) is not { } interop) return;
         foreach (var arg in (IEnumerable<CustomAttributeTypedArgument>)attr.ConstructorArguments[0].Value!)
             if (instanced.Inspect((Type)arg.Value!, interop, members) is { } it)
-                if (interop == InteropKind.Export || it.Type.Clr.IsInterface)
+                if (interop == InteropKind.Export || it.Clr.IsInterface)
                     modules.Add(it);
     }
 

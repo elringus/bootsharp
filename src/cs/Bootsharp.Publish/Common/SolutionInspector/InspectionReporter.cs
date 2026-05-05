@@ -18,9 +18,10 @@ internal sealed class InspectionReporter (TaskLoggingHelper logger)
 
     private HashSet<string> GetDiscoveredAssemblies (SolutionInspection spec)
     {
-        return spec.Static.Select(GetAssemblyName)
-            .Concat(spec.Modules.SelectMany(i => i.Members.Select(GetAssemblyName)))
-            .Concat(spec.Instanced.SelectMany(i => i.Members.Select(GetAssemblyName)))
+        return spec.Static
+            .Concat(spec.Modules.SelectMany(i => i.Members))
+            .Concat(spec.Instanced.SelectMany(i => i.Members))
+            .Select(m => m.Info.DeclaringType!.Assembly.GetName().Name!)
             .ToHashSet();
     }
 
@@ -31,10 +32,5 @@ internal sealed class InspectionReporter (TaskLoggingHelper logger)
             .Concat(spec.Instanced.SelectMany(i => i.Members))
             .Select(m => m.ToString())
             .ToHashSet();
-    }
-
-    private string GetAssemblyName (MemberMeta member)
-    {
-        return member.Info.DeclaringType!.Assembly.GetName().Name!;
     }
 }

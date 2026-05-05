@@ -1,9 +1,10 @@
 namespace Bootsharp.Publish;
 
 /// <summary>
-/// Describes a CLR type that crosses the interop boundary.
+/// Describes a CLR type that either crosses the interop boundary directly, or is referenced by such a type.
+/// Can be either <see cref="SerializedMeta"/> or <see cref="InstancedMeta"/>.
 /// </summary>
-internal sealed record TypeMeta (Type Clr)
+internal record TypeMeta (Type Clr)
 {
     /// <summary>
     /// The described CLR type.

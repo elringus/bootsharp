@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace Bootsharp.Publish;
 
-internal sealed class InstancedInspector (TypeInspector types)
+internal sealed class InstancedInspector
 {
     private readonly Dictionary<Type, InstancedMeta> byType = [];
 
@@ -23,9 +23,8 @@ internal sealed class InstancedInspector (TypeInspector types)
         return byType.Values.ToArray();
     }
 
-    private InstancedMeta InspectType (Type type, InteropKind ik) => new() {
+    private InstancedMeta InspectType (Type type, InteropKind ik) => new(type) {
         Interop = ik,
-        Type = types.Inspect(type),
         Namespace = BuildInstanceSpace(type, ik),
         Name = BuildInstanceName(type),
         JSName = BuildInstanceJSName(type),
@@ -35,7 +34,7 @@ internal sealed class InstancedInspector (TypeInspector types)
     private InstancedMeta CollectMembers (InstancedMeta it, MemberInspector members)
     {
         var ik = it.Interop;
-        var type = it.Type.Clr;
+        var type = it.Clr;
         var cl = (List<MemberMeta>)it.Members;
         cl.AddRange(type.GetEvents().Select(m => members.Inspect(m, ik, it)));
         cl.AddRange(type.GetProperties().Where(ShouldInspectProperty).Select(m => members.Inspect(m, ik, it)));

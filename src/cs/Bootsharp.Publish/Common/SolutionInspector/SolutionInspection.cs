@@ -24,7 +24,8 @@ internal sealed class SolutionInspection (MetadataLoadContext ctx) : IDisposable
     /// </summary>
     public required IReadOnlyCollection<InstancedMeta> Modules { get; init; }
     /// <summary>
-    /// All the types that either directly cross the interop boundary or are referenced by such types.
+    /// All the types that either directly cross the interop boundary via <see cref="Static"/>
+    /// or <see cref="Module"/> members, or types that are referenced by such types.
     /// </summary>
     public required IReadOnlyCollection<TypeMeta> Types { get; init; }
     /// <summary>
@@ -32,7 +33,7 @@ internal sealed class SolutionInspection (MetadataLoadContext ctx) : IDisposable
     /// </summary>
     public required IReadOnlyCollection<SerializedMeta> Serialized { get; init; }
     /// <summary>
-    /// All the mutable types that are passed by instance reference when crossing the interop boundary.
+    /// All the mutable types whose instances are passed by reference when crossing the interop boundary.
     /// </summary>
     public required IReadOnlyCollection<InstancedMeta> Instanced { get; init; }
     /// <summary>

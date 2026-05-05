@@ -30,11 +30,11 @@ internal sealed class ModuleGenerator
     private string EmitRegistration (InstancedMeta it)
     {
         var type = it.Interop == InteropKind.Import
-            ? $"typeof({it.Type.Syntax})"
+            ? $"typeof({it.Syntax})"
             : $"typeof({it.FullName})";
         var factory = it.Interop == InteropKind.Import
             ? $"new ImportModule(new {it.FullName}())"
-            : $"new ExportModule(typeof({it.Type.Syntax}), handler => new {it.FullName}(({it.Type.Syntax})handler))";
+            : $"new ExportModule(typeof({it.Syntax}), handler => new {it.FullName}(({it.Syntax})handler))";
         return $"Modules.Register({type}, {factory});";
     }
 
@@ -51,9 +51,9 @@ internal sealed class ModuleGenerator
           {
               public class {{it.Name}}
               {
-                  private static {{it.Type.Syntax}} handler = null!;
+                  private static {{it.Syntax}} handler = null!;
 
-                  public {{it.Name}} ({{it.Type.Syntax}} handler)
+                  public {{it.Name}} ({{it.Syntax}} handler)
                   {
                       {{Fmt([
                           $"{it.Name}.handler = handler;",
@@ -70,7 +70,7 @@ internal sealed class ModuleGenerator
         $$"""
           namespace {{it.Namespace}}
           {
-              public class {{it.Name}} : {{it.Type.Syntax}}
+              public class {{it.Name}} : {{it.Syntax}}
               {
                   {{Fmt(it.Members.Select(EmitMemberImport), 2)}}
               }
@@ -121,7 +121,7 @@ internal sealed class ModuleGenerator
         var type = (prop.GetValue ?? prop.SetValue!).TypeSyntax;
         return
             $$"""
-              {{type}} {{it.Type.Syntax}}.{{prop.Name}}
+              {{type}} {{it.Syntax}}.{{prop.Name}}
               {
                   {{Fmt(
                       prop.CanGet ? $"get => {space}_GetProperty{prop.Name}();" : null,
@@ -144,7 +144,7 @@ internal sealed class ModuleGenerator
         var args = string.Join(", ", method.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         var callArgs = string.Join(", ", method.Arguments.Select(a => a.Name));
         var name = $"{it.FullName.Replace('.', '_')}_{method.Name}";
-        return $"{method.Return.TypeSyntax} {it.Type.Syntax}.{method.Name} ({args}) => " +
+        return $"{method.Return.TypeSyntax} {it.Syntax}.{method.Name} ({args}) => " +
                $"global::Bootsharp.Generated.Interop.{name}({callArgs});";
     }
 }

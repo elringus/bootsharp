@@ -26,10 +26,10 @@ internal sealed class SerializerGenerator
             SerializedEnumMeta => $"Serializer.Enum<{meta.Syntax}>()",
             SerializedNullableMeta nullable => $"Serializer.Nullable({nullable.Value.Id})",
             SerializedArrayMeta arr => $"Serializer.Array({arr.Element.Id})",
-            SerializedListMeta list => $"Serializer.{TrimGeneric(list.Type.Name)}({list.Element.Id})",
-            SerializedDictionaryMeta dic => $"Serializer.{TrimGeneric(dic.Type.Name)}({dic.Key.Id}, {dic.Value.Id})",
+            SerializedListMeta list => $"Serializer.{TrimGeneric(list.Clr.Name)}({list.Element.Id})",
+            SerializedDictionaryMeta dic => $"Serializer.{TrimGeneric(dic.Clr.Name)}({dic.Key.Id}, {dic.Value.Id})",
             SerializedObjectMeta => $"new(Write_{meta.Id}, Read_{meta.Id})",
-            _ => ResolvePrimitive(meta.Type)
+            _ => ResolvePrimitive(meta.Clr)
         }};";
 
         static string ResolvePrimitive (Type type)
@@ -61,7 +61,7 @@ internal sealed class SerializerGenerator
 
     private IEnumerable<string> EmitObjectWrite (SerializedObjectMeta obj)
     {
-        if (!obj.Type.IsValueType)
+        if (!obj.Clr.IsValueType)
         {
             yield return "writer.WriteBool(value is not null);";
             yield return "if (value is null) return;";
@@ -77,7 +77,7 @@ internal sealed class SerializerGenerator
 
     private IEnumerable<string> EmitObjectRead (SerializedObjectMeta obj)
     {
-        if (!obj.Type.IsValueType) yield return "if (!reader.ReadBool()) return null!;";
+        if (!obj.Clr.IsValueType) yield return "if (!reader.ReadBool()) return null!;";
         foreach (var p in obj.Properties)
         {
             var var = MangleLocal(p.Name);
@@ -106,7 +106,7 @@ internal sealed class SerializerGenerator
 
     private static string EmitFieldAccessor (SerializedObjectMeta obj, SerializedPropertyMeta prop)
     {
-        var value = obj.Type.IsValueType ? $"ref {obj.Syntax} value" : $"{obj.Syntax} value";
+        var value = obj.Clr.IsValueType ? $"ref {obj.Syntax} value" : $"{obj.Syntax} value";
         return $"""
                 [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "<{prop.Name}>k__BackingField")]
                 private static extern ref {prop.Syntax} {prop.FieldAccessorName} ({value});
@@ -115,7 +115,7 @@ internal sealed class SerializerGenerator
 
     private static string EmitFieldAssign (SerializedObjectMeta obj, SerializedPropertyMeta prop)
     {
-        var value = obj.Type.IsValueType ? "ref _value_" : "_value_";
+        var value = obj.Clr.IsValueType ? "ref _value_" : "_value_";
         return $"{prop.FieldAccessorName}({value}) = {MangleLocal(prop.Name)};";
     }
 

@@ -21,7 +21,7 @@ internal sealed class BindingSerializerGenerator
             SerializedListMeta list => $"types.List({list.Element.Id})",
             SerializedDictionaryMeta dic => $"types.Dictionary({dic.Key.Id}, {dic.Value.Id})",
             SerializedObjectMeta => $"binary(write_{meta.Id}, read_{meta.Id})",
-            _ => ResolvePrimitive(meta.Type)
+            _ => ResolvePrimitive(meta.Clr)
         }};";
 
         static string ResolvePrimitive (Type type)
@@ -49,7 +49,7 @@ internal sealed class BindingSerializerGenerator
 
     private IEnumerable<string> EmitObjectWrite (SerializedObjectMeta obj)
     {
-        if (!obj.Type.IsValueType)
+        if (!obj.Clr.IsValueType)
         {
             yield return "writer.writeBool(value != null);";
             yield return "if (value == null) return;";
@@ -65,7 +65,7 @@ internal sealed class BindingSerializerGenerator
 
     private IEnumerable<string> EmitObjectRead (SerializedObjectMeta obj)
     {
-        if (!obj.Type.IsValueType) yield return "if (!reader.readBool()) return null;";
+        if (!obj.Clr.IsValueType) yield return "if (!reader.readBool()) return null;";
         yield return "const value = {};";
         foreach (var p in obj.Properties)
             if (p.OmitWhenNull) yield return $"if (reader.readBool()) value.{p.JSName} = {p.Id}.read(reader);";

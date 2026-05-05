@@ -1,71 +1,63 @@
 namespace Bootsharp.Publish;
 
 /// <summary>
-/// Describes a CLR type that requires serialization to cross the interop boundary.
+/// Describes an immutable CLR type that is serialized and copied by value when crossing the interop boundary.
 /// </summary>
-internal abstract record SerializedMeta (Type Type)
+internal abstract record SerializedMeta (Type Clr) : TypeMeta(Clr)
 {
-    /// <summary>
-    /// The serialized CLR type.
-    /// </summary>
-    public Type Type { get; } = Type;
-    /// <summary>
-    /// Fully qualified C# syntax of the serialized type.
-    /// </summary>
-    public string Syntax { get; } = BuildSyntax(Type);
     /// <summary>
     /// The identifier of the serializer factory associated with the type.
     /// </summary>
-    public string Id { get; } = BuildSerializedId(Type);
+    public string Id { get; } = BuildSerializedId(Clr);
 }
 
 /// <summary>
 /// Describes a serialized primitive (string, int, bool, etc).
 /// </summary>
-internal sealed record SerializedPrimitiveMeta (Type Type) : SerializedMeta(Type);
+internal sealed record SerializedPrimitiveMeta (Type Clr) : SerializedMeta(Clr);
 
 /// <summary>
 /// Describes a serialized <see cref="System.Enum"/>.
 /// </summary>
-internal sealed record SerializedEnumMeta (Type Type) : SerializedMeta(Type);
+internal sealed record SerializedEnumMeta (Type Clr) : SerializedMeta(Clr);
 
 /// <summary>
 /// Describes a serialized <see cref="System.Nullable"/>.
 /// </summary>
 /// <param name="Value">Describes a serialized <see cref="System.Nullable"/>.</param>
-internal sealed record SerializedNullableMeta (Type Type, SerializedMeta Value) : SerializedMeta(Type);
+internal sealed record SerializedNullableMeta (Type Clr, SerializedMeta Value) : SerializedMeta(Clr);
 
 /// <summary>
 /// Describes a serialized <see cref="System.Array"/>.
 /// </summary>
 /// <param name="Element">The array element.</param>
-internal sealed record SerializedArrayMeta (Type Type, SerializedMeta Element) : SerializedMeta(Type);
+internal sealed record SerializedArrayMeta (Type Clr, SerializedMeta Element) : SerializedMeta(Clr);
 
 /// <summary>
 /// Describes a serialized linear collection type, such as generic lists and single-argument generic collections.
 /// </summary>
 /// <param name="Element">The collection element.</param>
-internal sealed record SerializedListMeta (Type Type, SerializedMeta Element) : SerializedMeta(Type);
+internal sealed record SerializedListMeta (Type Clr, SerializedMeta Element) : SerializedMeta(Clr);
 
 /// <summary>
 /// Describes a serialized generic key-value type, such as generic dictionaries.
 /// </summary>
 /// <param name="Key">The dictionary key.</param>
 /// <param name="Value">The dictionary value.</param>
-internal sealed record SerializedDictionaryMeta (Type Type,
-    SerializedMeta Key, SerializedMeta Value) : SerializedMeta(Type);
+internal sealed record SerializedDictionaryMeta (Type Clr,
+    SerializedMeta Key, SerializedMeta Value) : SerializedMeta(Clr);
 
 /// <summary>
 /// Describes a serialized user-defined object, such as a record or a struct.
 /// </summary>
 /// <param name="Properties">The properties of the object, pre-ordered for serialization.</param>
-internal sealed record SerializedObjectMeta (Type Type,
-    IReadOnlyList<SerializedPropertyMeta> Properties) : SerializedMeta(Type);
+internal sealed record SerializedObjectMeta (Type Clr,
+    IReadOnlyList<SerializedPropertyMeta> Properties) : SerializedMeta(Clr);
 
 /// <summary>
 /// Describes a serializable property of a <see cref="SerializedObjectMeta"/>.
 /// </summary>
-internal sealed record SerializedPropertyMeta (Type Type) : SerializedMeta(Type)
+internal sealed record SerializedPropertyMeta (Type Clr) : SerializedMeta(Clr)
 {
     /// <summary>
     /// The name of the property.

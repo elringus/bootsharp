@@ -21,7 +21,7 @@ internal sealed class InstanceGenerator
         $$"""
           namespace {{(this.it = it).Namespace}}
           {
-              public class {{it.Name}} (global::System.Int32 id) : {{it.Type.Syntax}}
+              public class {{it.Name}} (global::System.Int32 id) : {{it.Syntax}}
               {
                   internal readonly global::System.Int32 _id = id;
 
@@ -61,7 +61,7 @@ internal sealed class InstanceGenerator
         var setArgs = PrependIdArg("value");
         return
             $$"""
-              {{type}} {{it.Type.Syntax}}.{{prop.Name}}
+              {{type}} {{it.Syntax}}.{{prop.Name}}
               {
                   {{Fmt(
                       prop.CanGet ? $"get => {space}_GetProperty{prop.Name}({getArgs});" : null,
@@ -76,7 +76,7 @@ internal sealed class InstanceGenerator
         var args = string.Join(", ", method.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         var callArgs = PrependIdArg(string.Join(", ", method.Arguments.Select(a => a.Name)));
         var name = $"{method.Space.Replace('.', '_')}_{method.Name}";
-        return $"{method.Return.TypeSyntax} {it.Type.Syntax}.{method.Name} ({args}) => " +
+        return $"{method.Return.TypeSyntax} {it.Syntax}.{method.Name} ({args}) => " +
                $"global::Bootsharp.Generated.Interop.{name}({callArgs});";
     }
 }

@@ -21,7 +21,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     public string Generate (SolutionInspection spec)
     {
         docs = new(spec.Documentation);
-        itByType = spec.Instanced.ToDictionary(it => it.Type.Clr);
+        itByType = spec.Instanced.ToDictionary(it => it.Clr);
         types = spec.Types.Select(t => t.Clr).Where(IsUserType).OrderBy(GetNamespace).ToArray();
         for (index = 0; index < types.Length; index++)
             DeclareType();
@@ -104,7 +104,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         AppendLine($"export interface {ts.BuildName(type)}", indent);
         AppendExtensions();
         bld.Append(" {");
-        foreach (var member in it.Members.Where(m => m.Info.DeclaringType == it.Type.Clr))
+        foreach (var member in it.Members.Where(m => m.Info.DeclaringType == it.Clr))
             if (member is EventMeta evt) AppendEvent(evt);
             else if (member is PropertyMeta prop) AppendProperty(prop);
             else AppendMethod((MethodMeta)member);

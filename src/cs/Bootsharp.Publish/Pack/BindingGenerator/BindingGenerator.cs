@@ -25,8 +25,8 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
                 .Select(m => new Binding(m, null, null, m.JSSpace))))
             .Concat(spec.Instanced.SelectMany(it => it.Members
                 .Select(m => new Binding(m, null, it, m.JSSpace))))
-            .Concat(spec.Serialized.Where(t => t.Type.IsEnum)
-                .Select(t => new Binding(null, t.Type, null, BuildJSSpace(t.Type, prefs))))
+            .Concat(spec.Serialized.Where(t => t.Clr.IsEnum)
+                .Select(t => new Binding(null, t.Clr, null, BuildJSSpace(t.Clr, prefs))))
             .OrderBy(m => m.Namespace).ToArray();
         if (bindings.Length == 0) return "";
 
@@ -342,7 +342,7 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
 
     private static string BuildRegistrarName (InstancedMeta it)
     {
-        return $"register_{it.Type.Clr.FullName!.Replace('.', '_').Replace('+', '_')}";
+        return $"register_{it.Clr.FullName!.Replace('.', '_').Replace('+', '_')}";
     }
 
     private bool ShouldWait (MethodMeta method)
