@@ -9,14 +9,19 @@ internal sealed class SolutionInspector
     private readonly List<InstancedMeta> modules = [];
     private readonly List<DocumentationMeta> docs = [];
     private readonly List<string> warnings = [];
-    private readonly TypeInspector types = new();
+    private readonly TypeInspector types;
     private readonly SerializedInspector serde = new();
-    private readonly InstancedInspector instanced = new();
+    private readonly InstancedInspector itd;
     private readonly MemberInspector members;
 
     public SolutionInspector (Preferences prefs)
     {
-        members = new(prefs, types, serde, instanced);
+        types = new(prefs);
+        members = new(prefs, (type, ik) => {
+            types.Crawl(type, ik);
+            return serde.Inspect(type) ?? itd!.Inspect(type, ik) ?? new TypeMeta(type);
+        });
+        itd = new(members);
     }
 
     /// <summary>
@@ -53,7 +58,7 @@ internal sealed class SolutionInspector
         Static = statics.ToArray(),
         Modules = modules.ToArray(),
         Types = types.Collect().Where(t => !modules.Any(m => m == t)).ToArray(),
-        Instanced = instanced.Collect().Except(modules).ToArray(),
+        Instanced = itd.Collect().Except(modules).ToArray(),
         Serialized = serde.Collect(),
         Documentation = docs.ToArray(),
         Warnings = warnings.ToArray()
@@ -77,27 +82,27 @@ internal sealed class SolutionInspector
     {
         if (type.Namespace?.StartsWith("Bootsharp.Generated") ?? false) return;
         foreach (var evt in type.GetEvents(BindingFlags.Public | BindingFlags.Static))
-            if (ResolveInterop(evt) is { } interop)
-                statics.Add(members.Inspect(evt, interop, null));
+            if (ResolveInterop(evt) is { } ik)
+                statics.Add(members.Inspect(evt, ik, null));
         foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
-            if (ResolveInterop(method) is { } interop)
-                statics.Add(members.Inspect(method, interop, null));
+            if (ResolveInterop(method) is { } ik)
+                statics.Add(members.Inspect(method, ik, null));
     }
 
     private void InspectModules (CustomAttributeData attr)
     {
-        if (ResolveInterop(attr) is not { } interop) return;
+        if (ResolveInterop(attr) is not { } ik) return;
         foreach (var arg in (IEnumerable<CustomAttributeTypedArgument>)attr.ConstructorArguments[0].Value!)
-            if (instanced.Inspect((Type)arg.Value!, interop, members) is { } it)
-                if (interop == InteropKind.Export || it.Clr.IsInterface)
+            if (itd.Inspect((Type)arg.Value!, ik) is { } it)
+                if (ik == InteropKind.Export || it.Clr.IsInterface)
                     modules.Add(it);
     }
 
     private InteropKind? ResolveInterop (MemberInfo info)
     {
         foreach (var attr in info.CustomAttributes)
-            if (ResolveInterop(attr) is { } interop)
-                return interop;
+            if (ResolveInterop(attr) is { } ik)
+                return ik;
         return null;
     }
 

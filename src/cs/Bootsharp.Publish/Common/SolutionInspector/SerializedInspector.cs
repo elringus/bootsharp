@@ -92,6 +92,7 @@ internal sealed class SerializedInspector
         var canInit = setter != null && setter.IsPublic && initOnly;
         var canSetField = !canInit && !canSet && IsAutoProperty(prop) && getter.IsPublic;
         return new(value.Clr) {
+            Info = prop,
             Name = prop.Name,
             JSName = BuildJSName(prop.Name),
             OmitWhenNull = !prop.PropertyType.IsValueType || IsNullable(prop.PropertyType),

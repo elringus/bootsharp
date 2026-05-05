@@ -2,8 +2,7 @@ using System.Reflection;
 
 namespace Bootsharp.Publish;
 
-internal sealed class MemberInspector (Preferences prefs, TypeInspector types,
-    SerializedInspector serde, InstancedInspector instanced)
+internal sealed class MemberInspector (Preferences prefs, Func<Type, InteropKind, TypeMeta> inspect)
 {
     public EventMeta Inspect (EventInfo evt, InteropKind ik, InstancedMeta? host) => new(evt) {
         Interop = ik,
@@ -44,12 +43,10 @@ internal sealed class MemberInspector (Preferences prefs, TypeInspector types,
     };
 
     private ValueMeta CreateValue (Type type, NullabilityInfo nil, InteropKind ik) => new() {
-        Type = types.Inspect(type),
+        Type = inspect(type, ik),
         TypeSyntax = BuildSyntax(type, nil),
         Nullable = IsNullable(type, nil),
-        Nullity = nil,
-        Serialized = serde.Inspect(type),
-        Instanced = instanced.Inspect(type, ik, this)
+        Nullity = nil
     };
 
     private string BuildSpace (Type decl, InstancedMeta? host)

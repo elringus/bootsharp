@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace Bootsharp.Publish;
 
 /// <summary>
@@ -59,6 +61,10 @@ internal sealed record SerializedObjectMeta (Type Clr,
 /// </summary>
 internal sealed record SerializedPropertyMeta (Type Clr) : SerializedMeta(Clr)
 {
+    /// <summary>
+    /// The reflected info of the property.
+    /// </summary>
+    public required PropertyInfo Info { get; init; }
     /// <summary>
     /// The name of the property.
     /// </summary>

@@ -147,7 +147,7 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
-    public void GeneratesForMethodsInInstancedInterfaces ()
+    public void GeneratesForMethodsInInstanced ()
     {
         AddAssembly(With(
             """
@@ -212,7 +212,7 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
-    public void GeneratesForPropertiesInInstancedInterfaces ()
+    public void GeneratesForPropertiesInInstanced ()
     {
         AddAssembly(With(
             """
@@ -280,7 +280,7 @@ public class InteropTest : EmitTest
     }
 
     [Fact]
-    public void GeneratesForEventsInInstancedInterfaces ()
+    public void GeneratesForEventsInInstanced ()
     {
         AddAssembly(With(
             """

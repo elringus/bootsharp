@@ -28,18 +28,18 @@ internal sealed record ValueMeta
     /// <summary>
     /// Serialization info when <see cref="IsSerialized"/>, null otherwise.
     /// </summary>
-    public required SerializedMeta? Serialized { get; init; }
+    public SerializedMeta? Serialized => Type as SerializedMeta;
     /// <summary>
     /// Instance info when <see cref="IsInstanced"/>, null otherwise.
     /// </summary>
-    public required InstancedMeta? Instanced { get; init; }
+    public InstancedMeta? Instanced => Type as InstancedMeta;
     /// <summary>
-    /// Whether the value has to be serialized to cross the interop boundary.
+    /// Whether the value is serialized and copied when crossing the interop boundary.
     /// </summary>
     [MemberNotNullWhen(true, nameof(Serialized))]
     public bool IsSerialized => Serialized != null;
     /// <summary>
-    /// Whether the value is an interop instance.
+    /// Whether the value instance is passed by reference when crossing the interop boundary.
     /// </summary>
     [MemberNotNullWhen(true, nameof(Instanced))]
     public bool IsInstanced => Instanced != null;

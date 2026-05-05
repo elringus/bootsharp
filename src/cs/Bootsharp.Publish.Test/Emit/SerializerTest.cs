@@ -445,7 +445,7 @@ public class SerializerTest : EmitTest
     }
 
     [Fact]
-    public void SerializesTypesFromInstancedInterfaces ()
+    public void SerializesTypesFromInstanced ()
     {
         AddAssembly(With(
             """
@@ -467,7 +467,7 @@ public class SerializerTest : EmitTest
     }
 
     [Fact]
-    public void DoesntSerializeInstancedInterfacesThemselves ()
+    public void DoesntSerializeInstancedThemselves ()
     {
         AddAssembly(With(
             """

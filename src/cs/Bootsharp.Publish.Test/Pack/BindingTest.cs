@@ -623,7 +623,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForMethodsInInstancedInterfaces ()
+    public void GeneratesForMethodsInInstanced ()
     {
         AddAssembly(With(
             """
@@ -707,7 +707,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForPropertiesInInstancedInterfaces ()
+    public void GeneratesForPropertiesInInstanced ()
     {
         AddAssembly(With(
             """
@@ -796,7 +796,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForEventsInInstancedInterfaces ()
+    public void GeneratesForEventsInInstanced ()
     {
         AddAssembly(With(
             """

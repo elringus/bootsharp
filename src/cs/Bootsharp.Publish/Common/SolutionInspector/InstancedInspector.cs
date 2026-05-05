@@ -2,20 +2,18 @@ using System.Reflection;
 
 namespace Bootsharp.Publish;
 
-internal sealed class InstancedInspector
+internal sealed class InstancedInspector (MemberInspector members)
 {
     private readonly Dictionary<Type, InstancedMeta> byType = [];
 
-    public InstancedMeta? Inspect (Type type, InteropKind ik, MemberInspector members)
+    public InstancedMeta? Inspect (Type type, InteropKind ik)
     {
         if (byType.TryGetValue(type, out var meta)) return meta;
-        if (IsTaskWithResult(type, out var result)) return Inspect(result, ik, members);
-        if (IsList(type, out var element)) return Inspect(element, ik, members);
-        if (IsDictionary(type, out _, out var value)) return Inspect(value, ik, members);
+        if (IsTaskWithResult(type, out var result)) return Inspect(result, ik);
+        if (IsList(type, out var element)) return Inspect(element, ik);
+        if (IsDictionary(type, out _, out var value)) return Inspect(value, ik);
         if (!IsInstancedType(type)) return null;
-        if (type.BaseType is { } b && Inspect(b, ik, members) is { } bm) byType[b] = bm;
-        // TODO: I dont like this crawling shit here, especially the base type.
-        return CollectMembers(byType[type] = InspectType(type, ik), members);
+        return CollectMembers(byType[type] = InspectType(type, ik));
     }
 
     public IReadOnlyCollection<InstancedMeta> Collect ()
@@ -31,7 +29,7 @@ internal sealed class InstancedInspector
         Members = new List<MemberMeta>()
     };
 
-    private InstancedMeta CollectMembers (InstancedMeta it, MemberInspector members)
+    private InstancedMeta CollectMembers (InstancedMeta it)
     {
         var ik = it.Interop;
         var type = it.Clr;

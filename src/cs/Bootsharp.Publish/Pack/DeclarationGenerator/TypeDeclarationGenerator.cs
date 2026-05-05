@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text;
 
 namespace Bootsharp.Publish;
@@ -8,21 +7,19 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     private readonly StringBuilder bld = new();
     private readonly TypeSyntaxBuilder ts = new(prefs);
 
-    private Type type => types[index];
-    private Type? prevType => index == 0 ? null : types[index - 1];
-    private Type? nextType => index == types.Length - 1 ? null : types[index + 1];
+    private TypeMeta type => types[index];
+    private TypeMeta? prevType => index == 0 ? null : types[index - 1];
+    private TypeMeta? nextType => index == types.Length - 1 ? null : types[index + 1];
     private int indent => !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
 
     private DocumentationBuilder docs = null!;
-    private Dictionary<Type, InstancedMeta> itByType = null!;
-    private Type[] types = null!;
+    private TypeMeta[] types = null!;
     private int index;
 
     public string Generate (SolutionInspection spec)
     {
         docs = new(spec.Documentation);
-        itByType = spec.Instanced.ToDictionary(it => it.Clr);
-        types = spec.Types.Select(t => t.Clr).Where(IsUserType).OrderBy(GetNamespace).ToArray();
+        types = spec.Types.OrderBy(GetNamespace).ToArray();
         for (index = 0; index < types.Length; index++)
             DeclareType();
         return bld.ToString();
@@ -31,9 +28,9 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     private void DeclareType ()
     {
         if (ShouldOpenNamespace()) OpenNamespace();
-        if (itByType.TryGetValue(type, out var it)) DeclareInstanced(it);
-        else if (type.IsEnum) DeclareEnum();
-        else DeclareSerialized();
+        if (type is InstancedMeta it) DeclareInstanced(it);
+        else if (type is SerializedEnumMeta enu) DeclareEnum(enu);
+        else if (type is SerializedObjectMeta obj) DeclareSerialized(obj);
         if (ShouldCloseNamespace()) CloseNamespace();
     }
 
@@ -62,46 +59,45 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         AppendLine("}", 0);
     }
 
-    private void DeclareEnum ()
+    private void DeclareEnum (SerializedEnumMeta enu)
     {
-        bld.Append(docs.BuildType(type, indent));
-        AppendLine($"export enum {type.Name} {{", indent);
-        var names = Enum.GetNames(type);
+        bld.Append(docs.BuildType(enu.Clr, indent));
+        AppendLine($"export enum {enu.Clr.Name} {{", indent);
+        var names = Enum.GetNames(enu.Clr);
         for (int i = 0; i < names.Length; i++)
         {
-            bld.Append(docs.BuildProperty(type.GetField(names[i])!, indent + 1));
+            bld.Append(docs.BuildProperty(enu.Clr.GetField(names[i])!, indent + 1));
             if (i == names.Length - 1) AppendLine(names[i], indent + 1);
             else AppendLine($"{names[i]},", indent + 1);
         }
         AppendLine("}", indent);
     }
 
-    private void DeclareSerialized ()
+    private void DeclareSerialized (SerializedObjectMeta obj)
     {
-        bld.Append(docs.BuildType(type, indent));
-        AppendLine($"export type {ts.BuildName(type)} = ", indent);
-        if (type.BaseType is { } baseType && types.Contains(baseType))
+        bld.Append(docs.BuildType(obj.Clr, indent));
+        AppendLine($"export type {ts.BuildName(obj.Clr)} = ", indent);
+        if (obj.Clr.BaseType is { } baseType && IsUserType(baseType))
             bld.Append(ts.BuildFullName(baseType)).Append(" & ");
         bld.Append("Readonly<{");
-        var flags = BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance;
-        foreach (var prop in type.GetProperties(flags))
-            if (prop.GetMethod != null && prop.GetIndexParameters().Length == 0)
+        foreach (var prop in obj.Properties)
+            if (prop.Info.DeclaringType == obj.Clr)
                 AppendProperty(prop);
         AppendLine("}>;", indent);
 
-        void AppendProperty (PropertyInfo prop)
+        void AppendProperty (SerializedPropertyMeta prop)
         {
-            bld.Append(docs.BuildProperty(prop, indent + 1));
-            AppendLine(BuildJSName(prop.Name), indent + 1);
-            bld.Append(ts.BuildProperty(prop));
+            bld.Append(docs.BuildProperty(prop.Info, indent + 1));
+            AppendLine(prop.JSName, indent + 1);
+            bld.Append(ts.BuildProperty(prop.Info));
             bld.Append(';');
         }
     }
 
     private void DeclareInstanced (InstancedMeta it)
     {
-        bld.Append(docs.BuildType(type, indent));
-        AppendLine($"export interface {ts.BuildName(type)}", indent);
+        bld.Append(docs.BuildType(it.Clr, indent));
+        AppendLine($"export interface {ts.BuildName(it.Clr)}", indent);
         AppendExtensions();
         bld.Append(" {");
         foreach (var member in it.Members.Where(m => m.Info.DeclaringType == it.Clr))
@@ -112,8 +108,8 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
         void AppendExtensions ()
         {
-            var extTypes = new List<Type>(type.GetInterfaces().Where(types.Contains));
-            if (type.BaseType is { } baseType && types.Contains(baseType))
+            var extTypes = new List<Type>(it.Clr.GetInterfaces().Where(IsUserType));
+            if (it.Clr.BaseType is { } baseType && IsUserType(baseType))
                 extTypes.Insert(0, baseType);
             if (extTypes.Count > 0)
                 bld.Append(" extends ").AppendJoin(", ", extTypes.Select(ts.BuildFullName));
@@ -163,8 +159,8 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         bld.Append(content);
     }
 
-    private string GetNamespace (Type type)
+    private string GetNamespace (TypeMeta type)
     {
-        return BuildJSSpace(type, prefs);
+        return BuildJSSpace(type.Clr, prefs);
     }
 }

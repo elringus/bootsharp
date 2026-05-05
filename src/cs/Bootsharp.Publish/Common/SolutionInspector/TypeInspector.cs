@@ -3,21 +3,29 @@ namespace Bootsharp.Publish;
 internal sealed class TypeInspector
 {
     private readonly Dictionary<Type, TypeMeta> byType = [];
+    private readonly SerializedInspector serde = new();
+    private readonly InstancedInspector itd;
+    private InteropKind ik;
 
-    public TypeMeta Inspect (Type type)
+    public TypeInspector (Preferences prefs)
     {
-        return Crawl(type);
+        itd = new(new(prefs, Inspect));
+    }
+
+    public void Crawl (Type type, InteropKind ik)
+    {
+        this.ik = ik;
+        Crawl(type);
     }
 
     public IReadOnlyCollection<TypeMeta> Collect ()
     {
-        return byType.Values.ToArray();
+        return byType.Values.Distinct().Where(m => IsUserType(m.Clr)).ToArray();
     }
 
-    private TypeMeta Crawl (Type type)
+    private void Crawl (Type type)
     {
-        if (byType.TryGetValue(type, out var meta)) return meta;
-        meta = byType[type] = new(type);
+        if (!byType.TryAdd(type, Inspect(type, ik))) return;
         if (IsNullable(type, out var nullValue)) Crawl(nullValue);
         else if (IsList(type, out var element)) Crawl(element);
         else if (IsDictionary(type, out var key, out var value))
@@ -30,7 +38,6 @@ internal sealed class TypeInspector
             CrawlProperties(type);
             CrawlBaseType(type);
         }
-        return meta;
     }
 
     private void CrawlProperties (Type type)
@@ -43,5 +50,10 @@ internal sealed class TypeInspector
     {
         if (type.BaseType != null)
             Crawl(type.BaseType);
+    }
+
+    private TypeMeta Inspect (Type type, InteropKind ik)
+    {
+        return serde.Inspect(type) ?? itd.Inspect(type, ik) ?? new TypeMeta(type);
     }
 }
