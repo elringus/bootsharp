@@ -4,7 +4,7 @@ namespace Bootsharp.Publish;
 
 internal sealed class TypeSyntaxBuilder (Preferences prefs)
 {
-    private NullabilityInfo? nullability;
+    private NullabilityInfo? nullity;
 
     public string BuildName (Type type)
     {
@@ -61,11 +61,11 @@ internal sealed class TypeSyntaxBuilder (Preferences prefs)
         return Build(prop.PropertyType, nul) + post;
     }
 
-    private string Build (Type type, NullabilityInfo? nullability)
+    private string Build (Type type, NullabilityInfo? nullity)
     {
-        this.nullability = nullability;
+        this.nullity = nullity;
         // nullability of topmost declarations is handled downstream (?/undefined/null)
-        if (IsNullable(type, nullability, out var value)) type = value;
+        if (IsNullable(type, nullity, out var value)) type = value;
         return WithPrefs(prefs.Type, type.FullName!, Build(type));
     }
 
@@ -147,14 +147,14 @@ internal sealed class TypeSyntaxBuilder (Preferences prefs)
 
     private bool EnterNullability (int idx = 0)
     {
-        if (nullability == null) return false;
-        if (nullability.GenericTypeArguments.Length > idx) nullability = nullability.GenericTypeArguments[idx];
-        else if (nullability.ElementType != null) nullability = nullability.ElementType;
+        if (nullity == null) return false;
+        if (nullity.GenericTypeArguments.Length > idx) nullity = nullity.GenericTypeArguments[idx];
+        else if (nullity.ElementType != null) nullity = nullity.ElementType;
         else
         {
-            nullability = null;
+            nullity = null;
             return false;
         }
-        return nullability.ReadState == NullabilityState.Nullable;
+        return nullity.ReadState == NullabilityState.Nullable;
     }
 }

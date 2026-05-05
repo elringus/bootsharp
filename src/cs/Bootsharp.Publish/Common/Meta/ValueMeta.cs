@@ -24,7 +24,7 @@ internal sealed record ValueMeta
     /// <summary>
     /// Nullability context of the value.
     /// </summary>
-    public required NullabilityInfo Nullability { get; init; }
+    public required NullabilityInfo Nullity { get; init; }
     /// <summary>
     /// Serialization info when <see cref="IsSerialized"/>, null otherwise.
     /// </summary>

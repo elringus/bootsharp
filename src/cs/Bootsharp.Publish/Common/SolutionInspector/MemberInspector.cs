@@ -47,7 +47,7 @@ internal sealed class MemberInspector (Preferences prefs, TypeInspector types,
         Type = types.Inspect(type),
         TypeSyntax = BuildSyntax(type, nil),
         Nullable = IsNullable(type, nil),
-        Nullability = nil,
+        Nullity = nil,
         Serialized = serde.Inspect(type),
         Instanced = instanced.Inspect(type, ik, this)
     };
