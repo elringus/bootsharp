@@ -10,8 +10,6 @@ internal sealed class InstancedInspector (MemberInspector members)
     {
         if (byType.TryGetValue(type, out var meta)) return meta;
         if (IsTaskWithResult(type, out var result)) return Inspect(result, ik);
-        if (IsList(type, out var element)) return Inspect(element, ik);
-        if (IsDictionary(type, out _, out var value)) return Inspect(value, ik);
         if (!IsInstancedType(type)) return null;
         return CollectMembers(byType[type] = InspectType(type, ik));
     }

@@ -9,19 +9,15 @@ internal sealed class SolutionInspector
     private readonly List<InstancedMeta> modules = [];
     private readonly List<DocumentationMeta> docs = [];
     private readonly List<string> warnings = [];
-    private readonly TypeInspector types;
-    private readonly SerializedInspector serde = new();
+    private readonly SerializedInspector serde;
     private readonly InstancedInspector itd;
     private readonly MemberInspector members;
 
     public SolutionInspector (Preferences prefs)
     {
-        types = new(prefs);
-        members = new(prefs, (type, ik) => {
-            types.Crawl(type, ik);
-            return serde.Inspect(type) ?? itd!.Inspect(type, ik) ?? new TypeMeta(type);
-        });
+        members = new(prefs, (type, ik) => itd!.Inspect(type, ik) ?? serde!.Inspect(type, ik) ?? new TypeMeta(type));
         itd = new(members);
+        serde = new(itd);
     }
 
     /// <summary>
@@ -57,7 +53,6 @@ internal sealed class SolutionInspector
     private SolutionInspection CreateInspection (MetadataLoadContext ctx) => new(ctx) {
         Static = statics.ToArray(),
         Modules = modules.ToArray(),
-        Types = types.Collect().Where(t => !modules.Any(m => m == t)).ToArray(),
         Instanced = itd.Collect().Except(modules).ToArray(),
         Serialized = serde.Collect(),
         Documentation = docs.ToArray(),

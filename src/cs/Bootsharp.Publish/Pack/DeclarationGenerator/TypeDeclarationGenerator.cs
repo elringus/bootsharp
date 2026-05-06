@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text;
 
 namespace Bootsharp.Publish;
@@ -7,51 +9,62 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     private readonly StringBuilder bld = new();
     private readonly TypeSyntaxBuilder ts = new(prefs);
 
-    private TypeMeta type => types[index];
-    private TypeMeta? prevType => index == 0 ? null : types[index - 1];
-    private TypeMeta? nextType => index == types.Length - 1 ? null : types[index + 1];
-    private int indent => !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
+    private TypeMeta meta => metas[index];
+    private TypeMeta? prevMeta => index == 0 ? null : metas[index - 1];
+    private TypeMeta? nextMeta => index == metas.Count - 1 ? null : metas[index + 1];
+    private int indent => !string.IsNullOrEmpty(GetNamespace(meta)) ? 1 : 0;
 
     private DocumentationBuilder docs = null!;
-    private TypeMeta[] types = null!;
+    private readonly Dictionary<Type, TypeMeta> metaByClr = [];
+    private readonly List<TypeMeta> metas = [];
     private int index;
 
     public string Generate (SolutionInspection spec)
     {
         docs = new(spec.Documentation);
-        types = spec.Types.OrderBy(GetNamespace).ToArray();
-        for (index = 0; index < types.Length; index++)
+        CollectMetas(spec);
+        for (index = 0; index < metas.Count; index++)
             DeclareType();
         return bld.ToString();
+    }
+
+    private void CollectMetas (SolutionInspection spec)
+    {
+        foreach (var meta in spec.Instanced)
+            metas.Add(metaByClr[meta.Clr] = meta);
+        foreach (var meta in spec.Serialized)
+            if (metaByClr.TryAdd(meta.Clr, meta) && IsUserType(meta.Clr))
+                metas.Add(meta);
+        metas.Sort((a, b) => string.Compare(GetNamespace(a), GetNamespace(b), StringComparison.Ordinal));
     }
 
     private void DeclareType ()
     {
         if (ShouldOpenNamespace()) OpenNamespace();
-        if (type is InstancedMeta it) DeclareInstanced(it);
-        else if (type is SerializedEnumMeta enu) DeclareEnum(enu);
-        else if (type is SerializedObjectMeta obj) DeclareSerialized(obj);
+        if (meta is InstancedMeta it) DeclareInstanced(it);
+        else if (meta is SerializedEnumMeta enu) DeclareEnum(enu);
+        else if (meta is SerializedObjectMeta obj) DeclareSerialized(obj);
         if (ShouldCloseNamespace()) CloseNamespace();
     }
 
     private bool ShouldOpenNamespace ()
     {
-        if (string.IsNullOrEmpty(GetNamespace(type))) return false;
-        if (prevType == null) return true;
-        return GetNamespace(prevType) != GetNamespace(type);
+        if (string.IsNullOrEmpty(GetNamespace(meta))) return false;
+        if (prevMeta == null) return true;
+        return GetNamespace(prevMeta) != GetNamespace(meta);
     }
 
     private void OpenNamespace ()
     {
-        var space = GetNamespace(type);
+        var space = GetNamespace(meta);
         AppendLine($"export namespace {space} {{", 0);
     }
 
     private bool ShouldCloseNamespace ()
     {
-        if (string.IsNullOrEmpty(GetNamespace(type))) return false;
-        if (nextType is null) return true;
-        return GetNamespace(nextType) != GetNamespace(type);
+        if (string.IsNullOrEmpty(GetNamespace(meta))) return false;
+        if (nextMeta is null) return true;
+        return GetNamespace(nextMeta) != GetNamespace(meta);
     }
 
     private void CloseNamespace ()
@@ -77,11 +90,11 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
     {
         bld.Append(docs.BuildType(obj.Clr, indent));
         AppendLine($"export type {ts.BuildName(obj.Clr)} = ", indent);
-        if (obj.Clr.BaseType is { } baseType && IsUserType(baseType))
+        if (TryGetBase(obj.Clr, out var baseType))
             bld.Append(ts.BuildFullName(baseType)).Append(" & ");
         bld.Append("Readonly<{");
         foreach (var prop in obj.Properties)
-            if (prop.Info.DeclaringType == obj.Clr)
+            if (ShouldDeclareOn(obj.Clr, prop.Info))
                 AppendProperty(prop);
         AppendLine("}>;", indent);
 
@@ -100,8 +113,9 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         AppendLine($"export interface {ts.BuildName(it.Clr)}", indent);
         AppendExtensions();
         bld.Append(" {");
-        foreach (var member in it.Members.Where(m => m.Info.DeclaringType == it.Clr))
-            if (member is EventMeta evt) AppendEvent(evt);
+        foreach (var member in it.Members)
+            if (!ShouldDeclareOn(it.Clr, member.Info)) continue;
+            else if (member is EventMeta evt) AppendEvent(evt);
             else if (member is PropertyMeta prop) AppendProperty(prop);
             else AppendMethod((MethodMeta)member);
         AppendLine("}", indent);
@@ -109,7 +123,7 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         void AppendExtensions ()
         {
             var extTypes = new List<Type>(it.Clr.GetInterfaces().Where(IsUserType));
-            if (it.Clr.BaseType is { } baseType && IsUserType(baseType))
+            if (TryGetBase(it.Clr, out var baseType))
                 extTypes.Insert(0, baseType);
             if (extTypes.Count > 0)
                 bld.Append(" extends ").AppendJoin(", ", extTypes.Select(ts.BuildFullName));
@@ -159,8 +173,20 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         bld.Append(content);
     }
 
-    private string GetNamespace (TypeMeta type)
+    private string GetNamespace (TypeMeta meta)
     {
-        return BuildJSSpace(type.Clr, prefs);
+        return BuildJSSpace(meta.Clr, prefs);
+    }
+
+    private bool TryGetBase (Type clr, [NotNullWhen(true)] out Type? baseType)
+    {
+        if ((baseType = clr.BaseType) == null || !IsUserType(baseType)) return false;
+        return metaByClr.ContainsKey(baseType);
+    }
+
+    private bool ShouldDeclareOn (Type host, MemberInfo member)
+    {
+        if (member.DeclaringType == host) return true;
+        return !TryGetBase(member.DeclaringType!, out _) && !TryGetBase(host, out _);
     }
 }

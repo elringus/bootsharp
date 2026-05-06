@@ -47,12 +47,12 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
-            export type Record = Readonly<{
-            }>;
             export enum Enum {
                 A,
                 B
             }
+            export type Record = Readonly<{
+            }>;
 
             export namespace Class {
                 export function inv(r: Record): Enum;
@@ -658,56 +658,65 @@ public class DeclarationTest : PackTest
         AddAssembly(
             With("Space",
                 """
-                public struct Struct { public double A { get; set; } }
+                public class Nya { public bool Mew() => default; }
+                public struct Struct { public double A { get; set; } public Nya Mew { get; } }
                 public readonly struct ReadonlyStruct { public double A { get; init; } }
                 public readonly record struct ReadonlyRecordStruct(double A);
-                public record class RecordClassA (double A, ReadonlyRecordStruct Str);
-                public record class RecordClassB (double B) : RecordClassA(42, new(24));
+                public record class RecordClass (ReadonlyRecordStruct Str);
+                public record class RecordClassA (double A) : RecordClass(new ReadonlyRecordStruct(42));
+                public record class RecordClassB (RecordClassA B) : RecordClassA(24);
                 public enum Enum { A, B }
                 public class Foo { public Struct S { get; } public ReadonlyStruct Rs { get; } }
                 public class Bar : Foo { public Dictionary<string, RecordClassB> Rc { get; } }
-                public class Baz { public List<Bar> Bars { get; } public Enum E { get; } }
-                public class Class { [Export] public static Dictionary<string, Baz> GetBaz () => default; }
+                public class Baz : Bar { public List<Bar> Bars { get; } public Enum E { get; } }
+                public class Key : Baz { }
+                public class Class { [Export] public static Dictionary<Key, Baz> GetBaz () => default; }
                 """));
         Execute();
+        // 'Foo' and 'RecordClass' are not declared, because they don't directly appear on the interop boundary;
+        // instead, their members are merged into 'Bar' and 'RecordClassA', who directly inherit (extend) them.
         Contains(
             """
             export namespace Space {
-                export interface Baz {
+                export interface Key extends Space.Baz {
+                }
+                export interface Bar {
+                    readonly rc: Map<string, Space.RecordClassB>;
+                    readonly s: Space.Struct;
+                    readonly rs: Space.ReadonlyStruct;
+                }
+                export interface Nya {
+                    mew(): boolean;
+                }
+                export interface Baz extends Space.Bar {
                     readonly bars: Array<Space.Bar>;
                     readonly e: Space.Enum;
                 }
-                export interface Bar extends Space.Foo {
-                    readonly rc: Map<string, Space.RecordClassB>;
+                export enum Enum {
+                    A,
+                    B
                 }
-                export type RecordClassB = Space.RecordClassA & Readonly<{
-                    b: number;
-                }>;
                 export type ReadonlyRecordStruct = Readonly<{
+                    a: number;
+                }>;
+                export type ReadonlyStruct = Readonly<{
                     a: number;
                 }>;
                 export type RecordClassA = Readonly<{
                     a: number;
                     str: Space.ReadonlyRecordStruct;
                 }>;
+                export type RecordClassB = Space.RecordClassA & Readonly<{
+                    b: Space.RecordClassA;
+                }>;
                 export type Struct = Readonly<{
                     a: number;
+                    mew: Space.Nya;
                 }>;
-                export type ReadonlyStruct = Readonly<{
-                    a: number;
-                }>;
-                export interface Foo {
-                    readonly s: Space.Struct;
-                    readonly rs: Space.ReadonlyStruct;
-                }
-                export enum Enum {
-                    A,
-                    B
-                }
             }
 
             export namespace Space.Class {
-                export function getBaz(): Map<string, Space.Baz>;
+                export function getBaz(): Map<Space.Key, Space.Baz>;
             }
             """);
     }
@@ -847,13 +856,13 @@ public class DeclarationTest : PackTest
             export interface IImported {
                 fun(info: Info, str: string): Info;
             }
-            export type Info = Readonly<{
-                value: string;
-            }>;
             export interface IExported {
                 inv(str: string, info: Info): Info;
                 reset(): void;
             }
+            export type Info = Readonly<{
+                value: string;
+            }>;
 
             export namespace Class {
                 export function getExported(inst: IImported): Promise<IExported>;
@@ -893,13 +902,13 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
-            export type Info = Readonly<{
-                value: string;
-            }>;
             export interface IExportedInstanced {
             }
             export interface IImportedInstanced {
             }
+            export type Info = Readonly<{
+                value: string;
+            }>;
 
             export namespace ExportedStatic {
                 export let state: Info;
@@ -950,14 +959,14 @@ public class DeclarationTest : PackTest
                 readonly imported: IImported;
                 exported: IExported;
             }
-            export type Info = Readonly<{
-                value: string;
-            }>;
             export interface IExported {
                 state: Info;
                 readonly exported: IExported;
                 imported: IImported;
             }
+            export type Info = Readonly<{
+                value: string;
+            }>;
 
             export namespace Class {
                 export function getExported(inst: IImported): IExported;
@@ -985,13 +994,13 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
-            export type Info = Readonly<{
-                value: string;
-            }>;
             export interface IExportedInstanced {
             }
             export interface IImportedInstanced {
             }
+            export type Info = Readonly<{
+                value: string;
+            }>;
 
             export namespace Exported {
                 export const evt: EventSubscriber<[arg1: string, arg2: Info, arg3: IExportedInstanced]>;
@@ -1024,13 +1033,13 @@ public class DeclarationTest : PackTest
             export interface IImported {
                 changed: EventBroadcaster<[arg1: IImported, arg2: Info, arg3: string]>;
             }
-            export type Info = Readonly<{
-                value: string;
-            }>;
             export interface IExported {
                 changed: EventSubscriber<[obj: Info]>;
                 done: EventSubscriber<[]>;
             }
+            export type Info = Readonly<{
+                value: string;
+            }>;
 
             export namespace Class {
                 export function getExported(inst: IImported): IExported;
@@ -1252,9 +1261,9 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
-            export type Foo = Readonly<{
-            }>;
             export type Bar<T> = Readonly<{
+            }>;
+            export type Foo = Readonly<{
             }>;
 
             export namespace Class {
