@@ -9,13 +9,13 @@ internal sealed class SolutionInspector
     private readonly List<InstancedMeta> modules = [];
     private readonly List<DocumentationMeta> docs = [];
     private readonly List<string> warnings = [];
-    private readonly SerializedInspector serde;
-    private readonly InstancedInspector itd;
     private readonly MemberInspector members;
+    private readonly InstancedInspector itd;
+    private readonly SerializedInspector serde;
 
     public SolutionInspector (Preferences prefs)
     {
-        members = new(prefs, (type, ik) => itd!.Inspect(type, ik) ?? serde!.Inspect(type, ik) ?? new TypeMeta(type));
+        members = new(prefs, InspectType);
         itd = new(members);
         serde = new(itd);
     }
@@ -32,6 +32,11 @@ internal sealed class SolutionInspector
             try { InspectAssemblyFile(assemblyPath, ctx); }
             catch (Exception e) { AddSkippedAssemblyWarning(assemblyPath, e); }
         return CreateInspection(ctx);
+    }
+
+    private TypeMeta InspectType (Type type, InteropKind ik)
+    {
+        return itd.Inspect(type, ik) ?? serde.Inspect(type, ik) ?? new TypeMeta(type);
     }
 
     private void InspectAssemblyFile (string assemblyPath, MetadataLoadContext ctx)

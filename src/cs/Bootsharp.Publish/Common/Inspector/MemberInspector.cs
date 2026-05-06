@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace Bootsharp.Publish;
 
-internal sealed class MemberInspector (Preferences prefs, Func<Type, InteropKind, TypeMeta> inspect)
+internal sealed class MemberInspector (Preferences prefs, InspectType inspect)
 {
     public EventMeta Inspect (EventInfo evt, InteropKind ik) => new(evt) {
         Interop = ik,

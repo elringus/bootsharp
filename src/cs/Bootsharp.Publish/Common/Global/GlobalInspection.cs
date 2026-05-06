@@ -5,6 +5,8 @@ using System.Text.RegularExpressions;
 
 namespace Bootsharp.Publish;
 
+internal delegate TypeMeta InspectType (Type type, InteropKind ik);
+
 internal static class GlobalInspection
 {
     public static MetadataLoadContext CreateLoadContext (string directory)
