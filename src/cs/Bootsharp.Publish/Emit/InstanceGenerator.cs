@@ -56,7 +56,7 @@ internal sealed class InstanceGenerator
     private string EmitPropertyImport (PropertyMeta prop)
     {
         var type = (prop.GetValue ?? prop.SetValue!).TypeSyntax;
-        var space = $"global::Bootsharp.Generated.Interop.{prop.Space.Replace('.', '_')}";
+        var space = $"global::Bootsharp.Generated.Interop.{it.FullName.Replace('.', '_')}";
         var getArgs = PrependIdArg("");
         var setArgs = PrependIdArg("value");
         return
@@ -75,7 +75,7 @@ internal sealed class InstanceGenerator
     {
         var args = string.Join(", ", method.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         var callArgs = PrependIdArg(string.Join(", ", method.Arguments.Select(a => a.Name)));
-        var name = $"{method.Space.Replace('.', '_')}_{method.Name}";
+        var name = $"{it.FullName.Replace('.', '_')}_{method.Name}";
         return $"{method.Return.TypeSyntax} {it.Syntax}.{method.Name} ({args}) => " +
                $"global::Bootsharp.Generated.Interop.{name}({callArgs});";
     }

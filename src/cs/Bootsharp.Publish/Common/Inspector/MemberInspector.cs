@@ -4,9 +4,9 @@ namespace Bootsharp.Publish;
 
 internal sealed class MemberInspector (Preferences prefs, Func<Type, InteropKind, TypeMeta> inspect)
 {
-    public EventMeta Inspect (EventInfo evt, InteropKind ik, InstancedMeta? host) => new(evt) {
+    public EventMeta Inspect (EventInfo evt, InteropKind ik) => new(evt) {
         Interop = ik,
-        Space = BuildSpace(evt.DeclaringType!, host),
+        Space = evt.DeclaringType!.FullName!,
         JSSpace = BuildJSSpace(evt.DeclaringType!),
         Name = evt.Name,
         JSName = BuildJSName(evt.Name),
@@ -14,9 +14,9 @@ internal sealed class MemberInspector (Preferences prefs, Func<Type, InteropKind
             .Select(p => CreateArg(p, GetNullability(evt, p), ik)).ToArray()
     };
 
-    public PropertyMeta Inspect (PropertyInfo prop, InteropKind ik, InstancedMeta? host) => new(prop) {
+    public PropertyMeta Inspect (PropertyInfo prop, InteropKind ik) => new(prop) {
         Interop = ik,
-        Space = BuildSpace(prop.DeclaringType!, host),
+        Space = prop.DeclaringType!.FullName!,
         JSSpace = BuildJSSpace(prop.DeclaringType!),
         Name = prop.Name,
         JSName = BuildJSName(prop.Name),
@@ -24,9 +24,9 @@ internal sealed class MemberInspector (Preferences prefs, Func<Type, InteropKind
         SetValue = prop.SetMethod != null ? CreateValue(prop.PropertyType, GetNullability(prop), ik.Invert()) : null
     };
 
-    public MethodMeta Inspect (MethodInfo method, InteropKind ik, InstancedMeta? host) => new(method) {
+    public MethodMeta Inspect (MethodInfo method, InteropKind ik) => new(method) {
         Interop = ik,
-        Space = BuildSpace(method.DeclaringType!, host),
+        Space = method.DeclaringType!.FullName!,
         JSSpace = BuildJSSpace(method.DeclaringType!),
         Name = method.Name,
         JSName = WithPrefs(prefs.Function, method.Name, BuildJSName(method.Name)),
@@ -48,12 +48,6 @@ internal sealed class MemberInspector (Preferences prefs, Func<Type, InteropKind
         Nullable = IsNullable(type, nil),
         Nullity = nil
     };
-
-    private string BuildSpace (Type decl, InstancedMeta? host)
-    {
-        if (host != null) return host.FullName;
-        return decl.FullName!;
-    }
 
     private string BuildJSSpace (Type decl)
     {

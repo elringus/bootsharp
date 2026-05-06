@@ -7,10 +7,14 @@ namespace Bootsharp.Publish;
 /// </summary>
 internal sealed class InteropGenerator
 {
+    [MemberNotNullWhen(true, nameof(it))]
+    private bool isIt => it != null;
+    [MemberNotNullWhen(true, nameof(md))]
+    private bool isMd => md != null;
+
     private readonly HashSet<InstancedMeta> registered = [];
+    private string id = null!, space = null!;
     private InstancedMeta? it, md;
-    [MemberNotNullWhen(true, nameof(it))] private bool isIt => it != null;
-    [MemberNotNullWhen(true, nameof(md))] private bool isMd => md != null;
 
     public string Generate (SolutionInspection spec) =>
         $$"""
@@ -32,9 +36,11 @@ internal sealed class InteropGenerator
               {
                   {{Fmt([
                       ..spec.Static.OfType<EventMeta>()
-                          .Concat(spec.Modules.SelectMany(i => i.Members.OfType<EventMeta>()))
                           .Where(e => e.Interop == InteropKind.Export)
-                          .Select(EmitEventSubscription),
+                          .Select(e => EmitEventSubscription(e, e.Space)),
+                      ..spec.Modules.SelectMany(md => md.Members.OfType<EventMeta>()
+                          .Where(e => e.Interop == InteropKind.Export)
+                          .Select(e => EmitEventSubscription(e, md.FullName))),
                       ..spec.Static.OfType<MethodMeta>()
                           .Where(m => m.Interop == InteropKind.Import)
                           .Select(EmitMethodAssignment)
@@ -47,10 +53,10 @@ internal sealed class InteropGenerator
           }
           """;
 
-    private static string EmitEventSubscription (EventMeta evt)
+    private static string EmitEventSubscription (EventMeta evt, string space)
     {
-        var handler = $"Handle_{evt.Space.Replace('.', '_')}_{evt.Name}";
-        return $"global::{evt.Space}.{evt.Name} += {handler};";
+        var handler = $"Handle_{space.Replace('.', '_')}_{evt.Name}";
+        return $"global::{space}.{evt.Name} += {handler};";
     }
 
     private static string EmitMethodAssignment (MethodMeta method)
@@ -63,6 +69,8 @@ internal sealed class InteropGenerator
     {
         this.it = it;
         this.md = md;
+        space = (it ?? md)?.FullName ?? member.Space;
+        id = space.Replace('.', '_');
         return member switch {
             EventMeta { Interop: InteropKind.Export } e => EmitEventExport(e),
             EventMeta { Interop: InteropKind.Import } e => EmitEventImport(e),
@@ -83,7 +91,7 @@ internal sealed class InteropGenerator
 
         if (isIt) yield return EmitInstanceRegistrar(it);
         if (isIt) yield break; // instanced export event handlers are emitted in the registrar
-        var handler = $"Handle_{evt.Space.Replace('.', '_')}_{evt.Name}";
+        var handler = $"Handle_{id}_{evt.Name}";
         var sigArgs = string.Join(", ", evt.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         var invArgs = string.Join(", ", evt.Arguments.Select(Serialize));
         yield return $"private static void {handler} ({sigArgs}) => {name}({invArgs});";
@@ -91,11 +99,11 @@ internal sealed class InteropGenerator
 
     private IEnumerable<string> EmitEventImport (EventMeta evt)
     {
-        var name = $"{evt.Space.Replace('.', '_')}_Invoke{evt.Name}";
+        var name = $"{id}_Invoke{evt.Name}";
         var args = string.Join(", ", evt.Arguments.Select(a => BuildParameter(a.Value, a.Name)));
         if (isIt) args = $"{BuildSyntax(typeof(int))} {PrependIdArg(args)}";
         var invName = isIt ? $"Instances.Import(_id, static id => new global::{it.FullName}(id)).Invoke{evt.Name}"
-            : isMd ? $"((global::{evt.Space})Modules.Imports[typeof({md.Syntax})].Instance).Invoke{evt.Name}"
+            : isMd ? $"((global::{md.FullName})Modules.Imports[typeof({md.Syntax})].Instance).Invoke{evt.Name}"
             : $"global::{evt.Info.DeclaringType!.FullName!.Replace('+', '.')}.Bootsharp_Invoke_{evt.Name}";
         var invArgs = string.Join(", ", evt.Arguments.Select(Deserialize));
         yield return $"[JSExport] internal static void {name} ({args}) => {invName}({invArgs});";
@@ -106,22 +114,22 @@ internal sealed class InteropGenerator
         if (prop.CanGet)
         {
             var attr = $"[JSExport] {MarshalAmbiguous(prop.GetValue, true)}";
-            var name = $"{prop.Space.Replace('.', '_')}_GetProperty{prop.Name}";
+            var name = $"{id}_GetProperty{prop.Name}";
             var args = isIt ? $"{BuildSyntax(typeof(int))} _id" : "";
             var body = Serialize(prop.GetValue, isIt
                 ? $"Instances.Exported<{it.Syntax}>(_id).{prop.Name}"
-                : $"global::{prop.Space}.GetProperty{prop.Name}()");
+                : $"global::{space}.GetProperty{prop.Name}()");
             yield return $"{attr}internal static {BuildValueSyntax(prop.GetValue)} {name} ({args}) => {body};";
         }
         if (prop.CanSet)
         {
-            var name = $"{prop.Space.Replace('.', '_')}_SetProperty{prop.Name}";
+            var name = $"{id}_SetProperty{prop.Name}";
             var args = BuildParameter(prop.SetValue, "value");
             if (isIt) args = $"{BuildSyntax(typeof(int))} {PrependIdArg(args)}";
             var value = Deserialize(prop.SetValue, "value");
             var body = isIt
                 ? $"Instances.Exported<{it.Syntax}>(_id).{prop.Name} = {value}"
-                : $"global::{prop.Space}.SetProperty{prop.Name}({value})";
+                : $"global::{space}.SetProperty{prop.Name}({value})";
             yield return $"[JSExport] internal static void {name} ({args}) => {body};";
         }
     }
@@ -136,7 +144,7 @@ internal sealed class InteropGenerator
             var args = isIt ? $"{BuildSyntax(typeof(int))} _id" : "";
             yield return $"{attr}internal static partial {BuildValueSyntax(prop.GetValue)} {serdeName} ({args});";
 
-            var name = $"{prop.Space.Replace('.', '_')}_GetProperty{prop.Name}";
+            var name = $"{id}_GetProperty{prop.Name}";
             var body = Deserialize(prop.GetValue, isIt ? $"{serdeName}(_id)" : $"{serdeName}()");
             yield return $"public static {prop.GetValue.TypeSyntax} {name}({args}) => {body};";
         }
@@ -148,7 +156,7 @@ internal sealed class InteropGenerator
             if (isIt) serdeArgs = $"{BuildSyntax(typeof(int))} {PrependIdArg(serdeArgs)}";
             yield return $"{attr}internal static partial void {serdeName} ({serdeArgs});";
 
-            var name = $"{prop.Space.Replace('.', '_')}_SetProperty{prop.Name}";
+            var name = $"{id}_SetProperty{prop.Name}";
             var args = $"{prop.SetValue.TypeSyntax} value";
             if (isIt) args = $"{BuildSyntax(typeof(int))} {PrependIdArg(args)}";
             var value = Serialize(prop.SetValue, "value");
@@ -161,7 +169,7 @@ internal sealed class InteropGenerator
     {
         var wait = ShouldWait(method);
         var attr = $"[JSExport] {MarshalAmbiguous(method.Return, true)}";
-        var name = $"{method.Space.Replace('.', '_')}_{method.Name}";
+        var name = $"{id}_{method.Name}";
         var @return = BuildValueSyntax(method.Return);
         if (wait) @return = $"async global::System.Threading.Tasks.Task<{@return}>";
         var sigArgs = string.Join(", ", method.Arguments.Select(a => BuildParameter(a.Value, a.Name)));
@@ -169,7 +177,7 @@ internal sealed class InteropGenerator
         var invArgs = string.Join(", ", method.Arguments.Select(Deserialize));
         var invName = isIt
             ? $"Instances.Exported<{it.Syntax}>(_id).{method.Name}"
-            : $"global::{method.Space}.{method.Name}";
+            : $"global::{space}.{method.Name}";
         var body = Serialize(method.Return, $"{(wait ? "await " : "")}{invName}({invArgs})");
         yield return $"{attr}internal static {@return} {name} ({sigArgs}) => {body};";
     }
@@ -178,7 +186,7 @@ internal sealed class InteropGenerator
     {
         var marshalAs = MarshalAmbiguous(method.Return, true);
         var attr = $"""[JSImport("{method.JSSpace}.{method.JSName}Serialized", "Bootsharp")] {marshalAs}""";
-        var name = $"{method.Space.Replace('.', '_')}_{method.Name}";
+        var name = $"{id}_{method.Name}";
         var @return = BuildValueSyntax(method.Return);
         if (ShouldWait(method)) @return = $"global::System.Threading.Tasks.Task<{@return}>";
         var args = string.Join(", ", method.Arguments.Select(a => BuildParameter(a.Value, a.Name)));

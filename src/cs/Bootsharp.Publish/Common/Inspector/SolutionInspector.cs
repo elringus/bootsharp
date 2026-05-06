@@ -78,10 +78,10 @@ internal sealed class SolutionInspector
         if (type.Namespace?.StartsWith("Bootsharp.Generated") ?? false) return;
         foreach (var evt in type.GetEvents(BindingFlags.Public | BindingFlags.Static))
             if (ResolveInterop(evt) is { } ik)
-                statics.Add(members.Inspect(evt, ik, null));
+                statics.Add(members.Inspect(evt, ik));
         foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
             if (ResolveInterop(method) is { } ik)
-                statics.Add(members.Inspect(method, ik, null));
+                statics.Add(members.Inspect(method, ik));
     }
 
     private void InspectModules (CustomAttributeData attr)

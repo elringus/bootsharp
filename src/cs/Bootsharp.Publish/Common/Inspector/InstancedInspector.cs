@@ -21,20 +21,18 @@ internal sealed class InstancedInspector (MemberInspector members)
 
     private InstancedMeta InspectType (Type type, InteropKind ik) => new(type) {
         Interop = ik,
-        Namespace = BuildInstanceSpace(type, ik),
-        Name = BuildInstanceName(type),
-        JSName = BuildInstanceJSName(type),
+        Namespace = BuildSpace(type, ik),
+        Name = BuildName(type),
+        JSName = BuildJSName(type),
         Members = new List<MemberMeta>()
     };
 
     private InstancedMeta CollectMembers (InstancedMeta it)
     {
-        var ik = it.Interop;
-        var type = it.Clr;
         var cl = (List<MemberMeta>)it.Members;
-        cl.AddRange(type.GetEvents().Select(m => members.Inspect(m, ik, it)));
-        cl.AddRange(type.GetProperties().Where(ShouldInspectProperty).Select(m => members.Inspect(m, ik, it)));
-        cl.AddRange(type.GetMethods().Where(ShouldInspectMethod).Select(m => members.Inspect(m, ik, it)));
+        cl.AddRange(it.Clr.GetEvents().Select(m => members.Inspect(m, it.Interop)));
+        cl.AddRange(it.Clr.GetProperties().Where(ShouldInspectProperty).Select(m => members.Inspect(m, it.Interop)));
+        cl.AddRange(it.Clr.GetMethods().Where(ShouldInspectMethod).Select(m => members.Inspect(m, it.Interop)));
         return it;
     }
 
@@ -55,22 +53,22 @@ internal sealed class InstancedInspector (MemberInspector members)
         return !method.IsStatic;
     }
 
-    private string BuildInstanceSpace (Type type, InteropKind ik)
+    private string BuildSpace (Type type, InteropKind ik)
     {
         var space = "Bootsharp.Generated." + (ik == InteropKind.Export ? "Exports" : "Imports");
         if (type.Namespace != null) space += $".{type.Namespace}";
         return space;
     }
 
-    private string BuildInstanceName (Type type)
+    private string BuildName (Type type)
     {
         var trimmed = type.IsInterface ? type.Name[1..] : type.Name;
         return "JS" + trimmed;
     }
 
-    private string BuildInstanceJSName (Type type)
+    private string BuildJSName (Type type)
     {
-        var name = BuildInstanceName(type);
+        var name = BuildName(type);
         if (type.Namespace == null) return name;
         return $"{type.Namespace}.{name}".Replace(".", "_");
     }

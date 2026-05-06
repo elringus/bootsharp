@@ -5,29 +5,32 @@ namespace Bootsharp.Publish;
 
 internal sealed class BindingGenerator (Preferences prefs, bool debug)
 {
-    private record Binding (MemberMeta? Member, Type? Enum, InstancedMeta? It, string Namespace);
+    private record Binding (MemberMeta? Member, Type? Enum, InstancedMeta? It, string Id, string Space);
 
     private Binding binding => bindings[index];
     private Binding? prevBinding => index == 0 ? null : bindings[index - 1];
     private Binding? nextBinding => index == bindings.Length - 1 ? null : bindings[index + 1];
+    [MemberNotNullWhen(true, nameof(it))]
+    private bool isIt => it != null;
+    private InstancedMeta? it => binding.It;
+    private string space => binding.Space;
+    private string id => binding.Id;
 
     private readonly StringBuilder bld = new();
-    [MemberNotNullWhen(true, nameof(it))] private bool isIt => it != null;
-    private InstancedMeta? it => binding.It;
     private Binding[] bindings = [];
     private int index, level;
 
     public string Generate (SolutionInspection spec)
     {
         bindings = spec.Static
-            .Select(m => new Binding(m, null, null, m.JSSpace))
-            .Concat(spec.Modules.SelectMany(it => it.Members
-                .Select(m => new Binding(m, null, null, m.JSSpace))))
+            .Select(m => new Binding(m, null, null, m.Space.Replace('.', '_'), m.JSSpace))
+            .Concat(spec.Modules.SelectMany(md => md.Members
+                .Select(m => new Binding(m, null, null, md.FullName.Replace('.', '_'), m.JSSpace))))
             .Concat(spec.Instanced.SelectMany(it => it.Members
-                .Select(m => new Binding(m, null, it, m.JSSpace))))
+                .Select(m => new Binding(m, null, it, it.FullName.Replace('.', '_'), m.JSSpace))))
             .Concat(spec.Serialized.Where(t => t.Clr.IsEnum)
-                .Select(t => new Binding(null, t.Clr, null, BuildJSSpace(t.Clr, prefs))))
-            .OrderBy(m => m.Namespace).ToArray();
+                .Select(t => new Binding(null, t.Clr, null, "", BuildJSSpace(t.Clr, prefs))))
+            .OrderBy(m => m.Space).ToArray();
         if (bindings.Length == 0) return "";
 
         EmitImports();
@@ -120,14 +123,14 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
     private bool ShouldOpenNamespace ()
     {
         if (prevBinding is null) return true;
-        return prevBinding.Namespace != binding.Namespace;
+        return prevBinding.Space != binding.Space;
     }
 
     private void OpenNamespace ()
     {
         level = 0;
-        var prevParts = prevBinding?.Namespace.Split('.') ?? [];
-        var parts = binding.Namespace.Split('.');
+        var prevParts = prevBinding?.Space.Split('.') ?? [];
+        var parts = binding.Space.Split('.');
         while (prevParts.ElementAtOrDefault(level) == parts[level]) level++;
         for (var i = level; i < parts.Length; level = i, i++)
             if (i == 0) bld.Append($"\nexport const {parts[i]} = {{");
@@ -137,7 +140,7 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
     private bool ShouldCloseNamespace ()
     {
         if (nextBinding is null) return true;
-        return nextBinding.Namespace != binding.Namespace;
+        return nextBinding.Space != binding.Space;
     }
 
     private void CloseNamespace ()
@@ -151,8 +154,8 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
         {
             if (nextBinding is null) return 0;
             var closeLevel = 0;
-            var parts = binding.Namespace.Split('.');
-            var nextParts = nextBinding.Namespace.Split('.');
+            var parts = binding.Space.Split('.');
+            var nextParts = nextBinding.Space.Split('.');
             for (var i = 0; i < parts.Length; i++)
                 if (parts[i] == nextParts[i]) closeLevel++;
                 else break;
@@ -197,7 +200,7 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
     private void EmitEventImport (EventMeta evt)
     {
         if (isIt) return; // instanced import event handlers are emitted in the registrar
-        var name = $"{evt.Space.Replace('.', '_')}_Invoke{evt.Name}";
+        var name = $"{id}_Invoke{evt.Name}";
         var invName = debug ? $"""getExport("{name}")""" : $"exports.{name}";
         var args = string.Join(", ", evt.Arguments.Select(a => a.JSName));
         var invArgs = string.Join(", ", evt.Arguments.Select(Serialize));
@@ -208,7 +211,7 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
     {
         if (prop.CanGet)
         {
-            var fnName = $"{prop.Space.Replace('.', '_')}_GetProperty{prop.Name}";
+            var fnName = $"{id}_GetProperty{prop.Name}";
             var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
             var body = Deserialize(prop.GetValue, isIt ? $"{invName}(_id)" : $"{invName}()");
             if (prop.GetValue.Nullable && !prop.GetValue.IsInstanced) body += " ?? undefined";
@@ -217,7 +220,7 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
         }
         if (prop.CanSet)
         {
-            var fnName = $"{prop.Space.Replace('.', '_')}_SetProperty{prop.Name}";
+            var fnName = $"{id}_SetProperty{prop.Name}";
             var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
             var value = Serialize(prop.SetValue, "value");
             var body = isIt ? $"{invName}(_id, {value})" : $"{invName}({value})";
@@ -248,7 +251,7 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
     private void EmitMethodExport (MethodMeta method)
     {
         var wait = ShouldWait(method);
-        var fnName = $"{method.Space.Replace('.', '_')}_{method.Name}";
+        var fnName = $"{id}_{method.Name}";
         var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
         var args = string.Join(", ", method.Arguments.Select(a => a.JSName));
         if (isIt) args = PrependIdArg(args);
@@ -272,7 +275,7 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
         else
         {
             var serde = $"this.{name}SerializedHandler";
-            var serdeExp = debug ? $"getImport({invName}, {serde}, \"{binding.Namespace}.{name}\")" : serde;
+            var serdeExp = debug ? $"getImport({invName}, {serde}, \"{space}.{name}\")" : serde;
             bld.Append($"{Br}get {name}() {{ return {invName}; }}");
             bld.Append($"{Br}set {name}(handler) {{ {invName} = handler; {serde} = {serdeHandler}; }}");
             bld.Append($"{Br}get {name}Serialized() {{ return {serdeExp}; }}");
@@ -301,7 +304,7 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
                       };
 
                       {{Fmt(events.Select(e => {
-                          var fnName = $"{e.Space.Replace('.', '_')}_Invoke{e.Name}";
+                          var fnName = $"{instance.FullName.Replace('.', '_')}_Invoke{e.Name}";
                           var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
                           var args = string.Join(", ", e.Arguments.Select(a => a.JSName));
                           var invArgs = PrependIdArg(string.Join(", ", e.Arguments.Select(Serialize)));
