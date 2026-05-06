@@ -5,7 +5,7 @@ namespace Bootsharp.Publish;
 /// </summary>
 internal sealed class ModuleGenerator
 {
-    private InstancedMeta it = null!;
+    private InstancedMeta md = null!;
 
     public string Generate (SolutionInspection spec) =>
         $$"""
@@ -27,52 +27,52 @@ internal sealed class ModuleGenerator
           {{Fmt(spec.Modules.Select(EmitModule), 0, "\n\n")}}
           """;
 
-    private string EmitRegistration (InstancedMeta it)
+    private string EmitRegistration (InstancedMeta md)
     {
-        var type = it.Interop == InteropKind.Import
-            ? $"typeof({it.Syntax})"
-            : $"typeof({it.FullName})";
-        var factory = it.Interop == InteropKind.Import
-            ? $"new ImportModule(new {it.FullName}())"
-            : $"new ExportModule(typeof({it.Syntax}), handler => new {it.FullName}(({it.Syntax})handler))";
+        var type = md.Interop == InteropKind.Import
+            ? $"typeof({md.Syntax})"
+            : $"typeof({md.FullName})";
+        var factory = md.Interop == InteropKind.Import
+            ? $"new ImportModule(new {md.FullName}())"
+            : $"new ExportModule(typeof({md.Syntax}), handler => new {md.FullName}(({md.Syntax})handler))";
         return $"Modules.Register({type}, {factory});";
     }
 
-    private string EmitModule (InstancedMeta it)
+    private string EmitModule (InstancedMeta md)
     {
-        this.it = it;
-        if (it.Interop == InteropKind.Export) return EmitModuleExport();
+        this.md = md;
+        if (md.Interop == InteropKind.Export) return EmitModuleExport();
         return EmitModuleImport();
     }
 
     private string EmitModuleExport () =>
         $$"""
-          namespace {{it.Namespace}}
+          namespace {{md.Namespace}}
           {
-              public class {{it.Name}}
+              public class {{md.Name}}
               {
-                  private static {{it.Syntax}} handler = null!;
+                  private static {{md.Syntax}} handler = null!;
 
-                  public {{it.Name}} ({{it.Syntax}} handler)
+                  public {{md.Name}} ({{md.Syntax}} handler)
                   {
                       {{Fmt([
-                          $"{it.Name}.handler = handler;",
-                          ..it.Members.OfType<EventMeta>().Select(e => $"handler.{e.Name} += {e.Name}.Invoke;")
+                          $"{md.Name}.handler = handler;",
+                          ..md.Members.OfType<EventMeta>().Select(e => $"handler.{e.Name} += {e.Name}.Invoke;")
                       ], 3)}}
                   }
 
-                  {{Fmt(it.Members.Select(EmitMemberExport), 2)}}
+                  {{Fmt(md.Members.Select(EmitMemberExport), 2)}}
               }
           }
           """;
 
     private string EmitModuleImport () =>
         $$"""
-          namespace {{it.Namespace}}
+          namespace {{md.Namespace}}
           {
-              public class {{it.Name}} : {{it.Syntax}}
+              public class {{md.Name}} : {{md.Syntax}}
               {
-                  {{Fmt(it.Members.Select(EmitMemberImport), 2)}}
+                  {{Fmt(md.Members.Select(EmitMemberImport), 2)}}
               }
           }
           """;
@@ -117,11 +117,11 @@ internal sealed class ModuleGenerator
 
     private string EmitPropertyImport (PropertyMeta prop)
     {
-        var space = $"global::Bootsharp.Generated.Interop.{it.FullName.Replace('.', '_')}";
+        var space = $"global::Bootsharp.Generated.Interop.{md.FullName.Replace('.', '_')}";
         var type = (prop.GetValue ?? prop.SetValue!).TypeSyntax;
         return
             $$"""
-              {{type}} {{it.Syntax}}.{{prop.Name}}
+              {{type}} {{md.Syntax}}.{{prop.Name}}
               {
                   {{Fmt(
                       prop.CanGet ? $"get => {space}_GetProperty{prop.Name}();" : null,
@@ -143,8 +143,8 @@ internal sealed class ModuleGenerator
     {
         var args = string.Join(", ", method.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         var callArgs = string.Join(", ", method.Arguments.Select(a => a.Name));
-        var name = $"{it.FullName.Replace('.', '_')}_{method.Name}";
-        return $"{method.Return.TypeSyntax} {it.Syntax}.{method.Name} ({args}) => " +
+        var name = $"{md.FullName.Replace('.', '_')}_{method.Name}";
+        return $"{method.Return.TypeSyntax} {md.Syntax}.{method.Name} ({args}) => " +
                $"global::Bootsharp.Generated.Interop.{name}({callArgs});";
     }
 }
