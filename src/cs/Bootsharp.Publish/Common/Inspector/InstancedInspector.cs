@@ -14,6 +14,13 @@ internal sealed class InstancedInspector (MemberInspector members)
         return CollectMembers(byType[type] = InspectType(type, ik));
     }
 
+    public ModuleMeta? InspectModule (Type type, InteropKind ik)
+    {
+        if (ik == InteropKind.Import && !type.IsInterface || IsStatic(type)) return null;
+        var it = CollectMembers(InspectType(type, ik));
+        return new(type) { Interop = ik, Namespace = it.Namespace, Name = it.Name, Members = it.Members };
+    }
+
     public IReadOnlyCollection<InstancedMeta> Collect ()
     {
         return byType.Values.ToArray();

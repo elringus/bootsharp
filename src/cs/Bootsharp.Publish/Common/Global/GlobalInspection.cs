@@ -38,10 +38,7 @@ internal static class GlobalInspection
         // interop boundary (as opposed to serialized immutable types, which are copied by value).
         if (!IsUserType(type)) return false;
         if (type.IsInterface) return true;
-        var isRecord = type.GetMethod("<Clone>$", // records are immutable by convention
-            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) != null;
-        var isStatic = type.IsAbstract && type.IsSealed;
-        return type.IsClass && !isStatic && !isRecord;
+        return type.IsClass && !IsStatic(type) && !IsRecord(type); // records are immutable by convention
     }
 
     public static bool IsAutoProperty (PropertyInfo prop)

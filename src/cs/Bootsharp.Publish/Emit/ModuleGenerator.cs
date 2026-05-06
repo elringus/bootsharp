@@ -5,7 +5,7 @@ namespace Bootsharp.Publish;
 /// </summary>
 internal sealed class ModuleGenerator
 {
-    private InstancedMeta md = null!;
+    private ModuleMeta md = null!;
 
     public string Generate (SolutionInspection spec) =>
         $$"""
@@ -27,7 +27,7 @@ internal sealed class ModuleGenerator
           {{Fmt(spec.Modules.Select(EmitModule), 0, "\n\n")}}
           """;
 
-    private string EmitRegistration (InstancedMeta md)
+    private string EmitRegistration (ModuleMeta md)
     {
         var type = md.Interop == InteropKind.Import
             ? $"typeof({md.Syntax})"
@@ -38,7 +38,7 @@ internal sealed class ModuleGenerator
         return $"Modules.Register({type}, {factory});";
     }
 
-    private string EmitModule (InstancedMeta md)
+    private string EmitModule (ModuleMeta md)
     {
         this.md = md;
         if (md.Interop == InteropKind.Export) return EmitModuleExport();

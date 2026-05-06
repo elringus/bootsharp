@@ -6,7 +6,7 @@ namespace Bootsharp.Publish;
 internal sealed class SolutionInspector
 {
     private readonly List<MemberMeta> statics = [];
-    private readonly List<InstancedMeta> modules = [];
+    private readonly List<ModuleMeta> modules = [];
     private readonly List<DocumentationMeta> docs = [];
     private readonly List<string> warnings = [];
     private readonly MemberInspector members;
@@ -58,7 +58,7 @@ internal sealed class SolutionInspector
     private SolutionInspection CreateInspection (MetadataLoadContext ctx) => new(ctx) {
         Static = statics.ToArray(),
         Modules = modules.ToArray(),
-        Instanced = itd.Collect().Except(modules).ToArray(),
+        Instanced = itd.Collect(),
         Serialized = serde.Collect(),
         Documentation = docs.ToArray(),
         Warnings = warnings.ToArray()
@@ -93,9 +93,8 @@ internal sealed class SolutionInspector
     {
         if (ResolveInterop(attr) is not { } ik) return;
         foreach (var arg in (IEnumerable<CustomAttributeTypedArgument>)attr.ConstructorArguments[0].Value!)
-            if (itd.Inspect((Type)arg.Value!, ik) is { } it)
-                if (ik == InteropKind.Export || it.Clr.IsInterface)
-                    modules.Add(it);
+            if (itd.InspectModule((Type)arg.Value!, ik) is { } md)
+                modules.Add(md);
     }
 
     private InteropKind? ResolveInterop (MemberInfo info)

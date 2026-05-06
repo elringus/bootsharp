@@ -22,7 +22,7 @@ internal sealed class SolutionInspection (MetadataLoadContext ctx) : IDisposable
     /// Interop API surfaces specified under assembly-level <see cref="ExportAttribute"/>
     /// or <see cref="ImportAttribute"/> attributes.
     /// </summary>
-    public required IReadOnlyCollection<InstancedMeta> Modules { get; init; }
+    public required IReadOnlyCollection<ModuleMeta> Modules { get; init; }
     /// <summary>
     /// All the immutable types that are serialized and copied by value when crossing the interop boundary.
     /// </summary>

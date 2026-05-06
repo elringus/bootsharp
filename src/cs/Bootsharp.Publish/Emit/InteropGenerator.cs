@@ -14,7 +14,8 @@ internal sealed class InteropGenerator
 
     private readonly HashSet<InstancedMeta> registered = [];
     private string id = null!, space = null!;
-    private InstancedMeta? it, md;
+    private InstancedMeta? it;
+    private ModuleMeta? md;
 
     public string Generate (SolutionInspection spec) =>
         $$"""
@@ -65,11 +66,11 @@ internal sealed class InteropGenerator
         return $"global::{method.Space}.Bootsharp_{method.Name} = &{name};";
     }
 
-    private IEnumerable<string?> EmitMember (MemberMeta member, InstancedMeta? it, InstancedMeta? md)
+    private IEnumerable<string?> EmitMember (MemberMeta member, InstancedMeta? it, ModuleMeta? md)
     {
         this.it = it;
         this.md = md;
-        space = (it ?? md)?.FullName ?? member.Space;
+        space = it?.FullName ?? md?.FullName ?? member.Space;
         id = space.Replace('.', '_');
         return member switch {
             EventMeta { Interop: InteropKind.Export } e => EmitEventExport(e),

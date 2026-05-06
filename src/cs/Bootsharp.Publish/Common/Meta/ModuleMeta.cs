@@ -1,12 +1,13 @@
 namespace Bootsharp.Publish;
 
 /// <summary>
-/// Describes a mutable CLR type whose instances are passed by reference when crossing the interop boundary.
+/// Describes a CLR type specified as interop surface under an assembly-level
+/// <see cref="ExportAttribute"/> or <see cref="ImportAttribute"/> attribute.
 /// </summary>
-internal record InstancedMeta (Type Clr) : TypeMeta(Clr)
+internal record ModuleMeta (Type Clr) : TypeMeta(Clr)
 {
     /// <summary>
-    /// Whether the type's instances are exported from C# or imported from JavaScript.
+    /// Whether the module is exported from C# or imported from JavaScript.
     /// </summary>
     public required InteropKind Interop { get; init; }
     /// <summary>
@@ -22,11 +23,7 @@ internal record InstancedMeta (Type Clr) : TypeMeta(Clr)
     /// </summary>
     public string FullName => $"{Namespace}.{Name}";
     /// <summary>
-    /// Name of the generated JavaScript bindings wrapper.
-    /// </summary>
-    public required string JSName { get; init; }
-    /// <summary>
-    /// Members declared on the instance.
+    /// Members declared on the module.
     /// </summary>
     public required IReadOnlyCollection<MemberMeta> Members { get; init; }
 }

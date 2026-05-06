@@ -7,6 +7,17 @@ namespace Bootsharp.Publish;
 
 internal static class GlobalType
 {
+    public static bool IsStatic (Type type)
+    {
+        return type.IsAbstract && type.IsSealed;
+    }
+
+    public static bool IsRecord (Type type)
+    {
+        var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+        return type.GetMethod("<Clone>$", flags) != null;
+    }
+
     public static bool IsTaskLike (Type type)
     {
         return type.GetMethod(nameof(Task.GetAwaiter)) != null;
