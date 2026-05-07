@@ -5,6 +5,7 @@ namespace Bootsharp.Publish;
 internal sealed class InstancedInspector (MemberInspector members)
 {
     private readonly Dictionary<Type, InstancedMeta> byType = [];
+    private readonly HashSet<Type> modules = [];
 
     public InstancedMeta? Inspect (Type type, InteropKind ik)
     {
@@ -16,6 +17,7 @@ internal sealed class InstancedInspector (MemberInspector members)
 
     public ModuleMeta? InspectModule (Type type, InteropKind ik)
     {
+        if (!modules.Add(type)) return null;
         if (ik == InteropKind.Import && !type.IsInterface) return null;
         if (IsStatic(type)) return null;
         var it = CollectMembers(InspectType(type, ik));

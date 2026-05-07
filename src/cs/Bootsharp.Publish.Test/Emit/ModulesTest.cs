@@ -320,4 +320,20 @@ public class ModulesTest : EmitTest
         Execute();
         DoesNotContain("StaticMethod");
     }
+
+    [Fact]
+    public void IgnoresDuplicateModules ()
+    {
+        AddAssembly("Library.dll", With(
+            """
+            [assembly:Import(typeof(IShared))]
+            public interface IShared { void Inv (); }
+            """));
+        AddAssembly("Entry.dll", With(
+            """
+            [assembly:Import(typeof(IShared))]
+            """));
+        Execute();
+        Once("class JSShared");
+    }
 }
