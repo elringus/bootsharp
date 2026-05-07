@@ -1,10 +1,10 @@
 # Namespaces
 
-Bootsharp maps generated binding APIs based on the name of the associated C# types. The rules are a bit different for static interop methods, interop interfaces and types.
+Bootsharp maps binding APIs based on the fully qualified name of the C# types.
 
-## Static Methods
+## Static Members
 
-Full type name (including namespace) of the declaring type of the static interop method is mapped into JavaScript object name:
+Full type name (including namespace) of the declaring type of the static member is mapped into JavaScript object name:
 
 ```csharp
 class Class { [Export] static void Method() {} }
@@ -37,20 +37,20 @@ import { Foo } from "bootsharp";
 Foo.Class.Nested.method();
 ```
 
-## Interop Interfaces
+## Interop Modules
 
-When generating bindings for [interop interfaces](/guide/interop-interfaces), it's assumed the interface name has "I" prefix, so the associated implementation name will have first character removed. In case interface is declared under namespace, it'll be mirrored in JavaScript.
+When generating bindings for [modules](/guide/interop-modules), an interface name is assumed to have an "I" prefix, so the associated JavaScript name will have the first character removed. Class modules keep their name as-is. In either case, if the type is declared under a namespace, it'll be mirrored in JavaScript.
 
 ```csharp
 [Export(
     typeof(IExported),
     typeof(Foo.IExported),
-    typeof(Foo.Bar.IExported)
+    typeof(Foo.Bar.Exported)
 )]
 
 interface IExported { void Method(); }
 namespace Foo { interface IExported { void Method(); } }
-namespace Foo.Bar { interface IExported { void Method(); } }
+namespace Foo.Bar { class Exported { public void Method() {} } }
 ```
 
 ```ts
@@ -88,4 +88,4 @@ function methodImpl(r: Record): Foo.Record {
 
 ## Configuring Namespaces
 
-You can control how namespaces are generated via `Space` patterns of [emit preferences](/guide/emit-prefs).
+You can control how namespaces are generated with `Space` option in [preferences](/guide/preferences).

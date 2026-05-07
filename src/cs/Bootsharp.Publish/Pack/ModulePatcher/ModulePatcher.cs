@@ -43,7 +43,6 @@ internal sealed class ModulePatcher (string buildDir, bool thread, bool embed)
     {
         // Microsoft bundles .NET JavaScript sources pre-minified/uglified with source maps
         // referencing upstream sources we don't publish with the package.
-        // TODO: Raise an issue asking them to add an option to not uglify the sources.
 
         var regex = new Regex(@"^\s*//# sourceMappingURL=.*?\.map\s*$\r?\n?",
             RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.Multiline);

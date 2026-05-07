@@ -6,15 +6,20 @@ using Bootsharp;
 
 namespace Test.Types;
 
-public partial class Registry
+public partial class Registries
 {
     [Export] public static event Action<Vehicle?>? OnVehicleBroadcast;
 
     public static IRegistryProvider Provider { get; set; } = null!;
-    public List<Wheeled?> Wheeled { get; set; } = null!;
-    public List<Tracked?> Tracked { get; set; } = null!;
 
-    [Export] public static Registry EchoRegistry (Registry registry) => registry;
+    [Export]
+    public static IRegistry EchoRegistry (IRegistry registry)
+    {
+        registry.Wheeled = registry.Wheeled;
+        registry.Tracked = registry.Tracked;
+        return registry;
+    }
+
     [Export] public static Vehicle?[]? EchoVehicles (Vehicle?[]? value) => value;
     [Export] public static Record?[]? EchoRecords (Record?[]? value) => value;
 
@@ -27,15 +32,15 @@ public partial class Registry
     }
 
     [Export]
-    public static async Task<IReadOnlyList<Registry?>> ConcatRegistriesAsync (IReadOnlyList<Registry?> registries)
+    public static async Task<IReadOnlyList<IRegistry?>> ConcatRegistriesAsync (IReadOnlyList<IRegistry?> registries)
     {
         await Task.Delay(1);
         return registries.Concat(Provider.GetRegistries()).ToArray();
     }
 
     [Export]
-    public static async Task<IReadOnlyDictionary<string, Registry>> MapRegistriesAsync
-        (IReadOnlyDictionary<string, Registry> map)
+    public static async Task<IReadOnlyDictionary<string, IRegistry>> MapRegistriesAsync
+        (IReadOnlyDictionary<string, IRegistry> map)
     {
         await Task.Delay(1);
         return map.Concat(Provider.GetRegistryMap()).ToDictionary(kv => kv.Key, kv => kv.Value);

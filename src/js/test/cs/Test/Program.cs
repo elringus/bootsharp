@@ -4,8 +4,8 @@ using Bootsharp.Inject;
 using Microsoft.Extensions.DependencyInjection;
 using Test.Types;
 
-[assembly: Export(typeof(IExportedStatic))]
-[assembly: Import(typeof(IImportedStatic), typeof(IRegistryProvider))]
+[assembly: Export(typeof(IExportedModule))]
+[assembly: Import(typeof(IImportedModule), typeof(IRegistryProvider))]
 
 namespace Test;
 
@@ -16,11 +16,11 @@ public static partial class Program
     public static void Main ()
     {
         services = new ServiceCollection()
-            .AddSingleton<IExportedStatic, ExportedStatic>()
+            .AddSingleton<IExportedModule, ExportedModule>()
             .AddBootsharp()
             .BuildServiceProvider()
             .RunBootsharp();
-        Registry.Provider = services.GetRequiredService<IRegistryProvider>();
+        Registries.Provider = services.GetRequiredService<IRegistryProvider>();
         OnMainInvoked();
     }
 

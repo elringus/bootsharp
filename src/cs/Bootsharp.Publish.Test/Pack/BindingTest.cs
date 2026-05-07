@@ -26,7 +26,7 @@ public class BindingTest : PackTest
             {
                 [Import] public static event Action? Evt;
                 [Export] public static Task<int> InvAsync () => Task.FromResult(0);
-                [Export] public static void UseImported (IImportedInstanced inst) {}
+                [Export] public static void UseImported (IImportedInstanced it) {}
                 [Import] public static void Fun () {}
             }
             """));
@@ -535,7 +535,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void RespectsSpacePreferenceInStaticInterfaces ()
+    public void RespectsSpacePreferenceInModules ()
     {
         AddAssembly(With(
             """
@@ -592,7 +592,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForMethodsInStaticInterfaces ()
+    public void GeneratesForMethodsInModules ()
     {
         AddAssembly(With(
             """
@@ -623,19 +623,19 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForMethodsInInstancedInterfaces ()
+    public void GeneratesForMethodsInInstanced ()
     {
         AddAssembly(With(
             """
             public record Info (string Value);
 
-            public interface IExported { Info Inv (IExported inst, Info info); }
-            public interface IImported { Info Fun (IImported inst, Info info); }
+            public interface IExported { Info Inv (IExported it, Info info); }
+            public interface IImported { Info Fun (IImported it, Info info); }
 
             public partial class Class
             {
-                [Export] public static Task<IExported> GetExported (IImported inst) => default;
-                [Import] public static Task<IImported> GetImported (IExported inst) => default;
+                [Export] public static Task<IExported> GetExported (IImported it) => default;
+                [Import] public static Task<IImported> GetImported (IExported it) => default;
             }
             """));
         Execute();
@@ -643,26 +643,26 @@ public class BindingTest : PackTest
             """
             class JSExported {
                 constructor(_id) { this._id = _id; }
-                inv(inst, info) { return Exported.inv(this._id, inst, info); }
+                inv(it, info) { return Exported.inv(this._id, it, info); }
             }
 
             export const Class = {
-                getExported: async (inst) => instances.export(await exports.Class_GetExported(instances.import(inst)), id => new JSExported(id)),
+                getExported: async (it) => instances.export(await exports.Class_GetExported(instances.import(it)), id => new JSExported(id)),
                 get getImported() { return this.getImportedHandler; },
-                set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = async (inst) => instances.import(await this.getImportedHandler(instances.export(inst, id => new JSExported(id)))); },
+                set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = async (it) => instances.import(await this.getImportedHandler(instances.export(it, id => new JSExported(id)))); },
                 get getImportedSerialized() { return this.getImportedSerializedHandler; }
             };
             export const Exported = {
-                inv: (_id, inst, info) => deserialize(exports.Bootsharp_Generated_Exports_JSExported_Inv(_id, inst._id, serialize(info, Info)), Info)
+                inv: (_id, it, info) => deserialize(exports.Bootsharp_Generated_Exports_JSExported_Inv(_id, it._id, serialize(info, Info)), Info)
             };
             export const Imported = {
-                funSerialized: (_id, inst, info) => serialize(instances.imported(_id).fun(instances.imported(inst), deserialize(info, Info)), Info)
+                funSerialized: (_id, it, info) => serialize(instances.imported(_id).fun(instances.imported(it), deserialize(info, Info)), Info)
             };
             """);
     }
 
     [Fact]
-    public void GeneratesForPropertiesInStaticInterfaces ()
+    public void GeneratesForPropertiesInModules ()
     {
         AddAssembly(With(
             """
@@ -707,7 +707,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForPropertiesInInstancedInterfaces ()
+    public void GeneratesForPropertiesInInstanced ()
     {
         AddAssembly(With(
             """
@@ -729,8 +729,8 @@ public class BindingTest : PackTest
 
             public partial class Class
             {
-                [Export] public static IExported GetExported (IImported inst) => default;
-                [Import] public static IImported GetImported (IExported inst) => default;
+                [Export] public static IExported GetExported (IImported it) => default;
+                [Import] public static IImported GetImported (IExported it) => default;
             }
             """));
         Execute();
@@ -745,9 +745,9 @@ public class BindingTest : PackTest
             }
 
             export const Class = {
-                getExported: (inst) => instances.export(exports.Class_GetExported(instances.import(inst)), id => new JSExported(id)),
+                getExported: (it) => instances.export(exports.Class_GetExported(instances.import(it)), id => new JSExported(id)),
                 get getImported() { return this.getImportedHandler; },
-                set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = (inst) => instances.import(this.getImportedHandler(instances.export(inst, id => new JSExported(id)))); },
+                set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = (it) => instances.import(this.getImportedHandler(instances.export(it, id => new JSExported(id)))); },
                 get getImportedSerialized() { return this.getImportedSerializedHandler; }
             };
             export const Exported = {
@@ -766,7 +766,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForEventsInStaticInterfaces ()
+    public void GeneratesForEventsInModules ()
     {
         AddAssembly(With(
             """
@@ -796,7 +796,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForEventsInInstancedInterfaces ()
+    public void GeneratesForEventsInInstanced ()
     {
         AddAssembly(With(
             """
@@ -807,21 +807,21 @@ public class BindingTest : PackTest
 
             public partial class Class
             {
-                [Export] public static IExported GetExported (IImported inst) => default;
-                [Import] public static IImported GetImported (IExported inst) => default;
+                [Export] public static IExported GetExported (IImported it) => default;
+                [Import] public static IImported GetImported (IExported it) => default;
             }
             """));
         Execute();
         Contains(
             """
-            function register_IImported(instance) {
+            function import_IImported(instance) {
                 return instances.import(instance, _id => {
                     instance.changed.subscribe(handleChanged);
                     return () => {
                         instance.changed.unsubscribe(handleChanged);
                     };
 
-                    function handleChanged(arg1, arg2) { exports.Bootsharp_Generated_Imports_JSImported_InvokeChanged(_id, register_IImported(arg1), serialize(arg2, Info)); }
+                    function handleChanged(arg1, arg2) { exports.Bootsharp_Generated_Imports_JSImported_InvokeChanged(_id, import_IImported(arg1), serialize(arg2, Info)); }
                 });
             }
             """);
@@ -834,9 +834,9 @@ public class BindingTest : PackTest
             }
 
             export const Class = {
-                getExported: (inst) => instances.export(exports.Class_GetExported(register_IImported(inst)), id => new JSExported(id)),
+                getExported: (it) => instances.export(exports.Class_GetExported(import_IImported(it)), id => new JSExported(id)),
                 get getImported() { return this.getImportedHandler; },
-                set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = (inst) => register_IImported(this.getImportedHandler(instances.export(inst, id => new JSExported(id)))); },
+                set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = (it) => import_IImported(this.getImportedHandler(instances.export(it, id => new JSExported(id)))); },
                 get getImportedSerialized() { return this.getImportedSerializedHandler; }
             };
             export const Exported = {
@@ -846,7 +846,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void DoesNotEmitDuplicateInterfaceRegistrations ()
+    public void DoesNotEmitDuplicateModuleRegistrations ()
     {
         AddAssembly(With(
             """
@@ -862,7 +862,7 @@ public class BindingTest : PackTest
             }
             """));
         Execute();
-        Once("function register_IImported");
+        Once("function import_IImported");
     }
 
     [Fact]

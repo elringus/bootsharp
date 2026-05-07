@@ -3,7 +3,7 @@ namespace Bootsharp;
 /// <summary>
 /// When applied to a static method makes it invokable in JavaScript.
 /// When applied to a static <see cref="Action"/> event allows JavaScript consumers subscribe to it.
-/// When applied to WASM entry point assembly, specified interfaces will
+/// When applied to WASM entry point assembly, specified module class or interfaces types will
 /// be automatically exported for consumption on the JavaScript side.
 /// </summary>
 /// <remarks>
@@ -22,11 +22,11 @@ namespace Bootsharp;
 /// [Export]
 /// public static event Action OnSomething;
 /// </code>
-/// Expose "IHandlerA" and "IHandlerB" C# APIs to JavaScript and wrap invocations in "Utils.Try()":
+/// Expose "IService" and "Handler" C# API surfaces to JavaScript and wrap invocations in "Utils.Try()":
 /// <code>
 /// [assembly: Export(
-///     typeof(IHandlerA),
-///     typeof(IHandlerB),
+///     typeof(IService),
+///     typeof(Handler),
 ///     invokePattern = "(.+)",
 ///     invokeReplacement = "Utils.Try(() => $1)"
 /// )]
@@ -36,10 +36,10 @@ namespace Bootsharp;
 public sealed class ExportAttribute : Attribute
 {
     /// <summary>
-    /// When applied to assembly, lists the interface types to generated export bindings for.
+    /// When applied to assembly, lists the module (class or interface) types to generated export bindings for.
     /// </summary>
     public Type[] Types { get; }
 
-    /// <param name="types">The interface types to generate export bindings for (when applied to assembly).</param>
+    /// <param name="types">The module types to generate export bindings for (when applied to assembly).</param>
     public ExportAttribute (params Type[] types) => Types = types;
 }

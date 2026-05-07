@@ -2,9 +2,9 @@ namespace Bootsharp.Publish;
 
 internal sealed class SerializerGenerator
 {
-    public string Generate (SolutionInspection inspection)
+    public string Generate (SolutionInspection spec)
     {
-        var serialized = inspection.Serialized;
+        var serialized = spec.Serialized;
         if (serialized.Count == 0) return "";
         return $$"""
                  using System.Runtime.CompilerServices;
@@ -26,10 +26,10 @@ internal sealed class SerializerGenerator
             SerializedEnumMeta => $"Serializer.Enum<{meta.Syntax}>()",
             SerializedNullableMeta nullable => $"Serializer.Nullable({nullable.Value.Id})",
             SerializedArrayMeta arr => $"Serializer.Array({arr.Element.Id})",
-            SerializedListMeta list => $"Serializer.{TrimGeneric(list.Type.Name)}({list.Element.Id})",
-            SerializedDictionaryMeta dic => $"Serializer.{TrimGeneric(dic.Type.Name)}({dic.Key.Id}, {dic.Value.Id})",
-            SerializedObjectMeta => $"new(Write_{meta.Id}, Read_{meta.Id})",
-            _ => ResolvePrimitive(meta.Type)
+            SerializedListMeta list => $"Serializer.{TrimGeneric(list.Clr.Name)}({list.Element.Id})",
+            SerializedDictionaryMeta dic => $"Serializer.{TrimGeneric(dic.Clr.Name)}({dic.Key.Id}, {dic.Value.Id})",
+            SerializedObjectMeta or SerializedInstanceMeta => $"new(Write_{meta.Id}, Read_{meta.Id})",
+            _ => ResolvePrimitive(meta.Clr)
         }};";
 
         static string ResolvePrimitive (Type type)
@@ -42,26 +42,43 @@ internal sealed class SerializerGenerator
 
     private IEnumerable<string> EmitHelpers (SerializedMeta meta)
     {
-        if (meta is not SerializedObjectMeta obj) yield break;
-        yield return $$"""
-                       private static void Write_{{obj.Id}} (ref Writer writer, {{obj.Syntax}} value)
-                       {
-                           {{Fmt(EmitObjectWrite(obj))}}
-                       }
-                       """;
-        yield return $$"""
-                       private static {{obj.Syntax}} Read_{{obj.Id}} (ref Reader reader)
-                       {
-                           {{Fmt(EmitObjectRead(obj))}}
-                       }
-                       """;
-        foreach (var prop in obj.Properties.Where(p => p.Kind == SerializedPropertyKind.Field))
-            yield return EmitFieldAccessor(obj, prop);
+        if (meta is SerializedInstanceMeta it)
+        {
+            yield return
+                $$"""
+                  private static void Write_{{it.Id}} (ref Writer writer, {{it.Syntax}} value)
+                  {
+                      writer.WriteInt32({{Export(it.Instance, "value")}});
+                  }
+
+                  private static {{it.Syntax}} Read_{{it.Id}} (ref Reader reader)
+                  {
+                      return {{Import(it.Instance, "reader.ReadInt32()")}};
+                  }
+                  """;
+        }
+        if (meta is SerializedObjectMeta obj)
+        {
+            yield return
+                $$"""
+                  private static void Write_{{obj.Id}} (ref Writer writer, {{obj.Syntax}} value)
+                  {
+                      {{Fmt(EmitObjectWrite(obj))}}
+                  }
+
+                  private static {{obj.Syntax}} Read_{{obj.Id}} (ref Reader reader)
+                  {
+                      {{Fmt(EmitObjectRead(obj))}}
+                  }
+                  """;
+            foreach (var prop in obj.Properties.Where(p => p.Kind == SerializedPropertyKind.Field))
+                yield return EmitFieldAccessor(obj, prop);
+        }
     }
 
     private IEnumerable<string> EmitObjectWrite (SerializedObjectMeta obj)
     {
-        if (!obj.Type.IsValueType)
+        if (!obj.Clr.IsValueType)
         {
             yield return "writer.WriteBool(value is not null);";
             yield return "if (value is null) return;";
@@ -77,7 +94,7 @@ internal sealed class SerializerGenerator
 
     private IEnumerable<string> EmitObjectRead (SerializedObjectMeta obj)
     {
-        if (!obj.Type.IsValueType) yield return "if (!reader.ReadBool()) return null!;";
+        if (!obj.Clr.IsValueType) yield return "if (!reader.ReadBool()) return null!;";
         foreach (var p in obj.Properties)
         {
             var var = MangleLocal(p.Name);
@@ -106,7 +123,7 @@ internal sealed class SerializerGenerator
 
     private static string EmitFieldAccessor (SerializedObjectMeta obj, SerializedPropertyMeta prop)
     {
-        var value = obj.Type.IsValueType ? $"ref {obj.Syntax} value" : $"{obj.Syntax} value";
+        var value = obj.Clr.IsValueType ? $"ref {obj.Syntax} value" : $"{obj.Syntax} value";
         return $"""
                 [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "<{prop.Name}>k__BackingField")]
                 private static extern ref {prop.Syntax} {prop.FieldAccessorName} ({value});
@@ -115,7 +132,7 @@ internal sealed class SerializerGenerator
 
     private static string EmitFieldAssign (SerializedObjectMeta obj, SerializedPropertyMeta prop)
     {
-        var value = obj.Type.IsValueType ? "ref _value_" : "_value_";
+        var value = obj.Clr.IsValueType ? "ref _value_" : "_value_";
         return $"{prop.FieldAccessorName}({value}) = {MangleLocal(prop.Name)};";
     }
 

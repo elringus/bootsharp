@@ -13,3 +13,4 @@ obj
 *.user
 *.nupkg
 package-lock.json
+last-failed-test-dump.txt

@@ -14,3 +14,11 @@ internal enum InteropKind
     /// </summary>
     Import
 }
+
+internal static class InteropKindExtensions
+{
+    extension (InteropKind k)
+    {
+        public InteropKind Invert () => k == InteropKind.Export ? InteropKind.Import : InteropKind.Export;
+    }
+}

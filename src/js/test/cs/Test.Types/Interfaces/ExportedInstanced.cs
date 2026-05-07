@@ -8,6 +8,7 @@ public class ExportedInstanced (string instanceArg) : IExportedInstanced
 
     public Record? Record { get; set => OnRecordChanged?.Invoke(this, field = value); }
 
+    public ExportedInnerInstanced Inner { get; } = new();
     public string GetInstanceArg () => instanceArg;
 
     public async Task<string> GetRecordIdAsync (Record record)

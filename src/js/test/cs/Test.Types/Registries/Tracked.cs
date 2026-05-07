@@ -1,6 +1,6 @@
 namespace Test.Types;
 
-public class Tracked : Vehicle
+public record Tracked : Vehicle
 {
     public TrackType TrackType { get; set; }
 }

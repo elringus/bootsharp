@@ -216,7 +216,7 @@ describe("boot", () => {
                 const cfg = await bootsharp.dotnet.buildConfig(bootsharp.resources, root);
                 const dotnet = (await bootsharp.dotnet.getMain(root)).dotnet;
                 const runtime = await dotnet.withConfig(cfg).create();
-                runtime.getAssemblyExports = () => Promise.resolve({});
+                runtime.getAssemblyExports = () => Promise.resolve({ Bootsharp: { Generated: { Instances: { DisposeExported: () => {} } } } });
                 return runtime;
             }),
             root

@@ -6,8 +6,9 @@
         <BsLlvmDir>$(BsRoot)/llvm</BsLlvmDir>
         <BsPublishAssembly>$(BsRoot)/tasks/Bootsharp.Publish.dll</BsPublishAssembly>
         <BsIntermediateDir>$(IntermediateOutputPath)bootsharp</BsIntermediateDir>
-        <BsInterfacesFilePath>$(BsIntermediateDir)/Interfaces.g.cs</BsInterfacesFilePath>
         <BsSerializerFilePath>$(BsIntermediateDir)/Serializer.g.cs</BsSerializerFilePath>
+        <BsInstancesFilePath>$(BsIntermediateDir)/Instances.g.cs</BsInstancesFilePath>
+        <BsModulesFilePath>$(BsIntermediateDir)/Modules.g.cs</BsModulesFilePath>
         <BsInteropFilePath>$(BsIntermediateDir)/Interop.g.cs</BsInteropFilePath>
         <BsEntryAssembly>$(AssemblyName).dll</BsEntryAssembly>
         <BsPackAfter Condition="$(BsLlvm)">CopyNativeBinary</BsPackAfter>
@@ -60,15 +61,18 @@
         <!-- Emit code to be analyzed by .NET's source generators: interop methods and serialized type hints. -->
         <BootsharpEmit InspectedDirectory="$(OutputPath)"
                        EntryAssemblyName="$(BsEntryAssembly)"
-                       InterfacesFilePath="$(BsInterfacesFilePath)"
                        SerializerFilePath="$(BsSerializerFilePath)"
+                       InstancesFilePath="$(BsInstancesFilePath)"
+                       ModulesFilePath="$(BsModulesFilePath)"
                        InteropFilePath="$(BsInteropFilePath)"/>
         <ItemGroup>
-            <Compile Remove="$(BsInterfacesFilePath)"/>
             <Compile Remove="$(BsSerializerFilePath)"/>
+            <Compile Remove="$(BsInstancesFilePath)"/>
+            <Compile Remove="$(BsModulesFilePath)"/>
             <Compile Remove="$(BsInteropFilePath)"/>
-            <Compile Include="$(BsInterfacesFilePath)"/>
             <Compile Include="$(BsSerializerFilePath)"/>
+            <Compile Include="$(BsInstancesFilePath)"/>
+            <Compile Include="$(BsModulesFilePath)"/>
             <Compile Include="$(BsInteropFilePath)"/>
         </ItemGroup>
 

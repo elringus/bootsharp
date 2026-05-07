@@ -2,13 +2,13 @@ namespace Bootsharp.Publish;
 
 internal sealed class BindingClassGenerator
 {
-    public string Generate (IReadOnlyCollection<InterfaceMeta> instanced)
+    public string Generate (SolutionInspection spec)
     {
-        var exported = instanced.Where(i => i.Interop == InteropKind.Export);
+        var exported = spec.Instanced.Where(i => i.Interop == InteropKind.Export);
         return Fmt(exported.Select(EmitClass), 0) + '\n';
     }
 
-    private string EmitClass (InterfaceMeta instance) =>
+    private string EmitClass (InstancedMeta instance) =>
         $$"""
           class {{instance.JSName}} {
               {{Fmt([

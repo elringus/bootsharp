@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 
 namespace Bootsharp.Publish;
 
@@ -9,7 +8,7 @@ namespace Bootsharp.Publish;
 internal sealed record ValueMeta
 {
     /// <summary>
-    /// The type of the value.
+    /// Type info of the value.
     /// </summary>
     public required TypeMeta Type { get; init; }
     /// <summary>
@@ -22,25 +21,21 @@ internal sealed record ValueMeta
     /// </summary>
     public required bool Nullable { get; init; }
     /// <summary>
-    /// Nullability context of the value.
-    /// </summary>
-    public required NullabilityInfo Nullability { get; init; }
-    /// <summary>
     /// Serialization info when <see cref="IsSerialized"/>, null otherwise.
     /// </summary>
-    public required SerializedMeta? Serialized { get; init; }
+    public SerializedMeta? Serialized => Type as SerializedMeta;
     /// <summary>
-    /// Associated interop interface instance type when <see cref="IsInstance"/>, null otherwise.
+    /// Instance info when <see cref="IsInstanced"/>, null otherwise.
     /// </summary>
-    public required Type? InstanceType { get; init; }
+    public InstancedMeta? Instanced => Type as InstancedMeta;
     /// <summary>
-    /// Whether the value has to be serialized to cross the interop boundary.
+    /// Whether the value is serialized and copied when crossing the interop boundary.
     /// </summary>
     [MemberNotNullWhen(true, nameof(Serialized))]
     public bool IsSerialized => Serialized != null;
     /// <summary>
-    /// Whether the value is an interop instance.
+    /// Whether the value instance is passed by reference when crossing the interop boundary.
     /// </summary>
-    [MemberNotNullWhen(true, nameof(InstanceType))]
-    public bool IsInstance => InstanceType != null;
+    [MemberNotNullWhen(true, nameof(Instanced))]
+    public bool IsInstanced => Instanced != null;
 }

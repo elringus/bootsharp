@@ -12,13 +12,13 @@ public static class Extensions
     /// </summary>
     public static IServiceCollection AddBootsharp (this IServiceCollection services)
     {
-        foreach (var (impl, binding) in Interfaces.Exports)
+        foreach (var (impl, binding) in Modules.Exports)
             services.AddSingleton(impl, provider => {
-                var handler = provider.GetService(binding.Interface);
-                if (handler is null) throw new Error($"Failed to run Bootsharp: '{binding.Interface}' dependency is not registered.");
-                return binding.Factory(provider.GetRequiredService(binding.Interface));
+                var handler = provider.GetService(binding.Handler);
+                if (handler is null) throw new Error($"Failed to run Bootsharp: '{binding.Handler}' dependency is not registered.");
+                return binding.Factory(provider.GetRequiredService(binding.Handler));
             });
-        foreach (var (api, binding) in Interfaces.Imports)
+        foreach (var (api, binding) in Modules.Imports)
             services.AddSingleton(api, binding.Instance);
         return services;
     }
@@ -28,7 +28,7 @@ public static class Extensions
     /// </summary>
     public static IServiceProvider RunBootsharp (this IServiceProvider provider)
     {
-        foreach (var (impl, _) in Interfaces.Exports)
+        foreach (var (impl, _) in Modules.Exports)
             provider.GetRequiredService(impl);
         return provider;
     }

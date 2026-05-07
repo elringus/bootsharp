@@ -47,7 +47,7 @@ public static partial class Program
 ```
 
 ::: info NOTE
-Authoring interop via static methods is impractical for large API surfaces—it's shown here only as a simple way to get started. For real projects, consider using [interop interfaces](/guide/interop-interfaces) instead.
+Authoring interop via static methods is impractical for large API surfaces—it's shown here only as a simple way to get started. For real projects, consider using [modules](/guide/interop-modules) instead.
 :::
 
 ## Compile ES Module

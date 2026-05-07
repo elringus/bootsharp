@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 
@@ -5,61 +6,65 @@ namespace Bootsharp.Publish;
 
 internal sealed class TypeDeclarationGenerator (Preferences prefs)
 {
-    private readonly StringBuilder builder = new();
-    private readonly TypeSyntaxBuilder typeBuilder = new(prefs);
+    private readonly StringBuilder bld = new();
+    private readonly TypeSyntaxBuilder ts = new(prefs);
 
-    private Type type => GetTypeAt(index);
-    private Type? prevType => index == 0 ? null : GetTypeAt(index - 1);
-    private Type? nextType => index == types.Length - 1 ? null : GetTypeAt(index + 1);
-    private int indent => !string.IsNullOrEmpty(GetNamespace(type)) ? 1 : 0;
+    private TypeMeta meta => metas[index];
+    private TypeMeta? prevMeta => index == 0 ? null : metas[index - 1];
+    private TypeMeta? nextMeta => index == metas.Count - 1 ? null : metas[index + 1];
+    private int indent => !string.IsNullOrEmpty(GetNamespace(meta)) ? 1 : 0;
 
     private DocumentationBuilder docs = null!;
-    private InterfaceMeta[] instanced = null!;
-    private Type[] types = null!;
+    private readonly Dictionary<Type, TypeMeta> metaByClr = [];
+    private readonly List<TypeMeta> metas = [];
     private int index;
 
-    public string Generate (SolutionInspection inspection)
+    public string Generate (SolutionInspection spec)
     {
-        docs = new(inspection.Documentation);
-        instanced = [..inspection.InstancedInterfaces];
-        types = inspection.Types.Select(t => t.Clr).Where(IsUserType).OrderBy(GetNamespace).ToArray();
-        for (index = 0; index < types.Length; index++)
+        docs = new(spec.Documentation);
+        CollectMetas(spec);
+        for (index = 0; index < metas.Count; index++)
             DeclareType();
-        return builder.ToString();
+        return bld.ToString();
     }
 
-    private Type GetTypeAt (int index)
+    private void CollectMetas (SolutionInspection spec)
     {
-        var type = types[index];
-        return type.IsGenericType ? type.GetGenericTypeDefinition() : type;
+        foreach (var meta in spec.Instanced)
+            metas.Add(metaByClr[meta.Clr] = meta);
+        foreach (var meta in spec.Serialized)
+            if (metaByClr.TryAdd(meta.Clr, meta) && IsUserType(meta.Clr))
+                metas.Add(meta);
+        metas.Sort((a, b) => string.Compare(GetNamespace(a), GetNamespace(b), StringComparison.Ordinal));
     }
 
     private void DeclareType ()
     {
         if (ShouldOpenNamespace()) OpenNamespace();
-        if (type.IsEnum) DeclareEnum();
-        else DeclareInterface();
+        if (meta is InstancedMeta it) DeclareInstanced(it);
+        else if (meta is SerializedEnumMeta enu) DeclareEnum(enu);
+        else if (meta is SerializedObjectMeta obj) DeclareSerialized(obj);
         if (ShouldCloseNamespace()) CloseNamespace();
     }
 
     private bool ShouldOpenNamespace ()
     {
-        if (string.IsNullOrEmpty(GetNamespace(type))) return false;
-        if (prevType == null) return true;
-        return GetNamespace(prevType) != GetNamespace(type);
+        if (string.IsNullOrEmpty(GetNamespace(meta))) return false;
+        if (prevMeta == null) return true;
+        return GetNamespace(prevMeta) != GetNamespace(meta);
     }
 
     private void OpenNamespace ()
     {
-        var space = GetNamespace(type);
+        var space = GetNamespace(meta);
         AppendLine($"export namespace {space} {{", 0);
     }
 
     private bool ShouldCloseNamespace ()
     {
-        if (string.IsNullOrEmpty(GetNamespace(type))) return false;
-        if (nextType is null) return true;
-        return GetNamespace(nextType) != GetNamespace(type);
+        if (string.IsNullOrEmpty(GetNamespace(meta))) return false;
+        if (nextMeta is null) return true;
+        return GetNamespace(nextMeta) != GetNamespace(meta);
     }
 
     private void CloseNamespace ()
@@ -67,119 +72,119 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
         AppendLine("}", 0);
     }
 
-    private void DeclareEnum ()
+    private void DeclareEnum (SerializedEnumMeta enu)
     {
-        builder.Append(docs.BuildType(type, indent));
-        AppendLine($"export enum {type.Name} {{", indent);
-        var names = Enum.GetNames(type);
+        bld.Append(docs.BuildType(enu.Clr, indent));
+        AppendLine($"export enum {enu.Clr.Name} {{", indent);
+        var names = Enum.GetNames(enu.Clr);
         for (int i = 0; i < names.Length; i++)
         {
-            builder.Append(docs.BuildProperty(type.GetField(names[i])!, indent + 1));
+            bld.Append(docs.BuildProperty(enu.Clr.GetField(names[i])!, indent + 1));
             if (i == names.Length - 1) AppendLine(names[i], indent + 1);
             else AppendLine($"{names[i]},", indent + 1);
         }
         AppendLine("}", indent);
     }
 
-    private void DeclareInterface ()
+    private void DeclareSerialized (SerializedObjectMeta obj)
     {
-        builder.Append(docs.BuildType(type, indent));
-        AppendLine($"export interface {BuildTypeName(type)}", indent);
+        bld.Append(docs.BuildType(obj.Clr, indent));
+        AppendLine($"export type {ts.BuildName(obj.Clr)} = ", indent);
+        if (TryGetBase(obj.Clr, out var baseType))
+            bld.Append(ts.BuildFullName(baseType)).Append(" & ");
+        bld.Append("Readonly<{");
+        foreach (var prop in obj.Properties)
+            if (ShouldDeclareOn(obj.Clr, prop.Info))
+                AppendProperty(prop);
+        AppendLine("}>;", indent);
+
+        void AppendProperty (SerializedPropertyMeta prop)
+        {
+            bld.Append(docs.BuildProperty(prop.Info, indent + 1));
+            AppendLine(prop.JSName, indent + 1);
+            bld.Append(ts.BuildProperty(prop.Info));
+            bld.Append(';');
+        }
+    }
+
+    private void DeclareInstanced (InstancedMeta it)
+    {
+        bld.Append(docs.BuildType(it.Clr, indent));
+        AppendLine($"export interface {ts.BuildName(it.Clr)}", indent);
         AppendExtensions();
-        builder.Append(" {");
-        if (instanced.FirstOrDefault(i => i.Type == type) is { } inst)
-            foreach (var member in inst.Members)
-                switch (member)
-                {
-                    case EventMeta e: AppendInstancedEvent(e); break;
-                    case PropertyMeta p: AppendInstancedProperty(p); break;
-                    case MethodMeta m: AppendInstancedFunction(m); break;
-                }
-        else AppendProperties();
+        bld.Append(" {");
+        foreach (var member in it.Members)
+            if (!ShouldDeclareOn(it.Clr, member.Info)) continue;
+            else if (member is EventMeta evt) AppendEvent(evt);
+            else if (member is PropertyMeta prop) AppendProperty(prop);
+            else AppendMethod((MethodMeta)member);
         AppendLine("}", indent);
-    }
 
-    private void AppendExtensions ()
-    {
-        var extTypes = new List<Type>(type.GetInterfaces().Where(types.Contains));
-        if (type.BaseType is { } baseType && types.Contains(baseType))
-            extTypes.Insert(0, baseType);
-        if (extTypes.Count > 0)
-            builder.Append(" extends ").AppendJoin(", ", extTypes.Select(t => typeBuilder.Build(t, null)));
-    }
+        void AppendExtensions ()
+        {
+            var ext = new List<Type>(it.Clr.GetInterfaces().Where(IsUserType));
+            if (TryGetBase(it.Clr, out var baseType)) ext.Insert(0, baseType);
+            if (ext.Count > 0) bld.Append(" extends ").AppendJoin(", ", ext.Select(ts.BuildFullName));
+        }
 
-    private void AppendProperties ()
-    {
-        var flags = BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance;
-        foreach (var prop in type.GetProperties(flags))
-            if (prop.GetMethod != null && prop.GetIndexParameters().Length == 0)
-            {
-                builder.Append(docs.BuildProperty(prop, indent + 1));
-                AppendProperty(ToFirstLower(prop.Name), prop.PropertyType, GetNullability(prop));
-            }
-    }
+        void AppendEvent (EventMeta evt)
+        {
+            bld.Append(docs.BuildEvent(evt, indent + 1));
+            AppendLine(evt.JSName, indent + 1);
+            var type = evt.Interop == InteropKind.Export ? "EventSubscriber" : "EventBroadcaster";
+            bld.Append($": {type}<[");
+            bld.AppendJoin(", ", evt.Arguments.Select(a => $"{a.JSName}: {ts.BuildArg(evt.Info, a.Info)}"));
+            bld.Append("]>;");
+        }
 
-    private void AppendProperty (string name, Type type, NullabilityInfo? nullability)
-    {
-        AppendLine(name, indent + 1);
-        if (IsNullable(type, nullability)) builder.Append('?');
-        builder.Append(": ");
-        if (type.IsGenericTypeParameter) builder.Append(type.Name);
-        else builder.Append(typeBuilder.Build(type, nullability));
-        builder.Append(';');
-    }
+        void AppendProperty (PropertyMeta prop)
+        {
+            bld.Append(docs.BuildProperty(prop.Info, indent + 1));
+            var name = !prop.CanSet ? $"readonly {prop.JSName}" : prop.JSName;
+            AppendLine(name, indent + 1);
+            bld.Append(ts.BuildProperty(prop.Info));
+            bld.Append(';');
+        }
 
-    private void AppendInstancedEvent (EventMeta evt)
-    {
-        builder.Append(docs.BuildEvent(evt, indent + 1));
-        var type = evt.Interop == InteropKind.Export ? "EventSubscriber" : "EventBroadcaster";
-        AppendLine(evt.JSName, indent + 1);
-        builder.Append($": {type}<[");
-        builder.AppendJoin(", ", evt.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
-        builder.Append("]>;");
-    }
-
-    private void AppendInstancedProperty (PropertyMeta prop)
-    {
-        builder.Append(docs.BuildProperty(prop.Info, indent + 1));
-        var name = prop.CanGet && !prop.CanSet ? $"readonly {prop.JSName}" : prop.JSName;
-        AppendProperty(name, prop.Value.Type.Clr, prop.Value.Nullability);
-    }
-
-    private void AppendInstancedFunction (MethodMeta meta)
-    {
-        builder.Append(docs.BuildFunction(meta, indent + 1));
-        AppendLine(meta.JSName, indent + 1);
-        builder.Append('(');
-        builder.AppendJoin(", ", meta.Arguments.Select(a => $"{a.JSName}: {typeBuilder.BuildArg(a)}"));
-        builder.Append("): ");
-        builder.Append(typeBuilder.BuildReturn(meta));
-        builder.Append(';');
+        void AppendMethod (MethodMeta meta)
+        {
+            bld.Append(docs.BuildFunction(meta, indent + 1));
+            AppendLine(meta.JSName, indent + 1);
+            bld.Append('(');
+            bld.AppendJoin(", ", meta.Arguments.Select(a => $"{a.JSName}: {ts.BuildArg(a.Info)}"));
+            bld.Append("): ");
+            bld.Append(ts.BuildReturn(meta.Info));
+            bld.Append(';');
+        }
     }
 
     private void AppendLine (string content, int level)
     {
-        builder.Append('\n');
+        bld.Append('\n');
         Append(content, level);
     }
 
     private void Append (string content, int level)
     {
         for (int i = 0; i < level * 4; i++)
-            builder.Append(' ');
-        builder.Append(content);
+            bld.Append(' ');
+        bld.Append(content);
     }
 
-    private string BuildTypeName (Type type)
+    private string GetNamespace (TypeMeta meta)
     {
-        if (!type.IsGenericType) return type.Name;
-        var name = TrimGeneric(type.Name);
-        var args = string.Join(", ", type.GetGenericArguments().Select(BuildTypeName));
-        return $"{name}<{args}>";
+        return BuildJSSpace(meta.Clr, prefs);
     }
 
-    private string GetNamespace (Type type)
+    private bool TryGetBase (Type clr, [NotNullWhen(true)] out Type? baseType)
     {
-        return BuildJSSpace(type, prefs);
+        if ((baseType = clr.BaseType) == null || !IsUserType(baseType)) return false;
+        return metaByClr.ContainsKey(baseType);
+    }
+
+    private bool ShouldDeclareOn (Type host, MemberInfo member)
+    {
+        if (member.DeclaringType == host) return true;
+        return !TryGetBase(member.DeclaringType!, out _) && !TryGetBase(host, out _);
     }
 }

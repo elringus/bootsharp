@@ -7,7 +7,7 @@ titleTemplate: Bootsharp • :title
 hero:
   name: Bootsharp
   text: Use C# in web apps with comfort
-  tagline: Author the domain in C#, while fully leveraging the modern JavaScript frontend ecosystem.
+  tagline: Author the domain in C#, while fully leveraging the modern TypeScript frontend ecosystem.
   actions:
     - theme: brand
       text: Get Started
@@ -31,7 +31,7 @@ hero:
                                 <div class="icon">✨</div>
                                 <h2 class="title">High-level Interoperation</h2>
                             </div>
-                            <p class="details">Generates JavaScript bindings and type declarations for your C# APIs, enabling seamless interop between domain and UI.</p></article>
+                            <p class="details">Generates JavaScript bindings and TypeScript declarations for your C# APIs, enabling seamless interop between domain and UI.</p></article>
                     </div>
                 </div>
                 <div class="grid-3 item">
@@ -39,9 +39,9 @@ hero:
                         <article class="box">
                             <div class="box-title">
                                 <div class="icon">📦</div>
-                                <h2 class="title">Embed or Sideload</h2>
+                                <h2 class="title">Modern ES Package</h2>
                             </div>
-                            <p class="details">Choose between embedding all C# binaries into a single-file ES module for portability or sideloading for performance and size.</p></article>
+                            <p class="details">Just run "dotnet publish" and get a full-fledged ES package with "package.json" included—directly importable into your web project.</p></article>
                     </div>
                 </div>
                 <div class="grid-3 item">
@@ -60,20 +60,20 @@ hero:
                     <div class="VPLink no-icon VPFeature">
                         <article class="box">
                             <div class="box-title">
-                                <div class="icon">⚡</div>
-                                <h2 class="title">Interop Interfaces</h2>
+                                <div class="icon">🧩</div>
+                                <h2 class="title">Interop Modules</h2>
                             </div>
-                            <p class="details">Manually author interop APIs via static C# methods or feed Bootsharp your domain-specific interfaces—it'll handle the rest.</p></article>
+                            <p class="details">Author fine-grained bindings for C# members, or feed Bootsharp entire API surfaces—it'll handle the rest.</p></article>
                     </div>
                 </div>
                 <div class="grid-4 item">
                     <div class="VPLink no-icon VPFeature">
                         <article class="box">
                             <div class="box-title">
-                                <div class="icon">🏷️</div>
-                                <h2 class="title">Instance Bindings</h2>
+                                <div class="icon">🧬</div>
+                                <h2 class="title">Type Polyglot</h2>
                             </div>
-                            <p class="details">When an interface value is used in interop, instance binding is generated to interoperate with stateful objects.</p></article>
+                            <p class="details">Intelligently supports any type: immutables are copied with a fast binary serializer, others passed by reference—fully automated.</p></article>
                     </div>
                 </div>
                 <div class="grid-4 item">
@@ -90,10 +90,10 @@ hero:
                     <div class="VPLink no-icon VPFeature">
                         <article class="box">
                             <div class="box-title">
-                                <div class="icon">🔥</div>
-                                <h2 class="title">Modern .NET</h2>
+                                <div class="icon">⚡</div>
+                                <h2 class="title">Fast and Tiny</h2>
                             </div>
-                            <p class="details">Supports latest runtime features: WASM multi-threading, assembly trimming, NativeAOT-LLVM, streaming instantiation.</p></article>
+                            <p class="details">Compiles WASM with NativeAOT-LLVM and further optimizes with Binaryen for optimal performance and minimal bundle size.</p></article>
                     </div>
                 </div>
             </div>

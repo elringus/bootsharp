@@ -55,11 +55,11 @@ describe("serialization", () => {
     });
 
     it("can echo vehicles", async () => {
-        expect(Test.Types.Registry.echoRecords([{ id: "foo" }, null]))
+        expect(Test.Types.Registries.echoRecords([{ id: "foo" }, null]))
             .toStrictEqual([{ id: "foo" }, null]);
-        expect(Test.Types.Registry.echoVehicles([{ id: "foo", maxSpeed: 1 }, null]))
+        expect(Test.Types.Registries.echoVehicles([{ id: "foo", maxSpeed: 1 }, null]))
             .toStrictEqual([{ id: "foo", maxSpeed: 1 }, null]);
-        expect(Test.Types.Registry.echoRegistry({
+        expect(Test.Types.Registries.echoRegistry({
             wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 2 }, null],
             tracked: [{ id: "bar", maxSpeed: 2, trackType: Test.Types.TrackType.Chain }, null]
         })).toStrictEqual({
@@ -67,7 +67,7 @@ describe("serialization", () => {
             tracked: [{ id: "bar", maxSpeed: 2, trackType: Test.Types.TrackType.Chain }, null]
         });
         Test.Types.RegistryProvider.getRegistries = () => [];
-        await expect(Test.Types.Registry.concatRegistriesAsync([null])).resolves.toStrictEqual([null]);
+        await expect(Test.Types.Registries.concatRegistriesAsync([null])).resolves.toStrictEqual([null]);
     });
 
     it("can echo arrays", () => {

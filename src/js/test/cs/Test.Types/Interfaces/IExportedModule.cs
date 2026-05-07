@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 
 namespace Test.Types;
 
-public interface IImportedStatic
+public interface IExportedModule
 {
     delegate void RecordChanged (Record? record);
 
@@ -10,5 +10,5 @@ public interface IImportedStatic
 
     Record? Record { get; set; }
 
-    Task<IImportedInstanced> GetInstanceAsync (string arg);
+    Task<IExportedInstanced> GetInstanceAsync (string arg);
 }

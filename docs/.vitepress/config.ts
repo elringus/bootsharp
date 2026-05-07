@@ -56,9 +56,9 @@ export default defineConfig({
                         { text: "Namespaces", link: "/guide/namespaces" },
                         { text: "Events", link: "/guide/events" },
                         { text: "Serialization", link: "/guide/serialization" },
-                        { text: "Interop Interfaces", link: "/guide/interop-interfaces" },
+                        { text: "Interop Modules", link: "/guide/interop-modules" },
                         { text: "Interop Instances", link: "/guide/interop-instances" },
-                        { text: "Emit Preferences", link: "/guide/emit-prefs" },
+                        { text: "Preferences", link: "/guide/preferences" },
                         { text: "Build Configuration", link: "/guide/build-config" },
                         { text: "Sideloading Binaries", link: "/guide/sideloading" },
                         { text: "NativeAOT-LLVM", link: "/guide/llvm" }

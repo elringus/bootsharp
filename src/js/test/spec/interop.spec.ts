@@ -4,14 +4,23 @@ import { Event, Test, bootSideload } from "../cs";
 const TrackType = Test.Types.TrackType;
 
 class Imported implements Test.Types.IImportedInstanced {
-    constructor(private arg: string) { }
-    record: Test.Types.Record = { id: "foo" };
     onRecordChanged = new Event<[Test.Types.IImportedInstanced, Test.Types.Record | undefined]>();
+    record: Test.Types.Record = { id: "foo" };
+    inner = new ImportedInner();
+    constructor(private arg: string) { }
     getInstanceArg() { return this.arg; }
     async getRecordIdAsync(record: Test.Types.Record) {
         await new Promise(res => setTimeout(res, 1));
         return record.id;
     }
+}
+
+class ImportedInner implements Test.Types.IImportedInnerInstanced {
+    onCountChanged = new Event<[number]>();
+    #count = 0;
+    get count() { return this.#count; }
+    set count(value) { this.onCountChanged.broadcast(this.#count = value); }
+    increment() { this.count++; }
 }
 
 describe("while bootsharp is not booted", () => {
@@ -28,11 +37,11 @@ describe("while bootsharp is booted", () => {
         expect(Test.Functions.getStringAsync).toBeUndefined();
         expect(Test.Functions.getBytes).toBeUndefined();
         expect(Test.Platform.throwJS).toBeUndefined();
-        expect(Test.Types.Registry.createVehicle).toBeUndefined();
+        expect(Test.Types.Registries.createVehicle).toBeUndefined();
         expect(Test.Types.RegistryProvider.getRegistry).toBeUndefined();
         expect(Test.Types.RegistryProvider.getRegistries).toBeUndefined();
         expect(Test.Types.RegistryProvider.getRegistryMap).toBeUndefined();
-        expect(Test.Types.ImportedStatic.getInstanceAsync).toBeUndefined();
+        expect(Test.Types.ImportedModule.getInstanceAsync).toBeUndefined();
     });
     it("errs when invoking unassigned JS function", () => {
         expect(() => Test.Functions.invokeJSFunction())
@@ -98,11 +107,11 @@ describe("while bootsharp is booted", () => {
                 { id: "tractor", trackType: TrackType.Rubber, maxSpeed: Math.fround(15.9) }
             ]
         };
-        const actual = Test.Types.Registry.echoRegistry(expected);
+        const actual = Test.Types.Registries.echoRegistry(expected);
         expect(actual).toStrictEqual(expected);
     });
     it("empty string of a struct is transferred correctly", () => {
-        const id = Test.Types.Registry.getVehicleWithEmptyId().id;
+        const id = Test.Types.Registries.getVehicleWithEmptyId().id;
         expect(id).not.toBeNull();
         expect(id).not.toBeUndefined();
         expect(id).toStrictEqual("");
@@ -112,7 +121,7 @@ describe("while bootsharp is booted", () => {
             wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }],
             tracked: []
         }];
-        const result = await Test.Types.Registry.concatRegistriesAsync([
+        const result = await Test.Types.Registries.concatRegistriesAsync([
             { wheeled: [{ id: "bar", maxSpeed: 1, wheelCount: 9 }], tracked: [] },
             { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }], wheeled: [] }
         ]);
@@ -127,7 +136,7 @@ describe("while bootsharp is booted", () => {
             ["foo", { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }], tracked: [] }],
             ["bar", { wheeled: [{ id: "bar", maxSpeed: 15, wheelCount: 5 }], tracked: [] }]
         ]);
-        const result = await Test.Types.Registry.mapRegistriesAsync(new Map([
+        const result = await Test.Types.Registries.mapRegistriesAsync(new Map([
             ["baz", { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }], wheeled: [] }]
         ]));
         expect(result).toStrictEqual(new Map([
@@ -157,11 +166,11 @@ describe("while bootsharp is booted", () => {
             wheeled: [{ id: "", maxSpeed: 1, wheelCount: 0 }],
             tracked: [{ id: "", maxSpeed: 2, trackType: TrackType.Chain }]
         });
-        expect(Test.Types.Registry.countTotalSpeed()).toStrictEqual(3);
+        expect(Test.Types.Registries.countTotalSpeed()).toStrictEqual(3);
     });
     it("can invoke assigned JS functions from library assembly", () => {
-        Test.Types.Registry.createVehicle = (id, maxSpeed) => ({ id, maxSpeed });
-        expect(Test.Types.Registry.getVehicle("foo", 42)).toStrictEqual({ id: "foo", maxSpeed: 42 });
+        Test.Types.Registries.createVehicle = (id, maxSpeed) => ({ id, maxSpeed });
+        expect(Test.Types.Registries.getVehicle("foo", 42)).toStrictEqual({ id: "foo", maxSpeed: 42 });
     });
     it("can subscribe to exported events", () => {
         const handler = vi.fn();
@@ -184,10 +193,10 @@ describe("while bootsharp is booted", () => {
     });
     it("can subscribe to events from library assembly", () => {
         const handler = vi.fn();
-        Test.Types.Registry.onVehicleBroadcast.subscribe(handler);
-        Test.Types.Registry.broadcastVehicle({ id: "foo", maxSpeed: 42 });
+        Test.Types.Registries.onVehicleBroadcast.subscribe(handler);
+        Test.Types.Registries.broadcastVehicle({ id: "foo", maxSpeed: 42 });
         expect(handler).toHaveBeenCalledWith({ id: "foo", maxSpeed: 42 });
-        Test.Types.Registry.broadcastVehicle(undefined);
+        Test.Types.Registries.broadcastVehicle(undefined);
         expect(handler).toHaveBeenCalledWith(undefined);
     });
     it("can un-subscribe from events", () => {
@@ -223,26 +232,41 @@ describe("while bootsharp is booted", () => {
         expect(Test.Invokable.getIdxEnumOne() === Test.IdxEnum.One).toBeTruthy();
         expect(Test.Invokable.getIdxEnumOne() === Test.IdxEnum.Two).not.toBeTruthy();
     });
-    it("can interop with imported static interfaces", async () => {
-        Test.Types.ImportedStatic.record = { id: "baz" };
-        expect(Test.Types.Interfaces.getImportedStaticRecordIdAndSet({ id: "qux" })).toStrictEqual("baz");
-        expect(Test.Types.ImportedStatic.record).toStrictEqual({ id: "qux" });
-        Test.Types.ImportedStatic.record = undefined;
-        expect(Test.Types.ImportedStatic.record).toBeUndefined();
+    it("can interop with imported modules", async () => {
+        Test.Types.ImportedModule.record = { id: "baz" };
+        expect(Test.Types.Interfaces.getImportedModuleRecordIdAndSet({ id: "qux" })).toStrictEqual("baz");
+        expect(Test.Types.ImportedModule.record).toStrictEqual({ id: "qux" });
+        Test.Types.ImportedModule.record = undefined;
+        expect(Test.Types.ImportedModule.record).toBeUndefined();
         const handler = vi.fn();
-        Test.Types.Interfaces.onImportedStaticRecordEchoed.subscribe(handler);
-        let echo = Test.Types.Interfaces.echoImportedStaticRecordEventAsync();
-        Test.Types.ImportedStatic.onRecordChanged.broadcast({ id: "static" });
+        Test.Types.Interfaces.onImportedModuleRecordEchoed.subscribe(handler);
+        let echo = Test.Types.Interfaces.echoImportedModuleRecordEventAsync();
+        Test.Types.ImportedModule.onRecordChanged.broadcast({ id: "static" });
         await echo;
         expect(handler).toHaveBeenCalledWith({ id: "static" });
-        echo = Test.Types.Interfaces.echoImportedStaticRecordEventAsync();
-        Test.Types.ImportedStatic.onRecordChanged.broadcast(undefined);
+        echo = Test.Types.Interfaces.echoImportedModuleRecordEventAsync();
+        Test.Types.ImportedModule.onRecordChanged.broadcast(undefined);
         await echo;
         expect(handler).toHaveBeenCalledWith(undefined);
-        Test.Types.Interfaces.onImportedStaticRecordEchoed.unsubscribe(handler);
+        Test.Types.Interfaces.onImportedModuleRecordEchoed.unsubscribe(handler);
     });
-    it("can interop with imported interface instances", async () => {
-        Test.Types.ImportedStatic.getInstanceAsync = async (arg) => {
+    it("can interop with exported modules", () => {
+        const record = { id: "foo" };
+        const handler = vi.fn();
+        Test.Types.ExportedModule.onRecordChanged.subscribe(handler);
+        Test.Types.ExportedModule.record = record;
+        expect(Test.Types.ExportedModule.record).toStrictEqual(record);
+        expect(handler).toHaveBeenCalledWith(record);
+        Test.Types.ExportedModule.record = { id: "bar" };
+        expect(Test.Types.ExportedModule.record).toStrictEqual({ id: "bar" });
+        expect(handler).toHaveBeenCalledWith({ id: "bar" });
+        Test.Types.ExportedModule.record = undefined;
+        expect(Test.Types.ExportedModule.record).toBeUndefined();
+        expect(handler).toHaveBeenCalledWith(undefined);
+        Test.Types.ExportedModule.onRecordChanged.unsubscribe(handler);
+    });
+    it("can interop with imported instances", async () => {
+        Test.Types.ImportedModule.getInstanceAsync = async (arg) => {
             await new Promise(res => setTimeout(res, 1));
             return new Imported(arg);
         };
@@ -265,23 +289,8 @@ describe("while bootsharp is booted", () => {
         expect(handler).toHaveBeenCalledWith(undefined);
         Test.Types.Interfaces.onImportedInstanceRecordEchoed.unsubscribe(handler);
     });
-    it("can interop with exported static interfaces", () => {
-        const record = { id: "foo" };
-        const handler = vi.fn();
-        Test.Types.ExportedStatic.onRecordChanged.subscribe(handler);
-        Test.Types.ExportedStatic.record = record;
-        expect(Test.Types.ExportedStatic.record).toStrictEqual(record);
-        expect(handler).toHaveBeenCalledWith(record);
-        Test.Types.ExportedStatic.record = { id: "bar" };
-        expect(Test.Types.ExportedStatic.record).toStrictEqual({ id: "bar" });
-        expect(handler).toHaveBeenCalledWith({ id: "bar" });
-        Test.Types.ExportedStatic.record = undefined;
-        expect(Test.Types.ExportedStatic.record).toBeUndefined();
-        expect(handler).toHaveBeenCalledWith(undefined);
-        Test.Types.ExportedStatic.onRecordChanged.unsubscribe(handler);
-    });
-    it("can interop with exported interface instances", async () => {
-        const exported = await Test.Types.ExportedStatic.getInstanceAsync("bar");
+    it("can interop with exported instances", async () => {
+        const exported = await Test.Types.ExportedModule.getInstanceAsync("bar");
         const handler = vi.fn();
         expect(exported.getInstanceArg()).toStrictEqual("bar");
         expect(await exported.getRecordIdAsync({ id: "foo" })).toStrictEqual("foo");
@@ -295,8 +304,24 @@ describe("while bootsharp is booted", () => {
         expect(handler).toHaveBeenCalledWith(exported, undefined);
         exported.onRecordChanged.unsubscribe(handler);
     });
-    it("releases interface instances after use", async () => {
-        Test.Types.ImportedStatic.getInstanceAsync = async (arg) => new Imported(arg);
+    it("can interop with imported inner instances", async () => {
+        const imported = new Imported("");
+        const error = Test.Types.Interfaces.canInteropWithImportedInnerInstances(imported);
+        expect(error).toBeNull();
+    });
+    it("can interop with exported inner instances", async () => {
+        const handler = vi.fn();
+        const inner = (await Test.Types.ExportedModule.getInstanceAsync("bar")).inner;
+        inner.onCountChanged.subscribe(handler);
+        inner.count = 0;
+        expect(handler).toHaveBeenCalledWith(0);
+        inner.increment();
+        expect(handler).toHaveBeenCalledWith(1);
+        inner.increment();
+        expect(inner.count).toStrictEqual(2);
+    });
+    it("releases instances after use", async () => {
+        Test.Types.ImportedModule.getInstanceAsync = async (arg) => new Imported(arg);
         expect(await Test.Types.Interfaces.getImportedArgsAndFinalize("qux", "fox")).toStrictEqual(["qux", "fox"]);
         expect(await Test.Types.Interfaces.getImportedArgsAndFinalize("zip", "zap")).toStrictEqual(["zip", "zap"]);
     });

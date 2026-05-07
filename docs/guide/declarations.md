@@ -191,4 +191,4 @@ export namespace Foo {
 
 ## Configuring Type Mappings
 
-You can override which type declaration are generated for associated C# types via `Type` patterns of [emit preferences](/guide/emit-prefs).
+You can override which type declaration are generated for associated C# types via `Type` patterns of [emit preferences](/guide/preferences).

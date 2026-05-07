@@ -47,12 +47,12 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
-            export interface Record {
-            }
             export enum Enum {
                 A,
                 B
             }
+            export type Record = Readonly<{
+            }>;
 
             export namespace Class {
                 export function inv(r: Record): Enum;
@@ -70,8 +70,8 @@ public class DeclarationTest : PackTest
         Contains(
             """
             export namespace Foo {
-                export interface Bar {
-                }
+                export type Bar = Readonly<{
+                }>;
             }
 
             export namespace Class {
@@ -348,10 +348,12 @@ public class DeclarationTest : PackTest
                 export interface Base {
                 }
                 export interface Derived extends n.Base, n.Interface {
-                    foo: n.Interface;
+                    readonly foo: n.Interface;
+                    bar(b: n.Interface): void;
                 }
                 export interface Interface {
-                    foo: n.Interface;
+                    readonly foo: n.Interface;
+                    bar(b: n.Interface): void;
                 }
             }
 
@@ -375,7 +377,7 @@ public class DeclarationTest : PackTest
                 export interface Item {
                 }
                 export interface Container {
-                    items: Array<n.Item>;
+                    readonly items: Array<n.Item>;
                 }
             }
 
@@ -397,7 +399,7 @@ public class DeclarationTest : PackTest
             """
             export namespace n {
                 export interface Container {
-                    items: Array<Array<n.Item>>;
+                    readonly items: Array<Array<n.Item>>;
                 }
                 export interface Item {
                 }
@@ -423,7 +425,7 @@ public class DeclarationTest : PackTest
                 export interface Item {
                 }
                 export interface Container {
-                    items: Array<n.Item>;
+                    readonly items: Array<n.Item>;
                 }
             }
 
@@ -447,7 +449,7 @@ public class DeclarationTest : PackTest
                 export interface Item {
                 }
                 export interface Container {
-                    items: Map<string, n.Item>;
+                    readonly items: Map<string, n.Item>;
                 }
             }
 
@@ -471,7 +473,7 @@ public class DeclarationTest : PackTest
                 export interface Item {
                 }
                 export interface Container {
-                    items: Map<string, n.Item>;
+                    readonly items: Map<string, n.Item>;
                 }
             }
 
@@ -495,7 +497,7 @@ public class DeclarationTest : PackTest
                 export interface Item {
                 }
                 export interface Container {
-                    items: Array<n.Item>;
+                    readonly items: Array<n.Item>;
                 }
             }
 
@@ -519,7 +521,7 @@ public class DeclarationTest : PackTest
                 export interface Item {
                 }
                 export interface Container {
-                    items: Array<n.Item>;
+                    readonly items: Array<n.Item>;
                 }
             }
 
@@ -533,8 +535,8 @@ public class DeclarationTest : PackTest
     public void DefinitionIsGeneratedForGenericClass ()
     {
         AddAssembly(
-            With("n", "public class Generic<T> where T: notnull { public T Value { get; set; } }"),
-            With("n", "public class GenericNull<T> { public T Value { get; set; } }"),
+            With("n", "public class Generic<T> where T: notnull { public required T Value { get; set; } }"),
+            With("n", "public class GenericNull<T> { public T? Value { get; } public T? Foo (T? t) => default; }"),
             WithClass("n", "[Export] public static void Method (Generic<string> a, GenericNull<int> b) { }"));
         Execute();
         Contains(
@@ -544,8 +546,34 @@ public class DeclarationTest : PackTest
                     value: T;
                 }
                 export interface GenericNull<T> {
-                    value?: T;
+                    readonly value?: T;
+                    foo(t: T | undefined): T | null;
                 }
+            }
+
+            export namespace n.Class {
+                export function method(a: n.Generic<string>, b: n.GenericNull<number>): void;
+            }
+            """);
+    }
+
+    [Fact]
+    public void DefinitionIsGeneratedForGenericRecord ()
+    {
+        AddAssembly(
+            With("n", "public record Generic<T> where T: notnull { public T Value { get; set; } }"),
+            With("n", "public record GenericNull<T> { public T? Value { get; set; } }"),
+            WithClass("n", "[Export] public static void Method (Generic<string> a, GenericNull<int> b) { }"));
+        Execute();
+        Contains(
+            """
+            export namespace n {
+                export type Generic<T> = Readonly<{
+                    value: T;
+                }>;
+                export type GenericNull<T> = Readonly<{
+                    value?: T;
+                }>;
             }
 
             export namespace n.Class {
@@ -630,58 +658,71 @@ public class DeclarationTest : PackTest
         AddAssembly(
             With("Space",
                 """
-                public struct Struct { public double A { get; set; } }
+                public class Nya { public bool Mew() => default; }
+                public struct Struct { public double A { get; set; } public Nya Mew { get; } }
                 public readonly struct ReadonlyStruct { public double A { get; init; } }
                 public readonly record struct ReadonlyRecordStruct(double A);
-                public record class RecordClass(double A);
+                public record class RecordClass (ReadonlyRecordStruct Str);
+                public record class RecordClassA (double A) : RecordClass(new ReadonlyRecordStruct(42));
+                public record class RecordClassB (RecordClassA B) : RecordClassA(24);
                 public enum Enum { A, B }
                 public class Foo { public Struct S { get; } public ReadonlyStruct Rs { get; } }
-                public class Bar : Foo { public ReadonlyRecordStruct Rrs { get; } public RecordClass Rc { get; } }
-                public class Baz { public List<Bar> Bars { get; } public Enum E { get; } }
-                public class Class { [Export] public static Baz GetBaz () => default; }
+                public class Bar : Foo { public Dictionary<string, RecordClassB> Rc { get; } }
+                public class Baz : Bar { public List<Bar> Bars { get; } public Enum E { get; } }
+                public class Key : Baz { }
+                public class Class { [Export] public static Dictionary<Key, Baz> GetBaz () => default; }
                 """));
         Execute();
+        // 'Foo' and 'RecordClass' are not declared, because they don't directly appear on the interop boundary;
+        // instead, their members are merged into 'Bar' and 'RecordClassA', who directly inherit (extend) them.
         Contains(
             """
             export namespace Space {
-                export interface Baz {
-                    bars: Array<Space.Bar>;
-                    e: Space.Enum;
+                export interface Key extends Space.Baz {
                 }
-                export interface Bar extends Space.Foo {
-                    rrs: Space.ReadonlyRecordStruct;
-                    rc: Space.RecordClass;
+                export interface Bar {
+                    readonly rc: Map<string, Space.RecordClassB>;
+                    readonly s: Space.Struct;
+                    readonly rs: Space.ReadonlyStruct;
                 }
-                export interface ReadonlyRecordStruct {
-                    a: number;
+                export interface Nya {
+                    mew(): boolean;
                 }
-                export interface RecordClass {
-                    a: number;
-                }
-                export interface Struct {
-                    a: number;
-                }
-                export interface ReadonlyStruct {
-                    a: number;
-                }
-                export interface Foo {
-                    s: Space.Struct;
-                    rs: Space.ReadonlyStruct;
+                export interface Baz extends Space.Bar {
+                    readonly bars: Array<Space.Bar>;
+                    readonly e: Space.Enum;
                 }
                 export enum Enum {
                     A,
                     B
                 }
+                export type ReadonlyRecordStruct = Readonly<{
+                    a: number;
+                }>;
+                export type ReadonlyStruct = Readonly<{
+                    a: number;
+                }>;
+                export type RecordClassA = Readonly<{
+                    a: number;
+                    str: Space.ReadonlyRecordStruct;
+                }>;
+                export type RecordClassB = Space.RecordClassA & Readonly<{
+                    b: Space.RecordClassA;
+                }>;
+                export type Struct = Readonly<{
+                    a: number;
+                    mew: Space.Nya;
+                }>;
             }
 
             export namespace Space.Class {
-                export function getBaz(): Space.Baz;
+                export function getBaz(): Map<Space.Key, Space.Baz>;
             }
             """);
     }
 
     [Fact]
-    public void StaticPropertiesAreNotIncluded ()
+    public void StaticPropertiesAreIncluded ()
     {
         AddAssembly(
             WithClass("public class Foo { public static string Soo { get; } }"),
@@ -691,7 +732,52 @@ public class DeclarationTest : PackTest
             """
             export namespace Class {
                 export interface Foo {
+                    readonly soo: string;
                 }
+            }
+            """);
+    }
+
+    [Fact]
+    public void IndexerPropertiesAreNotIncluded ()
+    {
+        AddAssembly(WithClass(
+            """
+            public record Foo
+            {
+                public bool this[int index] => true;
+            }
+
+            [Export] public static Foo Bar () => default;
+            """));
+        Execute();
+        Contains(
+            """
+            export namespace Class {
+                export type Foo = Readonly<{
+                }>;
+            }
+            """);
+    }
+
+    [Fact]
+    public void SetOnlyPropertiesAreNotIncluded ()
+    {
+        AddAssembly(WithClass(
+            """
+            public record Foo
+            {
+                public bool SetOnly { set { } }
+            }
+
+            [Export] public static Foo Bar () => default;
+            """));
+        Execute();
+        Contains(
+            """
+            export namespace Class {
+                export type Foo = Readonly<{
+                }>;
             }
             """);
     }
@@ -704,8 +790,6 @@ public class DeclarationTest : PackTest
             public record Foo
             {
                 public bool Boo => true;
-                public bool SetOnly { set { } }
-                public bool this[int index] => true;
             }
 
             [Export] public static Foo Bar () => default;
@@ -714,15 +798,15 @@ public class DeclarationTest : PackTest
         Contains(
             """
             export namespace Class {
-                export interface Foo {
+                export type Foo = Readonly<{
                     boo: boolean;
-                }
+                }>;
             }
             """);
     }
 
     [Fact]
-    public void GeneratesForMethodsInStaticInterfaces ()
+    public void GeneratesForMethodsInModules ()
     {
         AddAssembly(With(
             """
@@ -737,9 +821,9 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
-            export interface Info {
+            export type Info = Readonly<{
                 value: string;
-            }
+            }>;
 
             export namespace Exported {
                 export function inv(str: string, info: Info): Info;
@@ -751,7 +835,7 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForMethodsInInstancedInterfaces ()
+    public void GeneratesForMethodsInInstanced ()
     {
         AddAssembly(With(
             """
@@ -762,8 +846,8 @@ public class DeclarationTest : PackTest
 
             public class Class
             {
-                [Export] public static Task<IExported> GetExported (IImported inst) => default;
-                [Import] public static Task<IImported> GetImported (IExported inst) => default;
+                [Export] public static Task<IExported> GetExported (IImported it) => default;
+                [Import] public static Task<IImported> GetImported (IExported it) => default;
             }
             """));
         Execute();
@@ -776,19 +860,19 @@ public class DeclarationTest : PackTest
                 inv(str: string, info: Info): Info;
                 reset(): void;
             }
-            export interface Info {
+            export type Info = Readonly<{
                 value: string;
-            }
+            }>;
 
             export namespace Class {
-                export function getExported(inst: IImported): Promise<IExported>;
-                export let getImported: (inst: IExported) => Promise<IImported>;
+                export function getExported(it: IImported): Promise<IExported>;
+                export let getImported: (it: IExported) => Promise<IImported>;
             }
             """);
     }
 
     [Fact]
-    public void GeneratesForPropertiesInStaticInterfaces ()
+    public void GeneratesForPropertiesInModules ()
     {
         AddAssembly(With(
             """
@@ -818,13 +902,13 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
-            export interface Info {
-                value: string;
-            }
             export interface IExportedInstanced {
             }
             export interface IImportedInstanced {
             }
+            export type Info = Readonly<{
+                value: string;
+            }>;
 
             export namespace ExportedStatic {
                 export let state: Info;
@@ -841,7 +925,7 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForPropertiesInInstancedInterfaces ()
+    public void GeneratesForPropertiesInInstanced ()
     {
         AddAssembly(With(
             """
@@ -863,8 +947,8 @@ public class DeclarationTest : PackTest
 
             public class Class
             {
-                [Export] public static IExported GetExported (IImported inst) => default;
-                [Import] public static IImported GetImported (IExported inst) => default;
+                [Export] public static IExported GetExported (IImported it) => default;
+                [Import] public static IImported GetImported (IExported it) => default;
             }
             """));
         Execute();
@@ -875,24 +959,24 @@ public class DeclarationTest : PackTest
                 readonly imported: IImported;
                 exported: IExported;
             }
-            export interface Info {
-                value: string;
-            }
             export interface IExported {
                 state: Info;
                 readonly exported: IExported;
                 imported: IImported;
             }
+            export type Info = Readonly<{
+                value: string;
+            }>;
 
             export namespace Class {
-                export function getExported(inst: IImported): IExported;
-                export let getImported: (inst: IExported) => IImported;
+                export function getExported(it: IImported): IExported;
+                export let getImported: (it: IExported) => IImported;
             }
             """);
     }
 
     [Fact]
-    public void GeneratesForEventsInStaticInterfaces ()
+    public void GeneratesForEventsInModules ()
     {
         AddAssembly(With(
             """
@@ -910,13 +994,13 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
-            export interface Info {
-                value: string;
-            }
             export interface IExportedInstanced {
             }
             export interface IImportedInstanced {
             }
+            export type Info = Readonly<{
+                value: string;
+            }>;
 
             export namespace Exported {
                 export const evt: EventSubscriber<[arg1: string, arg2: Info, arg3: IExportedInstanced]>;
@@ -928,7 +1012,7 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void GeneratesForEventsInInstancedInterfaces ()
+    public void GeneratesForEventsInInstanced ()
     {
         AddAssembly(With(
             """
@@ -939,8 +1023,8 @@ public class DeclarationTest : PackTest
 
             public class Class
             {
-                [Export] public static IExported GetExported (IImported inst) => default;
-                [Import] public static IImported GetImported (IExported inst) => default;
+                [Export] public static IExported GetExported (IImported it) => default;
+                [Import] public static IImported GetImported (IExported it) => default;
             }
             """));
         Execute();
@@ -953,13 +1037,13 @@ public class DeclarationTest : PackTest
                 changed: EventSubscriber<[obj: Info]>;
                 done: EventSubscriber<[]>;
             }
-            export interface Info {
+            export type Info = Readonly<{
                 value: string;
-            }
+            }>;
 
             export namespace Class {
-                export function getExported(inst: IImported): IExported;
-                export let getImported: (inst: IExported) => IImported;
+                export function getExported(it: IImported): IExported;
+                export let getImported: (it: IExported) => IImported;
             }
             """);
     }
@@ -1043,10 +1127,10 @@ public class DeclarationTest : PackTest
             """
             export namespace n {
                 export interface Bar {
-                    foo?: n.Foo;
+                    readonly foo?: n.Foo;
                 }
                 export interface Foo {
-                    bool?: boolean;
+                    readonly bool?: boolean;
                 }
             }
 
@@ -1068,7 +1152,7 @@ public class DeclarationTest : PackTest
             """
             export namespace n {
                 export interface Bar {
-                    foo?: n.Foo;
+                    readonly foo?: n.Foo;
                 }
                 export enum Foo {
                     A,
@@ -1125,7 +1209,7 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void RespectsSpacePrefInStaticInterfaces ()
+    public void RespectsSpacePrefInModules ()
     {
         AddAssembly(With(
             """
@@ -1163,7 +1247,7 @@ public class DeclarationTest : PackTest
         AddAssembly(With(
             """
             [assembly: Bootsharp.Preferences(
-                Type = [@"Record", "Foo", @".+`.+", "Bar"]
+                Type = [@"Record", "Foo", @".+`.+", "Bar<T>"]
             )]
 
             public record Record;
@@ -1177,13 +1261,13 @@ public class DeclarationTest : PackTest
         Execute();
         Contains(
             """
-            export interface Record {
-            }
-            export interface Generic<T> {
-            }
+            export type Bar<T> = Readonly<{
+            }>;
+            export type Foo = Readonly<{
+            }>;
 
             export namespace Class {
-                export function inv(r: Foo, g: Bar): void;
+                export function inv(r: Foo, g: Bar<T>): void;
             }
             """);
     }
@@ -1333,12 +1417,12 @@ public class DeclarationTest : PackTest
             /**
              * A payload sent across interop.
              */
-            export interface Payload {
+            export type Payload = Readonly<{
                 /**
                  * The payload name.
                  */
                 name: string;
-            }
+            }>;
             """);
         Contains(
             """

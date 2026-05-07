@@ -5,11 +5,11 @@ using System.Runtime.CompilerServices;
 namespace Bootsharp.Publish;
 
 /// <remarks>
-/// Remember that the serialization is only required for the values that cross the interop boundary
+/// Remember that the serialization is only required for the values that directly cross the interop boundary
 /// and whose types are not natively supported by System.Runtime.InteropServices.JavaScript.
 /// The types that are referenced by these top-level interop types are crawled by this inspector.
 /// </remarks>
-internal sealed class SerializedInspector
+internal sealed class SerializedInspector (InstancedInspector itd)
 {
     private record Discard (Type Type) : SerializedMeta(Type);
 
@@ -24,9 +24,11 @@ internal sealed class SerializedInspector
 
     private readonly Dictionary<string, SerializedMeta> byId = [];
     private readonly HashSet<Type> cycle = [];
+    private InteropKind ik;
 
-    public SerializedMeta? Inspect (Type type)
+    public SerializedMeta? Inspect (Type type, InteropKind ik)
     {
+        this.ik = ik;
         return ShouldSerialize(type) ? Build(type) : null;
     }
 
@@ -40,7 +42,6 @@ internal sealed class SerializedInspector
         if (IsVoid(type)) return false;
         if (IsNullable(type, out var value)) return ShouldSerialize(value);
         if (IsTaskWithResult(type, out var result)) return ShouldSerialize(result);
-        if (IsInstancedInterface(type, out _)) return false;
         return !native.Contains(type.FullName!);
     }
 
@@ -57,6 +58,7 @@ internal sealed class SerializedInspector
             type.IsArray ? new SerializedArrayMeta(type, Build(type.GetElementType()!)) :
             IsList(type, out var element) ? new SerializedListMeta(type, Build(element)) :
             IsDictionary(type, out var k, out var v) ? new SerializedDictionaryMeta(type, Build(k), Build(v)) :
+            IsInstancedType(type) ? new SerializedInstanceMeta(itd.Inspect(type, ik)!) :
             BuildObject(type);
         cycle.Remove(type);
         return meta;
@@ -91,9 +93,10 @@ internal sealed class SerializedInspector
         var canSet = setter != null && setter.IsPublic && !initOnly;
         var canInit = setter != null && setter.IsPublic && initOnly;
         var canSetField = !canInit && !canSet && IsAutoProperty(prop) && getter.IsPublic;
-        return new(value.Type) {
+        return new(value.Clr) {
+            Info = prop,
             Name = prop.Name,
-            JSName = ToFirstLower(prop.Name),
+            JSName = BuildJSName(prop.Name),
             OmitWhenNull = !prop.PropertyType.IsValueType || IsNullable(prop.PropertyType),
             Required = prop.CustomAttributes
                 .Any(a => a.AttributeType.FullName == typeof(RequiredMemberAttribute).FullName),
@@ -164,8 +167,8 @@ internal sealed class SerializedInspector
 
         static int GetInitOrder (SerializedMeta meta) => meta switch {
             SerializedPrimitiveMeta or SerializedEnumMeta => 0,
-            SerializedObjectMeta => 2,
-            _ => 3
+            SerializedInstanceMeta or SerializedObjectMeta => 1,
+            _ => 2
         };
 
         static IEnumerable<string> GetInitDependencies (SerializedMeta meta)

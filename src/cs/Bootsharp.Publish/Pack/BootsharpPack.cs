@@ -34,7 +34,7 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
 
     private SolutionInspection InspectSolution (Preferences prefs)
     {
-        var inspector = new SolutionInspector(prefs, EntryAssemblyName);
+        var inspector = new SolutionInspector(prefs);
         var inspection = inspector.Inspect(InspectedDirectory, GetFiles());
         new InspectionReporter(Log).Report(inspection);
         return inspection;
@@ -51,21 +51,21 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
         }
     }
 
-    private void GenerateBindings (Preferences prefs, SolutionInspection inspection)
+    private void GenerateBindings (Preferences prefs, SolutionInspection spec)
     {
         var generator = new BindingGenerator(prefs, Debug);
-        var content = generator.Generate(inspection);
+        var content = generator.Generate(spec);
         File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.js"), content);
     }
 
-    private void GenerateDeclarations (Preferences prefs, SolutionInspection inspection)
+    private void GenerateDeclarations (Preferences prefs, SolutionInspection spec)
     {
         var generator = new DeclarationGenerator(prefs);
-        var content = generator.Generate(inspection);
+        var content = generator.Generate(spec);
         File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.d.ts"), content);
     }
 
-    private void GenerateResources (SolutionInspection inspection)
+    private void GenerateResources (SolutionInspection spec)
     {
         var generator = new ResourceGenerator(EntryAssemblyName, EmbedBinaries, Debug, Globalization);
         var content = generator.Generate(BuildDirectory, DebugDirectory);

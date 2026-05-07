@@ -20,8 +20,8 @@ internal sealed class BindingSerializerGenerator
             SerializedArrayMeta arr => $"types.Array({arr.Element.Id})",
             SerializedListMeta list => $"types.List({list.Element.Id})",
             SerializedDictionaryMeta dic => $"types.Dictionary({dic.Key.Id}, {dic.Value.Id})",
-            SerializedObjectMeta => $"binary(write_{meta.Id}, read_{meta.Id})",
-            _ => ResolvePrimitive(meta.Type)
+            SerializedObjectMeta or SerializedInstanceMeta => $"binary(write_{meta.Id}, read_{meta.Id})",
+            _ => ResolvePrimitive(meta.Clr)
         }};";
 
         static string ResolvePrimitive (Type type)
@@ -34,22 +34,37 @@ internal sealed class BindingSerializerGenerator
 
     private IEnumerable<string> EmitHelpers (SerializedMeta meta)
     {
-        if (meta is not SerializedObjectMeta obj) yield break;
-        yield return $$"""
-                       function write_{{obj.Id}}(writer, value) {
-                           {{Fmt(EmitObjectWrite(obj))}}
-                       }
-                       """;
-        yield return $$"""
-                       function read_{{obj.Id}}(reader) {
-                           {{Fmt(EmitObjectRead(obj))}}
-                       }
-                       """;
+        if (meta is SerializedInstanceMeta it)
+        {
+            yield return
+                $$"""
+                  function write_{{it.Id}}(writer, value) {
+                      writer.writeInt32({{ExportJS(it.Instance, "value")}});
+                  }
+
+                  function read_{{it.Id}}(reader) {
+                      return {{ImportJS(it.Instance, "reader.readInt32()")}};
+                  }
+                  """;
+        }
+        if (meta is SerializedObjectMeta obj)
+        {
+            yield return
+                $$"""
+                  function write_{{obj.Id}}(writer, value) {
+                      {{Fmt(EmitObjectWrite(obj))}}
+                  }
+
+                  function read_{{obj.Id}}(reader) {
+                      {{Fmt(EmitObjectRead(obj))}}
+                  }
+                  """;
+        }
     }
 
     private IEnumerable<string> EmitObjectWrite (SerializedObjectMeta obj)
     {
-        if (!obj.Type.IsValueType)
+        if (!obj.Clr.IsValueType)
         {
             yield return "writer.writeBool(value != null);";
             yield return "if (value == null) return;";
@@ -65,7 +80,7 @@ internal sealed class BindingSerializerGenerator
 
     private IEnumerable<string> EmitObjectRead (SerializedObjectMeta obj)
     {
-        if (!obj.Type.IsValueType) yield return "if (!reader.readBool()) return null;";
+        if (!obj.Clr.IsValueType) yield return "if (!reader.readBool()) return null;";
         yield return "const value = {};";
         foreach (var p in obj.Properties)
             if (p.OmitWhenNull) yield return $"if (reader.readBool()) value.{p.JSName} = {p.Id}.read(reader);";

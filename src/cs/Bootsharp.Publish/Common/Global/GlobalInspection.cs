@@ -1,10 +1,11 @@
 global using static Bootsharp.Publish.GlobalInspection;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace Bootsharp.Publish;
+
+internal delegate TypeMeta InspectType (Type type, InteropKind ik);
 
 internal static class GlobalInspection
 {
@@ -31,19 +32,21 @@ internal static class GlobalInspection
         return IsUserAssembly(type.Assembly.FullName!);
     }
 
+    public static bool IsInstancedType (Type type)
+    {
+        // Instanced types are mutable user types that are passed by reference when crossing the
+        // interop boundary (as opposed to serialized immutable types, which are copied by value).
+        if (!IsUserType(type)) return false;
+        if (type.IsInterface) return true;
+        return type.IsClass && !IsStatic(type) && !IsRecord(type); // records are immutable by convention
+    }
+
     public static bool IsAutoProperty (PropertyInfo prop)
     {
         var backingFieldName = $"<{prop.Name}>k__BackingField";
         var backingField = prop.DeclaringType!.GetField(backingFieldName,
             BindingFlags.NonPublic | BindingFlags.Instance);
         return backingField != null;
-    }
-
-    public static bool IsInstancedInterface (Type type, [NotNullWhen(true)] out Type? instanceType)
-    {
-        if (IsTaskWithResult(type, out instanceType))
-            return IsInstancedInterface(instanceType, out instanceType);
-        return (instanceType = type.IsInterface && IsUserType(type) ? type : null) != null;
     }
 
     public static string WithPrefs (IReadOnlyCollection<Preference> prefs, string input, string @default)

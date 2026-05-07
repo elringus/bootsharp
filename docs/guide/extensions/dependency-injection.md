@@ -1,6 +1,6 @@
 # Dependency Injection
 
-When using [interop interfaces](/guide/interop-interfaces), it's convenient to use a dependency injection mechanism to automatically route generated interop implementations for the services that needs them.
+When using [modules](/guide/interop-modules), it's convenient to use a dependency injection mechanism to automatically route generated module implementations for the services that needs them.
 
 Reference `Bootsharp.Inject` extension in the project configuration:
 

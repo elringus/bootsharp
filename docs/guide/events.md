@@ -40,7 +40,7 @@ Program.onSomethingChanged.broadcast("updated");
 
 Bootsharp supports all common event types: `Action`, `EventHandler`, and any custom delegate types without a return type.
 
-Events on the [interop interfaces](/guide/interop-interfaces) are picked up automatically, so you don't have to annotate them.
+Events on [modules](/guide/interop-modules) and [instances](/guide/interop-instances) are picked up automatically, so you don't have to annotate them.
 
 ## React Event Hooks
 

@@ -49,6 +49,6 @@ export const instances = {
 /* v8 ignore start -- @preserve */ // Uncoverable, as finalization in Node is not controllable.
 function finalizeExported(id: number) {
     exportedById.delete(id);
-    (<{ DisposeExportedInstance: (id: number) => void }>exports).DisposeExportedInstance(id);
+    (<{ disposeExported: (id: number) => void }>exports).disposeExported(id);
 }
 /* v8 ignore stop -- @preserve */
