@@ -24,14 +24,14 @@ internal sealed class TypeSyntaxBuilder (Preferences prefs)
         if (param.Member.DeclaringType!.IsGenericType)
             param = param.Member.DeclaringType.GetGenericTypeDefinition()
                 .GetMethod(param.Member.Name)!.GetParameters()[param.Position];
-        var nul = GetNullability(param);
+        var nul = GetNullity(param);
         var post = IsNullable(param.ParameterType, nul) ? " | undefined" : "";
         return Build(param.ParameterType, nul) + post;
     }
 
     public string BuildArg (EventInfo evt, ParameterInfo param)
     {
-        var nul = GetNullability(evt, param);
+        var nul = GetNullity(evt, param);
         var post = IsNullable(param.ParameterType, nul) ? " | undefined" : "";
         return Build(param.ParameterType, nul) + post;
     }
@@ -40,7 +40,7 @@ internal sealed class TypeSyntaxBuilder (Preferences prefs)
     {
         if (method.DeclaringType!.IsGenericType)
             method = method.DeclaringType.GetGenericTypeDefinition().GetMethod(method.Name)!;
-        var nul = GetNullability(method.ReturnParameter);
+        var nul = GetNullity(method.ReturnParameter);
         var post = IsNullable(method.ReturnType, nul) ? " | null" : "";
         return Build(method.ReturnType, nul) + post;
     }
@@ -49,14 +49,14 @@ internal sealed class TypeSyntaxBuilder (Preferences prefs)
     {
         if (prop.DeclaringType!.IsGenericType)
             prop = prop.DeclaringType.GetGenericTypeDefinition().GetProperty(prop.Name)!;
-        var nul = GetNullability(prop);
+        var nul = GetNullity(prop);
         var pre = IsNullable(prop.PropertyType, nul) ? "?: " : ": ";
         return pre + Build(prop.PropertyType, nul);
     }
 
     public string BuildVariable (PropertyInfo prop)
     {
-        var nul = GetNullability(prop);
+        var nul = GetNullity(prop);
         var post = IsNullable(prop.PropertyType, nul) ? " | undefined" : "";
         return Build(prop.PropertyType, nul) + post;
     }
@@ -82,20 +82,20 @@ internal sealed class TypeSyntaxBuilder (Preferences prefs)
 
     private string BuildNullable (Type value)
     {
-        EnterNullability();
+        EnterNullity();
         return $"{Build(value)} | null";
     }
 
     private string BuildTask (Type type)
     {
-        var nil = EnterNullability() ? " | null" : "";
+        var nil = EnterNullity() ? " | null" : "";
         if (!IsTaskWithResult(type, out var result)) return $"Promise<void>{nil}";
         return $"Promise<{Build(result)}{nil}>";
     }
 
     private string BuildList (Type type, Type element)
     {
-        if (EnterNullability()) return $"Array<{Build(element)} | null>";
+        if (EnterNullity()) return $"Array<{Build(element)} | null>";
         if (!type.IsArray) return $"Array<{Build(element)}>";
         return Type.GetTypeCode(element) switch {
             TypeCode.Byte => "Uint8Array",
@@ -113,7 +113,7 @@ internal sealed class TypeSyntaxBuilder (Preferences prefs)
 
     private string BuildDictionary (Type key, Type value)
     {
-        var nil = EnterNullability(1) ? " | null" : "";
+        var nil = EnterNullity(1) ? " | null" : "";
         return $"Map<{Build(key)}, {Build(value)}{nil}>";
     }
 
@@ -123,7 +123,7 @@ internal sealed class TypeSyntaxBuilder (Preferences prefs)
         var name = TrimGeneric(type.Name);
         var full = string.IsNullOrEmpty(space) ? name : $"{space}.{name}";
         if (!type.IsGenericType) return full;
-        EnterNullability();
+        EnterNullity();
         var args = string.Join(", ", type.GetGenericArguments().Select(Build));
         return $"{full}<{args}>";
     }
@@ -145,7 +145,7 @@ internal sealed class TypeSyntaxBuilder (Preferences prefs)
         TypeCode.Byte or TypeCode.SByte or TypeCode.UInt16 or TypeCode.UInt32 or TypeCode.UInt64 or
         TypeCode.Int16 or TypeCode.Int32 or TypeCode.Decimal or TypeCode.Double or TypeCode.Single;
 
-    private bool EnterNullability (int idx = 0)
+    private bool EnterNullity (int idx = 0)
     {
         if (nullity == null) return false;
         if (nullity.GenericTypeArguments.Length > idx) nullity = nullity.GenericTypeArguments[idx];

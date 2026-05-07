@@ -11,7 +11,7 @@ internal sealed class MemberInspector (Preferences prefs, InspectType inspect)
         Name = evt.Name,
         JSName = BuildJSName(evt.Name),
         Arguments = evt.EventHandlerType!.GetMethod("Invoke")!.GetParameters()
-            .Select(p => CreateArg(p, GetNullability(evt, p), ik)).ToArray()
+            .Select(p => CreateArg(p, GetNullity(evt, p), ik)).ToArray()
     };
 
     public PropertyMeta Inspect (PropertyInfo prop, InteropKind ik) => new(prop) {
@@ -20,8 +20,8 @@ internal sealed class MemberInspector (Preferences prefs, InspectType inspect)
         JSSpace = BuildJSSpace(prop.DeclaringType!),
         Name = prop.Name,
         JSName = BuildJSName(prop.Name),
-        GetValue = prop.GetMethod != null ? CreateValue(prop.PropertyType, GetNullability(prop), ik) : null,
-        SetValue = prop.SetMethod != null ? CreateValue(prop.PropertyType, GetNullability(prop), ik.Invert()) : null
+        GetValue = prop.GetMethod != null ? CreateValue(prop.PropertyType, GetNullity(prop), ik) : null,
+        SetValue = prop.SetMethod != null ? CreateValue(prop.PropertyType, GetNullity(prop), ik.Invert) : null
     };
 
     public MethodMeta Inspect (MethodInfo method, InteropKind ik) => new(method) {
@@ -30,8 +30,8 @@ internal sealed class MemberInspector (Preferences prefs, InspectType inspect)
         JSSpace = BuildJSSpace(method.DeclaringType!),
         Name = method.Name,
         JSName = WithPrefs(prefs.Function, method.Name, BuildJSName(method.Name)),
-        Arguments = method.GetParameters().Select(p => CreateArg(p, GetNullability(p), ik.Invert())).ToArray(),
-        Return = CreateValue(method.ReturnParameter.ParameterType, GetNullability(method.ReturnParameter), ik),
+        Arguments = method.GetParameters().Select(p => CreateArg(p, GetNullity(p), ik.Invert)).ToArray(),
+        Return = CreateValue(method.ReturnParameter.ParameterType, GetNullity(method.ReturnParameter), ik),
         Void = IsVoid(method.ReturnParameter.ParameterType),
         Async = IsTaskLike(method.ReturnParameter.ParameterType)
     };

@@ -91,13 +91,13 @@ internal sealed class ModuleGenerator
 
     private string EmitEventExport (EventMeta evt)
     {
-        var type = BuildSyntax(evt.Info.EventHandlerType!, GetNullability(evt.Info));
+        var type = BuildSyntax(evt.Info.EventHandlerType!, GetNullity(evt.Info));
         return $"[Export] public static event {type} {evt.Name};";
     }
 
     private string EmitEventImport (EventMeta evt)
     {
-        var type = BuildSyntax(evt.Info.EventHandlerType!, GetNullability(evt.Info));
+        var type = BuildSyntax(evt.Info.EventHandlerType!, GetNullity(evt.Info));
         var args = string.Join(", ", evt.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         var callArgs = string.Join(", ", evt.Arguments.Select(a => a.Name));
         return Fmt(0,
