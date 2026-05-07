@@ -122,11 +122,9 @@ internal sealed class TypeDeclarationGenerator (Preferences prefs)
 
         void AppendExtensions ()
         {
-            var extTypes = new List<Type>(it.Clr.GetInterfaces().Where(IsUserType));
-            if (TryGetBase(it.Clr, out var baseType))
-                extTypes.Insert(0, baseType);
-            if (extTypes.Count > 0)
-                bld.Append(" extends ").AppendJoin(", ", extTypes.Select(ts.BuildFullName));
+            var ext = new List<Type>(it.Clr.GetInterfaces().Where(IsUserType));
+            if (TryGetBase(it.Clr, out var baseType)) ext.Insert(0, baseType);
+            if (ext.Count > 0) bld.Append(" extends ").AppendJoin(", ", ext.Select(ts.BuildFullName));
         }
 
         void AppendEvent (EventMeta evt)
