@@ -37,6 +37,10 @@ Program.onUserModified.subscribe(handleUserModified);
 function handleUserModified(user: Program.User) { }
 ```
 
+::: info NOTE
+Only types with immutable semantics (structs, records, and read-only collections) are subject to serialization—other types are considered mutable and are passed by reference as [interop instances](/guide/interop-instances).
+:::
+
 ## Enums Serialization
 
 Enums are marshalled as numbers for better performance, while additional name <-> index mappings are emitted on the JavaScript side for convenience.

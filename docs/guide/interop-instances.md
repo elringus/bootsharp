@@ -1,6 +1,6 @@
 # Interop Instances
 
-When an interface is supplied as argument or return type of an interop method, instead of serializing it as value, Bootsharp will instead generate an instance binding, eg:
+When a type with a mutable semantic (a class or an interface) appears on the interop boundary or under a [serialized type](/guide/serialization), instead of serializing and copying it by value, Bootsharp will instead generate an instance binding and pass it by reference, eg:
 
 ```csharp
 public interface IExported
@@ -49,6 +49,6 @@ exported.value = "updated"; // invokes the C# setter
 _ = exported.value; // invokes the C# getter
 ```
 
-Interop instances are subject to the following limitations:
-- Can't be args or return values of other interop instance method
-- Interfaces from "System" namespace are not qualified
+::: info NOTE
+Only user types are subject to instance binding. BCL types are ignored to prevent leaking the entire .NET runtime into the generated interop layer.
+:::
