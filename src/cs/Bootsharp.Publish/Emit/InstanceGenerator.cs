@@ -1,21 +1,64 @@
 namespace Bootsharp.Publish;
 
 /// <summary>
-/// Generates interop wrappers for imported instances.
+/// Generates binding wrappers for imported instances and instance-specific export handlers.
 /// </summary>
 internal sealed class InstanceGenerator
 {
     private InstancedMeta it = null!;
 
     public string Generate (SolutionInspection spec) =>
-        $"""
-         #nullable enable
-         #pragma warning disable
+        $$"""
+          #nullable enable
+          #pragma warning disable
 
-         {Fmt(spec.Instanced
-             .Where(i => i.Interop == InteropKind.Import)
-             .Select(EmitWrapper), 0, "\n\n")}
-         """;
+          using System.Runtime.CompilerServices;
+          using System.Runtime.InteropServices.JavaScript;
+
+          namespace Bootsharp.Generated
+          {
+              public static partial class Instances
+              {
+                  internal static int Export<T> (T instance, global::System.Func<int, T, global::System.Action>? factory = null) where T : class => global::Bootsharp.Instances.Export(instance, factory);
+                  internal static T Exported<T> (int id) where T : class => global::Bootsharp.Instances.Exported<T>(id);
+                  internal static T Import<T> (int id, global::System.Func<int, T> factory) where T : class => global::Bootsharp.Instances.Import(id, factory);
+
+                  internal static void DisposeImported (int id)
+                  {
+                      NotifyImportedDisposed(id);
+                      global::Bootsharp.Instances.DisposeImported(id);
+                  }
+
+                  {{Fmt(spec.Instanced.Where(i => i.Exporter != null).Select(EmitExporter), 2, "\n\n")}}
+
+                  [JSExport] private static void DisposeExported (int id) => global::Bootsharp.Instances.DisposeExported(id);
+                  [JSImport("instances.disposeImported", "Bootsharp")] private static partial void NotifyImportedDisposed (int id);
+              }
+          }
+
+          {{Fmt(spec.Instanced.Where(i => i.Interop == InteropKind.Import).Select(EmitWrapper), 0, "\n\n")}}
+          """;
+
+    private static string EmitExporter (InstancedMeta it)
+    {
+        var evt = it.Members.OfType<EventMeta>().ToArray();
+        return
+            $$"""
+              internal static int {{it.Exporter}} ({{it.Syntax}} instance) => Export(instance, static (_id, instance) => {
+                  {{Fmt(evt.Select(e => $"instance.{e.Name} += Handle{e.Name};"))}}
+                  return () => {
+                      {{Fmt(evt.Select(e => $"instance.{e.Name} -= Handle{e.Name};"), 2)}}
+                  };
+
+                  {{Fmt(evt.Select(e => {
+                      var args = string.Join(", ", e.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
+                      var invArgs = PrependIdArg(string.Join(", ", e.Arguments.Select(Export)));
+                      var name = $"{e.JSSpace.Replace('.', '_')}_Broadcast{e.Name}_Serialized";
+                      return $"void Handle{e.Name} ({args}) => Interop.{name}({invArgs});";
+                  }))}}
+              });
+              """;
+    }
 
     private string EmitWrapper (InstancedMeta it) =>
         $$"""
@@ -25,11 +68,7 @@ internal sealed class InstanceGenerator
               {
                   internal readonly global::System.Int32 _id = id;
 
-                  ~{{it.Name}}()
-                  {
-                      global::Bootsharp.Instances.DisposeImported(_id);
-                      global::Bootsharp.Generated.Interop.DisposeImportedInstance(_id);
-                  }
+                  ~{{it.Name}}() => Instances.DisposeImported(_id);
 
                   {{Fmt(it.Members.Select(EmitMemberImport), 2)}}
               }

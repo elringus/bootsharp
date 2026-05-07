@@ -28,7 +28,7 @@ internal sealed class SerializerGenerator
             SerializedArrayMeta arr => $"Serializer.Array({arr.Element.Id})",
             SerializedListMeta list => $"Serializer.{TrimGeneric(list.Clr.Name)}({list.Element.Id})",
             SerializedDictionaryMeta dic => $"Serializer.{TrimGeneric(dic.Clr.Name)}({dic.Key.Id}, {dic.Value.Id})",
-            SerializedObjectMeta => $"new(Write_{meta.Id}, Read_{meta.Id})",
+            SerializedObjectMeta or SerializedInstanceMeta => $"new(Write_{meta.Id}, Read_{meta.Id})",
             _ => ResolvePrimitive(meta.Clr)
         }};";
 
@@ -42,21 +42,38 @@ internal sealed class SerializerGenerator
 
     private IEnumerable<string> EmitHelpers (SerializedMeta meta)
     {
-        if (meta is not SerializedObjectMeta obj) yield break;
-        yield return $$"""
-                       private static void Write_{{obj.Id}} (ref Writer writer, {{obj.Syntax}} value)
-                       {
-                           {{Fmt(EmitObjectWrite(obj))}}
-                       }
-                       """;
-        yield return $$"""
-                       private static {{obj.Syntax}} Read_{{obj.Id}} (ref Reader reader)
-                       {
-                           {{Fmt(EmitObjectRead(obj))}}
-                       }
-                       """;
-        foreach (var prop in obj.Properties.Where(p => p.Kind == SerializedPropertyKind.Field))
-            yield return EmitFieldAccessor(obj, prop);
+        if (meta is SerializedInstanceMeta it)
+        {
+            yield return
+                $$"""
+                  private static void Write_{{it.Id}} (ref Writer writer, {{it.Syntax}} value)
+                  {
+                      writer.WriteInt32({{Export(it.Instance, "value")}});
+                  }
+
+                  private static {{it.Syntax}} Read_{{it.Id}} (ref Reader reader)
+                  {
+                      return {{Import(it.Instance, "reader.ReadInt32()")}};
+                  }
+                  """;
+        }
+        if (meta is SerializedObjectMeta obj)
+        {
+            yield return
+                $$"""
+                  private static void Write_{{obj.Id}} (ref Writer writer, {{obj.Syntax}} value)
+                  {
+                      {{Fmt(EmitObjectWrite(obj))}}
+                  }
+
+                  private static {{obj.Syntax}} Read_{{obj.Id}} (ref Reader reader)
+                  {
+                      {{Fmt(EmitObjectRead(obj))}}
+                  }
+                  """;
+            foreach (var prop in obj.Properties.Where(p => p.Kind == SerializedPropertyKind.Field))
+                yield return EmitFieldAccessor(obj, prop);
+        }
     }
 
     private IEnumerable<string> EmitObjectWrite (SerializedObjectMeta obj)

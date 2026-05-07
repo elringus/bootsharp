@@ -12,7 +12,6 @@ internal sealed class InteropGenerator
     [MemberNotNullWhen(true, nameof(md))]
     private bool isMd => md != null;
 
-    private readonly HashSet<InstancedMeta> registered = [];
     private string id = null!, space = null!;
     private InstancedMeta? it;
     private ModuleMeta? md;
@@ -29,22 +28,19 @@ internal sealed class InteropGenerator
 
           public static partial class Interop
           {
-              [JSExport] internal static void DisposeExportedInstance (int id) => Instances.DisposeExported(id);
-              [JSImport("instances.disposeImported", "Bootsharp")] internal static partial void DisposeImportedInstance (int id);
-
               [ModuleInitializer]
               internal static unsafe void Initialize ()
               {
                   {{Fmt([
                       ..spec.Static.OfType<EventMeta>()
                           .Where(e => e.Interop == InteropKind.Export)
-                          .Select(e => EmitEventSubscription(e, e.Space)),
+                          .Select(e => EmitStaticEventSubscription(e, e.Space)),
                       ..spec.Modules.SelectMany(md => md.Members.OfType<EventMeta>()
                           .Where(e => e.Interop == InteropKind.Export)
-                          .Select(e => EmitEventSubscription(e, md.FullName))),
+                          .Select(e => EmitStaticEventSubscription(e, md.FullName))),
                       ..spec.Static.OfType<MethodMeta>()
                           .Where(m => m.Interop == InteropKind.Import)
-                          .Select(EmitMethodAssignment)
+                          .Select(EmitStaticMethodAssignment)
                   ], 2)}}
               }
 
@@ -54,13 +50,13 @@ internal sealed class InteropGenerator
           }
           """;
 
-    private static string EmitEventSubscription (EventMeta evt, string space)
+    private static string EmitStaticEventSubscription (EventMeta evt, string space)
     {
         var handler = $"Handle_{space.Replace('.', '_')}_{evt.Name}";
         return $"global::{space}.{evt.Name} += {handler};";
     }
 
-    private static string EmitMethodAssignment (MethodMeta method)
+    private static string EmitStaticMethodAssignment (MethodMeta method)
     {
         var name = $"{method.Space.Replace('.', '_')}_{method.Name}";
         return $"global::{method.Space}.Bootsharp_{method.Name} = &{name};";
@@ -90,11 +86,10 @@ internal sealed class InteropGenerator
         if (isIt) args = $"{BuildSyntax(typeof(int))} {PrependIdArg(args)}";
         yield return $"{attr}internal static partial void {name} ({args});";
 
-        if (isIt) yield return EmitInstanceRegistrar(it);
-        if (isIt) yield break; // instanced export event handlers are emitted in the registrar
+        if (isIt) yield break; // instanced export event handlers are emitted by InstanceGenerator
         var handler = $"Handle_{id}_{evt.Name}";
         var sigArgs = string.Join(", ", evt.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
-        var invArgs = string.Join(", ", evt.Arguments.Select(Serialize));
+        var invArgs = string.Join(", ", evt.Arguments.Select(Export));
         yield return $"private static void {handler} ({sigArgs}) => {name}({invArgs});";
     }
 
@@ -106,7 +101,7 @@ internal sealed class InteropGenerator
         var invName = isIt ? $"Instances.Import(_id, static id => new global::{it.FullName}(id)).Invoke{evt.Name}"
             : isMd ? $"((global::{md.FullName})Modules.Imports[typeof({md.Syntax})].Instance).Invoke{evt.Name}"
             : $"global::{evt.Info.DeclaringType!.FullName!.Replace('+', '.')}.Bootsharp_Invoke_{evt.Name}";
-        var invArgs = string.Join(", ", evt.Arguments.Select(Deserialize));
+        var invArgs = string.Join(", ", evt.Arguments.Select(Import));
         yield return $"[JSExport] internal static void {name} ({args}) => {invName}({invArgs});";
     }
 
@@ -117,7 +112,7 @@ internal sealed class InteropGenerator
             var attr = $"[JSExport] {MarshalAmbiguous(prop.GetValue, true)}";
             var name = $"{id}_GetProperty{prop.Name}";
             var args = isIt ? $"{BuildSyntax(typeof(int))} _id" : "";
-            var body = Serialize(prop.GetValue, isIt
+            var body = Export(prop.GetValue, isIt
                 ? $"Instances.Exported<{it.Syntax}>(_id).{prop.Name}"
                 : $"global::{space}.GetProperty{prop.Name}()");
             yield return $"{attr}internal static {BuildValueSyntax(prop.GetValue)} {name} ({args}) => {body};";
@@ -127,7 +122,7 @@ internal sealed class InteropGenerator
             var name = $"{id}_SetProperty{prop.Name}";
             var args = BuildParameter(prop.SetValue, "value");
             if (isIt) args = $"{BuildSyntax(typeof(int))} {PrependIdArg(args)}";
-            var value = Deserialize(prop.SetValue, "value");
+            var value = Import(prop.SetValue, "value");
             var body = isIt
                 ? $"Instances.Exported<{it.Syntax}>(_id).{prop.Name} = {value}"
                 : $"global::{space}.SetProperty{prop.Name}({value})";
@@ -146,7 +141,7 @@ internal sealed class InteropGenerator
             yield return $"{attr}internal static partial {BuildValueSyntax(prop.GetValue)} {serdeName} ({args});";
 
             var name = $"{id}_GetProperty{prop.Name}";
-            var body = Deserialize(prop.GetValue, isIt ? $"{serdeName}(_id)" : $"{serdeName}()");
+            var body = Import(prop.GetValue, isIt ? $"{serdeName}(_id)" : $"{serdeName}()");
             yield return $"public static {prop.GetValue.TypeSyntax} {name}({args}) => {body};";
         }
         if (prop.CanSet)
@@ -160,7 +155,7 @@ internal sealed class InteropGenerator
             var name = $"{id}_SetProperty{prop.Name}";
             var args = $"{prop.SetValue.TypeSyntax} value";
             if (isIt) args = $"{BuildSyntax(typeof(int))} {PrependIdArg(args)}";
-            var value = Serialize(prop.SetValue, "value");
+            var value = Export(prop.SetValue, "value");
             var body = isIt ? $"{serdeName}(_id, {value})" : $"{serdeName}({value})";
             yield return $"public static void {name}({args}) => {body};";
         }
@@ -175,11 +170,11 @@ internal sealed class InteropGenerator
         if (wait) @return = $"async global::System.Threading.Tasks.Task<{@return}>";
         var sigArgs = string.Join(", ", method.Arguments.Select(a => BuildParameter(a.Value, a.Name)));
         if (isIt) sigArgs = $"{BuildSyntax(typeof(int))} {PrependIdArg(sigArgs)}";
-        var invArgs = string.Join(", ", method.Arguments.Select(Deserialize));
+        var invArgs = string.Join(", ", method.Arguments.Select(Import));
         var invName = isIt
             ? $"Instances.Exported<{it.Syntax}>(_id).{method.Name}"
             : $"global::{space}.{method.Name}";
-        var body = Serialize(method.Return, $"{(wait ? "await " : "")}{invName}({invArgs})");
+        var body = Export(method.Return, $"{(wait ? "await " : "")}{invName}({invArgs})");
         yield return $"{attr}internal static {@return} {name} ({sigArgs}) => {body};";
     }
 
@@ -198,58 +193,16 @@ internal sealed class InteropGenerator
         @return = $"{(wait ? "async " : "")}{method.Return.TypeSyntax}";
         var sigArgs = string.Join(", ", method.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         if (isIt) sigArgs = $"{BuildSyntax(typeof(int))} {PrependIdArg(sigArgs)}";
-        var invArgs = string.Join(", ", method.Arguments.Select(Serialize));
+        var invArgs = string.Join(", ", method.Arguments.Select(Export));
         if (isIt) invArgs = PrependIdArg(invArgs);
-        var body = Deserialize(method.Return, $"{(wait ? "await " : "")}{name}_Serialized({invArgs})");
+        var body = Import(method.Return, $"{(wait ? "await " : "")}{name}_Serialized({invArgs})");
         yield return $"public static {@return} {name} ({sigArgs}) => {body};";
-    }
-
-    private string? EmitInstanceRegistrar (InstancedMeta it)
-    {
-        if (!registered.Add(it)) return null;
-        var events = it.Members.OfType<EventMeta>().ToArray();
-        return
-            $$"""
-              private static int Register ({{it.Syntax}} instance) => Instances.Export(instance, static (_id, instance) => {
-                  {{Fmt(events.Select(e => $"instance.{e.Name} += Handle{e.Name};"))}}
-                  return () => {
-                      {{Fmt(events.Select(e => $"instance.{e.Name} -= Handle{e.Name};"), 2)}}
-                  };
-
-                  {{Fmt(events.Select(e => {
-                      var args = string.Join(", ", e.Arguments.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
-                      var invArgs = PrependIdArg(string.Join(", ", e.Arguments.Select(Serialize)));
-                      var name = $"{e.JSSpace.Replace('.', '_')}_Broadcast{e.Name}_Serialized";
-                      return $"void Handle{e.Name} ({args}) => {name}({invArgs});";
-                  }))}}
-              });
-              """;
     }
 
     private string BuildParameter (ValueMeta value, string name)
     {
         var type = BuildValueSyntax(value);
         return $"{MarshalAmbiguous(value, false)}{type} {name}";
-    }
-
-    private string Serialize (ArgumentMeta arg) => Serialize(arg.Value, arg.Name);
-    private string Serialize (ValueMeta value, string exp)
-    {
-        if (value.IsInstanced) return RegisterInstance(value.Instanced, exp);
-        if (Serialized(value, out var id)) return $"Serializer.Serialize({exp}, {id})";
-        return exp;
-    }
-
-    private string Deserialize (ArgumentMeta arg) => Deserialize(arg.Value, arg.Name);
-    private string Deserialize (ValueMeta value, string exp)
-    {
-        if (value.Instanced is { } it)
-        {
-            if (it.Interop == InteropKind.Export) return $"Instances.Exported<{it.Syntax}>({exp})";
-            return $"Instances.Import({exp}, static id => new global::{it.FullName}(id))";
-        }
-        if (Serialized(value, out var id)) return $"Serializer.Deserialize({exp}, {id})";
-        return exp;
     }
 
     private string BuildValueSyntax (ValueMeta value)
@@ -274,20 +227,6 @@ internal sealed class InteropGenerator
         if (promise) result = $"JSType.Promise<{result}>";
         if (@return) return $"[return: JSMarshalAs<{result}>] ";
         return $"[JSMarshalAs<{result}>] ";
-    }
-
-    private static bool Serialized (ValueMeta meta, [NotNullWhen(true)] out string? id)
-    {
-        if (!meta.IsSerialized) id = null;
-        else id = $"SerializerContext.{meta.Serialized.Id}";
-        return id != null;
-    }
-
-    private string RegisterInstance (InstancedMeta it, string exp)
-    {
-        if (it.Interop == InteropKind.Import) return $"((global::{it.FullName}){exp})._id";
-        if (it.Members.OfType<EventMeta>().Any()) return $"Register({exp})";
-        return $"Instances.Export({exp})";
     }
 
     private bool ShouldWait (MethodMeta method)

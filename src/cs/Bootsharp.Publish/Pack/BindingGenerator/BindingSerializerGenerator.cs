@@ -20,7 +20,7 @@ internal sealed class BindingSerializerGenerator
             SerializedArrayMeta arr => $"types.Array({arr.Element.Id})",
             SerializedListMeta list => $"types.List({list.Element.Id})",
             SerializedDictionaryMeta dic => $"types.Dictionary({dic.Key.Id}, {dic.Value.Id})",
-            SerializedObjectMeta => $"binary(write_{meta.Id}, read_{meta.Id})",
+            SerializedObjectMeta or SerializedInstanceMeta => $"binary(write_{meta.Id}, read_{meta.Id})",
             _ => ResolvePrimitive(meta.Clr)
         }};";
 
@@ -34,17 +34,32 @@ internal sealed class BindingSerializerGenerator
 
     private IEnumerable<string> EmitHelpers (SerializedMeta meta)
     {
-        if (meta is not SerializedObjectMeta obj) yield break;
-        yield return $$"""
-                       function write_{{obj.Id}}(writer, value) {
-                           {{Fmt(EmitObjectWrite(obj))}}
-                       }
-                       """;
-        yield return $$"""
-                       function read_{{obj.Id}}(reader) {
-                           {{Fmt(EmitObjectRead(obj))}}
-                       }
-                       """;
+        if (meta is SerializedInstanceMeta it)
+        {
+            yield return
+                $$"""
+                  function write_{{it.Id}}(writer, value) {
+                      writer.writeInt32({{ExportJS(it.Instance, "value")}});
+                  }
+
+                  function read_{{it.Id}}(reader) {
+                      return {{ImportJS(it.Instance, "reader.readInt32()")}};
+                  }
+                  """;
+        }
+        if (meta is SerializedObjectMeta obj)
+        {
+            yield return
+                $$"""
+                  function write_{{obj.Id}}(writer, value) {
+                      {{Fmt(EmitObjectWrite(obj))}}
+                  }
+
+                  function read_{{obj.Id}}(reader) {
+                      {{Fmt(EmitObjectRead(obj))}}
+                  }
+                  """;
+        }
     }
 
     private IEnumerable<string> EmitObjectWrite (SerializedObjectMeta obj)

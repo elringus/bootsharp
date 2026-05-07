@@ -436,12 +436,12 @@ public class SerializerTest : EmitTest
             }
             """));
         Execute();
-        Contains("Binary<global::RecordA> ");
-        Contains("Binary<global::RecordB> ");
-        Contains("Binary<global::RecordC> ");
-        Contains("Binary<global::RecordA[]> ");
-        Contains("Binary<global::RecordB[]> ");
-        Contains("Binary<global::RecordC[]> ");
+        Contains("Binary<global::RecordA>");
+        Contains("Binary<global::RecordB>");
+        Contains("Binary<global::RecordC>");
+        Contains("Binary<global::RecordA[]>");
+        Contains("Binary<global::RecordB[]>");
+        Contains("Binary<global::RecordC[]>");
     }
 
     [Fact]
@@ -467,7 +467,7 @@ public class SerializerTest : EmitTest
     }
 
     [Fact]
-    public void DoesntSerializeInstancedThemselves ()
+    public void DoesntSerializeTopLevelInstances ()
     {
         AddAssembly(With(
             """
@@ -488,6 +488,51 @@ public class SerializerTest : EmitTest
             """));
         Execute();
         DoesNotContain("Binary<");
+    }
+
+    [Fact]
+    public void SerializesInstancesUnderSerialized ()
+    {
+        AddAssembly(With(
+            """
+            public record Data (IExported Foo);
+
+            public interface IExported { void Inv (); }
+
+            public class Class
+            {
+                [Export] public static Data? GetData () => default;
+            }
+            """));
+        Execute();
+        Contains("Binary<global::IExported>");
+    }
+
+    [Fact]
+    public void SerializesAllTheCrawledSerializableTypes ()
+    {
+        AddAssembly(
+            With("y", "public enum Enum { A, B }"),
+            With("y", "public record Struct (double A, ReadonlyStruct[]? B);"),
+            With("y", "public record ReadonlyStruct (Enum e);"),
+            With("n", "public struct Struct { public y.Struct S { get; set; } public ReadonlyStruct[]? A { get; set; } }"),
+            With("n", "public readonly struct ReadonlyStruct { public double A { get; init; } }"),
+            With("n", "public readonly record struct ReadonlyRecordStruct(double A);"),
+            With("n", "public record class RecordClass(double A);"),
+            With("n", "public enum Enum { A, B }"),
+            With("n", "public record Foo { public Struct S { get; } public ReadonlyStruct Rs { get; } }"),
+            WithClass("n", "public record Bar : Foo { public ReadonlyRecordStruct Rrs { get; } public RecordClass Rc { get; } }"),
+            With("n", "public record Baz { public List<Class.Bar?> Bars { get; } }"),
+            WithClass("n", "[Export] public static Task<Baz?> GetBaz (Enum e) => default;"));
+        Execute();
+        Contains("Binary<global::y.Enum>");
+        Contains("Binary<global::n.Enum>");
+        Contains("Binary<global::y.Struct>");
+        Contains("Binary<global::n.Struct>");
+        Contains("Binary<global::n.ReadonlyStruct>");
+        Contains("Binary<global::y.ReadonlyStruct>");
+        Contains("Binary<global::n.ReadonlyStruct[]>");
+        Contains("Binary<global::y.ReadonlyStruct[]>");
     }
 
     [Fact]
@@ -524,32 +569,5 @@ public class SerializerTest : EmitTest
         Once("Binary<global::Foo.Bar.Record>");
         Once("Binary<global::System.Collections.Generic.IReadOnlyList<global::Foo.Bar.Record>>");
         Once("Binary<global::System.Collections.Generic.IReadOnlyDictionary<global::System.String, global::Foo.Bar.Record>>");
-    }
-
-    [Fact]
-    public void SerializesAllTheCrawledSerializableTypes ()
-    {
-        AddAssembly(
-            With("y", "public enum Enum { A, B }"),
-            With("y", "public record Struct (double A, ReadonlyStruct[]? B);"),
-            With("y", "public record ReadonlyStruct (Enum e);"),
-            With("n", "public struct Struct { public y.Struct S { get; set; } public ReadonlyStruct[]? A { get; set; } }"),
-            With("n", "public readonly struct ReadonlyStruct { public double A { get; init; } }"),
-            With("n", "public readonly record struct ReadonlyRecordStruct(double A);"),
-            With("n", "public record class RecordClass(double A);"),
-            With("n", "public enum Enum { A, B }"),
-            With("n", "public record Foo { public Struct S { get; } public ReadonlyStruct Rs { get; } }"),
-            WithClass("n", "public record Bar : Foo { public ReadonlyRecordStruct Rrs { get; } public RecordClass Rc { get; } }"),
-            With("n", "public record Baz { public List<Class.Bar?> Bars { get; } }"),
-            WithClass("n", "[Export] public static Task<Baz?> GetBaz (Enum e) => default;"));
-        Execute();
-        Contains("Binary<global::y.Enum> ");
-        Contains("Binary<global::n.Enum> ");
-        Contains("Binary<global::y.Struct> ");
-        Contains("Binary<global::n.Struct> ");
-        Contains("Binary<global::n.ReadonlyStruct> ");
-        Contains("Binary<global::y.ReadonlyStruct> ");
-        Contains("Binary<global::n.ReadonlyStruct[]> ");
-        Contains("Binary<global::y.ReadonlyStruct[]> ");
     }
 }

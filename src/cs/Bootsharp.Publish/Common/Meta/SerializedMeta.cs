@@ -50,9 +50,10 @@ internal sealed record SerializedDictionaryMeta (Type Clr,
     SerializedMeta Key, SerializedMeta Value) : SerializedMeta(Clr);
 
 /// <summary>
-/// Describes an instance reference (<see cref="InstancedMeta"/>) under a serialized object.
+/// Describes an instance reference under a serialized object.
 /// </summary>
-internal sealed record SerializedInstanceMeta (Type Clr) : SerializedMeta(Clr);
+/// <param name="Instance">The associated instanced type info.</param>
+internal sealed record SerializedInstanceMeta (InstancedMeta Instance) : SerializedMeta(Instance.Clr);
 
 /// <summary>
 /// Describes a serialized user-defined object, such as a record or a struct.

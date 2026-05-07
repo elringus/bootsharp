@@ -2,9 +2,9 @@ using System.Threading.Tasks;
 
 namespace Test.Types;
 
-public class ExportedStatic : IExportedStatic
+public class ExportedModule : IExportedModule
 {
-    public event IExportedStatic.RecordChanged? OnRecordChanged;
+    public event IExportedModule.RecordChanged? OnRecordChanged;
 
     public Record? Record { get; set => OnRecordChanged?.Invoke(field = value); }
 

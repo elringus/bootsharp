@@ -160,4 +160,49 @@ internal static class GlobalType
         if (delimiterIndex < 0) return typeName;
         return typeName[..delimiterIndex];
     }
+
+    public static string Export (ArgumentMeta arg) => Export(arg.Value, arg.Name);
+    public static string Export (ValueMeta value, string exp) => Export(value.Type, exp);
+    public static string Export (TypeMeta type, string exp)
+    {
+        if (type is InstancedMeta it)
+            if (it.Interop == InteropKind.Export) return $"Instances.Export({exp})";
+            else return $"((global::{it.FullName}){exp})._id";
+        if (type is SerializedMeta sm) return $"Serializer.Serialize({exp}, SerializerContext.{sm.Id})";
+        return exp;
+    }
+
+    public static string Import (ArgumentMeta arg) => Import(arg.Value, arg.Name);
+    public static string Import (ValueMeta value, string exp) => Import(value.Type, exp);
+    public static string Import (TypeMeta type, string exp)
+    {
+        if (type is InstancedMeta it)
+            if (it.Interop == InteropKind.Export) return $"Instances.Exported<{it.Syntax}>({exp})";
+            else return $"Instances.Import({exp}, static id => new global::{it.FullName}(id))";
+        if (type is SerializedMeta sm) return $"Serializer.Deserialize({exp}, SerializerContext.{sm.Id})";
+        return exp;
+    }
+
+    public static string ExportJS (ArgumentMeta arg) => ExportJS(arg.Value, arg.JSName);
+    public static string ExportJS (ValueMeta value, string exp) => ExportJS(value.Type, exp);
+    public static string ExportJS (TypeMeta type, string exp)
+    {
+        if (type is InstancedMeta it)
+            if (it.Interop == InteropKind.Export) return $"{exp}._id";
+            else if (it.Importer is { } importer) return $"{importer}({exp})";
+            else return $"instances.import({exp})";
+        if (type is SerializedMeta sm) return $"serialize({exp}, {sm.Id})";
+        return exp;
+    }
+
+    public static string ImportJS (ArgumentMeta arg) => ImportJS(arg.Value, arg.JSName);
+    public static string ImportJS (ValueMeta value, string exp) => ImportJS(value.Type, exp);
+    public static string ImportJS (TypeMeta type, string exp)
+    {
+        if (type is InstancedMeta it)
+            if (it.Interop == InteropKind.Import) return $"instances.imported({exp})";
+            else return $"instances.export({exp}, id => new {it.JSName}(id))";
+        if (type is SerializedMeta sm) return $"deserialize({exp}, {sm.Id})";
+        return exp;
+    }
 }

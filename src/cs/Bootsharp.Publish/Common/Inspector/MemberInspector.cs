@@ -45,8 +45,7 @@ internal sealed class MemberInspector (Preferences prefs, InspectType inspect)
     private ValueMeta CreateValue (Type type, NullabilityInfo nil, InteropKind ik) => new() {
         Type = inspect(type, ik),
         TypeSyntax = BuildSyntax(type, nil),
-        Nullable = IsNullable(type, nil),
-        Nullity = nil
+        Nullable = IsNullable(type, nil)
     };
 
     private string BuildJSSpace (Type decl)

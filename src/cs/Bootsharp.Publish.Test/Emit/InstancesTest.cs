@@ -37,11 +37,7 @@ public class InstancesTest : EmitTest
                 {
                     internal readonly global::System.Int32 _id = id;
 
-                    ~JSImported()
-                    {
-                        global::Bootsharp.Instances.DisposeImported(_id);
-                        global::Bootsharp.Generated.Interop.DisposeImportedInstance(_id);
-                    }
+                    ~JSImported() => Instances.DisposeImported(_id);
 
                     public event global::System.Action<global::Record?> OnRecordChanged;
                     internal void InvokeOnRecordChanged (global::Record? obj) => OnRecordChanged?.Invoke(obj);
@@ -102,5 +98,55 @@ public class InstancesTest : EmitTest
             """));
         Execute();
         DoesNotContain("Foo");
+    }
+
+    [Fact]
+    public void GeneratesSpecializedExportsForInstancesWithEvents ()
+    {
+        AddAssembly(With(
+            """
+            public record Record;
+
+            public interface IExported { event Action<Record, IExported> Changed; }
+            public interface IImported { event Action<Record, IImported> Changed; }
+
+            public partial class Class
+            {
+                [Export] public static IExported GetExported (IImported it) => default;
+                [Import] public static IImported GetImported (IExported it) => default;
+            }
+            """));
+        Execute();
+        Contains(
+            """
+                    internal static int Export (global::IExported instance) => Export(instance, static (_id, instance) => {
+                        instance.Changed += HandleChanged;
+                        return () => {
+                            instance.Changed -= HandleChanged;
+                        };
+
+                        void HandleChanged (global::Record arg1, global::IExported arg2) => Interop.Exported_BroadcastChanged_Serialized(_id, Serializer.Serialize(arg1, SerializerContext.Record), Instances.Export(arg2));
+                    });
+            """);
+    }
+
+    [Fact]
+    public void DoesNotGenerateDuplicateSpecializedExports ()
+    {
+        AddAssembly(With(
+            """
+            public interface IExported
+            {
+                event Action? Changed;
+                event Action<string>? Done;
+            }
+
+            public class Class
+            {
+                [Export] public static IExported GetExported () => default;
+            }
+            """));
+        Execute();
+        Once(@"internal static int Export \(global::IExported instance\)");
     }
 }

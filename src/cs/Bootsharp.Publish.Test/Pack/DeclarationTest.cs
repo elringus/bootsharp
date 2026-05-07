@@ -846,8 +846,8 @@ public class DeclarationTest : PackTest
 
             public class Class
             {
-                [Export] public static Task<IExported> GetExported (IImported inst) => default;
-                [Import] public static Task<IImported> GetImported (IExported inst) => default;
+                [Export] public static Task<IExported> GetExported (IImported it) => default;
+                [Import] public static Task<IImported> GetImported (IExported it) => default;
             }
             """));
         Execute();
@@ -865,8 +865,8 @@ public class DeclarationTest : PackTest
             }>;
 
             export namespace Class {
-                export function getExported(inst: IImported): Promise<IExported>;
-                export let getImported: (inst: IExported) => Promise<IImported>;
+                export function getExported(it: IImported): Promise<IExported>;
+                export let getImported: (it: IExported) => Promise<IImported>;
             }
             """);
     }
@@ -947,8 +947,8 @@ public class DeclarationTest : PackTest
 
             public class Class
             {
-                [Export] public static IExported GetExported (IImported inst) => default;
-                [Import] public static IImported GetImported (IExported inst) => default;
+                [Export] public static IExported GetExported (IImported it) => default;
+                [Import] public static IImported GetImported (IExported it) => default;
             }
             """));
         Execute();
@@ -969,8 +969,8 @@ public class DeclarationTest : PackTest
             }>;
 
             export namespace Class {
-                export function getExported(inst: IImported): IExported;
-                export let getImported: (inst: IExported) => IImported;
+                export function getExported(it: IImported): IExported;
+                export let getImported: (it: IExported) => IImported;
             }
             """);
     }
@@ -1023,8 +1023,8 @@ public class DeclarationTest : PackTest
 
             public class Class
             {
-                [Export] public static IExported GetExported (IImported inst) => default;
-                [Import] public static IImported GetImported (IExported inst) => default;
+                [Export] public static IExported GetExported (IImported it) => default;
+                [Import] public static IImported GetImported (IExported it) => default;
             }
             """));
         Execute();
@@ -1042,8 +1042,8 @@ public class DeclarationTest : PackTest
             }>;
 
             export namespace Class {
-                export function getExported(inst: IImported): IExported;
-                export let getImported: (inst: IExported) => IImported;
+                export function getExported(it: IImported): IExported;
+                export let getImported: (it: IExported) => IImported;
             }
             """);
     }

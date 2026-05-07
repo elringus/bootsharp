@@ -29,4 +29,12 @@ internal record InstancedMeta (Type Clr) : TypeMeta(Clr)
     /// Members declared on the instance.
     /// </summary>
     public required IReadOnlyCollection<MemberMeta> Members { get; init; }
+    /// <summary>
+    /// Name of the specialized C# exporter method or null when <see cref="Instances.Export"/> is sufficient.
+    /// </summary>
+    public string? Exporter { get; init; }
+    /// <summary>
+    /// Name of the specialized JS importer function or null when <see cref="Instances.Import"/> is sufficient.
+    /// </summary>
+    public string? Importer { get; init; }
 }

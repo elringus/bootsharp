@@ -58,7 +58,7 @@ internal sealed class SerializedInspector (InstancedInspector itd)
             type.IsArray ? new SerializedArrayMeta(type, Build(type.GetElementType()!)) :
             IsList(type, out var element) ? new SerializedListMeta(type, Build(element)) :
             IsDictionary(type, out var k, out var v) ? new SerializedDictionaryMeta(type, Build(k), Build(v)) :
-            IsInstancedType(type) ? new SerializedInstanceMeta(itd.Inspect(type, ik)!.Clr) :
+            IsInstancedType(type) ? new SerializedInstanceMeta(itd.Inspect(type, ik)!) :
             BuildObject(type);
         cycle.Remove(type);
         return meta;
@@ -167,8 +167,8 @@ internal sealed class SerializedInspector (InstancedInspector itd)
 
         static int GetInitOrder (SerializedMeta meta) => meta switch {
             SerializedPrimitiveMeta or SerializedEnumMeta => 0,
-            SerializedObjectMeta => 2,
-            _ => 3
+            SerializedInstanceMeta or SerializedObjectMeta => 1,
+            _ => 2
         };
 
         static IEnumerable<string> GetInitDependencies (SerializedMeta meta)

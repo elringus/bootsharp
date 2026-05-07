@@ -31,7 +31,9 @@ internal sealed class InstancedInspector (MemberInspector members)
         Namespace = BuildSpace(type, ik),
         Name = BuildName(type),
         JSName = BuildJSName(type),
-        Members = new List<MemberMeta>()
+        Members = new List<MemberMeta>(),
+        Exporter = BuildExporter(type, ik),
+        Importer = BuildImporter(type, ik)
     };
 
     private InstancedMeta CollectMembers (InstancedMeta it)
@@ -78,5 +80,17 @@ internal sealed class InstancedInspector (MemberInspector members)
         var name = BuildName(type);
         if (type.Namespace == null) return name;
         return $"{type.Namespace}.{name}".Replace(".", "_");
+    }
+
+    private string? BuildExporter (Type type, InteropKind ik)
+    {
+        if (ik != InteropKind.Export || type.GetEvents().Length == 0) return null;
+        return "Export"; // we're using method overloads instead of unique names
+    }
+
+    private string? BuildImporter (Type type, InteropKind ik)
+    {
+        if (ik != InteropKind.Import || type.GetEvents().Length == 0) return null;
+        return $"import_{type.FullName!.Replace('.', '_').Replace('+', '_')}";
     }
 }

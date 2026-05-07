@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 
 namespace Bootsharp.Publish;
 
@@ -21,10 +20,6 @@ internal sealed record ValueMeta
     /// Whether the value is explicitly nullable: has nullable annotation or is <see cref="System.Nullable"/>.
     /// </summary>
     public required bool Nullable { get; init; }
-    /// <summary>
-    /// Nullability context of the value.
-    /// </summary>
-    public required NullabilityInfo Nullity { get; init; }
     /// <summary>
     /// Serialization info when <see cref="IsSerialized"/>, null otherwise.
     /// </summary>
