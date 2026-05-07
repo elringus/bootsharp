@@ -16,7 +16,8 @@ internal sealed class InstancedInspector (MemberInspector members)
 
     public ModuleMeta? InspectModule (Type type, InteropKind ik)
     {
-        if (ik == InteropKind.Import && !type.IsInterface || IsStatic(type)) return null;
+        if (ik == InteropKind.Import && !type.IsInterface) return null;
+        if (IsStatic(type)) return null;
         var it = CollectMembers(InspectType(type, ik));
         return new(type) { Interop = ik, Namespace = it.Namespace, Name = it.Name, Members = it.Members };
     }
