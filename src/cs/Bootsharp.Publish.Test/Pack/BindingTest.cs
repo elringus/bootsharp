@@ -5,7 +5,7 @@ public class BindingTest : PackTest
     protected override string TestedContent => GeneratedBindings;
 
     [Fact]
-    public void WhenNoBindingsNothingIsGenerated ()
+    public void WhenNoBindingsNothingGenerated ()
     {
         Execute();
         Assert.Empty(TestedContent);
@@ -65,7 +65,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void BindingForInvokableMethodIsGenerated ()
+    public void BindingForStaticExportedMethodGenerated ()
     {
         AddAssembly(WithClass("Foo.Bar", "[Export] public static void Nya () {}"));
         Execute();
@@ -82,7 +82,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void BindingForFunctionMethodIsGenerated ()
+    public void BindingForStaticImportedMethodGenerated ()
     {
         AddAssembly(WithClass("Foo.Bar", "[Import] public static void Fun () {}"));
         Execute();
@@ -101,7 +101,7 @@ public class BindingTest : PackTest
     }
 
     [Fact]
-    public void BindingForStaticEventsIsGenerated ()
+    public void BindingForStaticEventGenerated ()
     {
         AddAssembly(
             WithClass("[Export] public static event Action? ExpEvt;"),
@@ -116,6 +116,24 @@ public class BindingTest : PackTest
                 evt: new Event(),
                 broadcastEvtSerialized: (obj) => Class.evt.broadcast(obj),
                 impEvt: importEvent((arg1, arg2) => exports.Class_InvokeImpEvt(arg1, arg2))
+            };
+            """);
+    }
+
+    [Fact]
+    public void BindingForStaticPropertyGenerated ()
+    {
+        AddAssembly(
+            WithClass("[Export] public static int ExpProp { get; set; }"),
+            WithClass("[Import] public static string ImpProp { get => default!; set { } }"));
+        Execute();
+        Contains(
+            """
+            export const Class = {
+                get expProp() { return exports.Class_GetPropertyExpProp(); },
+                set expProp(value) { exports.Class_SetPropertyExpProp(value); },
+                getPropertyImpPropSerialized() { return this.impProp.get(); },
+                setPropertyImpPropSerialized(value) { this.impProp.set(value); }
             };
             """);
     }
@@ -695,12 +713,9 @@ public class BindingTest : PackTest
                     set count(value) { exports.Bootsharp_Generated_Exports_Space_JSExported_SetPropertyCount(value); }
                 },
                 Imported: {
-                    get state() { return this._state; },
-                    getPropertyStateSerialized() { return serialize(this.state, Space_Info); },
-                    set state(value) { this._state = value; },
-                    setPropertyStateSerialized(value) { this.state = deserialize(value, Space_Info); },
-                    set count(value) { this._count = value; },
-                    setPropertyCountSerialized(value) { this.count = value; }
+                    getPropertyStateSerialized() { return serialize(this.state.get(), Space_Info); },
+                    setPropertyStateSerialized(value) { this.state.set(deserialize(value, Space_Info)); },
+                    setPropertyCountSerialized(value) { this.count.set(value); }
                 }
             };
             """);

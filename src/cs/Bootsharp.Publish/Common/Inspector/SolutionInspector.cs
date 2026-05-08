@@ -84,6 +84,9 @@ internal sealed class SolutionInspector
         foreach (var evt in type.GetEvents(BindingFlags.Public | BindingFlags.Static))
             if (ResolveInterop(evt) is { } ik)
                 statics.Add(members.Inspect(evt, ik));
+        foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Static))
+            if (ResolveInterop(prop) is { } ik)
+                statics.Add(members.Inspect(prop, ik));
         foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
             if (ResolveInterop(method) is { } ik)
                 statics.Add(members.Inspect(method, ik));

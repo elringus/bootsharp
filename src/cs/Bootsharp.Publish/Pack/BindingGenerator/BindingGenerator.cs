@@ -232,17 +232,16 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
     {
         if (prop.CanGet)
         {
-            if (!isIt) bld.Append($"{Br}get {prop.JSName}() {{ return this._{prop.JSName}; }}");
             var args = isIt ? "_id" : "";
-            var body = ExportJS(prop.GetValue, isIt ? $"instances.imported(_id).{prop.JSName}" : $"this.{prop.JSName}");
+            var body = ExportJS(prop.GetValue,
+                isIt ? $"instances.imported(_id).{prop.JSName}" : $"this.{prop.JSName}.get()");
             bld.Append($"{Br}getProperty{prop.Name}Serialized({args}) {{ return {body}; }}");
         }
         if (prop.CanSet)
         {
-            if (!isIt) bld.Append($"{Br}set {prop.JSName}(value) {{ this._{prop.JSName} = value; }}");
             var value = ImportJS(prop.SetValue, "value");
             var args = isIt ? "_id, value" : "value";
-            var body = isIt ? $"instances.imported(_id).{prop.JSName} = {value}" : $"this.{prop.JSName} = {value}";
+            var body = isIt ? $"instances.imported(_id).{prop.JSName} = {value}" : $"this.{prop.JSName}.set({value})";
             bld.Append($"{Br}setProperty{prop.Name}Serialized({args}) {{ {body}; }}");
         }
     }

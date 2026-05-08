@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 
-namespace Test.Types;
+namespace Test.Library;
 
-public interface IExportedModule
+public interface IImportedModule
 {
     delegate void RecordChanged (Record? record);
 
@@ -10,5 +10,5 @@ public interface IExportedModule
 
     Record? Record { get; set; }
 
-    Task<IExportedInstanced> GetInstanceAsync (string arg);
+    Task<IImportedInstanced> GetInstanceAsync (string arg);
 }

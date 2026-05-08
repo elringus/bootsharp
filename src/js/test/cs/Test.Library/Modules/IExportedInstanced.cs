@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Test.Types;
+namespace Test.Library;
 
 public interface IExportedInstanced
 {

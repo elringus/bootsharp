@@ -72,11 +72,15 @@ public class GeneratorTest
     }
 
     [Theory, MemberData(nameof(ImportMethodTest.Data), MemberType = typeof(ImportMethodTest))]
-    public Task PartialImportMethodsImplemented (string source, string expected)
+    public Task ImportedMethodsImplemented (string source, string expected)
+        => Verify(source, ("FooImports.g.cs", expected));
+
+    [Theory, MemberData(nameof(ImportPropertyTest.Data), MemberType = typeof(ImportPropertyTest))]
+    public Task ImportedPropertiesImplemented (string source, string expected)
         => Verify(source, ("FooImports.g.cs", expected));
 
     [Theory, MemberData(nameof(ImportEventTest.Data), MemberType = typeof(ImportEventTest))]
-    public Task PartialImportEventsImplemented (string source, string expected)
+    public Task ImportedEventsImplemented (string source, string expected)
         => Verify(source, ("FooImports.g.cs", expected));
 
     private async Task Verify (string source, params (string file, string content)[] expected)

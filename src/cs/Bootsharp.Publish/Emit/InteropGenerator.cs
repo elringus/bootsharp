@@ -40,7 +40,10 @@ internal sealed class InteropGenerator
                           .Select(e => EmitStaticEventSubscription(e, md.FullName))),
                       ..spec.Static.OfType<MethodMeta>()
                           .Where(m => m.Interop == InteropKind.Import)
-                          .Select(EmitStaticMethodAssignment)
+                          .Select(EmitStaticMethodAssignment),
+                      ..spec.Static.OfType<PropertyMeta>()
+                          .Where(p => p.Interop == InteropKind.Import)
+                          .SelectMany(EmitStaticPropertyAssignment)
                   ], 2)}}
               }
 
@@ -60,6 +63,13 @@ internal sealed class InteropGenerator
     {
         var name = $"{method.Space.Replace('.', '_')}_{method.Name}";
         return $"global::{method.Space}.Bootsharp_{method.Name} = &{name};";
+    }
+
+    private static IEnumerable<string> EmitStaticPropertyAssignment (PropertyMeta p)
+    {
+        var id = p.Space.Replace('.', '_');
+        if (p.CanGet) yield return $"global::{p.Space}.Bootsharp_GetProperty{p.Name} = &{id}_GetProperty{p.Name};";
+        if (p.CanSet) yield return $"global::{p.Space}.Bootsharp_SetProperty{p.Name} = &{id}_SetProperty{p.Name};";
     }
 
     private IEnumerable<string?> EmitMember (MemberMeta member, InstancedMeta? it, ModuleMeta? md)
@@ -112,9 +122,9 @@ internal sealed class InteropGenerator
             var attr = $"[JSExport] {MarshalAmbiguous(prop.GetValue, true)}";
             var name = $"{id}_GetProperty{prop.Name}";
             var args = isIt ? $"{BuildSyntax(typeof(int))} _id" : "";
-            var body = Export(prop.GetValue, isIt
-                ? $"Instances.Exported<{it.Syntax}>(_id).{prop.Name}"
-                : $"global::{space}.GetProperty{prop.Name}()");
+            var body = Export(prop.GetValue, isIt ? $"Instances.Exported<{it.Syntax}>(_id).{prop.Name}"
+                : isMd ? $"global::{space}.GetProperty{prop.Name}()"
+                : $"global::{space}.{prop.Name}");
             yield return $"{attr}internal static {BuildValueSyntax(prop.GetValue)} {name} ({args}) => {body};";
         }
         if (prop.CanSet)
@@ -123,9 +133,9 @@ internal sealed class InteropGenerator
             var args = BuildParameter(prop.SetValue, "value");
             if (isIt) args = $"{BuildSyntax(typeof(int))} {PrependIdArg(args)}";
             var value = Import(prop.SetValue, "value");
-            var body = isIt
-                ? $"Instances.Exported<{it.Syntax}>(_id).{prop.Name} = {value}"
-                : $"global::{space}.SetProperty{prop.Name}({value})";
+            var body = isIt ? $"Instances.Exported<{it.Syntax}>(_id).{prop.Name} = {value}"
+                : isMd ? $"global::{space}.SetProperty{prop.Name}({value})"
+                : $"global::{space}.{prop.Name} = {value}";
             yield return $"[JSExport] internal static void {name} ({args}) => {body};";
         }
     }

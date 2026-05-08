@@ -2,7 +2,8 @@ namespace Bootsharp;
 
 /// <summary>
 /// When applied to a static partial method binds it with a JavaScript function.
-/// When applied to a static <see cref="Action"/> event allows JavaScript consumers broadcast it.
+/// When applied to a static partial property binds it with a JavaScript getter/setter.
+/// When applied to a static event allows JavaScript consumers broadcast it.
 /// When applied to WASM entry point assembly, JavaScript bindings for the specified module
 /// interfaces will be automatically generated for consumption on the C# side.
 /// </summary>
@@ -17,20 +18,25 @@ namespace Bootsharp;
 /// [Import]
 /// public static partial string GetHostName ();
 /// </code>
+/// Bind "Counter" property with a JavaScript variable:
+/// <code>
+/// [Import]
+/// public static partial int Counter { get; set; }
+/// </code>
 /// Allows broadcasting "OnSomething" event on the JavaScript side:
 /// <code>
 /// [Import]
 /// public static event Action OnSomething;
 /// </code>
-/// Generate JavaScript APIs based on "IFrontendAPI" and "IOtherFrontendAPI" interfaces:
+/// Generate JavaScript APIs based on "IFrontend" and "IChromium" interfaces:
 /// <code>
 /// [assembly: Import(
-///     typeof(IFrontendAPI),
-///     typeof(IOtherFrontendAPI)
+///     typeof(IFrontend),
+///     typeof(IChromium)
 /// )]
 /// </code>
 /// </example>
-[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Method | AttributeTargets.Event)]
+[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Method | AttributeTargets.Event | AttributeTargets.Property)]
 public sealed class ImportAttribute : Attribute
 {
     /// <summary>

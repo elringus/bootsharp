@@ -79,7 +79,7 @@ internal sealed record EventMeta (EventInfo Info) : MemberMeta
 }
 
 /// <summary>
-/// An interop property declared on a module or instanced API surface.
+/// An interop property declared on a static, module or instanced API surface.
 /// </summary>
 internal sealed record PropertyMeta (PropertyInfo Info) : MemberMeta
 {

@@ -16,9 +16,10 @@ internal sealed class SyntaxReceiver
     private void VisitClass (ClassDeclarationSyntax stx, Compilation cmp)
     {
         var methods = GetMethodsWithAttribute(stx, "Import");
+        var props = GetPropertiesWithAttribute(stx, "Import");
         var events = GetEventsWithAttribute(stx, "Import");
-        if (methods.Count > 0 || events.Count > 0)
-            ImportClasses.Add(new(cmp, stx, methods, events));
+        if (methods.Count > 0 || events.Count > 0 || props.Count > 0)
+            ImportClasses.Add(new(cmp, stx, methods, props, events));
     }
 
     private List<ImportMethod> GetMethodsWithAttribute (ClassDeclarationSyntax stx, string attribute)
@@ -35,6 +36,14 @@ internal sealed class SyntaxReceiver
             .OfType<EventFieldDeclarationSyntax>()
             .Where(s => s.Modifiers.Any(m => m.Text == "static") && HasAttribute(s, attribute))
             .Select(e => new ImportEvent(e)).ToList();
+    }
+
+    private List<ImportProperty> GetPropertiesWithAttribute (ClassDeclarationSyntax stx, string attribute)
+    {
+        return stx.Members
+            .OfType<PropertyDeclarationSyntax>()
+            .Where(s => s.Modifiers.Any(m => m.Text == "static") && HasAttribute(s, attribute))
+            .Select(p => new ImportProperty(p)).ToList();
     }
 
     private bool HasAttribute (MemberDeclarationSyntax stx, string attributeName)
