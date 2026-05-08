@@ -1,5 +1,5 @@
 import { describe, it, beforeAll, expect, vi } from "vitest";
-import { Event, Test, bootSideload } from "../cs";
+import { Event, Test, bootRuntime } from "../cs";
 
 const TrackType = Test.Library.TrackType;
 
@@ -30,7 +30,7 @@ describe("while bootsharp is not booted", () => {
 });
 
 describe("while bootsharp is booted", () => {
-    beforeAll(bootSideload);
+    beforeAll(bootRuntime);
     it("JS functions are unassigned by default", () => {
         expect(Test.Platform.throwJS).toBeUndefined();
         expect(Test.Static.importedFunction).toBeUndefined();
@@ -218,6 +218,9 @@ describe("while bootsharp is booted", () => {
     });
     it("can catch dotnet exceptions", () => {
         expect(() => Test.Platform.throwCS("bar")).throw("bar");
+    });
+    it("can catch dotnet exceptions from async methods", async () => {
+        await expect(Test.Platform.throwCSAsync("baz")).rejects.toThrow("baz");
     });
     it("maps enums by both indexes and strings", () => {
         expect(Test.Static.Enum[1]).toStrictEqual("One");

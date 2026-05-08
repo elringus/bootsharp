@@ -2,5 +2,5 @@
     "name": "%MODULE_NAME%",
     "type": "module",
     "main": "%MODULE_DIR%/index.mjs",
-    "types": "%TYPES_DIR%/index.d.ts"
+    "types": "%TYPES_DIR%/index.d.mts"
 }

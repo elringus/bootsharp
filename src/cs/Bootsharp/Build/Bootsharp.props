@@ -17,15 +17,11 @@
         <!-- User Preferences -->
         <!-- Name of the generated JavaScript module; 'bootsharp' by default. -->
         <BootsharpName>bootsharp</BootsharpName>
-        <!-- Whether to embed binaries to the JavaScript module file (true or false); true by default. -->
-        <BootsharpEmbedBinaries>true</BootsharpEmbedBinaries>
-        <!-- The command to run when compiling/bundling generated JavaScrip solution. -->
-        <BootsharpBundleCommand/>
         <!-- Directory to publish generated JavaScript module; 'base-output/module-name' by default. -->
         <BootsharpPublishDirectory/>
         <!-- Directory to publish type declarations; 'publish-dir/types' by default. -->
         <BootsharpTypesDirectory/>
-        <!-- Directory to publish binaries when 'EmbedBinaries' disabled; 'publish-dir/bin' by default. -->
+        <!-- Directory to publish binaries; 'publish-dir/bin' by default. -->
         <BootsharpBinariesDirectory/>
         <!-- Directory to publish 'package.json' file; same as publish directory by default. -->
         <BootsharpPackageDirectory/>

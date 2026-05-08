@@ -1,4 +1,4 @@
-import { exports } from "./exports";
+import { exports } from "./exports.mjs";
 
 const exportedFinalizer = new FinalizationRegistry(finalizeExported);
 const exportedById = new Map<number, WeakRef<object>>();
@@ -49,6 +49,6 @@ export const instances = {
 /* v8 ignore start -- @preserve */ // Uncoverable, as finalization in Node is not controllable.
 function finalizeExported(id: number) {
     exportedById.delete(id);
-    (<{ disposeExported: (id: number) => void }>exports).disposeExported(id);
+    (exports as { disposeExported: (id: number) => void }).disposeExported(id);
 }
 /* v8 ignore stop -- @preserve */

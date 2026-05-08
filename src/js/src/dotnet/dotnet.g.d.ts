@@ -1,7 +1,3 @@
-// Resolved when building C# solution.
-export const embedded = false;
-export const mt = false;
-
 // Types: https://github.com/dotnet/runtime/blob/release/10.0/src/mono/browser/runtime/dotnet.d.ts
 
 declare interface NativePointer {

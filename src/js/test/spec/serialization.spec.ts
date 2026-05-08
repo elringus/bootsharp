@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { Test, bootSideload } from "../cs";
+import { Test, bootRuntime } from "../cs";
 
 describe("serialization", () => {
-    beforeAll(bootSideload);
+    beforeAll(bootRuntime);
     it("can echo primitives", () => {
         const input: Test.Primitives = {
             boolean: true,
@@ -38,11 +38,27 @@ describe("serialization", () => {
         expect(Test.Serialization.echoPrimitives([input, null])).toStrictEqual([expected, null]);
         expect(Test.Serialization.echoPrimitives(undefined)).toBeNull();
     });
+    it("can echo primitives with all nullable fields omitted", () => {
+        const input: Test.Primitives = {
+            boolean: false, byte: 0, sByte: 0, positiveSByte: 0,
+            int16: 0, uInt16: 0, int32: 0, uInt32: 0,
+            int64: 0n, uInt64: 0, intPtr: 0,
+            single: 0, double: 0, decimal: 0,
+            char: "\0", emptyChar: "\0", missingChar: "\0",
+            dateTime: new Date(0), dateTimeOffset: new Date(0)
+        };
+        expect(Test.Serialization.echoPrimitives([input])).toStrictEqual([input]);
+    });
     it("can echo unions", () => {
         const a: Test.Union = { shared: "A", a: { string: "*", map: new Map([["a", null], ["b", 7]]) } };
         const b: Test.Union = { shared: "B", b: { ints: [], strings: ["foo", "bar"], times: [new Date()] } };
         expect(Test.Serialization.echoUnions([a, b, null])).toStrictEqual([a, b, null]);
         expect(Test.Serialization.echoUnions(undefined)).toBeNull();
+    });
+    it("can echo unions with all nullable fields omitted", () => {
+        const a: Test.Union = { shared: "A", a: {} };
+        const b: Test.Union = { shared: "B", b: { strings: ["x"], times: [new Date()] } };
+        expect(Test.Serialization.echoUnions([a, b])).toStrictEqual([a, b]);
     });
     it("computes expression properties on the C# side", () => {
         expect(Test.Serialization.echoComputed({ id: "foo", count: 7, summary: "ignored" }))

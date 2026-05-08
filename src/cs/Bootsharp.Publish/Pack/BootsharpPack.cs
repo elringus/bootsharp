@@ -9,9 +9,7 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
     public required string DebugDirectory { get; set; }
     public required string InspectedDirectory { get; set; }
     public required string EntryAssemblyName { get; set; }
-    public required bool EmbedBinaries { get; set; }
     public required bool Globalization { get; set; }
-    public required bool Threading { get; set; }
     public required bool LLVM { get; set; }
     public required bool Debug { get; set; }
 
@@ -55,26 +53,33 @@ public sealed class BootsharpPack : Microsoft.Build.Utilities.Task
     {
         var generator = new BindingGenerator(prefs, Debug);
         var content = generator.Generate(spec);
-        File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.js"), content);
+        WriteGenerated("bindings.g.mjs", content);
     }
 
     private void GenerateDeclarations (Preferences prefs, SolutionInspection spec)
     {
         var generator = new DeclarationGenerator(prefs);
         var content = generator.Generate(spec);
-        File.WriteAllText(Path.Combine(BuildDirectory, "bindings.g.d.ts"), content);
+        WriteGenerated("bindings.g.d.mts", content);
     }
 
     private void GenerateResources (SolutionInspection spec)
     {
-        var generator = new ResourceGenerator(EntryAssemblyName, EmbedBinaries, Debug, Globalization);
+        var generator = new ResourceGenerator(EntryAssemblyName, Debug, Globalization);
         var content = generator.Generate(BuildDirectory, DebugDirectory);
-        File.WriteAllText(Path.Combine(BuildDirectory, "resources.g.js"), content);
+        WriteGenerated("resources.g.mjs", content);
     }
 
     private void PatchModules ()
     {
-        var patcher = new ModulePatcher(BuildDirectory, Threading, EmbedBinaries);
+        var patcher = new ModulePatcher(BuildDirectory);
         patcher.Patch();
+    }
+
+    private void WriteGenerated (string filename, string content)
+    {
+        var dir = Path.Combine(BuildDirectory, "generated");
+        Directory.CreateDirectory(dir);
+        File.WriteAllText(Path.Combine(dir, filename), content);
     }
 }
