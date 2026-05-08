@@ -1,8 +1,9 @@
+global using static Test.Library.Assertions;
 using System;
 using Bootsharp;
 using Bootsharp.Inject;
 using Microsoft.Extensions.DependencyInjection;
-using Test.Types;
+using Test.Library;
 
 [assembly: Export(typeof(IExportedModule))]
 [assembly: Import(typeof(IImportedModule), typeof(IRegistryProvider))]

@@ -5,6 +5,7 @@
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>
         <Nullable>enable</Nullable>
+        <DefineTrace>true</DefineTrace>
     </PropertyGroup>
 
     <ItemGroup>

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Test.Types;
+namespace Test.Library;
 
 public interface IRegistry
 {

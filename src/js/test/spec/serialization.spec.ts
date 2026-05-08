@@ -3,7 +3,6 @@ import { Test, bootSideload } from "../cs";
 
 describe("serialization", () => {
     beforeAll(bootSideload);
-
     it("can echo primitives", () => {
         const input: Test.Primitives = {
             boolean: true,
@@ -39,37 +38,33 @@ describe("serialization", () => {
         expect(Test.Serialization.echoPrimitives([input, null])).toStrictEqual([expected, null]);
         expect(Test.Serialization.echoPrimitives(undefined)).toBeNull();
     });
-
     it("can echo unions", () => {
         const a: Test.Union = { shared: "A", a: { string: "*", map: new Map([["a", null], ["b", 7]]) } };
         const b: Test.Union = { shared: "B", b: { ints: [], strings: ["foo", "bar"], times: [new Date()] } };
         expect(Test.Serialization.echoUnions([a, b, null])).toStrictEqual([a, b, null]);
         expect(Test.Serialization.echoUnions(undefined)).toBeNull();
     });
-
     it("computes expression properties on the C# side", () => {
         expect(Test.Serialization.echoComputed({ id: "foo", count: 7, summary: "ignored" }))
             .toStrictEqual({ id: "foo", count: 7, summary: "foo:7" });
         expect(Test.Serialization.echoComputedArray([{ id: "bar", count: 3, summary: "ignored" }, null]))
             .toStrictEqual([{ id: "bar", count: 3, summary: "bar:3" }, null]);
     });
-
     it("can echo vehicles", async () => {
-        expect(Test.Types.Registries.echoRecords([{ id: "foo" }, null]))
+        expect(Test.Library.Registries.echoRecords([{ id: "foo" }, null]))
             .toStrictEqual([{ id: "foo" }, null]);
-        expect(Test.Types.Registries.echoVehicles([{ id: "foo", maxSpeed: 1 }, null]))
+        expect(Test.Library.Registries.echoVehicles([{ id: "foo", maxSpeed: 1 }, null]))
             .toStrictEqual([{ id: "foo", maxSpeed: 1 }, null]);
-        expect(Test.Types.Registries.echoRegistry({
+        expect(Test.Library.Registries.echoRegistry({
             wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 2 }, null],
-            tracked: [{ id: "bar", maxSpeed: 2, trackType: Test.Types.TrackType.Chain }, null]
+            tracked: [{ id: "bar", maxSpeed: 2, trackType: Test.Library.TrackType.Chain }, null]
         })).toStrictEqual({
             wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 2 }, null],
-            tracked: [{ id: "bar", maxSpeed: 2, trackType: Test.Types.TrackType.Chain }, null]
+            tracked: [{ id: "bar", maxSpeed: 2, trackType: Test.Library.TrackType.Chain }, null]
         });
-        Test.Types.RegistryProvider.getRegistries = () => [];
-        await expect(Test.Types.Registries.concatRegistriesAsync([null])).resolves.toStrictEqual([null]);
+        Test.Library.RegistryProvider.getRegistries = () => [];
+        await expect(Test.Library.Registries.concatRegistriesAsync([null])).resolves.toStrictEqual([null]);
     });
-
     it("can echo arrays", () => {
         expect(Test.Serialization.echoBytes(new Uint8Array([1, 2, 3]))).toStrictEqual(new Uint8Array([1, 2, 3]));
         expect(Test.Serialization.echoIntArray(new Int32Array([-1, 0, 1]))).toStrictEqual(new Int32Array([-1, 0, 1]));
@@ -84,7 +79,6 @@ describe("serialization", () => {
         expect(Test.Serialization.echoNullableIntArray(undefined)).toBeNull();
         expect(Test.Serialization.echoNestedIntArray(undefined)).toBeNull();
     });
-
     it("can echo lists", () => {
         expect(Test.Serialization.echoIntList([1, 2, 3])).toStrictEqual([1, 2, 3]);
         expect(Test.Serialization.echoStringList(["a", null, "", "b"])).toStrictEqual(["a", null, "", "b"]);
@@ -97,7 +91,6 @@ describe("serialization", () => {
         expect(Test.Serialization.echoStringList(undefined)).toBeNull();
         expect(Test.Serialization.echoNestedIntList(undefined)).toBeNull();
     });
-
     it("can echo dictionaries", () => {
         expect(Test.Serialization.echoDictionary(new Map([["1", "a"], ["2", null], ["3", ""]])))
             .toStrictEqual(new Map([["1", "a"], ["2", null], ["3", ""]]));

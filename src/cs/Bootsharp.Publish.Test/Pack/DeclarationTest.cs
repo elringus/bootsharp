@@ -125,6 +125,24 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
+    public void VariablesAreExportedForStaticProperties ()
+    {
+        AddAssembly(
+            WithClass("Foo", "[Export] public static int ExpProp { get; set; }"),
+            WithClass("Foo", "[Export] public static string ReadOnlyProp { get; }"),
+            WithClass("Foo", "[Import] public static bool? ImpProp { get => default; set { } }"));
+        Execute();
+        Contains(
+            """
+            export namespace Foo.Class {
+                export let expProp: number;
+                export const readOnlyProp: string;
+                export let impProp: { get: () => boolean | undefined; set: (value: boolean | undefined) => void };
+            }
+            """);
+    }
+
+    [Fact]
     public void MembersFromSameSpaceAreDeclaredUnderSameSpace ()
     {
         AddAssembly(
@@ -917,9 +935,9 @@ public class DeclarationTest : PackTest
                 export let imported: IImportedInstanced;
             }
             export namespace ImportedStatic {
-                export const state: Info;
-                export const imported: IImportedInstanced;
-                export let exported: IExportedInstanced;
+                export let state: { get: () => Info };
+                export let imported: { get: () => IImportedInstanced };
+                export let exported: { set: (value: IExportedInstanced) => void };
             }
             """);
     }

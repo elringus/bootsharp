@@ -11,11 +11,12 @@
         <InvariantGlobalization>false</InvariantGlobalization>
         <WasmIncludeFullIcuData>true</WasmIncludeFullIcuData>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <DefineTrace>true</DefineTrace>
         <NoWarn>CS1591</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../Test.Types/Test.Types.csproj"/>
+        <ProjectReference Include="../Test.Library/Test.Library.csproj"/>
         <PackageReference Include="Bootsharp" Version="*-*"/>
         <PackageReference Include="Bootsharp.Inject" Version="*-*"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="*"/>

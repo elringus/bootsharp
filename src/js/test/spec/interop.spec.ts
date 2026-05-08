@@ -1,21 +1,21 @@
 import { describe, it, beforeAll, expect, vi } from "vitest";
 import { Event, Test, bootSideload } from "../cs";
 
-const TrackType = Test.Types.TrackType;
+const TrackType = Test.Library.TrackType;
 
-class Imported implements Test.Types.IImportedInstanced {
-    onRecordChanged = new Event<[Test.Types.IImportedInstanced, Test.Types.Record | undefined]>();
-    record: Test.Types.Record = { id: "foo" };
+class Imported implements Test.Library.IImportedInstanced {
+    onRecordChanged = new Event<[Test.Library.IImportedInstanced, Test.Library.Record | undefined]>();
+    record: Test.Library.Record | undefined = { id: "initial-rec" };
     inner = new ImportedInner();
     constructor(private arg: string) { }
     getInstanceArg() { return this.arg; }
-    async getRecordIdAsync(record: Test.Types.Record) {
+    async getRecordIdAsync(record: Test.Library.Record) {
         await new Promise(res => setTimeout(res, 1));
         return record.id;
     }
 }
 
-class ImportedInner implements Test.Types.IImportedInnerInstanced {
+class ImportedInner implements Test.Library.IImportedInnerInstanced {
     onCountChanged = new Event<[number]>();
     #count = 0;
     get count() { return this.#count; }
@@ -25,78 +25,126 @@ class ImportedInner implements Test.Types.IImportedInnerInstanced {
 
 describe("while bootsharp is not booted", () => {
     it("throws when attempting to invoke C# APIs", () => {
-        expect(Test.Invokable.invokeVoid).throw(/Boot the runtime before invoking C# APIs/);
+        expect(Test.Static.echoExported).throw(/Boot the runtime before invoking C# APIs/);
     });
 });
 
 describe("while bootsharp is booted", () => {
     beforeAll(bootSideload);
     it("JS functions are unassigned by default", () => {
-        expect(Test.Functions.jSFunction).toBeUndefined();
-        expect(Test.Functions.getString).toBeUndefined();
-        expect(Test.Functions.getStringAsync).toBeUndefined();
-        expect(Test.Functions.getBytes).toBeUndefined();
         expect(Test.Platform.throwJS).toBeUndefined();
-        expect(Test.Types.Registries.createVehicle).toBeUndefined();
-        expect(Test.Types.RegistryProvider.getRegistry).toBeUndefined();
-        expect(Test.Types.RegistryProvider.getRegistries).toBeUndefined();
-        expect(Test.Types.RegistryProvider.getRegistryMap).toBeUndefined();
-        expect(Test.Types.ImportedModule.getInstanceAsync).toBeUndefined();
+        expect(Test.Static.importedFunction).toBeUndefined();
+        expect(Test.Static.echoImported).toBeUndefined();
+        expect(Test.Static.echoImportedAsync).toBeUndefined();
+        expect(Test.Library.Registries.createVehicle).toBeUndefined();
+        expect(Test.Library.RegistryProvider.getRegistry).toBeUndefined();
+        expect(Test.Library.RegistryProvider.getRegistries).toBeUndefined();
+        expect(Test.Library.RegistryProvider.getRegistryMap).toBeUndefined();
+        expect(Test.Library.ImportedModule.getInstanceAsync).toBeUndefined();
     });
-    it("errs when invoking unassigned JS function", () => {
-        expect(() => Test.Functions.invokeJSFunction())
+    it("errs when invoking unassigned imported function", () => {
+        expect(() => Test.Static.invokeImportedFunction())
             .throw(/Failed to invoke '.+' from C#. Make sure to assign the function in JavaScript/);
     });
-    it("doesn't err when invoking assigned JS function", () => {
-        Test.Functions.jSFunction = () => {};
-        Test.Functions.invokeJSFunction();
+    it("can invoke assigned imported function", () => {
+        Test.Static.importedFunction = vi.fn();
+        Test.Static.invokeImportedFunction();
+        expect(Test.Static.importedFunction).toHaveBeenCalledOnce();
     });
-    it("can invoke C# method", async () => {
-        expect(Test.Invokable.joinStrings("foo", "bar")).toStrictEqual("foobar");
+    it("can interop with imported statics", async () => {
+        let prop = "initial imported";
+        Test.Static.importedProperty = { get: () => prop, set: v => prop = v };
+        Test.Static.echoImported = bytes => bytes;
+        Test.Static.echoImportedAsync = async bytes => {
+            await new Promise(res => setTimeout(res, 1));
+            return bytes;
+        };
+        const promise = Test.Static.canInteropWithImportedStaticsAsync();
+        Test.Static.importedEvent.broadcast("event payload");
+        await promise;
     });
-    it("can invoke async C# method", async () => {
-        expect(await Test.Invokable.joinStringsAsync("foo", "bar")).toStrictEqual("foobar");
+    it("can interop with exported statics", async () => {
+        expect(Test.Static.echoExported(new Uint8Array([2, 4])).reduce((s, i) => s + i, 0)).toStrictEqual(6);
+        expect((await Test.Static.echoExportedAsync(new Uint8Array([4, 2]))).reduce((s, i) => s + i, 0)).toStrictEqual(6);
+        expect(Test.Static.exportedProperty).toStrictEqual("initial exported");
+        Test.Static.exportedProperty = "set";
+        expect(Test.Static.exportedProperty).toStrictEqual("set");
+        const handler = vi.fn();
+        Test.Static.exportedEvent.subscribe(handler);
+        Test.Static.broadcastExportedEvent("foo");
+        expect(handler).toHaveBeenCalledWith("foo");
+        Test.Static.broadcastExportedEvent(undefined);
+        expect(handler).toHaveBeenCalledWith(undefined);
+        Test.Static.exportedEvent.unsubscribe(handler);
+        Test.Static.broadcastExportedEvent("bar");
+        expect(handler).not.toHaveBeenCalledWith("bar");
     });
-    it("can transfer strings", () => {
-        Test.Functions.getString = () => "foo";
-        expect(Test.Functions.echoString()).toStrictEqual("foo");
+    it("can interop with imported modules", async () => {
+        let record: Test.Library.Record | undefined = { id: "initial" };
+        Test.Library.ImportedModule.record = { get: () => record, set: v => record = v };
+        Test.Library.ImportedModule.getInstanceAsync = async (arg) => {
+            await new Promise(res => setTimeout(res, 1));
+            return new Imported(arg);
+        };
+        const promise = Test.Library.Modules.canInteropWithImportedModuleAsync();
+        Test.Library.ImportedModule.onRecordChanged.broadcast({ id: "event-rec" });
+        await promise;
     });
-    it("can transfer decimals", () => {
-        expect(Test.Invokable.sumDoubles(-1, 2.75)).toStrictEqual(1.75);
+    it("can interop with exported modules", async () => {
+        const handler = vi.fn();
+        Test.Library.ExportedModule.onRecordChanged.subscribe(handler);
+        Test.Library.ExportedModule.record = { id: "set" };
+        expect(Test.Library.ExportedModule.record).toStrictEqual({ id: "set" });
+        expect(handler).toHaveBeenCalledWith({ id: "set" });
+        Test.Library.ExportedModule.record = undefined;
+        expect(Test.Library.ExportedModule.record).toBeUndefined();
+        expect(handler).toHaveBeenCalledWith(undefined);
+        const inst = await Test.Library.ExportedModule.getInstanceAsync("module-arg");
+        expect(inst.getInstanceArg()).toStrictEqual("module-arg");
+        Test.Library.ExportedModule.onRecordChanged.unsubscribe(handler);
     });
-    it("can transfer dates", () => {
-        const date = new Date(1977, 3, 2);
-        const expected = new Date(1977, 3, 9);
-        const actual = new Date(Test.Invokable.addDays(date, 7));
-        expect(actual).toStrictEqual(expected);
+    it("can interop with imported instances", async () => {
+        Test.Library.ImportedModule.getInstanceAsync = async (arg) => new Imported(arg);
+        const imported = new Imported("instance-arg");
+        const promise = Test.Library.Modules.canInteropWithImportedInstanceAsync(imported);
+        imported.onRecordChanged.broadcast(imported, { id: "event-rec" });
+        await promise;
     });
-    it("can transfer byte array", () => {
-        Test.Functions.getBytes = () => new Uint8Array([
-            0x45, 0x76, 0x65, 0x72, 0x79, 0x74, 0x68, 0x69, 0x6e,
-            0x67, 0x27, 0x73, 0x20, 0x73, 0x68, 0x69, 0x6e, 0x79,
-            0x2c, 0x20, 0x43, 0x61, 0x70, 0x74, 0x61, 0x69, 0x6e,
-            0x2e, 0x20, 0x4e, 0x6f, 0x74, 0x20, 0x74, 0x6f, 0x20,
-            0x66, 0x72, 0x65, 0x74, 0x2e
-        ]);
-        const echo = Test.Functions.echoBytes();
-        expect(Test.Invokable.bytesToString(echo)).toStrictEqual("Everything's shiny, Captain. Not to fret.");
+    it("can interop with exported instances", async () => {
+        const exported = await Test.Library.ExportedModule.getInstanceAsync("instance-arg");
+        const handler = vi.fn();
+        expect(exported.getInstanceArg()).toStrictEqual("instance-arg");
+        expect(await exported.getRecordIdAsync({ id: "rec" })).toStrictEqual("rec");
+        expect(exported.record).toBeUndefined();
+        exported.onRecordChanged.subscribe(handler);
+        exported.record = { id: "set" };
+        expect(exported.record).toStrictEqual({ id: "set" });
+        expect(handler).toHaveBeenCalledWith(exported, { id: "set" });
+        exported.record = undefined;
+        expect(exported.record).toBeUndefined();
+        expect(handler).toHaveBeenCalledWith(exported, undefined);
+        exported.onRecordChanged.unsubscribe(handler);
     });
-    it("can transfer byte array async", async () => {
-        expect(await Test.Functions.echoBytesAsync(new Uint8Array([
-            0x45, 0x76, 0x65, 0x72, 0x79, 0x74, 0x68, 0x69, 0x6e,
-            0x67, 0x27, 0x73, 0x20, 0x73, 0x68, 0x69, 0x6e, 0x79,
-            0x2c, 0x20, 0x43, 0x61, 0x70, 0x74, 0x61, 0x69, 0x6e,
-            0x2e, 0x20, 0x4e, 0x6f, 0x74, 0x20, 0x74, 0x6f, 0x20,
-            0x66, 0x72, 0x65, 0x74, 0x2e
-        ]))).toStrictEqual(new Uint8Array([
-            0x45, 0x76, 0x65, 0x72, 0x79, 0x74, 0x68, 0x69, 0x6e,
-            0x67, 0x27, 0x73, 0x20, 0x73, 0x68, 0x69, 0x6e, 0x79,
-            0x2c, 0x20, 0x43, 0x61, 0x70, 0x74, 0x61, 0x69, 0x6e,
-            0x2e, 0x20, 0x4e, 0x6f, 0x74, 0x20, 0x74, 0x6f, 0x20,
-            0x66, 0x72, 0x65, 0x74, 0x2e
-        ]));
+    it("can interop with imported inner instances", () => {
+        Test.Library.Modules.canInteropWithImportedInnerInstance(new Imported(""));
     });
-    it("can transfer structs", () => {
+    it("can interop with exported inner instances", async () => {
+        const handler = vi.fn();
+        const inner = (await Test.Library.ExportedModule.getInstanceAsync("bar")).inner;
+        inner.onCountChanged.subscribe(handler);
+        inner.count = 0;
+        expect(handler).toHaveBeenCalledWith(0);
+        inner.increment();
+        expect(handler).toHaveBeenCalledWith(1);
+        inner.increment();
+        expect(inner.count).toStrictEqual(2);
+    });
+    it("releases instances after use", async () => {
+        Test.Library.ImportedModule.getInstanceAsync = async (arg) => new Imported(arg);
+        expect(await Test.Library.Modules.getImportedArgsAndFinalize("qux", "fox")).toStrictEqual(["qux", "fox"]);
+        expect(await Test.Library.Modules.getImportedArgsAndFinalize("zip", "zap")).toStrictEqual(["zip", "zap"]);
+    });
+    it("can echo records", () => {
         const expected = {
             wheeled: [
                 { id: "car", wheelCount: 4, maxSpeed: 100.0 },
@@ -107,21 +155,21 @@ describe("while bootsharp is booted", () => {
                 { id: "tractor", trackType: TrackType.Rubber, maxSpeed: Math.fround(15.9) }
             ]
         };
-        const actual = Test.Types.Registries.echoRegistry(expected);
+        const actual = Test.Library.Registries.echoRegistry(expected);
         expect(actual).toStrictEqual(expected);
     });
-    it("empty string of a struct is transferred correctly", () => {
-        const id = Test.Types.Registries.getVehicleWithEmptyId().id;
+    it("empty string of a record is transferred correctly", () => {
+        const id = Test.Library.Registries.getVehicleWithEmptyId().id;
         expect(id).not.toBeNull();
         expect(id).not.toBeUndefined();
         expect(id).toStrictEqual("");
     });
     it("can transfer lists as arrays", async () => {
-        Test.Types.RegistryProvider.getRegistries = () => [{
+        Test.Library.RegistryProvider.getRegistries = () => [{
             wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }],
             tracked: []
         }];
-        const result = await Test.Types.Registries.concatRegistriesAsync([
+        const result = await Test.Library.Registries.concatRegistriesAsync([
             { wheeled: [{ id: "bar", maxSpeed: 1, wheelCount: 9 }], tracked: [] },
             { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }], wheeled: [] }
         ]);
@@ -132,11 +180,11 @@ describe("while bootsharp is booted", () => {
         ]);
     });
     it("can transfer dictionaries as maps", async () => {
-        Test.Types.RegistryProvider.getRegistryMap = () => new Map([
+        Test.Library.RegistryProvider.getRegistryMap = () => new Map([
             ["foo", { wheeled: [{ id: "foo", maxSpeed: 1, wheelCount: 0 }], tracked: [] }],
             ["bar", { wheeled: [{ id: "bar", maxSpeed: 15, wheelCount: 5 }], tracked: [] }]
         ]);
-        const result = await Test.Types.Registries.mapRegistriesAsync(new Map([
+        const result = await Test.Library.Registries.mapRegistriesAsync(new Map([
             ["baz", { tracked: [{ id: "baz", maxSpeed: 5, trackType: TrackType.Rubber }], wheeled: [] }]
         ]));
         expect(result).toStrictEqual(new Map([
@@ -145,68 +193,24 @@ describe("while bootsharp is booted", () => {
             ["bar", { wheeled: [{ id: "bar", maxSpeed: 15, wheelCount: 5 }], tracked: [] }]
         ]));
     });
-    it("can transfer raw arrays", () => {
-        expect(Test.Functions.echoStringArray(["foo", "bar"]))
-            .toStrictEqual(["foo", "bar"]);
-        expect(Test.Functions.echoDoubleArray(new Float64Array([0.5, -1.9])))
-            .toStrictEqual(new Float64Array([0.5, -1.9]));
-        expect(Test.Functions.echoIntArray(new Int32Array([1, 2])))
-            .toStrictEqual(new Int32Array([1, 2]));
-        expect(Test.Functions.echoByteArray(new Uint8Array([1, 2])))
-            .toStrictEqual(new Uint8Array([1, 2]));
-    });
-    it("can transfer collection expressions", () => {
-        expect(Test.Functions.echoColExprString(["foo", "bar"])).toStrictEqual(["foo", "bar"]);
-        expect(Test.Functions.echoColExprDouble([0.5, -1.9])).toStrictEqual([0.5, -1.9]);
-        expect(Test.Functions.echoColExprInt([1, 2])).toStrictEqual([1, 2]);
-        expect(Test.Functions.echoColExprByte([1, 2])).toStrictEqual([1, 2]);
-    });
     it("can invoke assigned JS functions in C#", () => {
-        Test.Types.RegistryProvider.getRegistry = () => ({
+        Test.Library.RegistryProvider.getRegistry = () => ({
             wheeled: [{ id: "", maxSpeed: 1, wheelCount: 0 }],
             tracked: [{ id: "", maxSpeed: 2, trackType: TrackType.Chain }]
         });
-        expect(Test.Types.Registries.countTotalSpeed()).toStrictEqual(3);
+        expect(Test.Library.Registries.countTotalSpeed()).toStrictEqual(3);
     });
-    it("can invoke assigned JS functions from library assembly", () => {
-        Test.Types.Registries.createVehicle = (id, maxSpeed) => ({ id, maxSpeed });
-        expect(Test.Types.Registries.getVehicle("foo", 42)).toStrictEqual({ id: "foo", maxSpeed: 42 });
+    it("can invoke assigned JS functions from a non-entry assembly", () => {
+        Test.Library.Registries.createVehicle = (id, maxSpeed) => ({ id, maxSpeed });
+        expect(Test.Library.Registries.getVehicle("foo", 42)).toStrictEqual({ id: "foo", maxSpeed: 42 });
     });
-    it("can subscribe to exported events", () => {
+    it("can subscribe to events from a non-entry assembly", () => {
         const handler = vi.fn();
-        Test.Event.onVehicleEvent.subscribe(handler);
-        Test.Event.broadcastVehicleEvent(1, { id: "foo", maxSpeed: 50 }, TrackType.Rubber);
-        expect(handler).toHaveBeenCalledWith(1, { id: "foo", maxSpeed: 50 }, TrackType.Rubber);
-        Test.Event.broadcastVehicleEvent(255, undefined, TrackType.Chain);
-        expect(handler).toHaveBeenCalledWith(255, undefined, TrackType.Chain);
-    });
-    it("can broadcast imported events", async () => {
-        const handler = vi.fn();
-        Test.Event.onImportedEventEchoed.subscribe(handler);
-
-        const pending = Test.Event.echoImportedEventAsync();
-        Test.Event.onImportedEvent.broadcast("imported");
-        await pending;
-
-        expect(handler).toHaveBeenCalledWith("imported");
-        Test.Event.onImportedEventEchoed.unsubscribe(handler);
-    });
-    it("can subscribe to events from library assembly", () => {
-        const handler = vi.fn();
-        Test.Types.Registries.onVehicleBroadcast.subscribe(handler);
-        Test.Types.Registries.broadcastVehicle({ id: "foo", maxSpeed: 42 });
+        Test.Library.Registries.onVehicleBroadcast.subscribe(handler);
+        Test.Library.Registries.broadcastVehicle({ id: "foo", maxSpeed: 42 });
         expect(handler).toHaveBeenCalledWith({ id: "foo", maxSpeed: 42 });
-        Test.Types.Registries.broadcastVehicle(undefined);
+        Test.Library.Registries.broadcastVehicle(undefined);
         expect(handler).toHaveBeenCalledWith(undefined);
-    });
-    it("can un-subscribe from events", () => {
-        const handler = vi.fn();
-        Test.Event.onVehicleEvent.subscribe(handler);
-        Test.Event.broadcastVehicleEvent(0, undefined, TrackType.Chain);
-        Test.Event.onVehicleEvent.unsubscribe(handler);
-        Test.Event.broadcastVehicleEvent(1, undefined, TrackType.Chain);
-        expect(handler).toHaveBeenCalledWith(0, undefined, TrackType.Chain);
-        expect(handler).not.toHaveBeenCalledWith(1, undefined, TrackType.Chain);
     });
     it("can catch js exception", () => {
         Test.Platform.throwJS = function () { throw new Error("foo"); };
@@ -215,114 +219,20 @@ describe("while bootsharp is booted", () => {
     it("can catch dotnet exceptions", () => {
         expect(() => Test.Platform.throwCS("bar")).throw("bar");
     });
-    it("can invoke async method with async js callback", async () => {
-        Test.Functions.getStringAsync = async () => {
-            await new Promise(res => setTimeout(res, 1));
-            return "foo";
-        };
-        expect(await Test.Functions.echoStringAsync()).toStrictEqual("foo");
-    });
     it("maps enums by both indexes and strings", () => {
-        expect(TrackType[0]).toStrictEqual("Rubber");
-        expect(TrackType[1]).toStrictEqual("Chain");
-        expect(TrackType[TrackType.Rubber]).toStrictEqual("Rubber");
-        expect(TrackType[TrackType.Chain]).toStrictEqual("Chain");
+        expect(Test.Static.Enum[1]).toStrictEqual("One");
+        expect(Test.Static.Enum[2]).toStrictEqual("Two");
+        expect(Test.Static.Enum[Test.Static.Enum.One]).toStrictEqual("One");
+        expect(Test.Static.Enum[Test.Static.Enum.Two]).toStrictEqual("Two");
     });
     it("can compare indexed enums", () => {
-        expect(Test.Invokable.getIdxEnumOne() === Test.IdxEnum.One).toBeTruthy();
-        expect(Test.Invokable.getIdxEnumOne() === Test.IdxEnum.Two).not.toBeTruthy();
+        expect(Test.Static.getEnum(1) === Test.Static.Enum.One).toBeTruthy();
+        expect(Test.Static.getEnum(0) === Test.Static.Enum.One).not.toBeTruthy();
     });
-    it("can interop with imported modules", async () => {
-        Test.Types.ImportedModule.record = { id: "baz" };
-        expect(Test.Types.Interfaces.getImportedModuleRecordIdAndSet({ id: "qux" })).toStrictEqual("baz");
-        expect(Test.Types.ImportedModule.record).toStrictEqual({ id: "qux" });
-        Test.Types.ImportedModule.record = undefined;
-        expect(Test.Types.ImportedModule.record).toBeUndefined();
-        const handler = vi.fn();
-        Test.Types.Interfaces.onImportedModuleRecordEchoed.subscribe(handler);
-        let echo = Test.Types.Interfaces.echoImportedModuleRecordEventAsync();
-        Test.Types.ImportedModule.onRecordChanged.broadcast({ id: "static" });
-        await echo;
-        expect(handler).toHaveBeenCalledWith({ id: "static" });
-        echo = Test.Types.Interfaces.echoImportedModuleRecordEventAsync();
-        Test.Types.ImportedModule.onRecordChanged.broadcast(undefined);
-        await echo;
-        expect(handler).toHaveBeenCalledWith(undefined);
-        Test.Types.Interfaces.onImportedModuleRecordEchoed.unsubscribe(handler);
-    });
-    it("can interop with exported modules", () => {
-        const record = { id: "foo" };
-        const handler = vi.fn();
-        Test.Types.ExportedModule.onRecordChanged.subscribe(handler);
-        Test.Types.ExportedModule.record = record;
-        expect(Test.Types.ExportedModule.record).toStrictEqual(record);
-        expect(handler).toHaveBeenCalledWith(record);
-        Test.Types.ExportedModule.record = { id: "bar" };
-        expect(Test.Types.ExportedModule.record).toStrictEqual({ id: "bar" });
-        expect(handler).toHaveBeenCalledWith({ id: "bar" });
-        Test.Types.ExportedModule.record = undefined;
-        expect(Test.Types.ExportedModule.record).toBeUndefined();
-        expect(handler).toHaveBeenCalledWith(undefined);
-        Test.Types.ExportedModule.onRecordChanged.unsubscribe(handler);
-    });
-    it("can interop with imported instances", async () => {
-        Test.Types.ImportedModule.getInstanceAsync = async (arg) => {
-            await new Promise(res => setTimeout(res, 1));
-            return new Imported(arg);
-        };
-        const result1 = await Test.Types.Interfaces.getImportedArgAndRecordIdAsync({ id: "foo" }, "bar");
-        const result2 = await Test.Types.Interfaces.getImportedArgAndRecordIdAsync({ id: "baz" }, "nya");
-        expect(result1).toStrictEqual("foobar");
-        expect(result2).toStrictEqual("baznya");
-        expect(await Test.Types.Interfaces.getImportedInstanceArgAndRecordIdAsync({ id: "zip" }, "qux"))
-            .toStrictEqual("quxfoozip");
-        const imported = new Imported("evt");
-        const handler = vi.fn();
-        Test.Types.Interfaces.onImportedInstanceRecordEchoed.subscribe(handler);
-        let echo = Test.Types.Interfaces.echoImportedInstanceRecordEventAsync(imported);
-        imported.onRecordChanged.broadcast(imported, { id: "instance" });
-        await echo;
-        expect(handler).toHaveBeenCalledWith("instance");
-        echo = Test.Types.Interfaces.echoImportedInstanceRecordEventAsync(imported);
-        imported.onRecordChanged.broadcast(imported, undefined);
-        await echo;
-        expect(handler).toHaveBeenCalledWith(undefined);
-        Test.Types.Interfaces.onImportedInstanceRecordEchoed.unsubscribe(handler);
-    });
-    it("can interop with exported instances", async () => {
-        const exported = await Test.Types.ExportedModule.getInstanceAsync("bar");
-        const handler = vi.fn();
-        expect(exported.getInstanceArg()).toStrictEqual("bar");
-        expect(await exported.getRecordIdAsync({ id: "foo" })).toStrictEqual("foo");
-        expect(exported.record).toBeUndefined();
-        exported.onRecordChanged.subscribe(handler);
-        exported.record = { id: "qux" };
-        expect(exported.record).toStrictEqual({ id: "qux" });
-        expect(handler).toHaveBeenCalledWith(exported, { id: "qux" });
-        exported.record = undefined;
-        expect(exported.record).toBeUndefined();
-        expect(handler).toHaveBeenCalledWith(exported, undefined);
-        exported.onRecordChanged.unsubscribe(handler);
-    });
-    it("can interop with imported inner instances", async () => {
-        const imported = new Imported("");
-        const error = Test.Types.Interfaces.canInteropWithImportedInnerInstances(imported);
-        expect(error).toBeNull();
-    });
-    it("can interop with exported inner instances", async () => {
-        const handler = vi.fn();
-        const inner = (await Test.Types.ExportedModule.getInstanceAsync("bar")).inner;
-        inner.onCountChanged.subscribe(handler);
-        inner.count = 0;
-        expect(handler).toHaveBeenCalledWith(0);
-        inner.increment();
-        expect(handler).toHaveBeenCalledWith(1);
-        inner.increment();
-        expect(inner.count).toStrictEqual(2);
-    });
-    it("releases instances after use", async () => {
-        Test.Types.ImportedModule.getInstanceAsync = async (arg) => new Imported(arg);
-        expect(await Test.Types.Interfaces.getImportedArgsAndFinalize("qux", "fox")).toStrictEqual(["qux", "fox"]);
-        expect(await Test.Types.Interfaces.getImportedArgsAndFinalize("zip", "zap")).toStrictEqual(["zip", "zap"]);
+    it("can transfer dates", () => {
+        const date = new Date(1977, 3, 2);
+        const expected = new Date(1977, 3, 9);
+        const actual = new Date(Test.Static.addDays(date, 7));
+        expect(actual).toStrictEqual(expected);
     });
 });

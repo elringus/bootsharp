@@ -29,6 +29,9 @@ public class InteropTest : EmitTest
                     // (the fields are emitted by the source generators)
                     public static unsafe delegate* managed<int, string> Bootsharp_GetLabel;
                     [Import] public static string GetLabel (int count) => default!;
+                    public static unsafe delegate* managed<int> Bootsharp_GetPropertyCount;
+                    public static unsafe delegate* managed<int, void> Bootsharp_SetPropertyCount;
+                    [Import] public static int Count { get => default!; set { } }
                 }
                 """));
         AddAssembly("Entry.dll",
@@ -50,6 +53,8 @@ public class InteropTest : EmitTest
                     global::Library.Registry.Evt += Handle_Library_Registry_Evt;
                     global::Entry.App.Bootsharp_GetName = &Entry_App_GetName;
                     global::Library.Registry.Bootsharp_GetLabel = &Library_Registry_GetLabel;
+                    global::Library.Registry.Bootsharp_GetPropertyCount = &Library_Registry_GetPropertyCount;
+                    global::Library.Registry.Bootsharp_SetPropertyCount = &Library_Registry_SetPropertyCount;
                 }
             """);
     }
@@ -65,6 +70,8 @@ public class InteropTest : EmitTest
                 [Import] public static event Action? ImpEvt;
                 [Export] public static void Inv () {}
                 [Import] public static void Fun () => Proxies.Get<Action>("Class.Fun")();
+                [Export] public static int ExpProp { get; set; }
+                [Import] public static int ImpProp { get => default; set { } }
             }
             """));
         Execute();
@@ -73,6 +80,12 @@ public class InteropTest : EmitTest
         Contains("[JSExport] internal static void Class_InvokeImpEvt () => global::Class.Bootsharp_Invoke_ImpEvt();");
         Contains("[JSExport] internal static void Class_Inv () => global::Class.Inv();");
         Contains("""[JSImport("Class.funSerialized", "Bootsharp")] internal static partial void Class_Fun_Serialized ();""");
+        Contains("[JSExport] internal static global::System.Int32 Class_GetPropertyExpProp () => global::Class.ExpProp;");
+        Contains("[JSExport] internal static void Class_SetPropertyExpProp (global::System.Int32 value) => global::Class.ExpProp = value;");
+        Contains("""[JSImport("Class.getPropertyImpPropSerialized", "Bootsharp")] internal static partial global::System.Int32 Class_GetPropertyImpProp_Serialized ();""");
+        Contains("public static global::System.Int32 Class_GetPropertyImpProp() => Class_GetPropertyImpProp_Serialized();");
+        Contains("""[JSImport("Class.setPropertyImpPropSerialized", "Bootsharp")] internal static partial void Class_SetPropertyImpProp_Serialized (global::System.Int32 value);""");
+        Contains("public static void Class_SetPropertyImpProp(global::System.Int32 value) => Class_SetPropertyImpProp_Serialized(value);");
     }
 
     [Fact]
@@ -87,6 +100,7 @@ public class InteropTest : EmitTest
                     [Export] public static event Action? ExpEvt;
                     [Export] public static void Inv () {}
                     [Import] public static void Fun () => Proxies.Get<Action>("SpaceA.Class.Fun")();
+                    [Export] public static int ExpProp { get; set; }
                 }
             }
             namespace SpaceA.SpaceB
@@ -96,6 +110,7 @@ public class InteropTest : EmitTest
                     [Import] public static event Action? ImpEvt;
                     [Export] public static void Inv () {}
                     [Import] public static void Fun () => Proxies.Get<Action>("SpaceA.SpaceB.Class.Fun")();
+                    [Import] public static int ImpProp { get => default; set { } }
                 }
             }
             """));
@@ -107,6 +122,12 @@ public class InteropTest : EmitTest
         Contains("[JSExport] internal static void SpaceA_SpaceB_Class_InvokeImpEvt () => global::SpaceA.SpaceB.Class.Bootsharp_Invoke_ImpEvt();");
         Contains("[JSExport] internal static void SpaceA_SpaceB_Class_Inv () => global::SpaceA.SpaceB.Class.Inv();");
         Contains("""[JSImport("SpaceA.SpaceB.Class.funSerialized", "Bootsharp")] internal static partial void SpaceA_SpaceB_Class_Fun_Serialized ();""");
+        Contains("[JSExport] internal static global::System.Int32 SpaceA_Class_GetPropertyExpProp () => global::SpaceA.Class.ExpProp;");
+        Contains("[JSExport] internal static void SpaceA_Class_SetPropertyExpProp (global::System.Int32 value) => global::SpaceA.Class.ExpProp = value;");
+        Contains("""[JSImport("SpaceA.SpaceB.Class.getPropertyImpPropSerialized", "Bootsharp")] internal static partial global::System.Int32 SpaceA_SpaceB_Class_GetPropertyImpProp_Serialized ();""");
+        Contains("public static global::System.Int32 SpaceA_SpaceB_Class_GetPropertyImpProp() => SpaceA_SpaceB_Class_GetPropertyImpProp_Serialized();");
+        Contains("""[JSImport("SpaceA.SpaceB.Class.setPropertyImpPropSerialized", "Bootsharp")] internal static partial void SpaceA_SpaceB_Class_SetPropertyImpProp_Serialized (global::System.Int32 value);""");
+        Contains("public static void SpaceA_SpaceB_Class_SetPropertyImpProp(global::System.Int32 value) => SpaceA_SpaceB_Class_SetPropertyImpProp_Serialized(value);");
     }
 
     [Fact]

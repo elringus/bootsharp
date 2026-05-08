@@ -14,7 +14,7 @@ namespace Bootsharp.Publish;
 internal sealed class SolutionInspection (MetadataLoadContext ctx) : IDisposable
 {
     /// <summary>
-    /// Individual interop members, ie methods or events with <see cref="ExportAttribute"/>
+    /// Individual interop members, ie methods, properties or events with <see cref="ExportAttribute"/>
     /// or <see cref="ImportAttribute"/> found on user-defined static classes.
     /// </summary>
     public required IReadOnlyCollection<MemberMeta> Static { get; init; }

@@ -58,6 +58,61 @@ Foo.bar = () => {};
 
 :::
 
+## Property Declarations
+
+Exported properties are emitted as variables under the declaring type space:
+
+::: code-group
+
+```csharp [Foo.cs]
+public class Foo
+{
+    [Export]
+    public static string Bar { get; set; } = "";
+}
+```
+
+```ts [bindings.d.ts]
+export namespace Foo {
+    export let bar: string;
+}
+```
+
+```ts [main.ts]
+import { Foo } from "bootsharp";
+
+Foo.bar = "updated";
+```
+
+:::
+
+Imported properties are emitted as accessor pairs, which have to be assigned before booting the runtime:
+
+::: code-group
+
+```csharp [Foo.cs]
+public static partial class Foo
+{
+    [Import]
+    public static partial string Bar { get; set; }
+}
+```
+
+```ts [bindings.d.ts]
+export namespace Foo {
+    export let bar: { get: () => string; set: (value: string) => void };
+}
+```
+
+```ts [main.ts]
+import { Foo } from "bootsharp";
+
+let bar = "";
+Foo.bar = { get: () => bar, set: value => bar = value };
+```
+
+:::
+
 ## Event Declarations
 
 Exported events are emitted as `EventSubscriber` objects:

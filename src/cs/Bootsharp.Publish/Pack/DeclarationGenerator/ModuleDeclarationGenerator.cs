@@ -32,7 +32,8 @@ internal sealed class ModuleDeclarationGenerator (Preferences prefs)
         switch (member)
         {
             case EventMeta e: DeclareEvent(e); break;
-            case PropertyMeta p: DeclareProperty(p); break;
+            case PropertyMeta { Interop: InteropKind.Export } p: DeclarePropertyExport(p); break;
+            case PropertyMeta { Interop: InteropKind.Import } p: DeclarePropertyImport(p); break;
             case MethodMeta { Interop: InteropKind.Export } m: DeclareMethodExport(m); break;
             case MethodMeta { Interop: InteropKind.Import } m: DeclareMethodImport(m); break;
         }
@@ -71,12 +72,23 @@ internal sealed class ModuleDeclarationGenerator (Preferences prefs)
         bld.Append("]>;");
     }
 
-    private void DeclareProperty (PropertyMeta prop)
+    private void DeclarePropertyExport (PropertyMeta prop)
     {
+        var mod = prop.CanGet && !prop.CanSet ? "const" : "let";
+        var type = ts.BuildVariable(prop.Info);
         bld.Append(docs.BuildProperty(prop.Info, 1));
-        bld.Append($"\n    export {(prop.CanGet && !prop.CanSet ? "const" : "let")} {prop.JSName}: ");
-        bld.Append(ts.BuildVariable(prop.Info));
-        bld.Append(';');
+        bld.Append($"\n    export {mod} {prop.JSName}: {type};");
+    }
+
+    private void DeclarePropertyImport (PropertyMeta prop)
+    {
+        var type = ts.BuildVariable(prop.Info);
+        bld.Append(docs.BuildProperty(prop.Info, 1));
+        bld.Append($"\n    export let {prop.JSName}: {{ ");
+        if (prop.CanGet) bld.Append($"get: () => {type}");
+        if (prop.CanGet && prop.CanSet) bld.Append("; ");
+        if (prop.CanSet) bld.Append($"set: (value: {type}) => void");
+        bld.Append(" };");
     }
 
     private void DeclareMethodExport (MethodMeta method)

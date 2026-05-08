@@ -1,4 +1,4 @@
-namespace Test.Types;
+namespace Test.Library;
 
 public enum TrackType
 {

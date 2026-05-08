@@ -3,8 +3,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Bootsharp.Generate;
 
-internal sealed class ImportClass (Compilation cmp, ClassDeclarationSyntax stx,
-    IReadOnlyList<ImportMethod> methods, IReadOnlyList<ImportEvent> events)
+internal sealed class ImportClass (Compilation cmp, ClassDeclarationSyntax stx, IReadOnlyList<ImportMethod> methods,
+    IReadOnlyList<ImportProperty> props, IReadOnlyList<ImportEvent> events)
 {
     public string Name { get; } = stx.Identifier.ToString();
 
@@ -37,6 +37,7 @@ internal sealed class ImportClass (Compilation cmp, ClassDeclarationSyntax stx,
 
     private string EmitMembers () => "\n" + string.Join("\n", [
         ..events.Select(e => "    " + e.EmitSource(cmp)),
+        ..props.Select(p => "    " + p.EmitSource(cmp)),
         ..methods.Select(m => "    " + m.EmitSource(cmp))
     ]);
 

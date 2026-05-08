@@ -1,6 +1,6 @@
 using System;
 
-namespace Test.Types;
+namespace Test.Library;
 
 public interface IImportedInnerInstanced
 {
