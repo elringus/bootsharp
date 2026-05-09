@@ -82,7 +82,6 @@ internal static class GlobalType
         return GetNullity(param);
     }
 
-    public static bool IsNullable (Type type) => IsNullable(type, out _);
     public static bool IsNullable (Type type, NullabilityInfo? info) => IsNullable(type, info, out _);
     public static bool IsNullable (Type type, [NotNullWhen(true)] out Type? value) => IsNullable(type, null, out value);
     public static bool IsNullable (Type type, NullabilityInfo? info, [NotNullWhen(true)] out Type? value)
