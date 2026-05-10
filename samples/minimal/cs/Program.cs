@@ -4,7 +4,7 @@ using Bootsharp;
 public static partial class Program
 {
     [Export] // Used in JS as Program.onMainInvoked.subscribe(...)
-    public static event Action<string>? OnMainInvoked;
+    public static event Action<string> OnMainInvoked;
 
     public static void Main ()
     {

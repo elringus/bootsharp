@@ -14,6 +14,7 @@ internal sealed class ModulePatcher (string buildDir)
     {
         RemoveMaps();
         RemoveWasmNag();
+        QualifyImports();
         PacifyBundlers();
     }
 
@@ -30,6 +31,13 @@ internal sealed class ModulePatcher (string buildDir)
         // Removes "WebAssembly resource does not have the expected content type..." warning.
         Rewrite(new(@"\w+\(['""]WebAssembly resource does not have[^)]+\)", CultureInvariant),
             "true", dotnet);
+    }
+
+    private void QualifyImports ()
+    {
+        // Deno requires 'node:' prefix on Node built-ins.
+        Rewrite(new(@"import\(([^""')]*)['""](?!node:)(url|fs|process|module|path|crypto)['""]\)", CultureInvariant),
+            "import($1\"node:$2\")", dotnet, runtime, native);
     }
 
     private void PacifyBundlers ()
