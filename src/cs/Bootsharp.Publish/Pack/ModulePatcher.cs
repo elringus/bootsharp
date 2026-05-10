@@ -21,30 +21,30 @@ internal sealed class ModulePatcher (string buildDir)
     {
         // Microsoft bundles .NET JavaScript sources pre-minified/uglified with source maps
         // referencing upstream sources we don't publish with the package.
-        var regex = new Regex(@"^\s*//# sourceMappingURL=.*?\.map\s*$\r?\n?", Compiled | CultureInvariant | Multiline);
-        File.WriteAllText(dotnet, regex.Replace(File.ReadAllText(dotnet, Encoding.UTF8), ""), Encoding.UTF8);
-        File.WriteAllText(runtime, regex.Replace(File.ReadAllText(runtime, Encoding.UTF8), ""), Encoding.UTF8);
-        File.WriteAllText(native, regex.Replace(File.ReadAllText(native, Encoding.UTF8), ""), Encoding.UTF8);
+        Rewrite(new(@"^\s*//# sourceMappingURL=.*?\.map\s*$\r?\n?", CultureInvariant | Multiline),
+            "", dotnet, runtime, native);
     }
 
     private void RemoveWasmNag ()
     {
         // Removes "WebAssembly resource does not have the expected content type..." warning.
-        var regex = new Regex(@"\w+\(['""]WebAssembly resource does not have[^)]+\)", Compiled | CultureInvariant);
-        File.WriteAllText(dotnet, regex.Replace(File.ReadAllText(dotnet, Encoding.UTF8), "true"), Encoding.UTF8);
+        Rewrite(new(@"\w+\(['""]WebAssembly resource does not have[^)]+\)", CultureInvariant),
+            "true", dotnet);
     }
 
     private void PacifyBundlers ()
     {
         // Neutralizes the bundler-offending code in the .NET and Emscripten's generated ES modules.
         // We handle the imports and WASM loading ourselves, so their hacks are a dead code.
-        var imp = new Regex(@"(?<![.$\w])import\((?:[^()]|\([^()]*\))*\)", Compiled | CultureInvariant);
-        var req = new Regex(@"(?<![.$\w])require\((?:[^()]|\([^()]*\))*\)", Compiled | CultureInvariant);
-        File.WriteAllText(dotnet, req.Replace(imp.Replace(File.ReadAllText(dotnet, Encoding.UTF8),
-            "Promise.resolve()"), "null").Replace("import.meta.url", "\"file:/\""), Encoding.UTF8);
-        File.WriteAllText(runtime, req.Replace(imp.Replace(File.ReadAllText(runtime, Encoding.UTF8),
-            "Promise.resolve()"), "null").Replace("import.meta.url", "\"file:/\""), Encoding.UTF8);
-        File.WriteAllText(native, req.Replace(imp.Replace(File.ReadAllText(native, Encoding.UTF8),
-            "Promise.resolve()"), "null").Replace("import.meta.url", "\"file:/\""), Encoding.UTF8);
+        Rewrite(new(@"(import|new URL)\(", CultureInvariant),
+            "$1(/*@vite-ignore*//*webpackIgnore:true*/", dotnet, runtime, native);
+        Rewrite(new(@"import\.meta\.url", CultureInvariant),
+            "\"file:///c:/x.js\"", dotnet, runtime, native);
+    }
+
+    private static void Rewrite (Regex pattern, string with, params ReadOnlySpan<string> paths)
+    {
+        foreach (var path in paths)
+            File.WriteAllText(path, pattern.Replace(File.ReadAllText(path, Encoding.UTF8), with), Encoding.UTF8);
     }
 }

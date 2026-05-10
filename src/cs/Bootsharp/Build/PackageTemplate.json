@@ -2,5 +2,9 @@
     "name": "%MODULE_NAME%",
     "type": "module",
     "main": "%MODULE_DIR%/index.mjs",
-    "types": "%TYPES_DIR%/index.d.mts"
+    "types": "%TYPES_DIR%/index.d.mts",
+    "browser": {
+        "url": false, "fs": false, "process": false,
+        "module": false, "path": false, "crypto": false
+    }
 }

@@ -156,7 +156,7 @@
         <ItemGroup>
             <BsPackageFile Include="$(BootsharpPackageDirectory)/package.json"/>
         </ItemGroup>
-        <WriteLinesToFile File="@(BsPackageFile)"
+        <WriteLinesToFile File="@(BsPackageFile)" Overwrite="true"
                           Lines="$([System.IO.File]::ReadAllText('$(BsRoot)/build/PackageTemplate.json')
                                  .Replace('%MODULE_NAME%','$(BootsharpName)')
                                  .Replace('%MODULE_DIR%','$([System.IO.Path]::GetRelativePath('$(BootsharpPackageDirectory)','$(BootsharpPublishDirectory)'))')
