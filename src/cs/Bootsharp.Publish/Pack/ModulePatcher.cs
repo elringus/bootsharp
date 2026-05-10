@@ -13,6 +13,7 @@ internal sealed class ModulePatcher (string buildDir)
     {
         RemoveMaps();
         RemoveWasmNag();
+        PacifyBundlers();
     }
 
     private void RemoveMaps ()
@@ -32,5 +33,29 @@ internal sealed class ModulePatcher (string buildDir)
         File.WriteAllText(dotnet, new Regex("""(?:[$\w]+\.)*[$\w]+\(\s*(['"])WebAssembly resource does not have the expected content type \\?"application/wasm\\?", so falling back to slower ArrayBuffer instantiation\.\1\s*\)""",
                 RegexOptions.Compiled | RegexOptions.CultureInvariant)
             .Replace(File.ReadAllText(dotnet, Encoding.UTF8), "true"), Encoding.UTF8);
+    }
+
+    private void PacifyBundlers ()
+    {
+        // Neutralizes the bundler-offending code in the .NET and Emscripten's generated ES modules.
+        // Rel: https://github.com/elringus/bootsharp/issues/139
+        const string ignore = "/*@vite-ignore*//*webpackIgnore:true*/";
+        const string url =
+            """
+            ((typeof window === "object" && "Deno" in window && Deno.build.os === "windows") || (typeof process === "object" && process.platform === "win32")) ? "file://dotnet.native.wasm" : "file:///dotnet.native.wasm"
+            """;
+        File.WriteAllText(dotnet, File.ReadAllText(dotnet, Encoding.UTF8)
+            .Replace("import.meta.url", url)
+            .Replace("import(", $"import({ignore}"), Encoding.UTF8);
+        File.WriteAllText(runtime, File.ReadAllText(runtime, Encoding.UTF8)
+            .Replace("import(", $"import({ignore}"), Encoding.UTF8);
+        File.WriteAllText(native, File.ReadAllText(native, Encoding.UTF8)
+            .Replace("var _scriptDir = import.meta.url", "var _scriptDir = \"file:/\"")
+            .Replace("require('url').fileURLToPath(new URL('./', import.meta.url))", "\"./\"")
+            .Replace("require(\"url\").fileURLToPath(new URL(\"./\",import.meta.url))", "\"./\"")
+            .Replace("new URL('dotnet.native.wasm', import.meta.url).href", "\"file:/\"")
+            .Replace("new URL(\"dotnet.native.wasm\",import.meta.url).href", "\"file:/\"")
+            .Replace("import.meta.url", url)
+            .Replace("import(", $"import({ignore}"), Encoding.UTF8);
     }
 }
