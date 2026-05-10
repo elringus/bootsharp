@@ -11,8 +11,8 @@ let nextId = -2147483648; // Number.MIN_SAFE_INTEGER is below C#'s Int32.MinValu
 export const instances = {
     /** Invokes the specified factory to create and register an exported instance wrapper associated with the ID,
      *  unless an exported instance is already registered under the ID, in which case returns its wrapper. */
-    export(id: number, factory: (id: number) => object): object {
-        const instance = exportedById.get(id)?.deref();
+    export<T extends object>(id: number, factory: (id: number) => T): T {
+        const instance = exportedById.get(id)?.deref() as T | undefined;
         if (instance != null) return instance;
         const exported = factory(id);
         exportedById.set(id, new WeakRef(exported));
