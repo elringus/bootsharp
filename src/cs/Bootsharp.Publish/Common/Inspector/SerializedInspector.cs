@@ -76,23 +76,20 @@ internal sealed class SerializedInspector (InstancedInspector itd)
         var paramOrders = ctorParams
             .Select((p, i) => (p.Name!, i))
             .ToDictionary(p => p.Item1, p => p.i, StringComparer.OrdinalIgnoreCase);
-        var properties = GetSerializableProperties(type)
+        var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+            .Where(p => p.GetMethod != null && p.GetIndexParameters().Length == 0 &&
+                        (p.SetMethod is { IsPublic: true } || IsAutoProperty(p)))
             .OrderBy(p => paramOrders.GetValueOrDefault(p.Name, int.MaxValue))
-            .Select(p => BuildProperty(p, paramOrders.ContainsKey(p.Name)))
-            .ToArray();
-        return new(type, properties);
+            .Select(p => BuildProperty(p, paramOrders.ContainsKey(p.Name))).ToArray();
+        return new(type, props);
     }
 
     private SerializedPropertyMeta BuildProperty (PropertyInfo prop, bool ctor)
     {
         var value = Build(prop.PropertyType);
-        var getter = prop.GetMethod!;
-        var setter = prop.SetMethod;
+        var setter = prop.SetMethod is { IsPublic: true } ? prop.SetMethod : null;
         var initOnly = setter?.ReturnParameter.GetRequiredCustomModifiers()
             .Any(m => m.FullName == typeof(IsExternalInit).FullName) == true;
-        var canSet = setter != null && setter.IsPublic && !initOnly;
-        var canInit = setter != null && setter.IsPublic && initOnly;
-        var canSetField = !canInit && !canSet && IsAutoProperty(prop) && getter.IsPublic;
         return new(value.Clr) {
             Info = prop,
             Name = prop.Name,
@@ -101,9 +98,9 @@ internal sealed class SerializedInspector (InstancedInspector itd)
             Required = prop.CustomAttributes
                 .Any(a => a.AttributeType.FullName == typeof(RequiredMemberAttribute).FullName),
             ConstructorParameter = ctor,
-            Kind = canInit ? SerializedPropertyKind.Init : canSet ? SerializedPropertyKind.Set :
-                canSetField ? SerializedPropertyKind.Field : SerializedPropertyKind.None,
-            FieldAccessorName = canSetField ? $"Access_{BuildSerializedId(prop.DeclaringType!)}_{prop.Name}" : null
+            Kind = setter == null ? SerializedPropertyKind.Field :
+                initOnly ? SerializedPropertyKind.Init : SerializedPropertyKind.Set,
+            FieldAccessorName = setter == null ? $"Access_{BuildSerializedId(prop.DeclaringType!)}_{prop.Name}" : null
         };
     }
 
@@ -126,12 +123,6 @@ internal sealed class SerializedInspector (InstancedInspector itd)
                 else if (prop.PropertyType != param.ParameterType) return false;
             return true;
         }
-    }
-
-    private static IEnumerable<PropertyInfo> GetSerializableProperties (Type type)
-    {
-        return type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-            .Where(p => p.GetMethod != null && p.GetIndexParameters().Length == 0);
     }
 
     private static IReadOnlyList<SerializedMeta> OrderByDependencyGraph (IEnumerable<SerializedMeta> types)

@@ -794,7 +794,7 @@ public class DeclarationTest : PackTest
     }
 
     [Fact]
-    public void ComputedPropertiesAreIncluded ()
+    public void ComputedPropertiesAreNotIncluded ()
     {
         AddAssembly(WithClass(
             """
@@ -810,7 +810,6 @@ public class DeclarationTest : PackTest
             """
             export namespace Class {
                 export type Foo = Readonly<{
-                    boo: boolean;
                 }>;
             }
             """);
