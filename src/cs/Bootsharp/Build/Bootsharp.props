@@ -19,8 +19,6 @@
         <BootsharpName>bootsharp</BootsharpName>
         <!-- Directory to publish generated JavaScript module; 'base-output/module-name' by default. -->
         <BootsharpPublishDirectory/>
-        <!-- Directory to publish type declarations; 'publish-dir/types' by default. -->
-        <BootsharpTypesDirectory/>
         <!-- Directory to publish binaries; 'publish-dir/bin' by default. -->
         <BootsharpBinariesDirectory/>
         <!-- Directory to publish 'package.json' file; equals project directoy by default. -->

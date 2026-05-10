@@ -1,7 +1,7 @@
 import { resolve } from "node:path";
 import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
-import type { BootOptions } from "../cs/Test";
+import type { BootOptions } from "../cs/Test/bin/bootsharp/index.mjs";
 
 async function setup() {
     vi.resetModules();

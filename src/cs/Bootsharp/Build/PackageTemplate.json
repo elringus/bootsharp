@@ -2,10 +2,7 @@
     "name": "%MODULE_NAME%",
     "type": "module",
     "exports": {
-        ".": {
-            "types": "./%TYPES_DIR%/index.d.mts",
-            "default": "./%MODULE_DIR%/index.mjs"
-        }
+        ".": "./%MODULE_DIR%/index.mjs"
     },
     "browser": {
         "node:fs": false,

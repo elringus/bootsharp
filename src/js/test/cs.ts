@@ -1,11 +1,10 @@
 import assert from "node:assert";
 import { resolve } from "node:path";
 import { readFileSync, existsSync } from "node:fs";
-import type { BootResources, BinaryResource } from "./cs/Test";
-import bootsharp, { Test } from "./cs/Test";
+import bootsharp, { Test, BootResources, BinaryResource } from "./cs/Test/bin/bootsharp/index.mjs";
 
 export { bootsharp, Test };
-export * from "./cs/Test";
+export * from "./cs/Test/bin/bootsharp/index.mjs";
 
 export const resources = loadResources();
 export const manifest = bootsharp.manifest;
@@ -16,7 +15,7 @@ export async function bootRuntime() {
 }
 
 export function getDeclarations() {
-    const file = resolvePath("test/cs/Test/bin/bootsharp/types/generated/bindings.g.d.mts");
+    const file = resolvePath("test/cs/Test/bin/bootsharp/generated/bindings.g.d.mts");
     return readFileSync(file).toString();
 }
 

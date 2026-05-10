@@ -6,7 +6,6 @@ Build and publish related options are configured in `.csproj` file via MSBuild p
 |----------------------------|------------------|---------------------------------------------------|
 | BootsharpName              | bootsharp        | Name of the generated JavaScript module.          |
 | BootsharpPublishDirectory  | /bin/bootsharp   | Directory to publish generated JavaScript module. |
-| BootsharpTypesDirectory    | publish-dir/types| Directory to publish type declarations.           |
 | BootsharpBinariesDirectory | publish-dir/bin  | Directory to publish binaries.                    |
 | BootsharpPackageDirectory  | project-dir      | Directory to publish `package.json` file.         |
 

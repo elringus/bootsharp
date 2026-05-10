@@ -90,7 +90,6 @@
             <BsBuildDir Condition="!$(BsLlvm)">$(WasmAppDir)/$(WasmRuntimeAssetsLocation)</BsBuildDir>
             <BsBaseOutputPath>$(BaseOutputPath.Replace('\', '/'))</BsBaseOutputPath>
             <BootsharpPublishDirectory Condition="'$(BootsharpPublishDirectory)' == ''">$(BsBaseOutputPath)$(BootsharpName)</BootsharpPublishDirectory>
-            <BootsharpTypesDirectory Condition="'$(BootsharpTypesDirectory)' == ''">$(BootsharpPublishDirectory)/types</BootsharpTypesDirectory>
             <BootsharpBinariesDirectory Condition="'$(BootsharpBinariesDirectory)' == ''">$(BootsharpPublishDirectory)/bin</BootsharpBinariesDirectory>
             <BootsharpPackageDirectory Condition="'$(BootsharpPackageDirectory)' == ''">$(MSBuildProjectDirectory)</BootsharpPackageDirectory>
             <BsGlobalization>$([System.String]::Equals('$(InvariantGlobalization)', 'false'))</BsGlobalization>
@@ -133,13 +132,13 @@
             <BsRuntimeFile Include="$(BsBuildDir)/dotnet.runtime.js"/>
             <BsNativeFile Include="$(BsBuildDir)/dotnet.native.js"/>
         </ItemGroup>
-        <RemoveDir Directories="$(BootsharpBinariesDirectory);$(BootsharpTypesDirectory)"/>
+        <RemoveDir Directories="$(BootsharpBinariesDirectory)"/>
         <Copy SourceFiles="@(BsWasmFiles)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy SourceFiles="@(BsIcuFiles)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy SourceFiles="@(BsDotNetFile)" DestinationFolder="$(BootsharpPublishDirectory)/dotnet"/>
         <Copy SourceFiles="@(BsRuntimeFile)" DestinationFolder="$(BootsharpPublishDirectory)/dotnet"/>
         <Copy SourceFiles="@(BsNativeFile)" DestinationFolder="$(BootsharpPublishDirectory)/dotnet"/>
-        <Copy SourceFiles="@(BsTypeFiles)" DestinationFolder="$(BootsharpTypesDirectory)/%(RecursiveDir)"/>
+        <Copy SourceFiles="@(BsTypeFiles)" DestinationFolder="$(BootsharpPublishDirectory)/%(RecursiveDir)"/>
         <Copy SourceFiles="@(BsModuleFiles)" DestinationFolder="$(BootsharpPublishDirectory)/%(RecursiveDir)"/>
 
         <!-- Publish debug artifacts when in the debug configuration. -->
@@ -160,7 +159,6 @@
                           Lines="$([System.IO.File]::ReadAllText('$(BsRoot)/build/PackageTemplate.json')
                                  .Replace('%MODULE_NAME%','$(BootsharpName)')
                                  .Replace('%MODULE_DIR%','$([System.IO.Path]::GetRelativePath('$(BootsharpPackageDirectory)','$(BootsharpPublishDirectory)'))')
-                                 .Replace('%TYPES_DIR%','$([System.IO.Path]::GetRelativePath('$(BootsharpPackageDirectory)','$(BootsharpTypesDirectory)'))')
                                  .Replace('\', '/'))"/>
 
         <Message Text="Bootsharp ES module published at $(BootsharpPublishDirectory)" Importance="high"/>
