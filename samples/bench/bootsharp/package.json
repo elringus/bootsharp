@@ -1,0 +1,14 @@
+{
+    "name": "bootsharp",
+    "type": "module",
+    "exports": "./bin/bootsharp/index.mjs",
+    "types": "./bin/bootsharp/types/index.d.mts",
+    "browser": {
+        "fs": false,
+        "url": false,
+        "path": false,
+        "module": false,
+        "crypto": false,
+        "process": false
+    }
+}
