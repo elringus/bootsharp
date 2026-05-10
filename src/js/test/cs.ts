@@ -1,11 +1,11 @@
 import assert from "node:assert";
 import { resolve } from "node:path";
 import { readFileSync, existsSync } from "node:fs";
-import type { BootResources } from "./cs/Test/bin/bootsharp";
-import bootsharp, { Test } from "./cs/Test/bin/bootsharp";
+import type { BootResources } from "./cs/Test";
+import bootsharp, { Test } from "./cs/Test";
 
 export { bootsharp, Test };
-export * from "./cs/Test/bin/bootsharp";
+export * from "./cs/Test";
 
 export const resources: BootResources = loadResources();
 
