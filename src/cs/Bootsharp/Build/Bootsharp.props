@@ -23,7 +23,7 @@
         <BootsharpTypesDirectory/>
         <!-- Directory to publish binaries; 'publish-dir/bin' by default. -->
         <BootsharpBinariesDirectory/>
-        <!-- Directory to publish 'package.json' file; same as publish directory by default. -->
+        <!-- Directory to publish 'package.json' file; equals project directoy by default. -->
         <BootsharpPackageDirectory/>
 
         <!-- Internal Properties -->
