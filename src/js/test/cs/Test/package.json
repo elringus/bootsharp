@@ -1,10 +1,14 @@
 {
     "name": "bootsharp",
     "type": "module",
-    "main": "bin/bootsharp/index.mjs",
-    "types": "bin/bootsharp/types/index.d.mts",
+    "exports": "./bin/bootsharp/index.mjs",
+    "types": "./bin/bootsharp/types/index.d.mts",
     "browser": {
-        "url": false, "fs": false, "process": false,
-        "module": false, "path": false, "crypto": false
+        "node:fs": false,
+        "node:url": false,
+        "node:path": false,
+        "node:module": false,
+        "node:crypto": false,
+        "node:process": false
     }
 }

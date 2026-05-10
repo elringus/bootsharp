@@ -1,14 +1,18 @@
 {
     "name": "%MODULE_NAME%",
     "type": "module",
-    "exports": "./%MODULE_DIR%/index.mjs",
-    "types": "./%TYPES_DIR%/index.d.mts",
+    "exports": {
+        ".": {
+            "types": "./%TYPES_DIR%/index.d.mts",
+            "default": "./%MODULE_DIR%/index.mjs"
+        }
+    },
     "browser": {
-        "fs": false,
-        "url": false,
-        "path": false,
-        "module": false,
-        "crypto": false,
-        "process": false
+        "node:fs": false,
+        "node:url": false,
+        "node:path": false,
+        "node:module": false,
+        "node:crypto": false,
+        "node:process": false
     }
 }

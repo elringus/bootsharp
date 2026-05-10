@@ -14,8 +14,8 @@ internal sealed class ModulePatcher (string buildDir)
     {
         RemoveMaps();
         RemoveWasmNag();
-        QualifyImports();
         PacifyBundlers();
+        QualifyImports();
     }
 
     private void RemoveMaps ()
@@ -33,13 +33,6 @@ internal sealed class ModulePatcher (string buildDir)
             "true", dotnet);
     }
 
-    private void QualifyImports ()
-    {
-        // Deno requires 'node:' prefix on Node built-ins.
-        Rewrite(new(@"import\(([^""')]*)['""](?!node:)(url|fs|process|module|path|crypto)['""]\)", CultureInvariant),
-            "import($1\"node:$2\")", dotnet, runtime, native);
-    }
-
     private void PacifyBundlers ()
     {
         // Neutralizes the bundler-offending code in the .NET and Emscripten's generated ES modules.
@@ -48,6 +41,13 @@ internal sealed class ModulePatcher (string buildDir)
             "$1(/*@vite-ignore*//*webpackIgnore:true*/", dotnet, runtime, native);
         Rewrite(new(@"import\.meta\.url", CultureInvariant),
             "\"file:///c:/x.js\"", dotnet, runtime, native);
+    }
+
+    private void QualifyImports ()
+    {
+        // Deno requires 'node:' prefix on Node built-ins.
+        Rewrite(new(@"import\(([^""')]*)['""](?!node:)(url|fs|process|module|path|crypto)['""]\)", CultureInvariant),
+            "import($1\"node:$2\")", dotnet, runtime, native);
     }
 
     private static void Rewrite (Regex pattern, string with, params ReadOnlySpan<string> paths)
