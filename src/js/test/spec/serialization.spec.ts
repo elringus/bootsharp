@@ -60,12 +60,6 @@ describe("serialization", () => {
         const b: Test.Union = { shared: "B", b: { strings: ["x"], times: [new Date()] } };
         expect(Test.Serialization.echoUnions([a, b])).toStrictEqual([a, b]);
     });
-    it("computes expression properties on the C# side", () => {
-        expect(Test.Serialization.echoComputed({ id: "foo", count: 7, summary: "ignored" }))
-            .toStrictEqual({ id: "foo", count: 7, summary: "foo:7" });
-        expect(Test.Serialization.echoComputedArray([{ id: "bar", count: 3, summary: "ignored" }, null]))
-            .toStrictEqual([{ id: "bar", count: 3, summary: "bar:3" }, null]);
-    });
     it("can echo vehicles", async () => {
         expect(Test.Library.Registries.echoRecords([{ id: "foo" }, null]))
             .toStrictEqual([{ id: "foo" }, null]);

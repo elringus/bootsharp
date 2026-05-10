@@ -46,19 +46,10 @@ public readonly record struct Union
 public readonly record struct ItemA (string? String, IReadOnlyDictionary<string, int?>? Map);
 public readonly record struct ItemB (string[] Strings, IReadOnlyCollection<DateTime?> Times, IReadOnlyList<int>? Ints);
 
-public sealed record Computed
-{
-    public required string Id { get; init; }
-    public required int Count { get; init; }
-    public string Summary => $"{Id}:{Count}";
-}
-
 public static class Serialization
 {
     [Export] public static Primitives?[]? EchoPrimitives (Primitives?[]? value) => value;
     [Export] public static Union?[]? EchoUnions (Union?[]? value) => value;
-    [Export] public static Computed EchoComputed (Computed value) => value;
-    [Export] public static Computed?[]? EchoComputedArray (Computed?[]? value) => value;
     [Export] public static byte[]? EchoBytes (byte[]? value) => value;
     [Export] public static int[]? EchoIntArray (int[]? value) => value;
     [Export] public static double[]? EchoDoubleArray (double[]? value) => value;

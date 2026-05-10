@@ -382,7 +382,7 @@ public class SerializerTest : EmitTest
     }
 
     [Fact]
-    public void SerializersComputedProperties ()
+    public void IgnoresComputedProperties ()
     {
         AddAssembly(With(
             """
@@ -398,7 +398,7 @@ public class SerializerTest : EmitTest
             }
             """));
         Execute();
-        Contains("System_String.Write(ref writer, value.Computed);");
+        DoesNotContain("Computed");
     }
 
     [Fact]

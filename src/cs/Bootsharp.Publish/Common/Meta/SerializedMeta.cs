@@ -107,10 +107,6 @@ internal sealed record SerializedPropertyMeta (Type Clr) : SerializedMeta(Clr)
 internal enum SerializedPropertyKind
 {
     /// <summary>
-    /// Property cannot be set (read-only, no accessible setter or backing field).
-    /// </summary>
-    None,
-    /// <summary>
     /// Property has a regular public setter.
     /// </summary>
     Set,
