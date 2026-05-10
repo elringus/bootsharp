@@ -20,4 +20,9 @@ internal static class GlobalText
         if (value.Length == 1) return value.ToLowerInvariant();
         return char.ToLowerInvariant(value[0]) + value[1..];
     }
+
+    public static string IgnoreV8 (this string content, string before)
+    {
+        return content.Replace(before, $"/* v8 ignore next -- @preserve */ {before}");
+    }
 }

@@ -1,9 +1,9 @@
 import { describe, it, beforeAll, expect } from "vitest";
 import { WebSocket, WebSocketServer } from "ws";
-import { Test, bootSideload, any } from "../cs";
+import { Test, bootRuntime } from "../cs";
 
 describe("platform", () => {
-    beforeAll(bootSideload);
+    beforeAll(bootRuntime);
     it("can provide unique guid", () => {
         const guid1 = Test.Platform.getGuid();
         const guid2 = Test.Platform.getGuid();
@@ -19,7 +19,7 @@ describe("platform", () => {
     it("can communicate via websocket", async () => {
         // .NET requires ws package when running on node:
         // https://github.com/dotnet/runtime/blob/main/src/mono/wasm/features.md#websocket
-        any(global).WebSocket = WebSocket;
+        (<Record<string, unknown>>global).WebSocket = WebSocket;
         const wss = new WebSocketServer({ port: 0 });
         wss.on("connection", socket => socket.on("message", socket.send));
         await new Promise<void>(resolve => wss.once("listening", resolve));

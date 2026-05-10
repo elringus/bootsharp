@@ -3,8 +3,6 @@
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-        <!-- Not embedding binaries to source module reduces build size by ~30%. -->
-        <BootsharpEmbedBinaries>false</BootsharpEmbedBinaries>
     </PropertyGroup>
 
     <ItemGroup>

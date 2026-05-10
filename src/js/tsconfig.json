@@ -1,9 +1,8 @@
 {
     "compilerOptions": {
+        "rootDir": "src",
         "target": "esnext",
         "module": "esnext",
-        "moduleResolution": "bundler",
-        "allowSyntheticDefaultImports": true,
         "strict": true
     },
     "include": ["src"]

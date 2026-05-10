@@ -1,4 +1,4 @@
-import { malloc, free, getHeap } from "./runtime";
+import { malloc, free, getHeap } from "./runtime.mjs";
 
 export type Binary<T> = {
     write: Write<T>;
@@ -102,15 +102,15 @@ export const types = {
         (writer, value: Date) => writer.writeInt64((BigInt(value.getTime()) * 10000n) + dotnetEpochTicks),
         reader => new Date(Number((reader.readInt64() - dotnetEpochTicks) / 10000n))),
 
-    Nullable: <T>(inner: Binary<T>): Binary<T | null | undefined> => binary(
+    Nullable: <T, >(inner: Binary<T>): Binary<T | null | undefined> => binary(
         (writer, value) => writeNullable(writer, value, inner),
         reader => readNullable(reader, inner)),
 
-    Array: <T>(element: Binary<T>): Binary<ArrayLike<T> | null | undefined> => binary(
+    Array: <T, >(element: Binary<T>): Binary<ArrayLike<T> | null | undefined> => binary(
         (writer, value) => writeArray(writer, value, element),
         reader => readArray(reader, element)),
 
-    List: <T>(element: Binary<T>): Binary<ArrayLike<T> | null | undefined> => binary(
+    List: <T, >(element: Binary<T>): Binary<ArrayLike<T> | null | undefined> => binary(
         (writer, value) => writeList(writer, value, element),
         reader => readList(reader, element)),
 

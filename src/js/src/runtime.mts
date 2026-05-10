@@ -1,4 +1,4 @@
-import type { RuntimeAPI } from "./modules";
+import type { RuntimeAPI } from "./dotnet/index.mjs";
 
 let runtime: RuntimeAPI;
 

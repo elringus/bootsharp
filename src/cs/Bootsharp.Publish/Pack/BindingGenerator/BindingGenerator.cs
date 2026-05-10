@@ -65,10 +65,10 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
     {
         bld.Append(
             """
-            import { exports } from "./exports";
-            import { Event } from "./event";
-            import { instances } from "./instances";
-            import { serialize, deserialize, binary, types } from "./serialization";
+            import { exports } from "../exports.mjs";
+            import { Event } from "../event.mjs";
+            import { instances } from "../instances.mjs";
+            import { serialize, deserialize, binary, types } from "../serialization.mjs";
             """
         );
     }
@@ -186,7 +186,8 @@ internal sealed class BindingGenerator (Preferences prefs, bool debug)
         if (isIt)
         {
             var invName = $"instances.export(_id, id => new {it.JSName}(id)).broadcast{evt.Name}";
-            bld.Append($"{Br}{name}({PrependIdArg(args)}) {{ {invName}({invArgs}); }}");
+            bld.Append($"{Br}{name}: ({PrependIdArg(args)}) => {invName}({invArgs})"
+                .IgnoreV8("id =>")); // Uncoverable, as finalization in Node is not controllable.
         }
         else
         {

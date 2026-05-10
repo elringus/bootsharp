@@ -8,8 +8,6 @@
         <BootsharpName>backend</BootsharpName>
         <!-- Publish module's package.json file under solution folder. -->
         <BootsharpPackageDirectory>$(SolutionDir)</BootsharpPackageDirectory>
-        <!-- Don't embed the C# solution binaries to the JavaScript module. -->
-        <BootsharpEmbedBinaries>false</BootsharpEmbedBinaries>
         <!-- Publish the binaries to the React public directory for deployment. -->
         <BootsharpBinariesDirectory>$(SolutionDir)../public/bin</BootsharpBinariesDirectory>
         <!-- Enable multi-threaded mode to run CPU-intensive tasks on worker threads. -->

@@ -12,7 +12,7 @@ Program.getFrontendName = () =>
 Program.onMainInvoked.subscribe(console.log);
 
 // Initializing dotnet runtime and invoking entry point.
-await bootsharp.boot();
+await bootsharp.boot(import.meta.resolve("./cs/bin/bootsharp/bin"));
 
 // Invoking 'Program.GetBackendName' C# method.
 console.log(`Hello ${Program.getBackendName()}!`);

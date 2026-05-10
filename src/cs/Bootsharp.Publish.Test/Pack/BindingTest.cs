@@ -855,7 +855,7 @@ public class BindingTest : PackTest
                 get getImportedSerialized() { return this.getImportedSerializedHandler; }
             };
             export const Exported = {
-                broadcastChangedSerialized(_id, arg1, arg2) { instances.export(_id, id => new JSExported(id)).broadcastChanged(instances.export(arg1, id => new JSExported(id)), deserialize(arg2, Info)); }
+                broadcastChangedSerialized: (_id, arg1, arg2) => instances.export(_id, /* v8 ignore next -- @preserve */ id => new JSExported(id)).broadcastChanged(instances.export(arg1, /* v8 ignore next -- @preserve */ id => new JSExported(id)), deserialize(arg2, Info))
             };
             """);
     }

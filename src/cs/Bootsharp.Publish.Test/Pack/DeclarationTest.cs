@@ -5,13 +5,6 @@ public class DeclarationTest : PackTest
     protected override string TestedContent => GeneratedDeclarations;
 
     [Fact]
-    public void ImportsEventTypes ()
-    {
-        Execute();
-        Contains("""import type { EventBroadcaster, EventSubscriber } from "./event";""");
-    }
-
-    [Fact]
     public void DeclaresNamespace ()
     {
         AddAssembly(WithClass("Foo", "[Export] public static void Bar () { }"));

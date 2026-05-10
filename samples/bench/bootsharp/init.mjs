@@ -6,7 +6,7 @@ export async function init() {
     Imported.getNumber = getNumber;
     Imported.getStruct = getStruct;
 
-    await bootsharp.boot();
+    await bootsharp.boot(import.meta.resolve("./bin/bootsharp/bin"));
 
     return { ...Exported };
 }

@@ -1,6 +1,6 @@
 namespace Bootsharp.Publish;
 
-internal sealed class ResourceGenerator (string entryAssemblyName, bool embed, bool debug, bool g11n)
+internal sealed class ResourceGenerator (string entryAssemblyName, bool debug, bool g11n)
 {
     private readonly List<string> assemblies = [];
     private readonly List<string> symbols = [];
@@ -11,19 +11,19 @@ internal sealed class ResourceGenerator (string entryAssemblyName, bool embed, b
     public string Generate (string buildDir, string debugDir)
     {
         foreach (var path in Directory.GetFiles(buildDir, "*.wasm").Order())
-            if (path.EndsWith("dotnet.native.wasm")) wasm = BuildBin(path);
-            else assemblies.Add(BuildBin(path));
+            if (path.EndsWith("dotnet.native.wasm")) wasm = BuildResourceName(path);
+            else assemblies.Add(BuildResourceName(path));
         if (g11n)
         {
             foreach (var path in Directory.GetFiles(buildDir, "*.dat").Order())
-                icu.Add(BuildBin(path));
+                icu.Add(BuildResourceName(path));
         }
         if (debug)
         {
             foreach (var path in Directory.GetFiles(debugDir, "*.symbols").Order())
-                symbols.Add(BuildBin(path));
+                symbols.Add(BuildResourceName(path));
             foreach (var path in Directory.GetFiles(debugDir, "*.pdb").Order())
-                pdb.Add(BuildBin(path));
+                pdb.Add(BuildResourceName(path));
         }
         return
             $$"""
@@ -46,12 +46,8 @@ internal sealed class ResourceGenerator (string entryAssemblyName, bool embed, b
               """;
     }
 
-    private string BuildBin (string path)
+    private string BuildResourceName (string path)
     {
-        var name = Path.GetFileName(path);
-        var content = embed ? ToBase64(File.ReadAllBytes(path)) : "undefined";
-        return $$"""{ name: "{{name}}", content: {{content}} }""";
+        return $"\"{Path.GetFileName(path)}\"";
     }
-
-    private string ToBase64 (byte[] bytes) => $"\"{Convert.ToBase64String(bytes)}\"";
 }

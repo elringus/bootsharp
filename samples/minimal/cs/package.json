@@ -1,8 +1,8 @@
 {
-    "name": "%MODULE_NAME%",
+    "name": "bootsharp",
     "type": "module",
     "exports": {
-        ".": "./%MODULE_DIR%/index.mjs"
+        ".": "./bin/bootsharp/index.mjs"
     },
     "browser": {
         "node:fs": false,

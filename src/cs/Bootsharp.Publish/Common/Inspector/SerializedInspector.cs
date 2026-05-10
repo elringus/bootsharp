@@ -97,7 +97,7 @@ internal sealed class SerializedInspector (InstancedInspector itd)
             Info = prop,
             Name = prop.Name,
             JSName = BuildJSName(prop.Name),
-            OmitWhenNull = !prop.PropertyType.IsValueType || IsNullable(prop.PropertyType),
+            OmitWhenNull = IsNullable(prop.PropertyType, GetNullity(prop)),
             Required = prop.CustomAttributes
                 .Any(a => a.AttributeType.FullName == typeof(RequiredMemberAttribute).FullName),
             ConstructorParameter = ctor,

@@ -7,12 +7,9 @@ public class PackTest : TaskTest
     protected string MockDotNetContent { get; } = "MockDotNetContent";
     protected string MockRuntimeContent { get; } = "MockRuntimeContent";
     protected string MockNativeContent { get; } = "MockNativeContent";
-    protected string GeneratedBindings => ReadProjectFile("bindings.g.js");
-    protected string GeneratedDeclarations => ReadProjectFile("bindings.g.d.ts");
-    protected string GeneratedResources => ReadProjectFile("resources.g.js");
-    protected string GeneratedDotNetModule => ReadProjectFile("dotnet.g.js");
-    protected string GeneratedRuntimeModule => ReadProjectFile("dotnet.runtime.g.js");
-    protected string GeneratedNativeModule => ReadProjectFile("dotnet.native.g.js");
+    protected string GeneratedBindings => ReadProjectFile("generated/bindings.g.mjs");
+    protected string GeneratedDeclarations => ReadProjectFile("generated/bindings.g.d.mts");
+    protected string GeneratedResources => ReadProjectFile("generated/resources.g.mjs");
 
     public PackTest ()
     {
@@ -44,9 +41,7 @@ public class PackTest : TaskTest
         InspectedDirectory = Project.Root,
         EntryAssemblyName = "System.Runtime.dll",
         BuildEngine = Engine,
-        EmbedBinaries = false,
         Globalization = false,
-        Threading = false,
         LLVM = false,
         Debug = false
     };

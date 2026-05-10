@@ -31,6 +31,13 @@ public static partial class Platform
     [Export]
     public static void ThrowCS (string message) => throw new Exception(message);
 
+    [Export]
+    public static async Task ThrowCSAsync (string message)
+    {
+        await Task.Delay(1);
+        throw new Exception(message);
+    }
+
     [Import]
     public static partial void ThrowJS ();
 
