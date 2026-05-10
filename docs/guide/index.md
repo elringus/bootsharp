@@ -43,7 +43,7 @@ Bootsharp will automatically build and bundle the JavaScript package when publis
 import bootsharp, { Backend, Frontend } from "backend";
 
 // Boot C# WASM module.
-await boosharp.boot();
+await bootsharp.boot("/bin");
 
 // Subscribe to C# event.
 Frontend.onUserChanged.subscribe(updateUserUI);

@@ -1,11 +1,14 @@
 # https://typedoc-plugin-markdown.org/themes/vitepress/quick-start
 
+DOCS_DIR=$(cd "$(dirname "$0")/.." && pwd)
+JS_DIR=$(cd "$DOCS_DIR/../src/js" && pwd)
+
 echo '{
     "entryPoints": [
-        "../src/js/src/index.ts"
+        "src/index.mts"
     ],
-    "tsconfig": "../src/js/tsconfig.json",
-    "out": "api",
+    "tsconfig": "tsconfig.json",
+    "out": "../../docs/api",
     "name": "Bootsharp",
     "readme": "none",
     "githubPages": false,
@@ -17,8 +20,8 @@ echo '{
         "title.memberPage": "{name}",
     },
     "plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"]
-}' > typedoc.json
+}' > "$JS_DIR/typedoc.json"
 
-typedoc
-sed -i -z "s/API Reference/API Reference\nAuto-generated with [typedoc-plugin-markdown](https:\/\/typedoc-plugin-markdown.org)./" api/index.md
-rm typedoc.json
+(cd "$JS_DIR" && NODE_PATH="$DOCS_DIR/node_modules" "$DOCS_DIR/node_modules/.bin/typedoc" --skipErrorChecking)
+sed -i -z "s/API Reference/API Reference\nAuto-generated with [typedoc-plugin-markdown](https:\/\/typedoc-plugin-markdown.org)./" "$DOCS_DIR/api/index.md"
+rm "$JS_DIR/typedoc.json"

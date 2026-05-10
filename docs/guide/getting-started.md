@@ -58,13 +58,14 @@ Run following command under the solution root:
 dotnet publish
 ```
 
-— which will produce `bin/bootsharp` directory with the following content:
+— which will produce a `bin/bootsharp` directory with the compiled module and a `package.json` next to the `.csproj`:
 
-| Name         | Type   | Description                                               |
-|--------------|--------|-----------------------------------------------------------|
-| types        | folder | Contains type declarations for the authored interop APIs. |
-| index.mjs    | file   | The compiled ES module with embedded binaries.            |
-| package.json | file   | NPM package manifest for convenient importing.            |
+| Name      | Type   | Description                                        |
+|-----------|--------|----------------------------------------------------|
+| bin       | folder | Runtime binaries (`*.wasm`, assemblies, ICU data). |
+| dotnet    | folder | .NET runtime JavaScript modules.                   |
+| types     | folder | Type declarations for the authored interop APIs.   |
+| index.mjs | file   | ES module entry point with the generated bindings. |
 
 ::: tip
 When publishing in `Release` (default for `dotnet publish`), Bootsharp automatically enables the [NativeAOT-LLVM](/guide/llvm) compiler, speed-focused WASM optimization, aggressive trimming, and an extra Binaryen pass when `wasm-opt` is available.
@@ -110,7 +111,7 @@ console.log(`Hello ${Program.getBackendName()}!`);
     Program.onMainInvoked.subscribe(console.log);
 
     // Initializing dotnet runtime and invoking entry point.
-    await bootsharp.boot();
+    await bootsharp.boot("/bin");
 
     // Invoking 'Program.GetBackendName' C# method.
     console.log(`Hello ${Program.getBackendName()}!`);
