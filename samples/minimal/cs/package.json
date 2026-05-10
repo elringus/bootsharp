@@ -1,8 +1,9 @@
 {
     "name": "bootsharp",
     "type": "module",
-    "exports": "./bin/bootsharp/index.mjs",
-    "types": "./bin/bootsharp/types/index.d.mts",
+    "exports": {
+        ".": "./bin/bootsharp/index.mjs"
+    },
     "browser": {
         "node:fs": false,
         "node:url": false,
