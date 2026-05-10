@@ -1,5 +1,4 @@
 import bootsharp, { Program } from "./cs/bin/bootsharp/index.mjs";
-import { pathToFileURL } from "node:url";
 import fs from "node:fs/promises";
 import zlib from "node:zlib";
 import util from "node:util";
@@ -8,15 +7,8 @@ import path from "node:path";
 console.log(`Binary size: ${await measure("./cs/bin/bootsharp/bin")}KB`);
 console.log(`Brotli size: ${await measure("./cs/bin/bootsharp/bro")}KB`);
 
-const resources = { ...bootsharp.resources };
-await Promise.all([
-    fetchBro(resources.wasm),
-    ...resources.assemblies.map(fetchBro)
-]);
-
 Program.log = console.log;
-const root = pathToFileURL(path.resolve("./cs/bin/bootsharp/bin"));
-await bootsharp.boot({ root, resources });
+await bootsharp.boot({ wasm: await loadBro(bootsharp.manifest.wasm) });
 
 async function measure(dir) {
     let size = 0;
@@ -25,7 +17,8 @@ async function measure(dir) {
     return Math.ceil(size / 1024);
 }
 
-async function fetchBro(resource) {
-    const bro = await fs.readFile(`./cs/bin/bootsharp/bro/${resource.name}.br`);
-    resource.content = await util.promisify(zlib.brotliDecompress)(bro);
+async function loadBro(name) {
+    const bro = await fs.readFile(`./cs/bin/bootsharp/bro/${name}.br`);
+    const buf = await util.promisify(zlib.brotliDecompress)(bro);
+    return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
 }
