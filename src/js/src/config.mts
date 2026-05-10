@@ -1,5 +1,5 @@
-import type { RuntimeConfig, Asset, WasmAsset, AssemblyAsset, IcuAsset, PdbAsset, SymbolsAsset, ModuleAsset } from "./dotnet/index.mjs";
-import type { BinaryResource, BootResources } from "./resources.mjs";
+import { RuntimeConfig, Asset, WasmAsset, AssemblyAsset, IcuAsset, PdbAsset, SymbolsAsset, ModuleAsset } from "./dotnet/index.mjs";
+import { BinaryResource, BootResources, manifest } from "./resources.mjs";
 import * as nativeModule from "./dotnet/dotnet.native.js";
 import * as runtimeModule from "./dotnet/dotnet.runtime.js";
 
@@ -7,17 +7,17 @@ import * as runtimeModule from "./dotnet/dotnet.runtime.js";
 export function buildConfig(resources: BootResources): RuntimeConfig {
     return {
         resources: {
-            wasmNative: [resolveAsset<WasmAsset>(resources.wasm)],
+            wasmNative: [resolveAsset<WasmAsset>({ name: manifest.wasm, content: resources.wasm })],
             jsModuleNative: [resolveModule("dotnet.native.js", nativeModule)],
             jsModuleRuntime: [resolveModule("dotnet.runtime.js", runtimeModule)],
-            assembly: resources.assemblies.map(resolveAsset<AssemblyAsset>),
-            icu: resources.icu.map(resolveAsset<IcuAsset>),
-            wasmSymbols: resources.symbols.map(resolveSymbols),
-            pdb: resources.pdb.map(resolveAsset<PdbAsset>)
+            assembly: resources.assemblies?.map(resolveAsset<AssemblyAsset>),
+            icu: resources.icu?.map(resolveAsset<IcuAsset>),
+            wasmSymbols: resources.symbols?.map(resolveSymbols),
+            pdb: resources.pdb?.map(resolveAsset<PdbAsset>)
         },
-        mainAssemblyName: resources.entryAssemblyName,
+        mainAssemblyName: manifest.entryAssemblyName,
         globalizationMode: resolveGlobalizationMode(),
-        debugLevel: resources.symbols.length > 0 ? -1 : undefined
+        debugLevel: resources.symbols ? -1 : undefined
     };
 
     function resolveModule(name: string, exports: unknown): ModuleAsset {
@@ -42,7 +42,7 @@ export function buildConfig(resources: BootResources): RuntimeConfig {
     }
 
     function resolveGlobalizationMode(): RuntimeConfig["globalizationMode"] {
-        if (resources.icu.length === 0) return "invariant" as never;
+        if (!resources.icu) return "invariant" as never;
         if (resources.icu.some(res => res.name === "icudt.dat")) return "all" as never;
         return "sharded" as never;
     }

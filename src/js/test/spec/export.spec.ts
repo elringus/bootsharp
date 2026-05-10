@@ -5,7 +5,7 @@ describe("export", () => {
     it("exports bootsharp api", () => {
         expect(bootsharp.boot).toBeTypeOf("function");
         expect(bootsharp.exit).toBeTypeOf("function");
-        expect(bootsharp.resources).toBeTypeOf("object");
+        expect(bootsharp.manifest).toBeTypeOf("object");
     });
     it("exports dotnet host builder", () => {
         expect(bootsharp.dotnet.withConfig).toBeTypeOf("function");

@@ -1,3 +1,3 @@
-import { BootResources } from "../resources.mjs";
+import { BootManifest } from "../resources.mjs";
 
-export default {} as BootResources;
+export default {} as BootManifest;

@@ -1,5 +1,5 @@
 import { boot, exit, getStatus, BootStatus } from "./boot.mjs";
-import { resources } from "./resources.mjs";
+import { manifest } from "./resources.mjs";
 import { app } from "./dotnet/index.mjs";
 
 export default {
@@ -7,11 +7,11 @@ export default {
     exit,
     getStatus,
     BootStatus,
-    resources,
+    manifest,
     dotnet: app.dotnet
 };
 
 export * from "./event.mjs";
 export * from "./generated/bindings.g.mjs";
 export type { BootOptions } from "./boot.mjs";
-export type { BootResources, BinaryResource } from "./resources.mjs";
+export type { BootManifest, BootResources, BinaryResource } from "./resources.mjs";

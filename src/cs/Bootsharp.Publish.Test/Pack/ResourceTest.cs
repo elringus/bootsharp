@@ -20,8 +20,8 @@ public class ResourceTest : PackTest
         Project.WriteFile("Foo.pdb", "MockPdbContent");
         Project.WriteFile("dotnet.native.js.symbols", "MockSymbolsContent");
         Execute();
-        Contains("""{ name: "Foo.pdb" }""");
-        Contains("""{ name: "dotnet.native.js.symbols" }""");
+        Contains("Foo.pdb");
+        Contains("dotnet.native.js.symbols");
     }
 
     [Fact]
@@ -32,8 +32,8 @@ public class ResourceTest : PackTest
         Project.WriteFile("Foo.pdb", "MockPdbContent");
         Project.WriteFile("dotnet.native.js.symbols", "MockSymbolsContent");
         Execute();
-        DoesNotContain("""{ name: "Foo.pdb" }""");
-        DoesNotContain("""{ name: "dotnet.native.js.symbols" }""");
+        DoesNotContain("Foo.pdb");
+        DoesNotContain("dotnet.native.js.symbols");
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class ResourceTest : PackTest
         AddAssembly("Foo.dll");
         Project.WriteFile("icudt.dat", "MockIcuContent");
         Execute();
-        Contains("""{ name: "icudt.dat" }""");
+        Contains("icudt.dat");
     }
 
     [Fact]
@@ -53,6 +53,6 @@ public class ResourceTest : PackTest
         AddAssembly("Foo.dll");
         Project.WriteFile("icudt.dat", "MockIcuContent");
         Execute();
-        DoesNotContain("""{ name: "icudt.dat" }""");
+        DoesNotContain("icudt.dat");
     }
 }

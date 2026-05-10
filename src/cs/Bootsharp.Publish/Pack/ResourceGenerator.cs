@@ -11,19 +11,19 @@ internal sealed class ResourceGenerator (string entryAssemblyName, bool debug, b
     public string Generate (string buildDir, string debugDir)
     {
         foreach (var path in Directory.GetFiles(buildDir, "*.wasm").Order())
-            if (path.EndsWith("dotnet.native.wasm")) wasm = BuildResource(path);
-            else assemblies.Add(BuildResource(path));
+            if (path.EndsWith("dotnet.native.wasm")) wasm = BuildResourceName(path);
+            else assemblies.Add(BuildResourceName(path));
         if (g11n)
         {
             foreach (var path in Directory.GetFiles(buildDir, "*.dat").Order())
-                icu.Add(BuildResource(path));
+                icu.Add(BuildResourceName(path));
         }
         if (debug)
         {
             foreach (var path in Directory.GetFiles(debugDir, "*.symbols").Order())
-                symbols.Add(BuildResource(path));
+                symbols.Add(BuildResourceName(path));
             foreach (var path in Directory.GetFiles(debugDir, "*.pdb").Order())
-                pdb.Add(BuildResource(path));
+                pdb.Add(BuildResourceName(path));
         }
         return
             $$"""
@@ -46,9 +46,8 @@ internal sealed class ResourceGenerator (string entryAssemblyName, bool debug, b
               """;
     }
 
-    private string BuildResource (string path)
+    private string BuildResourceName (string path)
     {
-        var name = Path.GetFileName(path);
-        return $$"""{ name: "{{name}}" }""";
+        return $"\"{Path.GetFileName(path)}\"";
     }
 }
