@@ -14,9 +14,9 @@ public static class ImportPropertyTest
             """
             unsafe partial class Foo
             {
-                static partial global::System.Int32 Counter { get => Bootsharp_GetPropertyCounter(); set => Bootsharp_SetPropertyCounter(value); }
-                public static delegate* managed<global::System.Int32> Bootsharp_GetPropertyCounter;
-                public static delegate* managed<global::System.Int32, void> Bootsharp_SetPropertyCounter;
+                static partial global::System.Int32 Counter { get => Bootsharp_GetCounter(); set => Bootsharp_SetCounter(value); }
+                public static delegate* managed<global::System.Int32> Bootsharp_GetCounter;
+                public static delegate* managed<global::System.Int32, void> Bootsharp_SetCounter;
             }
             """
         },
@@ -35,8 +35,8 @@ public static class ImportPropertyTest
 
             public static unsafe partial class Foo
             {
-                public static partial global::System.String Label { get => Bootsharp_GetPropertyLabel(); }
-                public static delegate* managed<global::System.String> Bootsharp_GetPropertyLabel;
+                public static partial global::System.String Label { get => Bootsharp_GetLabel(); }
+                public static delegate* managed<global::System.String> Bootsharp_GetLabel;
             }
             """
         },
@@ -51,8 +51,8 @@ public static class ImportPropertyTest
             """
             unsafe partial class Foo
             {
-                static partial global::System.Boolean Active { set => Bootsharp_SetPropertyActive(value); }
-                public static delegate* managed<global::System.Boolean, void> Bootsharp_SetPropertyActive;
+                static partial global::System.Boolean Active { set => Bootsharp_SetActive(value); }
+                public static delegate* managed<global::System.Boolean, void> Bootsharp_SetActive;
             }
             """
         },
@@ -68,9 +68,9 @@ public static class ImportPropertyTest
             """
             unsafe partial class Foo
             {
-                static partial global::System.Int32 Counter { get => Bootsharp_GetPropertyCounter(); set => Bootsharp_SetPropertyCounter(value); }
-                public static delegate* managed<global::System.Int32> Bootsharp_GetPropertyCounter;
-                public static delegate* managed<global::System.Int32, void> Bootsharp_SetPropertyCounter;
+                static partial global::System.Int32 Counter { get => Bootsharp_GetCounter(); set => Bootsharp_SetCounter(value); }
+                public static delegate* managed<global::System.Int32> Bootsharp_GetCounter;
+                public static delegate* managed<global::System.Int32, void> Bootsharp_SetCounter;
             }
             """
         }

@@ -4,7 +4,7 @@ using Bootsharp;
 
 namespace Test.Library;
 
-public static class Modules
+public static partial class Modules
 {
     [Export]
     public static async Task CanInteropWithImportedModuleAsync ()
@@ -53,6 +53,28 @@ public static class Modules
         inner.Increment();
         Assert(inner.Count == 2);
         inner.OnCountChanged -= handler;
+    }
+
+    [Export] public static IBidirectional ExportBi () => new Bidirectional();
+    [Import] public static partial IBidirectional ImportBi ();
+
+    [Export]
+    public static void CanInteropWithBidirectional ()
+    {
+        var js = ImportBi();
+        var cs = new Bidirectional();
+        IBidirectional? observed = null;
+        Action<IBidirectional> handler = b => observed = b;
+        js.OnBiChanged += handler;
+        Assert(js.EchoBi(js) == js);
+        Assert(js.EchoBi(cs) == cs);
+        js.Bi = cs;
+        Assert(observed == cs);
+        Assert(js.Bi == cs);
+        js.Bi = js;
+        Assert(observed == js);
+        Assert(js.Bi == js);
+        js.OnBiChanged -= handler;
     }
 
     [Export]

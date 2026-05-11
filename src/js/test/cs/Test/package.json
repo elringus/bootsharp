@@ -2,7 +2,8 @@
     "name": "bootsharp",
     "type": "module",
     "exports": {
-        ".": "./bin/bootsharp/index.mjs"
+        ".": "./bin/bootsharp/index.mjs",
+        "./*": "./bin/bootsharp/generated/*.g.mjs"
     },
     "browser": {
         "node:fs": false,

@@ -1,20 +1,21 @@
 import { describe, it, beforeAll, expect } from "vitest";
 import { WebSocket, WebSocketServer } from "ws";
-import { Test, bootRuntime } from "../cs";
+import { bootRuntime } from "../cs";
+import { Platform } from "../cs/Test/bin/bootsharp/generated/test.g.mjs";
 
 describe("platform", () => {
     beforeAll(bootRuntime);
     it("can provide unique guid", () => {
-        const guid1 = Test.Platform.getGuid();
-        const guid2 = Test.Platform.getGuid();
+        const guid1 = Platform.getGuid();
+        const guid2 = Platform.getGuid();
         expect(guid1.length).toStrictEqual(36);
         expect(guid2.length).toStrictEqual(36);
         expect(guid1).not.toStrictEqual(guid2);
     });
     it("supports globalization", () => {
-        expect(Test.Platform.formatDate("ru", 5, 1, "d MMMM")).toStrictEqual("1 мая");
-        expect(Test.Platform.formatDate("ja", 5, 1, "d MMMM")).toStrictEqual("1 5月");
-        expect(Test.Platform.formatDate("en", 5, 1, "MMMM d")).toStrictEqual("May 1");
+        expect(Platform.formatDate("ru", 5, 1, "d MMMM")).toStrictEqual("1 мая");
+        expect(Platform.formatDate("ja", 5, 1, "d MMMM")).toStrictEqual("1 5月");
+        expect(Platform.formatDate("en", 5, 1, "MMMM d")).toStrictEqual("May 1");
     });
     it("can communicate via websocket", async () => {
         // .NET requires ws package when running on node:
@@ -24,7 +25,7 @@ describe("platform", () => {
         wss.on("connection", socket => socket.on("message", socket.send));
         await new Promise<void>(resolve => wss.once("listening", resolve));
         const port = (wss.address() as { port: number }).port;
-        expect(await Test.Platform.echoWebSocket(`ws://localhost:${port}`, "foo", 3000)).toStrictEqual("foo");
+        expect(await Platform.echoWebSocket(`ws://localhost:${port}`, "foo", 3000)).toStrictEqual("foo");
         wss.close();
     });
 });

@@ -15,7 +15,7 @@ public static class Modules
 {
     /// <summary>
     /// Export modules metadata generated for types (classes or interfaces) specified under
-    /// <see cref="ExportAttribute"/> mapped by the generated wrapper type.
+    /// <see cref="ExportAttribute"/> mapped by the associated proxy type.
     /// </summary>
     public static IReadOnlyDictionary<Type, ExportModule> Exports => exports;
     /// <summary>
@@ -28,10 +28,10 @@ public static class Modules
     private static readonly Dictionary<Type, ImportModule> imports = new();
 
     /// <summary>
-    /// Maps type of the generated export module wrapper to the associated export module metadata.
+    /// Maps type of the generated export module proxy to the associated export module metadata.
     /// Invoked by the generated code before program start.
     /// </summary>
-    public static void Register (Type wrapper, ExportModule export) => exports[wrapper] = export;
+    public static void Register (Type proxy, ExportModule export) => exports[proxy] = export;
     /// <summary>
     /// Maps interface type of the imported module to the associated import module metadata.
     /// Invoked by the generated code before program start.

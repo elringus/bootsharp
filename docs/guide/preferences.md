@@ -14,11 +14,7 @@ To customize emitted spaces, use `Space` parameter. For example, to make all bin
 )]
 ```
 
-The patterns are matched against full type name of declaring C# type when generating JavaScript objects for interop methods and against namespace when generating TypeScript syntax for C# types. Matched type names have the following modifications:
-
-- interfaces have first character removed
-- generics have parameter spec removed
-- nested type names have `+` replaced with `.`
+The patterns are matched against the C# full type name. Nested types use `+` as separator; generic types include the arity suffix.
 
 ## Type
 

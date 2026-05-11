@@ -2,7 +2,8 @@
     "name": "%MODULE_NAME%",
     "type": "module",
     "exports": {
-        ".": "./%MODULE_DIR%/index.mjs"
+        ".": "./%MODULE_DIR%/index.mjs",
+        "./*": "./%MODULE_DIR%/generated/*.g.mjs"
     },
     "browser": {
         "node:fs": false,

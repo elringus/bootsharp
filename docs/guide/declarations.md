@@ -1,87 +1,91 @@
 # Type Declarations
 
-Bootsharp will automatically generate [type declarations](https://www.typescriptlang.org/docs/handbook/2/type-declarations) for interop APIs when building the solution. The files are emitted under "types" directory of the compiled module package.
+Bootsharp will automatically generate [type declarations](https://www.typescriptlang.org/docs/handbook/2/type-declarations) for interop APIs when building the solution. One `.g.d.mts` file is emitted per C# namespace, colocated with the matching `.g.mjs` binding under the `generated/` directory of the compiled module package.
 
 ## Function Declarations
 
-For the interop methods, function declarations are emitted.
-
-Exported methods will have associated function assigned under the declaring type space:
+For interop methods, function declarations are emitted under the class's TS namespace wrapper inside the C# namespace's module:
 
 ```csharp
-public class Foo
+namespace Foo;
+
+public class Bar
 {
     [Export]
-    public static void Bar() { }
+    public static void Baz() { }
 }
 ```
 
-— will make following emitted in the declaration file:
+— will make the following emitted in `generated/foo.g.d.mts`:
 
 ```ts
-export namespace Foo {
-    export function bar(): void;
+export namespace Bar {
+    export function baz(): void;
 }
 ```
 
-— which allows consuming the API in JavaScript as follows:
+— which allows consuming the API in JavaScript as:
 
 ```ts
-import { Foo } from "bootsharp";
+import { Bar } from "bootsharp/foo";
 
-Foo.bar();
+Bar.baz();
 ```
 
 Imported methods will be emitted as properties, which have to be assigned before booting the runtime:
 
 ::: code-group
 
-```csharp [Foo.cs]
-public partial class Foo
+```csharp [Bar.cs]
+namespace Foo;
+
+public partial class Bar
 {
     [Import]
-    public static partial void Bar();
+    public static partial void Baz();
 }
 ```
 
-```ts [bindings.d.ts]
-export namespace Foo {
-    export let bar: () => void;
+```ts [foo.g.d.mts]
+export namespace Bar {
+    export let baz: () => void;
 }
 ```
 
 ```ts [main.ts]
-import { Foo } from "bootsharp";
+import { Bar } from "bootsharp/foo";
 
-Foo.bar = () => {};
+Bar.baz = () => {};
 ```
 
 :::
 
 ## Property Declarations
 
-Exported properties are emitted as variables under the declaring type space:
+Exported properties are emitted as variables under the declaring class's TS namespace:
 
 ::: code-group
 
-```csharp [Foo.cs]
-public class Foo
+```csharp [Bar.cs]
+namespace Foo;
+
+public class Bar
 {
     [Export]
-    public static string Bar { get; set; } = "";
+    public static string Baz { get; set; } = "";
 }
 ```
 
-```ts [bindings.d.ts]
-export namespace Foo {
-    export let bar: string;
+```ts [foo.g.d.mts]
+export namespace Bar {
+    export let baz: string;
 }
 ```
 
 ```ts [main.ts]
-import { Foo } from "bootsharp";
+import { Bar } from "bootsharp/foo";
 
-Foo.bar = "updated";
+Bar.baz = "updated";
 ```
 
 :::
@@ -90,25 +94,27 @@ Imported properties are emitted as accessor pairs, which have to be assigned bef
 
 ::: code-group
 
-```csharp [Foo.cs]
-public static partial class Foo
+```csharp [Bar.cs]
+namespace Foo;
+
+public static partial class Bar
 {
     [Import]
-    public static partial string Bar { get; set; }
+    public static partial string Baz { get; set; }
 }
 ```
 
-```ts [bindings.d.ts]
-export namespace Foo {
-    export let bar: { get: () => string; set: (value: string) => void };
+```ts [foo.g.d.mts]
+export namespace Bar {
+    export let baz: { get: () => string; set: (value: string) => void };
 }
 ```
 
 ```ts [main.ts]
-import { Foo } from "bootsharp";
+import { Bar } from "bootsharp/foo";
 
-let bar = "";
-Foo.bar = { get: () => bar, set: value => bar = value };
+let baz = "";
+Bar.baz = { get: () => baz, set: value => baz = value };
 ```
 
 :::
@@ -119,24 +125,26 @@ Exported events are emitted as `EventSubscriber` objects:
 
 ::: code-group
 
-```csharp [Foo.cs]
-public class Foo
+```csharp [Bar.cs]
+namespace Foo;
+
+public class Bar
 {
     [Export]
-    public static event Action<string>? OnBar;
+    public static event Action<string>? OnBaz;
 }
 ```
 
-```ts [bindings.d.ts]
-export namespace Foo {
-    export const onBar: EventSubscriber<[payload: string]>;
+```ts [foo.g.d.mts]
+export namespace Bar {
+    export const onBaz: EventSubscriber<[payload: string]>;
 }
 ```
 
 ```ts [main.ts]
-import { Foo } from "bootsharp";
+import { Bar } from "bootsharp/foo";
 
-Foo.onBar.subscribe(payload => {});
+Bar.onBaz.subscribe(payload => {});
 ```
 
 :::
@@ -145,24 +153,26 @@ Imported events are emitted as `EventBroadcaster` objects:
 
 ::: code-group
 
-```csharp [Foo.cs]
-public static partial class Foo
+```csharp [Bar.cs]
+namespace Foo;
+
+public static partial class Bar
 {
     [Import]
-    public static event Action<string>? OnBar;
+    public static event Action<string>? OnBaz;
 }
 ```
 
-```ts [bindings.d.ts]
-export namespace Foo {
-    export const onBar: EventBroadcaster<[payload: string]>;
+```ts [foo.g.d.mts]
+export namespace Bar {
+    export const onBaz: EventBroadcaster<[payload: string]>;
 }
 ```
 
 ```ts [main.ts]
-import { Foo } from "bootsharp";
+import { Bar } from "bootsharp/foo";
 
-Foo.onBar.broadcast("updated");
+Bar.onBaz.broadcast("updated");
 ```
 
 :::
@@ -173,7 +183,9 @@ When an inspected assembly has XML documentation generated, Bootsharp mirrors th
 
 ::: code-group
 
-```csharp [Foo.cs]
+```csharp [MathApi.cs]
+namespace Foo;
+
 /// <summary>Math API.</summary>
 public class MathApi
 {
@@ -186,7 +198,7 @@ public class MathApi
 }
 ```
 
-```ts [bindings.d.ts]
+```ts [foo.g.d.mts]
 /**
  * Math API.
  */
@@ -216,28 +228,32 @@ This is intentional and optimized for TypeScript ergonomics. Refer to the dedica
 
 ## Type Crawling
 
-Bootsharp will crawl types from the interop signatures and mirror them in the emitted declarations. For example, if you have a custom record with property of another custom record implementing a custom interface, both records and the interface will be emitted:
+Bootsharp will crawl types from the interop signatures and mirror them as top-level exports of the same C# namespace's declaration module. For example, if you have a custom record with a property of another custom record implementing a custom interface, both records and the interface will be emitted:
 
 ::: code-group
 
 ```csharp [Foo.cs]
+namespace Space;
+
 public interface IFoo { };
 public record Foo : IFoo;
 public record Bar (Foo foo);
 
-public partial class Foo
+public partial class Holder
 {
     [Import]
     public static partial Bar GetBar();
 }
 ```
 
-```ts [bindings.d.ts]
+```ts [space.g.d.mts]
 export interface IFoo {}
-export interface Foo implements IFoo {}
-export interface Bar {foo: Foo;}
+export type Foo = IFoo & Readonly<{}>;
+export type Bar = Readonly<{
+    foo: Foo;
+}>;
 
-export namespace Foo {
+export namespace Holder {
     export function getBar(): Bar;
 }
 ```
@@ -246,4 +262,4 @@ export namespace Foo {
 
 ## Configuring Type Mappings
 
-You can override which type declaration are generated for associated C# types via `Type` patterns of [emit preferences](/guide/preferences).
+You can override which type declaration is generated for associated C# types via `Type` patterns of [emit preferences](/guide/preferences).

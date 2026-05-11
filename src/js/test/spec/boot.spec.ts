@@ -6,8 +6,9 @@ import type { BootOptions } from "../cs/Test/bin/bootsharp/index.mjs";
 async function setup() {
     vi.resetModules();
     const cs = await import("../cs");
-    cs.Test.Program.onMainInvoked = vi.fn();
-    return cs;
+    const test = await import("../cs/Test/bin/bootsharp/generated/test.g.mjs");
+    test.Program.onMainInvoked = vi.fn();
+    return { ...cs, Program: test.Program };
 }
 
 describe("boot", () => {
@@ -38,9 +39,9 @@ describe("boot", () => {
         await boot;
     });
     it("invokes program main on boot", async () => {
-        const { bootsharp, resources, Test } = await setup();
+        const { bootsharp, resources, Program } = await setup();
         await bootsharp.boot(resources);
-        expect(Test.Program.onMainInvoked).toHaveBeenCalledOnce();
+        expect(Program.onMainInvoked).toHaveBeenCalledOnce();
     });
     it("enables debugging when debugging resources are present", async () => {
         const { bootsharp, resources } = await setup();
@@ -73,7 +74,7 @@ describe("boot", () => {
         expect(config.globalizationMode).toStrictEqual("invariant");
     });
     it("fetches resources when root is specified", async () => {
-        const { bootsharp, resources, Test } = await setup();
+        const { bootsharp, resources, Program } = await setup();
         const bin = [...resources.assemblies!, ...resources.icu!, ...resources.symbols!, ...resources.pdb!];
         const fetchSpy = vi.fn(url => {
             const name = url.substring(url.lastIndexOf("/") + 1);
@@ -84,7 +85,7 @@ describe("boot", () => {
         global.fetch = <never>fetchSpy;
         try { await bootsharp.boot("/bin"); }
         finally { global.fetch = fetch; }
-        expect(Test.Program.onMainInvoked).toHaveBeenCalled();
+        expect(Program.onMainInvoked).toHaveBeenCalled();
         expect(fetchSpy).toHaveBeenCalledWith("/bin/dotnet.native.wasm");
         expect(fetchSpy).toHaveBeenCalledWith("/bin/Bootsharp.Common.wasm");
     });

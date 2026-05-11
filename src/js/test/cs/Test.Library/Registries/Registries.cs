@@ -20,6 +20,7 @@ public partial class Registries
         return registry;
     }
 
+    [Export] public static IRegistry MakeRegistry () => new Registry();
     [Export] public static Vehicle?[]? EchoVehicles (Vehicle?[]? value) => value;
     [Export] public static Record?[]? EchoRecords (Record?[]? value) => value;
 

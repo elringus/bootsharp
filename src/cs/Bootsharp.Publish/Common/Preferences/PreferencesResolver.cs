@@ -2,18 +2,23 @@ using System.Reflection;
 
 namespace Bootsharp.Publish;
 
-internal sealed class PreferencesResolver (string entryAssemblyName)
+internal static class PreferencesResolver
 {
-    public Preferences Resolve (string outDir)
+    /// <summary>
+    /// Resolved preferences of the current build task.
+    /// </summary>
+    internal static AsyncLocal<Preferences> Resolved { get; } = new();
+
+    public static void Resolve (string entryAssemblyName, string outDir)
     {
         using var ctx = CreateLoadContext(outDir);
         var assemblyPath = Path.Combine(outDir, entryAssemblyName);
         var assembly = ctx.LoadFromAssemblyPath(assemblyPath);
         var attribute = FindPreferencesAttribute(assembly);
-        return CreatePreferences(attribute);
+        Resolved.Value = CreatePreferences(attribute);
     }
 
-    private CustomAttributeData? FindPreferencesAttribute (Assembly assembly)
+    private static CustomAttributeData? FindPreferencesAttribute (Assembly assembly)
     {
         foreach (var attr in assembly.CustomAttributes)
             if (attr.AttributeType.FullName == typeof(PreferencesAttribute).FullName)
@@ -21,13 +26,15 @@ internal sealed class PreferencesResolver (string entryAssemblyName)
         return null;
     }
 
-    private Preferences CreatePreferences (CustomAttributeData? attr) => new() {
+    private static Preferences CreatePreferences (CustomAttributeData? attr) => new() {
         Space = CreatePreferences(nameof(PreferencesAttribute.Space), attr) ?? [],
-        Type = CreatePreferences(nameof(PreferencesAttribute.Type), attr) ?? [],
-        Function = CreatePreferences(nameof(PreferencesAttribute.Function), attr) ?? []
+        Name = CreatePreferences(nameof(PreferencesAttribute.Name), attr) ?? [],
+        Method = CreatePreferences(nameof(PreferencesAttribute.Method), attr) ?? [],
+        Property = CreatePreferences(nameof(PreferencesAttribute.Property), attr) ?? [],
+        Event = CreatePreferences(nameof(PreferencesAttribute.Event), attr) ?? []
     };
 
-    private Preference[]? CreatePreferences (string name, CustomAttributeData? attr)
+    private static Preference[]? CreatePreferences (string name, CustomAttributeData? attr)
     {
         if (attr is null || !attr.NamedArguments.Any(a => a.MemberName == name)) return null;
         var value = CreateValue(attr.NamedArguments.First(a => a.MemberName == name).TypedValue);
@@ -37,7 +44,7 @@ internal sealed class PreferencesResolver (string entryAssemblyName)
         return prefs;
     }
 
-    private string[] CreateValue (CustomAttributeTypedArgument arg)
+    private static string[] CreateValue (CustomAttributeTypedArgument arg)
     {
         var items = ((IEnumerable<CustomAttributeTypedArgument>)arg.Value!).ToArray();
         var value = new string[items.Length];

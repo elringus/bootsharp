@@ -5,8 +5,12 @@ internal sealed record Preferences
 {
     /// <inheritdoc cref="PreferencesAttribute.Space"/>
     public IReadOnlyList<Preference> Space { get; init; } = [];
-    /// <inheritdoc cref="PreferencesAttribute.Type"/>
-    public IReadOnlyList<Preference> Type { get; init; } = [];
-    /// <inheritdoc cref="PreferencesAttribute.Function"/>
-    public IReadOnlyList<Preference> Function { get; init; } = [];
+    /// <inheritdoc cref="PreferencesAttribute.Name"/>
+    public IReadOnlyList<Preference> Name { get; init; } = [];
+    /// <inheritdoc cref="PreferencesAttribute.Method"/>
+    public IReadOnlyList<Preference> Method { get; init; } = [];
+    /// <inheritdoc cref="PreferencesAttribute.Property"/>
+    public IReadOnlyList<Preference> Property { get; init; } = [];
+    /// <inheritdoc cref="PreferencesAttribute.Event"/>
+    public IReadOnlyList<Preference> Event { get; init; } = [];
 }

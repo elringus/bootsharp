@@ -1,16 +1,24 @@
 # Requirements
 
-- Keep the code lean and efficient, including the use of `unsafe` when it is justified.
-- Use the latest available .NET and C# features when they improve the code and fit the existing style.
-- Avoid defensive programming and compatibility overhead. Target only the modern WASM runtime, current JS specs and current browser capabilities.
-- Follow the existing code style, architecture, project structure, naming and formatting strictly.
+- Follow the existing code style, architecture, naming and formatting strictly.
+- Use the latest C# features when they fit the existing style.
+- Avoid defensive programming and compatibility overhead.
 - If clarification is required, use the question tool instead of guessing.
 
-IMPORTANT: NEVER RUN ANY BUILD/PUBLISH COMMANDS IN PARALLEL.
+# Export-Import Model
+
+We have "export" and "import" concepts used throughout the codebase. The model is always C#-centric and means the same thing on both the C# and JavaScript sides:
+
+- Export: something in C# being exported to JavaScript
+- Import: something in JavaScript being imported to C#
+
+For example, an exported method means a C# method exposed to JavaScript, and we refer to it as exported in both the C# and JavaScript code. An imported method means the opposite: a JavaScript function bound to a partial C# method, referred to as imported in both C# and JS code.
+
+Make sure to follow this convention strictly.
 
 # Packaging Bootsharp
 
-Follow these steps exactly and sequentially whenever the Bootsharp package consumed by other projects must be actualized, or when running the JS end-to-end tests after updating the package's C# or JS code.
+Follow these steps exactly and sequentially whenever the Bootsharp package consumed by other projects must be actualized, or when running the JS end-to-end tests after modifying the package's C# or JS code.
 
 1. Build the JS package with `npm run build` under `src/js`.
 2. Bump the Bootsharp library alpha version in `src/cs/Directory.Build.props`
@@ -30,7 +38,7 @@ We have a strict 100% coverage policy for both the C# and JS codebases.
 
 - Tests must be meaningful and cover real behavior.
 - Do not add fake tests just to satisfy the numbers.
-- No unreachable code is allowed, except in rare cases where testing is not practical. In those cases, ask how to proceed.
+- No unreachable code is allowed, except in rare cases where testing is not practical.
 - Treat branch coverage as part of the requirement, not just line coverage.
 
 To check C# coverage, use `reportgenerator` on merged coverlet output. Example workflow reference: `src/cs/.scripts/cover.sh`. Do not run that script verbatim in automation; it is intended for interactive usage.
