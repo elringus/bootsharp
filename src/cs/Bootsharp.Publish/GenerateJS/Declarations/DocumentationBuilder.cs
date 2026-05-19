@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace Bootsharp.Publish;
@@ -34,7 +35,7 @@ internal sealed class DocumentationBuilder
         var sum = GetSummary(xml);
         foreach (var arg in evt.Args)
             if ((GetArgXml(xml, arg) ?? GetDelegateArgXml(arg)) is { } x)
-                sum.Add($"@param {arg.JSName} {x.Value}");
+                sum.Add($"@param {arg.JSName} {RenderXml(x)}");
         Append(sum);
 
         XElement? GetDelegateArgXml (ArgumentMeta arg)
@@ -61,9 +62,9 @@ internal sealed class DocumentationBuilder
         var sum = GetSummary(xml);
         foreach (var arg in method.Args)
             if (GetArgXml(xml, arg) is { } x)
-                sum.Add($"@param {arg.JSName} {x.Value}");
+                sum.Add($"@param {arg.JSName} {RenderXml(x)}");
         if (xml.Element("returns") is { } returns)
-            sum.Add($"@returns {returns.Value}");
+            sum.Add($"@returns {RenderXml(returns)}");
         Append(sum);
 
         static string GetMethodKey (MethodMeta method)
@@ -113,6 +114,15 @@ internal sealed class DocumentationBuilder
 
     private static List<string> GetSummary (XElement xml)
     {
-        return xml.Elements("summary").Select(e => e.Value.Trim()).ToList();
+        return xml.Elements("summary").Select(RenderXml).ToList();
     }
+
+    private static string RenderXml (XElement xml) =>
+        Regex.Replace(string.Concat(xml.DescendantNodes().Select(node => node switch {
+            XText xt => xt.Value,
+            XElement xe when xe.Attribute("cref")?.Value is { } cref =>
+                Regex.Replace(Regex.Replace(cref, "[`(].*$", ""), "^.*[.:]", ""),
+            XElement xe when (xe.Attribute("langword") ?? xe.Attribute("name"))?.Value is { } v => v,
+            _ => ""
+        })), @"\s+", " ").Trim();
 }

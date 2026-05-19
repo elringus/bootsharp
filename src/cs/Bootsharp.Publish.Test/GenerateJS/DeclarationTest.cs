@@ -1434,7 +1434,7 @@ public class DeclarationTest : GenerateJSTest
             }
 
             /// <summary>
-            /// A payload sent across interop.
+            /// A payload sent across interop, keyed by <c>Kind</c>.
             /// </summary>
             /// <remarks>Visible in generated TypeScript.</remarks>
             public record Payload<T>
@@ -1461,7 +1461,7 @@ public class DeclarationTest : GenerateJSTest
                 /// <summary>Current state.</summary>
                 int State { get; }
 
-                /// <summary>Invokes instance.</summary>
+                /// <summary>Invokes instance with <paramref name="value"/>.</summary>
                 /// <param name="value">Value to pass.</param>
                 void Inv (string value);
             }
@@ -1485,7 +1485,10 @@ public class DeclarationTest : GenerateJSTest
                 /// <summary>Runs foo.</summary>
                 /// <param name="function">Function value.</param>
                 /// <param name="names">Names to run.</param>
-                /// <returns>Computed value.</returns>
+                /// <returns>
+                /// Computed value to be used with <see cref="Get"/> and <see cref="OnFoo"/>,
+                /// or <see langword="null"/> when invalid.
+                /// </returns>
                 [Export] public static int Foo (List<int?> function, string[] names) => 0;
 
                 /// <summary>Gets payload.</summary>
@@ -1522,7 +1525,7 @@ public class DeclarationTest : GenerateJSTest
         Contains(
             """
             /**
-             * A payload sent across interop.
+             * A payload sent across interop, keyed by Kind.
              */
             export type Payload<T> = Readonly<{
                 /**
@@ -1542,7 +1545,7 @@ public class DeclarationTest : GenerateJSTest
                  */
                 readonly state: number;
                 /**
-                 * Invokes instance.
+                 * Invokes instance with value.
                  * @param value Value to pass.
                  */
                 inv(value: string): void;
@@ -1578,7 +1581,7 @@ public class DeclarationTest : GenerateJSTest
                  * Runs foo.
                  * @param fn Function value.
                  * @param names Names to run.
-                 * @returns Computed value.
+                 * @returns Computed value to be used with Get and OnFoo, or null when invalid.
                  */
                 export function foo(fn: Array<number | null>, names: Array<string>): number;
                 /**
