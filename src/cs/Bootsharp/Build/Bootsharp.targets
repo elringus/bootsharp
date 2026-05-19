@@ -53,7 +53,7 @@
                TaskName="Bootsharp.Publish.GenerateJS" AssemblyFile="$(BsPublishAssembly)"/>
 
     <!-- A hack due to source generator compositing not possible. (https://github.com/dotnet/roslyn/issues/57239#issuecomment-1585235740) -->
-    <Target Condition="'$(BsSkip)' != 'true'" Name="GenerateCS" BeforeTargets="GenerateAdditionalSources">
+    <Target Condition="'$(BsSkip)' != 'true'" Name="BootsharpCS" BeforeTargets="GenerateAdditionalSources">
 
         <!-- Pre-compile the solution, as we'll need to inspect the assemblies in the next step. -->
         <MSBuild Projects="$(MSBuildProjectFile)" Targets="BuildCompile" Properties="BsSkip=true"/>
@@ -83,7 +83,7 @@
         <RemoveDir Directories="$(BsIntermediateDir)"/>
     </Target>
 
-    <Target Name="GenerateJS" AfterTargets="$(BsPackAfter)">
+    <Target Name="BootsharpJS" AfterTargets="$(BsPackAfter)">
 
         <PropertyGroup>
             <BsBuildDir Condition="$(BsLlvm)">$(PublishDir)</BsBuildDir>

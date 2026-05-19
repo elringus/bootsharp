@@ -1,12 +1,12 @@
-import bootsharp, { Exported, Imported } from "./bin/bootsharp/index.mjs";
+import bootsharp, { IExported, IImported } from "./bin/bootsharp/index.mjs";
 import { getNumber, getStruct } from "../fixtures.mjs";
 
 /** @returns {Promise<import("../bench.mjs").Exports>} */
 export async function init() {
-    Imported.getNumber = getNumber;
-    Imported.getStruct = getStruct;
+    IImported.getNumber = getNumber;
+    IImported.getStruct = getStruct;
 
     await bootsharp.boot(import.meta.resolve("./bin/bootsharp/bin"));
 
-    return { ...Exported };
+    return { ...IExported };
 }
