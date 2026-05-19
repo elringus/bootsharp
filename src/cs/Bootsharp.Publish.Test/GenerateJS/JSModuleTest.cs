@@ -659,6 +659,17 @@ public class JSModuleTest : GenerateJSTest
     }
 
     [Fact]
+    public void DoesNotEmitModulesForBclTypes ()
+    {
+        AddAssembly(
+            With("public record Item;"),
+            WithClass("[Export] public static IReadOnlyList<Item> GetItems () => default!;"),
+            WithClass("[Export] public static byte[] GetBytes () => default!;"));
+        Execute();
+        DoesNotContain("imports.g.mjs", "system");
+    }
+
+    [Fact]
     public void RespectsPrefsInStatics ()
     {
         AddAssembly(With(
