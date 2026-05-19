@@ -639,12 +639,12 @@ public class JSModuleTest : GenerateJSTest
             """
             public record Record;
             public class Outer { public record NestedRecord; }
-            public class Class 
-            { 
-                public record InnerRecord; 
-                [Export] public static void Foo (Record record) {} 
-                [Export] public static void Bar (Outer.NestedRecord nested) {} 
-                [Export] public static void Baz (InnerRecord inner) {} 
+            public class Class
+            {
+                public record InnerRecord;
+                [Export] public static void Foo (Record record) {}
+                [Export] public static void Bar (Outer.NestedRecord nested) {}
+                [Export] public static void Baz (InnerRecord inner) {}
             }
             """));
         Execute();

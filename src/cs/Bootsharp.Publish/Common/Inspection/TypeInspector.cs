@@ -57,7 +57,7 @@ internal sealed class TypeInspector
     private ModuleMeta? InspectModule (Type type, InteropKind ik)
     {
         if (!inspectedModuleTypes.Add(type) || IsStatic(type) ||
-            ik == InteropKind.Import && !type.IsInterface) return null;
+            (ik == InteropKind.Import && !type.IsInterface)) return null;
         var md = new ModuleMeta(type) {
             IK = ik,
             Proxy = BuildProxy(type, ik),
