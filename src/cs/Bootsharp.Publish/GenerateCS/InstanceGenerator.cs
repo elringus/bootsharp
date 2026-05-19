@@ -76,7 +76,7 @@ internal sealed class InstanceGenerator
         $$"""
           namespace {{(this.it = it).Proxy.Space}}
           {
-              public class {{it.Proxy.Name}} (int id) : Bootsharp.JSProxy(id), {{it.Syntax}}
+              public class {{it.Proxy.Name}} (int id) : global::Bootsharp.JSProxy(id), {{it.Syntax}}
               {
                   ~{{it.Proxy.Name}}() => Instances.DisposeImported(_id);
 

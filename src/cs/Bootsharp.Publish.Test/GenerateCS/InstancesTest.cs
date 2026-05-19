@@ -33,7 +33,7 @@ public class InstancesTest : GenerateCSTest
             """
             namespace Bootsharp.Generated.Imports
             {
-                public class JSImported (int id) : Bootsharp.JSProxy(id), global::IImported
+                public class JSImported (int id) : global::Bootsharp.JSProxy(id), global::IImported
                 {
                     ~JSImported() => Instances.DisposeImported(_id);
 
@@ -160,6 +160,6 @@ public class InstancesTest : GenerateCSTest
             public interface IModule { IInstanced Item { get; set; } }
             """));
         Execute();
-        Contains("public class JSInstanced (int id) : Bootsharp.JSProxy(id), global::IInstanced");
+        Contains("public class JSInstanced (int id) : global::Bootsharp.JSProxy(id), global::IInstanced");
     }
 }
