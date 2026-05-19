@@ -112,6 +112,9 @@
         <Warning Condition="!$(BsDebug) And '$(BsBinaryenExitCode)' != '' And '$(BsBinaryenExitCode)' != '0'"
                  Text="Failed to run Binaryen optimization. Ensure Binaryen (https://github.com/WebAssembly/binaryen) is installed and 'wasm-opt' is in the system path, otherwise the build is not fully optimized."/>
 
+        <!-- Drop stale generated files left from previous builds. -->
+        <RemoveDir Directories="$(BsBuildDir)/generated"/>
+
         <!-- Generate JavaScript sources and type declarations. -->
         <GenerateJS BuildDirectory="$(BsBuildDir)"
                     DebugDirectory="$(PublishDir)"
