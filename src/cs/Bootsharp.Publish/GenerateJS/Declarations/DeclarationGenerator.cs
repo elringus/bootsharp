@@ -27,12 +27,11 @@ internal sealed class DeclarationGenerator
         return Fmt([EmitImports(module), bld.ToString()], 0, "\n\n");
     }
 
-    private string EmitImports (JSModule md) =>
-        $$"""
-          import type { Event } from "{{md.To("event")}}";
-          {{Fmt(mds.GetImported(md).Select(imp =>
-              $"""import type * as {imp.Alias} from "{md.ToGen(imp.Path)}";"""), 0)}}
-          """;
+    private string EmitImports (JSModule md) => $"{Fmt([
+        $$"""import type { Event } from "{{md.To("event")}}";""",
+        ..mds.GetImported(md).Select(imp =>
+            $"""import type * as {imp.Alias} from "{md.ToGen(imp.Path)}";""")
+    ], 0)}";
 
     private void DeclareNode (JSNode node)
     {

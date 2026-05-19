@@ -9,11 +9,11 @@ internal sealed class JSSerializerGenerator
 
           export const { serialize, deserialize } = $s;
 
-          {{Fmt(srd.Select(EmitFactory), 0)}}
-
-          {{Fmt(srd.OfType<SerializedInstanceMeta>().Select(EmitInstanced), 0, "\n\n")}}
-
-          {{Fmt(srd.OfType<SerializedObjectMeta>().Select(EmitObject), 0, "\n\n")}}
+          {{Fmt([
+              ..srd.Select(EmitFactory),
+              ..srd.OfType<SerializedInstanceMeta>().Select(EmitInstanced),
+              ..srd.OfType<SerializedObjectMeta>().Select(EmitObject)
+          ], 0)}}
 
           export default $s;
           """;
@@ -39,7 +39,6 @@ internal sealed class JSSerializerGenerator
           function write_{{it.Id}}(writer, value) {
               writer.writeInt32({{ImportJS(it.Instance, "value")}});
           }
-
           function read_{{it.Id}}(reader) {
               return {{ExportJS(it.Instance, "reader.readInt32()")}};
           }
@@ -50,7 +49,6 @@ internal sealed class JSSerializerGenerator
           function write_{{obj.Id}}(writer, value) {
               {{Fmt(EmitObjectWrite(obj))}}
           }
-
           function read_{{obj.Id}}(reader) {
               {{Fmt(EmitObjectRead(obj))}}
           }
