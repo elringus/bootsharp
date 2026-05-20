@@ -28,7 +28,7 @@ namespace Bootsharp;
 /// </remarks>
 public static class Proxies
 {
-    private static readonly Dictionary<string, Delegate> map = new(StringComparer.Ordinal);
+    private static readonly Dictionary<string, Delegate> map = [];
 
     /// <summary>
     /// Maps specified interop delegate to the specified ID.

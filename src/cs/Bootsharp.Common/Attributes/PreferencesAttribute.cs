@@ -20,31 +20,38 @@ namespace Bootsharp;
 public sealed class PreferencesAttribute : Attribute
 {
     /// <summary>
-    /// Customize generated JavaScript object names and TypeScript namespaces.
+    /// Customize how C# type namespaces transform into JavaScript module names.
     /// </summary>
     /// <remarks>
-    /// The patterns are matched against full type name (namespace.typename) of
-    /// declaring C# type when generating JavaScript objects for interop methods
-    /// and against namespace when generating TypeScript syntax for C# types.
-    /// Matched type names have the following modifications:<br/>
-    ///  - interfaces have first character removed<br/>
-    ///  - generics have parameter spec removed<br/>
-    ///  - nested have "+" replaced with "."<br/>
+    /// The patterns are matched against the C# type namespace, or 'index' when the type is global.
     /// </remarks>
     public string[] Space { get; init; } = [];
     /// <summary>
-    /// Customize generated TypeScript type syntax.
+    /// Customize how C# type names transform into JavaScript object names.
     /// </summary>
     /// <remarks>
-    /// The patterns are matched against full C# type names of
-    /// interop method arguments, return values and object properties.
+    /// The patterns are matched against the C# type names, with generic identity removed.
     /// </remarks>
-    public string[] Type { get; init; } = [];
+    public string[] Name { get; init; } = [];
     /// <summary>
-    /// Customize generated JavaScript function names.
+    /// Customize how C# method names transform into JavaScript function names.
     /// </summary>
     /// <remarks>
-    /// The patterns are matched against C# interop method names.
+    /// The patterns are matched against the C# reflected method names.
     /// </remarks>
-    public string[] Function { get; init; } = [];
+    public string[] Method { get; init; } = [];
+    /// <summary>
+    /// Customize how C# property names transform into JavaScript property names.
+    /// </summary>
+    /// <remarks>
+    /// The patterns are matched against the C# reflected property names.
+    /// </remarks>
+    public string[] Property { get; init; } = [];
+    /// <summary>
+    /// Customize how C# event names transform into JavaScript event names.
+    /// </summary>
+    /// <remarks>
+    /// The patterns are matched against the C# reflected event names.
+    /// </remarks>
+    public string[] Event { get; init; } = [];
 }

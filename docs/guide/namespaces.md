@@ -1,10 +1,12 @@
 # Namespaces
 
-Bootsharp maps binding APIs based on the fully qualified name of the C# types.
+Bootsharp projects each C# namespace into its own ES module. The full namespace becomes the import path; individual classes, enums and interface bindings inside that namespace become flat top-level exports of that module.
+
+The slug rule is: PascalCase → kebab-case, dot → directory separator. `Foo.Bar` → `foo/bar`. `MyRootSpace.MyOtherSpace` → `my-root-space/my-other-space`.
 
 ## Static Members
 
-Full type name (including namespace) of the declaring type of the static member is mapped into JavaScript object name:
+The C# namespace of the declaring type maps to a sub-path under the Bootsharp module; the declaring class becomes a flat `export const`:
 
 ```csharp
 class Class { [Export] static void Method() {} }
@@ -13,14 +15,18 @@ namespace Foo.Bar { class Class { [Export] static void Method() {} } }
 ```
 
 ```ts
-import { Class, Foo } from "bootsharp";
+import { Class as Root } from "bootsharp"; // root-namespace members re-exported from the entry
+import { Class as FooClass } from "bootsharp/foo";
+import { Class as FooBarClass } from "bootsharp/foo/bar";
 
-Class.method();
-Foo.Class.method();
-Foo.Bar.Class.method();
+Root.method();
+FooClass.method();
+FooBarClass.method();
 ```
 
-Methods inside nested classes are treated as if they were declared under namespace:
+Bindings declared without any C# namespace live in `bootsharp/index` and are re-exported from the package entry, so root-namespace types remain importable directly from `"bootsharp"`.
+
+Methods inside nested classes are emitted under the containing class's binding inside the namespace's module file:
 
 ```csharp
 namespace Foo;
@@ -32,14 +38,14 @@ public class Class
 ```
 
 ```ts
-import { Foo } from "bootsharp";
+import { Class } from "bootsharp/foo";
 
-Foo.Class.Nested.method();
+Class.Nested.method();
 ```
 
 ## Interop Modules
 
-When generating bindings for [modules](/guide/interop-modules), an interface name is assumed to have an "I" prefix, so the associated JavaScript name will have the first character removed. Class modules keep their name as-is. In either case, if the type is declared under a namespace, it'll be mirrored in JavaScript.
+When generating bindings for [modules](/guide/interop-modules), the JS export uses the C# type name as-is. The C# namespace maps to the import path the same way it does for static members:
 
 ```csharp
 [Export(
@@ -54,16 +60,18 @@ namespace Foo.Bar { class Exported { public void Method() {} } }
 ```
 
 ```ts
-import { Exported, Foo } from "bootsharp";
+import { IExported as Root } from "bootsharp";
+import { IExported as FooExported } from "bootsharp/foo";
+import { Exported as FooBarExported } from "bootsharp/foo/bar";
 
-Exported.method();
-Foo.Exported.method();
-Foo.Bar.Exported.method();
+Root.method();
+FooExported.method();
+FooBarExported.method();
 ```
 
 ## Types
 
-Custom types referenced in API signatures (records, classes, interfaces, etc) are declared under their respective namespace when they have one, or under root otherwise.
+Custom types referenced in API signatures (records, classes, interfaces, etc) are declared as top-level exports of their respective namespace module:
 
 ```csharp
 public record Record;
@@ -77,15 +85,16 @@ partial class Class
 ```
 
 ```ts
-import { Class, Record, Foo } from "bootsharp";
+import { Class, type Record } from "bootsharp";
+import type { Record as FooRecord } from "bootsharp/foo";
 
 Class.method = methodImpl;
 
-function methodImpl(r: Record): Foo.Record {
-
+function methodImpl(r: Record): FooRecord {
+    // ...
 }
 ```
 
 ## Configuring Namespaces
 
-You can control how namespaces are generated with `Space` option in [preferences](/guide/preferences).
+You can control how the C#-side namespace path resolves to the generated module path with the `Space` option in [preferences](/guide/preferences). A pref that rewrites `Foo.Bar.SomeClass` to `Bar.NewClass` will emit the binding into `bootsharp/bar` under the name `NewClass`.

@@ -2,6 +2,7 @@ global using static Bootsharp.Publish.GlobalType;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Bootsharp.Publish;
 
@@ -93,17 +94,6 @@ internal static class GlobalType
         return value != null;
     }
 
-    public static string BuildJSSpace (Type type, Preferences prefs)
-    {
-        var space = type.Namespace ?? "";
-        if (type.IsNested)
-        {
-            if (!string.IsNullOrEmpty(space)) space += ".";
-            space += type.DeclaringType!.Name;
-        }
-        return WithPrefs(prefs.Space, space, space);
-    }
-
     public static string BuildJSName (string name)
     {
         name = ToFirstLower(name);
@@ -116,7 +106,7 @@ internal static class GlobalType
         return $"_id, {args}";
     }
 
-    public static string BuildSerializedId (Type type)
+    public static string BuildId (Type type)
     {
         var builder = new StringBuilder();
         foreach (var c in BuildSyntax(type).Replace("global::", ""))
@@ -155,18 +145,14 @@ internal static class GlobalType
 
     public static string TrimGeneric (string typeName)
     {
-        var delimiterIndex = typeName.IndexOf('`');
-        if (delimiterIndex < 0) return typeName;
-        return typeName[..delimiterIndex];
+        return Regex.Replace(typeName, @"`\d+(\[\[.*\]\])?", "");
     }
 
     public static string Export (ArgumentMeta arg) => Export(arg.Value, arg.Name);
     public static string Export (ValueMeta value, string exp) => Export(value.Type, exp);
     public static string Export (TypeMeta type, string exp)
     {
-        if (type is InstancedMeta it)
-            if (it.Interop == InteropKind.Export) return $"Instances.Export({exp})";
-            else return $"((global::{it.FullName}){exp})._id";
+        if (type is InstanceMeta) return $"Instances.Export({exp})";
         if (type is SerializedMeta sm) return $"Serializer.Serialize({exp}, SerializerContext.{sm.Id})";
         return exp;
     }
@@ -175,9 +161,7 @@ internal static class GlobalType
     public static string Import (ValueMeta value, string exp) => Import(value.Type, exp);
     public static string Import (TypeMeta type, string exp)
     {
-        if (type is InstancedMeta it)
-            if (it.Interop == InteropKind.Export) return $"Instances.Exported<{it.Syntax}>({exp})";
-            else return $"Instances.Import({exp}, static id => new global::{it.FullName}(id))";
+        if (type is InstanceMeta it) return $"Instances.Resolve<{it.Syntax}>({exp})";
         if (type is SerializedMeta sm) return $"Serializer.Deserialize({exp}, SerializerContext.{sm.Id})";
         return exp;
     }
@@ -186,11 +170,8 @@ internal static class GlobalType
     public static string ExportJS (ValueMeta value, string exp) => ExportJS(value.Type, exp);
     public static string ExportJS (TypeMeta type, string exp)
     {
-        if (type is InstancedMeta it)
-            if (it.Interop == InteropKind.Export) return $"{exp}._id";
-            else if (it.Importer is { } importer) return $"{importer}({exp})";
-            else return $"instances.import({exp})";
-        if (type is SerializedMeta sm) return $"serialize({exp}, {sm.Id})";
+        if (type is InstanceMeta it) return $"$i.resolve({exp}, $i.{it.Id})";
+        if (type is SerializedMeta sm) return $"deserialize({exp}, $s.{sm.Id})";
         return exp;
     }
 
@@ -198,10 +179,10 @@ internal static class GlobalType
     public static string ImportJS (ValueMeta value, string exp) => ImportJS(value.Type, exp);
     public static string ImportJS (TypeMeta type, string exp)
     {
-        if (type is InstancedMeta it)
-            if (it.Interop == InteropKind.Import) return $"instances.imported({exp})";
-            else return $"instances.export({exp}, id => new {it.JSName}(id))";
-        if (type is SerializedMeta sm) return $"deserialize({exp}, {sm.Id})";
+        if (type is InstanceMeta it)
+            if (it.Importer is { } importer) return $"$i.{importer}({exp})";
+            else return $"$i.import({exp})";
+        if (type is SerializedMeta sm) return $"serialize({exp}, $s.{sm.Id})";
         return exp;
     }
 }

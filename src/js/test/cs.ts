@@ -1,22 +1,33 @@
 import assert from "node:assert";
 import { resolve } from "node:path";
-import { readFileSync, existsSync } from "node:fs";
-import bootsharp, { Test, BootResources, BinaryResource } from "./cs/Test/bin/bootsharp/index.mjs";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
+import bootsharp, { BootResources, BinaryResource } from "./cs/Test/bin/bootsharp/index.mjs";
+import { Program } from "./cs/Test/bin/bootsharp/generated/modules/test.g.mjs";
 
-export { bootsharp, Test };
+export { bootsharp };
 export * from "./cs/Test/bin/bootsharp/index.mjs";
 
 export const resources = loadResources();
 export const manifest = bootsharp.manifest;
 
 export async function bootRuntime() {
-    Test.Program.onMainInvoked = () => {};
+    Program.onMainInvoked = () => {};
     await bootsharp.boot(resources);
 }
 
 export function getDeclarations() {
-    const file = resolvePath("test/cs/Test/bin/bootsharp/generated/bindings.g.d.mts");
-    return readFileSync(file).toString();
+    const dir = resolvePath("test/cs/Test/bin/bootsharp/generated");
+    return readAllDeclarations(dir);
+}
+
+function readAllDeclarations(dir: string): string {
+    let out = "";
+    for (const entry of readdirSync(dir)) {
+        const full = `${dir}/${entry}`;
+        if (statSync(full).isDirectory()) out += readAllDeclarations(full);
+        else if (entry.endsWith(".g.d.mts")) out += readFileSync(full).toString();
+    }
+    return out;
 }
 
 function loadResources(): BootResources {

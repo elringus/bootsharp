@@ -3,7 +3,7 @@
         "build": "bash scripts/build.sh",
         "compile-test": "bash scripts/compile-test.sh",
         "test": "vitest run",
-        "cover": "vitest run --coverage --coverage.thresholds.100 --coverage.include=**/bootsharp/**/*.mjs"
+        "cover": "vitest run --coverage --coverage.thresholds.100 --coverage.include=**/bin/bootsharp/**/*.mjs"
     },
     "devDependencies": {
         "typescript": "6.0.3",

@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback, ChangeEvent } from "react";
-import { Computer } from "backend";
+import { Computer, type Options } from "backend";
 
 type Props = {
-    options: Computer.Options;
+    options: Options;
     resultLimit: number;
 };
 

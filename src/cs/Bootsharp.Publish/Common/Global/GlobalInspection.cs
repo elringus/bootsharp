@@ -1,14 +1,15 @@
 global using static Bootsharp.Publish.GlobalInspection;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace Bootsharp.Publish;
 
-internal delegate TypeMeta InspectType (Type type, InteropKind ik);
-
 internal static class GlobalInspection
 {
+    public static Preferences Pref => PreferencesResolver.Resolved.Value!;
+
     public static MetadataLoadContext CreateLoadContext (string directory)
     {
         var runtimeDir = RuntimeEnvironment.GetRuntimeDirectory();
@@ -32,15 +33,6 @@ internal static class GlobalInspection
         return IsUserAssembly(type.Assembly.FullName!);
     }
 
-    public static bool IsInstancedType (Type type)
-    {
-        // Instanced types are mutable user types that are passed by reference when crossing the
-        // interop boundary (as opposed to serialized immutable types, which are copied by value).
-        if (!IsUserType(type)) return false;
-        if (type.IsInterface) return true;
-        return type.IsClass && !IsStatic(type) && !IsRecord(type); // records are immutable by convention
-    }
-
     public static bool IsAutoProperty (PropertyInfo prop)
     {
         var backingFieldName = $"<{prop.Name}>k__BackingField";
@@ -49,11 +41,26 @@ internal static class GlobalInspection
         return backingField != null;
     }
 
-    public static string WithPrefs (IReadOnlyCollection<Preference> prefs, string input, string @default)
+    public static string WithPref (IReadOnlyCollection<Preference> prefs, string input, string? @default = null)
     {
         foreach (var pref in prefs)
             if (Regex.IsMatch(input, pref.Pattern))
                 return Regex.Replace(input, pref.Pattern, pref.Replacement);
-        return @default;
+        return @default ?? input;
+    }
+
+    extension (IReadOnlyCollection<TypeMeta> types)
+    {
+        public bool HasBase (Type clr, [NotNullWhen(true)] out TypeMeta? bs)
+        {
+            bs = types.FirstOrDefault(t => t.Clr == clr.BaseType);
+            return bs != null && IsUserType(bs.Clr);
+        }
+
+        public TypeMeta Get (Type clr)
+        {
+            var def = clr.IsGenericType ? clr.GetGenericTypeDefinition() : clr;
+            return types.First(t => (t.Clr.IsGenericType ? t.Clr.GetGenericTypeDefinition() : t.Clr) == def);
+        }
     }
 }

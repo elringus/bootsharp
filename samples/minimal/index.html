@@ -5,7 +5,7 @@
 <script type="module">
 
 // Named exports are auto-generated on C# build.
-import bootsharp, { Program } from "./cs/bin/bootsharp/index.mjs";
+import bootsharp, { Program } from "/cs/bin/bootsharp/index.mjs";
 
 // Binding 'Program.GetFrontendName' endpoint invoked in C#.
 Program.getFrontendName = () => "Browser";
@@ -14,7 +14,7 @@ Program.getFrontendName = () => "Browser";
 Program.onMainInvoked.subscribe(console.log);
 
 // Initializing dotnet runtime and invoking entry point.
-await bootsharp.boot();
+await bootsharp.boot("/cs/bin/bootsharp/bin");
 
 // Invoking 'Program.GetBackendName' C# method.
 document.getElementById("msg").innerHTML = `Hello ${Program.getBackendName()}!`;

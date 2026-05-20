@@ -8,7 +8,8 @@ public abstract class TaskTest : IDisposable
     protected MockProject Project { get; } = new();
     protected BuildEngine Engine { get; } = BuildEngine.Create();
     protected string LastAddedAssemblyName { get; private set; }
-    protected virtual string TestedContent { get; } = "";
+    protected virtual string TestedContent { get; set; } = "";
+    protected virtual string TestedDirectory => "";
 
     public abstract void Execute ();
 
@@ -49,29 +50,40 @@ public abstract class TaskTest : IDisposable
         return With(null, code);
     }
 
-    protected void Contains (string content)
+    protected void Contains (string content) => Contains(null, content);
+    protected void Contains (string path, string content)
     {
-        try { Assert.Contains(content, TestedContent); }
-        catch (Exception ex) { DumpAndThrow(ex); }
+        try { Assert.Contains(content, GetTestedContent(path)); }
+        catch (Exception ex) { DumpAndThrow(ex, GetTestedContent(path)); }
     }
 
-    protected void DoesNotContain (string content)
+    protected void DoesNotContain (string content) => DoesNotContain(null, content);
+    protected void DoesNotContain (string path, string content)
     {
-        try { Assert.DoesNotContain(content, TestedContent, StringComparison.OrdinalIgnoreCase); }
-        catch (Exception ex) { DumpAndThrow(ex); }
+        try { Assert.DoesNotContain(content, GetTestedContent(path), StringComparison.OrdinalIgnoreCase); }
+        catch (Exception ex) { DumpAndThrow(ex, GetTestedContent(path)); }
     }
 
-    protected MatchCollection Matches (string pattern)
+    protected MatchCollection Matches (string pattern) => Matches(null, pattern);
+    protected MatchCollection Matches (string path, string pattern)
     {
-        try { Assert.Matches(pattern, TestedContent); }
-        catch (Exception ex) { DumpAndThrow(ex); }
-        return Regex.Matches(TestedContent, pattern);
+        var tested = GetTestedContent(path);
+        try { Assert.Matches(pattern, tested); }
+        catch (Exception ex) { DumpAndThrow(ex, tested); }
+        return Regex.Matches(tested, pattern);
     }
 
-    protected void Once (string pattern)
+    protected void Once (string pattern) => Once(null, pattern);
+    protected void Once (string path, string pattern)
     {
-        try { Assert.Single(Matches(pattern)); }
-        catch (Exception ex) { DumpAndThrow(ex); }
+        try { Assert.Single(Matches(path, pattern)); }
+        catch (Exception ex) { DumpAndThrow(ex, GetTestedContent(path)); }
+    }
+
+    private string GetTestedContent (string path)
+    {
+        if (path == null) return TestedContent;
+        return ReadProjectFile(Path.Combine(TestedDirectory, path));
     }
 
     protected string ReadProjectFile (string fileName)
@@ -80,10 +92,10 @@ public abstract class TaskTest : IDisposable
         return File.Exists(filePath) ? File.ReadAllText(filePath) : null;
     }
 
-    private void DumpAndThrow (Exception ex)
+    private void DumpAndThrow (Exception ex, string content)
     {
         var path = Path.Combine(Project.Root, "..", "..", "..", "..", "last-failed-test-dump.txt");
-        File.WriteAllText(path, TestedContent);
+        File.WriteAllText(path, content);
         throw ex;
     }
 }

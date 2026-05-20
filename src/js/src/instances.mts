@@ -6,28 +6,31 @@ const importedById = new Map<number, object>();
 const idByImported = new Map<object, number>();
 const onDisposeById = new Map<number, () => void>();
 const idPool = new Array<number>();
-let nextId = -2147483648; // Number.MIN_SAFE_INTEGER is below C#'s Int32.MinValue
+let nextId = 0; // JS IDs are always positive; C#'s — negative.
 
 export const instances = {
-    /** Invokes the specified factory to create and register an exported instance wrapper associated with the ID,
-     *  unless an exported instance is already registered under the ID, in which case returns its wrapper. */
-    export<T extends object>(id: number, factory: (id: number) => T): T {
-        const instance = exportedById.get(id)?.deref() as T | undefined;
-        if (instance != null) return instance;
-        const exported = factory(id);
-        exportedById.set(id, new WeakRef(exported));
-        exportedFinalizer.register(exported, id);
-        return exported;
+    /** Resolves a registered instance associated with the specified ID,
+     *  or uses the specified factory to register a new exported instance. */
+    resolve<T extends object>(id: number, factory: new (id: number) => T): T {
+        if (id >= 0) return importedById.get(id) as T;
+        const exported = exportedById.get(id)?.deref() as T;
+        if (exported != null) return exported;
+        const proxy = new factory(id);
+        exportedById.set(id, new WeakRef(proxy));
+        exportedFinalizer.register(proxy, id);
+        return proxy;
     },
-    /** Registers specified imported instance and associates it with a unique ID, unless it's already registered,
-     *  in which case the ID of the registered instance is returned. */
-    import(instance: object, factory?: (id: number) => () => void): number {
-        const registered = idByImported.get(instance);
-        if (registered !== undefined) return registered;
+    /** Registers specified imported (JS) instance and returns the associated unique ID.
+     *  Short-circuits already registered imported and exported instances. */
+    import(instance: object, cb?: (id: number) => () => void): number {
+        const exportedId = (instance as { _id: number })?._id;
+        if (exportedId !== undefined) return exportedId;
+        const importedId = idByImported.get(instance);
+        if (importedId !== undefined) return importedId;
         const id = idPool.length > 0 ? idPool.pop()! : nextId++;
         importedById.set(id, instance);
         idByImported.set(instance, id);
-        if (factory != null) onDisposeById.set(id, factory(id));
+        if (cb != null) onDisposeById.set(id, cb(id));
         return id;
     },
     /** Returns a registered imported instance associated with the specified ID. */

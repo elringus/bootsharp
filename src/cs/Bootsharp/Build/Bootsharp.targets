@@ -41,30 +41,30 @@
 
     <!-- Register tasks for Visual Studio. (https://github.com/elringus/bootsharp/issues/137) -->
     <UsingTask Condition="'$(MSBuildRuntimeType)' == 'Full'"
-               TaskName="Bootsharp.Publish.BootsharpEmit" AssemblyFile="$(BsPublishAssembly)"
+               TaskName="Bootsharp.Publish.GenerateCS" AssemblyFile="$(BsPublishAssembly)"
                Runtime="NET" TaskFactory="TaskHostFactory"/>
     <UsingTask Condition="'$(MSBuildRuntimeType)' == 'Full'"
-               TaskName="Bootsharp.Publish.BootsharpPack" AssemblyFile="$(BsPublishAssembly)"
+               TaskName="Bootsharp.Publish.GenerateJS" AssemblyFile="$(BsPublishAssembly)"
                Runtime="NET" TaskFactory="TaskHostFactory"/>
     <!-- Register tasks for 'dotnet publish' run from CLI. -->
     <UsingTask Condition="'$(MSBuildRuntimeType)' != 'Full'"
-               TaskName="Bootsharp.Publish.BootsharpEmit" AssemblyFile="$(BsPublishAssembly)"/>
+               TaskName="Bootsharp.Publish.GenerateCS" AssemblyFile="$(BsPublishAssembly)"/>
     <UsingTask Condition="'$(MSBuildRuntimeType)' != 'Full'"
-               TaskName="Bootsharp.Publish.BootsharpPack" AssemblyFile="$(BsPublishAssembly)"/>
+               TaskName="Bootsharp.Publish.GenerateJS" AssemblyFile="$(BsPublishAssembly)"/>
 
     <!-- A hack due to source generator compositing not possible. (https://github.com/dotnet/roslyn/issues/57239#issuecomment-1585235740) -->
-    <Target Condition="'$(BsSkip)' != 'true'" Name="BootsharpEmit" BeforeTargets="GenerateAdditionalSources">
+    <Target Condition="'$(BsSkip)' != 'true'" Name="BootsharpCS" BeforeTargets="GenerateAdditionalSources">
 
         <!-- Pre-compile the solution, as we'll need to inspect the assemblies in the next step. -->
         <MSBuild Projects="$(MSBuildProjectFile)" Targets="BuildCompile" Properties="BsSkip=true"/>
 
-        <!-- Emit code to be analyzed by .NET's source generators: interop methods and serialized type hints. -->
-        <BootsharpEmit InspectedDirectory="$(OutputPath)"
-                       EntryAssemblyName="$(BsEntryAssembly)"
-                       SerializerFilePath="$(BsSerializerFilePath)"
-                       InstancesFilePath="$(BsInstancesFilePath)"
-                       ModulesFilePath="$(BsModulesFilePath)"
-                       InteropFilePath="$(BsInteropFilePath)"/>
+        <!-- Emit C# code to be analyzed by .NET's source generators. -->
+        <GenerateCS InspectedDirectory="$(OutputPath)"
+                    EntryAssemblyName="$(BsEntryAssembly)"
+                    SerializerFilePath="$(BsSerializerFilePath)"
+                    InstancesFilePath="$(BsInstancesFilePath)"
+                    ModulesFilePath="$(BsModulesFilePath)"
+                    InteropFilePath="$(BsInteropFilePath)"/>
         <ItemGroup>
             <Compile Remove="$(BsSerializerFilePath)"/>
             <Compile Remove="$(BsInstancesFilePath)"/>
@@ -83,7 +83,7 @@
         <RemoveDir Directories="$(BsIntermediateDir)"/>
     </Target>
 
-    <Target Name="BootsharpPack" AfterTargets="$(BsPackAfter)">
+    <Target Name="BootsharpJS" AfterTargets="$(BsPackAfter)">
 
         <PropertyGroup>
             <BsBuildDir Condition="$(BsLlvm)">$(PublishDir)</BsBuildDir>
@@ -95,7 +95,10 @@
             <BsGlobalization>$([System.String]::Equals('$(InvariantGlobalization)', 'false'))</BsGlobalization>
         </PropertyGroup>
 
-        <!-- Copy bootsharp source files to the build directory. -->
+        <!-- Purge stale generated files left from previous builds. -->
+        <RemoveDir Directories="$(BsBuildDir)/generated"/>
+
+        <!-- Copy Bootsharp internal sources to the build directory. -->
         <ItemGroup>
             <BsSourceFiles Include="$(BsSourceDir)/**/*.*"/>
         </ItemGroup>
@@ -112,14 +115,14 @@
         <Warning Condition="!$(BsDebug) And '$(BsBinaryenExitCode)' != '' And '$(BsBinaryenExitCode)' != '0'"
                  Text="Failed to run Binaryen optimization. Ensure Binaryen (https://github.com/WebAssembly/binaryen) is installed and 'wasm-opt' is in the system path, otherwise the build is not fully optimized."/>
 
-        <!-- Generate JavaScript bindings and type declarations. -->
-        <BootsharpPack BuildDirectory="$(BsBuildDir)"
-                       DebugDirectory="$(PublishDir)"
-                       InspectedDirectory="$(OutputPath)"
-                       EntryAssemblyName="$(BsEntryAssembly)"
-                       Globalization="$(BsGlobalization)"
-                       LLVM="$(BsLlvm)"
-                       Debug="$(BsDebug)"/>
+        <!-- Generate JavaScript sources and type declarations. -->
+        <GenerateJS BuildDirectory="$(BsBuildDir)"
+                    DebugDirectory="$(PublishDir)"
+                    InspectedDirectory="$(OutputPath)"
+                    EntryAssemblyName="$(BsEntryAssembly)"
+                    Globalization="$(BsGlobalization)"
+                    LLVM="$(BsLlvm)"
+                    Debug="$(BsDebug)"/>
 
         <!-- Publish modules, binaries and type declarations. -->
         <ItemGroup>
@@ -133,6 +136,7 @@
             <BsNativeFile Include="$(BsBuildDir)/dotnet.native.js"/>
         </ItemGroup>
         <RemoveDir Directories="$(BootsharpBinariesDirectory)"/>
+        <RemoveDir Directories="$(BootsharpPublishDirectory)"/>
         <Copy SourceFiles="@(BsWasmFiles)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy SourceFiles="@(BsIcuFiles)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy SourceFiles="@(BsDotNetFile)" DestinationFolder="$(BootsharpPublishDirectory)/dotnet"/>
