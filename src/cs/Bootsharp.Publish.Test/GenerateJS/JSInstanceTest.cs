@@ -247,7 +247,7 @@ public class JSInstanceTest : GenerateJSTest
         Execute();
         Contains(
             """
-            import * as foo_bar from "./foo/bar.g.mjs";
+            import * as foo_bar from "./modules/foo/bar.g.mjs";
 
             $i.Foo_Bar_IExported = class Foo_Bar_JSExported {
                 constructor(_id) { this._id = _id; }

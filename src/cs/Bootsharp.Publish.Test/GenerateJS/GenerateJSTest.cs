@@ -8,7 +8,7 @@ public class GenerateJSTest : TaskTest
     protected string MockRuntimeContent { get; } = "MockRuntimeContent";
     protected string MockNativeContent { get; } = "MockNativeContent";
     protected string GeneratedResources => ReadProjectFile("generated/resources.g.mjs");
-    protected override string TestedDirectory => "generated";
+    protected override string TestedDirectory => "generated/modules";
 
     public GenerateJSTest ()
     {

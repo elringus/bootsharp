@@ -95,7 +95,7 @@
             <BsGlobalization>$([System.String]::Equals('$(InvariantGlobalization)', 'false'))</BsGlobalization>
         </PropertyGroup>
 
-        <!-- Drop stale generated files left from previous builds. -->
+        <!-- Purge stale generated files left from previous builds. -->
         <RemoveDir Directories="$(BsBuildDir)/generated"/>
 
         <!-- Copy Bootsharp internal sources to the build directory. -->

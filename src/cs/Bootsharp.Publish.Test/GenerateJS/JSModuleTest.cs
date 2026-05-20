@@ -2,7 +2,7 @@ namespace Bootsharp.Publish.Test;
 
 public class JSModuleTest : GenerateJSTest
 {
-    protected override string TestedContent { get => field ?? ReadProjectFile("generated/index.g.mjs") ?? ""; set; }
+    protected override string TestedContent { get => field ?? ReadProjectFile("generated/modules/index.g.mjs") ?? ""; set; }
 
     [Fact]
     public void WhenDebugEnabledUsesExportImportHelpers ()
@@ -370,7 +370,7 @@ public class JSModuleTest : GenerateJSTest
             WithClass("n", "public enum Foo { A, B }"),
             WithClass("n", "[Export] public static Task<Foo> GetFoo () => default;"));
         Execute();
-        TestedContent = ReadProjectFile("generated/n.g.mjs");
+        TestedContent = ReadProjectFile("generated/modules/n.g.mjs");
         Contains("Foo");
         DoesNotContain("LayoutKind");
         DoesNotContain("SecurityRuleSet");
@@ -516,10 +516,10 @@ public class JSModuleTest : GenerateJSTest
             WithClass("Foo.Bar", "[Export] public static void A () {}"),
             WithClass("Baz", "[Import] public static void B () {}"));
         Execute();
-        Contains("imports.g.mjs", """import * as foo_bar from "./foo/bar.g.mjs";""");
-        Contains("imports.g.mjs", """import * as baz from "./baz.g.mjs";""");
-        Contains("imports.g.mjs", """runtime.setModuleImports("foo/bar", foo_bar);""");
-        Contains("imports.g.mjs", """runtime.setModuleImports("baz", baz);""");
+        Contains("../imports.g.mjs", """import * as foo_bar from "./modules/foo/bar.g.mjs";""");
+        Contains("../imports.g.mjs", """import * as baz from "./modules/baz.g.mjs";""");
+        Contains("../imports.g.mjs", """runtime.setModuleImports("foo/bar", foo_bar);""");
+        Contains("../imports.g.mjs", """runtime.setModuleImports("baz", baz);""");
     }
 
     [Fact]
@@ -530,9 +530,9 @@ public class JSModuleTest : GenerateJSTest
             WithClass("Baz", "[Export] public static void B () {}"),
             WithClass("[Export] public static void Root () {}"));
         Execute();
-        Assert.NotNull(ReadProjectFile("generated/foo/bar.g.mjs"));
-        Assert.NotNull(ReadProjectFile("generated/baz.g.mjs"));
-        Assert.NotNull(ReadProjectFile("generated/index.g.mjs"));
+        Assert.NotNull(ReadProjectFile("generated/modules/foo/bar.g.mjs"));
+        Assert.NotNull(ReadProjectFile("generated/modules/baz.g.mjs"));
+        Assert.NotNull(ReadProjectFile("generated/modules/index.g.mjs"));
     }
 
     [Fact]
@@ -666,7 +666,7 @@ public class JSModuleTest : GenerateJSTest
             WithClass("[Export] public static IReadOnlyList<Item> GetItems () => default!;"),
             WithClass("[Export] public static byte[] GetBytes () => default!;"));
         Execute();
-        DoesNotContain("imports.g.mjs", "system");
+        DoesNotContain("../imports.g.mjs", "system");
     }
 
     [Fact]

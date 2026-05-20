@@ -1,8 +1,8 @@
 import { describe, it, beforeAll, expect, vi } from "vitest";
 import { Event, bootRuntime } from "../cs";
-import { Platform, Static } from "../cs/Test/bin/bootsharp/generated/test.g.mjs";
-import { IExportedModule, IImportedModule, Modules, Registries, IRegistryProvider, TrackType } from "../cs/Test/bin/bootsharp/generated/test/library.g.mjs";
-import type { IBidirectional, IImportedInstanced, IImportedInnerInstanced, Record } from "../cs/Test/bin/bootsharp/generated/test/library.g.mjs";
+import { Platform, Static } from "../cs/Test/bin/bootsharp/generated/modules/test.g.mjs";
+import { IExportedModule, IImportedModule, Modules, Registries, IRegistryProvider, TrackType } from "../cs/Test/bin/bootsharp/generated/modules/test/library.g.mjs";
+import type { IBidirectional, IImportedInstanced, IImportedInnerInstanced, Record } from "../cs/Test/bin/bootsharp/generated/modules/test/library.g.mjs";
 
 class Imported implements IImportedInstanced {
     onRecordChanged = new Event<[IImportedInstanced, Record | undefined]>();

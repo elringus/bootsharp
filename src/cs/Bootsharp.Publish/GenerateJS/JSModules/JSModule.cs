@@ -18,28 +18,34 @@ internal sealed record JSModule
     /// </summary>
     public IReadOnlyCollection<JSNode> Nodes { get; }
 
-    private readonly string root, gen;
+    private readonly string mod, gen, root;
 
     public JSModule (string path, IReadOnlyList<TypeMeta> types)
     {
         Path = path;
         Alias = path.Replace('/', '_').Replace('-', '_');
         Nodes = Graph(types.Select(type => (type, path: type.JSNode)));
-        var depth = path.Count(c => c == '/') + 1;
-        root = string.Concat(Enumerable.Repeat("../", depth));
-        gen = depth == 1 ? "./" : string.Concat(Enumerable.Repeat("../", depth - 1));
+        var depth = path.Count(c => c == '/');
+        mod = depth == 0 ? "./" : string.Concat(Enumerable.Repeat("../", depth));
+        gen = string.Concat(Enumerable.Repeat("../", depth + 1));
+        root = string.Concat(Enumerable.Repeat("../", depth + 2));
     }
 
     /// <summary>
-    /// Builds relative path from this module to a "mjs" file with the specified name
+    /// Builds relative path from this module to a "mjs" file with the specified path
     /// stored under the package's root directory.
     /// </summary>
     public string To (string filename) => $"{root}{filename}.mjs";
     /// <summary>
-    /// Builds relative path from this module to a "g.mjs" file with the specified name
+    /// Builds relative path from this module to a "g.mjs" file with the specified path
     /// stored under the package's 'generated' directory.
     /// </summary>
     public string ToGen (string filename) => $"{gen}{filename}.g.mjs";
+    /// <summary>
+    /// Builds relative path from this module to a "g.mjs" module file with the specified path
+    /// stored under the package's 'generated/modules' directory.
+    /// </summary>
+    public string ToMd (string path) => $"{mod}{path}.g.mjs";
 
     private static IReadOnlyList<JSNode> Graph (IEnumerable<(TypeMeta type, string path)> types) => types
         .GroupBy(o => o.path.Split('.', 2)[0])

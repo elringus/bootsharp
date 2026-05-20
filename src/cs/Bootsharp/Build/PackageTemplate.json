@@ -3,7 +3,7 @@
     "type": "module",
     "exports": {
         ".": "./%MODULE_DIR%/index.mjs",
-        "./*": "./%MODULE_DIR%/generated/*.g.mjs"
+        "./*": "./%MODULE_DIR%/generated/modules/*.g.mjs"
     },
     "browser": {
         "node:fs": false,

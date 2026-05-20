@@ -1,7 +1,7 @@
 import { describe, it, beforeAll, expect } from "vitest";
 import { WebSocket, WebSocketServer } from "ws";
 import { bootRuntime } from "../cs";
-import { Platform } from "../cs/Test/bin/bootsharp/generated/test.g.mjs";
+import { Platform } from "../cs/Test/bin/bootsharp/generated/modules/test.g.mjs";
 
 describe("platform", () => {
     beforeAll(bootRuntime);

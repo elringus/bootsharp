@@ -20,7 +20,7 @@ internal sealed class JSInstanceGenerator (bool debug, JSModules md)
 
     private IEnumerable<string> EmitImports () => md.List
         .Where(m => m.Nodes.Any(o => o.Any(t => t is InstanceMeta { IK: InteropKind.Export })))
-        .Select(m => $"""import * as {m.Alias} from "./{m.Path}.g.mjs";""");
+        .Select(m => $"""import * as {m.Alias} from "./modules/{m.Path}.g.mjs";""");
 
     private string EmitImporter (InstanceMeta it)
     {

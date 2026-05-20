@@ -6,7 +6,7 @@ import type { BootOptions } from "../cs/Test/bin/bootsharp/index.mjs";
 async function setup() {
     vi.resetModules();
     const cs = await import("../cs");
-    const test = await import("../cs/Test/bin/bootsharp/generated/test.g.mjs");
+    const test = await import("../cs/Test/bin/bootsharp/generated/modules/test.g.mjs");
     test.Program.onMainInvoked = vi.fn();
     return { ...cs, Program: test.Program };
 }

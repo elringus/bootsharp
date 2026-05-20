@@ -12,7 +12,7 @@ internal sealed class JSImportsGenerator
           """;
 
     private string EmitImport (JSModule md) =>
-        $"""import * as {md.Alias} from "./{md.Path}.g.mjs";""";
+        $"""import * as {md.Alias} from "./modules/{md.Path}.g.mjs";""";
 
     private string EmitBinding (JSModule md) =>
         $"""runtime.setModuleImports("{md.Path}", {md.Alias});""";

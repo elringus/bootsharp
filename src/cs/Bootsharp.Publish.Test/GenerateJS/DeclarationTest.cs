@@ -2,7 +2,7 @@ namespace Bootsharp.Publish.Test;
 
 public class DeclarationTest : GenerateJSTest
 {
-    protected override string TestedContent { get => field ?? ReadProjectFile("generated/index.g.d.mts") ?? ""; set; }
+    protected override string TestedContent { get => field ?? ReadProjectFile("generated/modules/index.g.d.mts") ?? ""; set; }
 
     [Fact]
     public void DeclaresNamespace ()
@@ -334,7 +334,6 @@ public class DeclarationTest : GenerateJSTest
             WithClass("[Export] public static void Float32 (float[] foo) {}"),
             WithClass("[Export] public static void Float64 (double[] foo) {}"));
         Execute();
-        TestedContent = ReadProjectFile("generated/index.g.d.mts");
         Contains("uint8(foo: Uint8Array): void");
         Contains("int8(foo: Int8Array): void");
         Contains("uint16(foo: Uint16Array): void");
@@ -1056,7 +1055,6 @@ public class DeclarationTest : GenerateJSTest
             WithClass("[Export] public static Task<byte[]?>? Quz () => default;"),
             WithClass("[Import] public static ValueTask<List<string>?> Nya () => default;"));
         Execute();
-        TestedContent = ReadProjectFile("generated/index.g.d.mts");
         Contains("export function foo(): string | null;");
         Contains("export function bar(): Promise<void> | null;");
         Contains("export function baz(): Promise<Uint8Array | null>;");
@@ -1189,7 +1187,6 @@ public class DeclarationTest : GenerateJSTest
             WithClass("[Export] public static Foo TakeBarGiveFoo (Bar b) => default;"),
             WithClass("[Export] public static Far TakeAllGiveFar (Foo f, Bar b, Far ff) => default;"));
         Execute();
-        TestedContent = ReadProjectFile("generated/index.g.d.mts");
         Once("export interface Foo");
         Once("export interface Bar");
         Once("export interface Far");

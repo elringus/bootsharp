@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { bootRuntime } from "../cs";
-import { Serialization } from "../cs/Test/bin/bootsharp/generated/test.g.mjs";
-import type { Primitives, Union } from "../cs/Test/bin/bootsharp/generated/test.g.mjs";
-import { Registries, IRegistryProvider, TrackType } from "../cs/Test/bin/bootsharp/generated/test/library.g.mjs";
+import { Serialization } from "../cs/Test/bin/bootsharp/generated/modules/test.g.mjs";
+import type { Primitives, Union } from "../cs/Test/bin/bootsharp/generated/modules/test.g.mjs";
+import { Registries, IRegistryProvider, TrackType } from "../cs/Test/bin/bootsharp/generated/modules/test/library.g.mjs";
 
 describe("serialization", () => {
     beforeAll(bootRuntime);

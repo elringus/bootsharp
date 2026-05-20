@@ -57,7 +57,7 @@ public sealed class GenerateJS : Microsoft.Build.Utilities.Task
     {
         var generator = new JSModuleGenerator(Debug);
         foreach (var module in mds.List)
-            WriteGenerated($"{module.Path}.g.mjs", generator.Generate(module));
+            WriteGenerated($"modules/{module.Path}.g.mjs", generator.Generate(module));
     }
 
     private void GenerateSerializer (SolutionInspection spec)
@@ -78,7 +78,7 @@ public sealed class GenerateJS : Microsoft.Build.Utilities.Task
     {
         var generator = new DeclarationGenerator(spec, mds);
         foreach (var module in mds.List)
-            WriteGenerated($"{module.Path}.g.d.mts", generator.Generate(module));
+            WriteGenerated($"modules/{module.Path}.g.d.mts", generator.Generate(module));
     }
 
     private void GenerateResources (SolutionInspection spec)

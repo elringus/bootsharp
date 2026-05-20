@@ -30,7 +30,7 @@ internal sealed class DeclarationGenerator
     private string EmitImports (JSModule md) => Fmt([
         $$"""import type { Event } from "{{md.To("event")}}";""",
         ..mds.GetImported(md).Select(imp =>
-            $"""import type * as {imp.Alias} from "{md.ToGen(imp.Path)}";""")
+            $"""import type * as {imp.Alias} from "{md.ToMd(imp.Path)}";""")
     ], 0);
 
     private void DeclareNode (JSNode node)

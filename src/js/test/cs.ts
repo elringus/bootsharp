@@ -2,7 +2,7 @@ import assert from "node:assert";
 import { resolve } from "node:path";
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import bootsharp, { BootResources, BinaryResource } from "./cs/Test/bin/bootsharp/index.mjs";
-import { Program } from "./cs/Test/bin/bootsharp/generated/test.g.mjs";
+import { Program } from "./cs/Test/bin/bootsharp/generated/modules/test.g.mjs";
 
 export { bootsharp };
 export * from "./cs/Test/bin/bootsharp/index.mjs";
