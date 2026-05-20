@@ -41,7 +41,6 @@ public class GenerateJSTest : TaskTest
         EntryAssemblyName = "System.Runtime.dll",
         BuildEngine = Engine,
         Globalization = false,
-        LLVM = false,
         Debug = false
     };
 }

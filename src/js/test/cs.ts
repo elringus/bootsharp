@@ -1,6 +1,13 @@
 import assert from "node:assert";
 import { resolve } from "node:path";
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
+
+// Vite hooks Error.prepareStackTrace for source-map remapping, but it overflows
+// the stack when WASM frames (wasm:// URLs) are present in the call chain.
+// .NET's RhpGetCurrentBrowserThreadStackTrace captures JS stacks during exception
+// throws, hitting this path. Restore the default to keep E2E tests stable.
+delete (Error as { prepareStackTrace?: unknown }).prepareStackTrace;
+
 import bootsharp, { BootResources, BinaryResource } from "./cs/Test/bin/bootsharp/index.mjs";
 import { Program } from "./cs/Test/bin/bootsharp/generated/modules/test.g.mjs";
 

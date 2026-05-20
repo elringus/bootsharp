@@ -5,9 +5,11 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <TargetArchitecture>wasm</TargetArchitecture>
         <TargetOS>browser</TargetOS>
-        <WasmGenerateAppBundle>true</WasmGenerateAppBundle>
         <WasmEnableLegacyJsInterop>false</WasmEnableLegacyJsInterop>
-        <WasmEnableSIMD>true</WasmEnableSIMD>
+
+        <!-- NativeAOT-LLVM is always the compiler. -->
+        <DotNetJsApi>true</DotNetJsApi>
+        <UsingBrowserRuntimeWorkload>false</UsingBrowserRuntimeWorkload>
 
         <!-- These significantly reduce bundle size and RAM usage — enable by default. -->
         <InvariantTimezone Condition="'$(InvariantTimezone)' == ''">true</InvariantTimezone>
@@ -27,14 +29,12 @@
         <!-- Internal Properties -->
         <!-- Whether to publish in the debug configuration. -->
         <BsDebug>$([MSBuild]::ValueOrDefault('$(Configuration)', '').Equals('Debug'))</BsDebug>
-        <!-- Whether to use NativeAOT-LLVM compiler (enabled by default for release builds). -->
-        <BsLlvm>!$(BsDebug)</BsLlvm>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(BsDebug)">
         <!-- Various knobs that improve debugging and compile times. -->
-        <WasmRunWasmOpt>false</WasmRunWasmOpt>
-        <WasmNativeStrip>false</WasmNativeStrip>
+        <!-- Skip Emscripten speed optimization for faster debug iteration. -->
+        <EmccFlags>$(EmccFlags) -O0</EmccFlags>
         <WasmEmitSourceMap>true</WasmEmitSourceMap>
         <WasmNativeDebugSymbols>true</WasmNativeDebugSymbols>
         <NativeDebugSymbols>true</NativeDebugSymbols>
@@ -45,6 +45,7 @@
         <!-- https://learn.microsoft.com/en-us/aspnet/core/blazor/performance?#minimize-app-download-size -->
         <!-- https://raw.githubusercontent.com/dotnet/runtime/main/docs/workflow/trimming/feature-switches.md -->
         <!-- https://github.com/dotnet/runtime/issues/94805 -->
+        <EmccFlags>$(EmccFlags) -O3</EmccFlags>
         <DebugType>none</DebugType>
         <StackTraceSupport>false</StackTraceSupport>
         <PublishTrimmed>true</PublishTrimmed>
@@ -77,16 +78,8 @@
         <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$(BsLlvm)">
-        <!-- NativeAOT-LLVM specific knobs. -->
-        <DotNetJsApi>true</DotNetJsApi>
-        <EmccFlags>$(EmccFlags) -O3</EmccFlags>
-        <UsingBrowserRuntimeWorkload>false</UsingBrowserRuntimeWorkload>
-    </PropertyGroup>
-
-    <!-- Include NativeAOT-LLVM properties when enabled. -->
-    <Import Project="$(MSBuildThisFileDirectory)../llvm/microsoft.dotnet.ilcompiler.llvm/build/Microsoft.DotNet.ILCompiler.LLVM.props"
-            Condition="$(BsLlvm)"/>
+    <!-- Include NativeAOT-LLVM properties. -->
+    <Import Project="$(MSBuildThisFileDirectory)../llvm/microsoft.dotnet.ilcompiler.llvm/build/Microsoft.DotNet.ILCompiler.LLVM.props"/>
 
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatform">

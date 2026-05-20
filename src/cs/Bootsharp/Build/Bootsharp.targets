@@ -11,14 +11,11 @@
         <BsModulesFilePath>$(BsIntermediateDir)/Modules.g.cs</BsModulesFilePath>
         <BsInteropFilePath>$(BsIntermediateDir)/Interop.g.cs</BsInteropFilePath>
         <BsEntryAssembly>$(AssemblyName).dll</BsEntryAssembly>
-        <BsPackAfter Condition="$(BsLlvm)">CopyNativeBinary</BsPackAfter>
-        <BsPackAfter Condition="!$(BsLlvm)">WasmNestedPublishApp</BsPackAfter>
     </PropertyGroup>
 
-    <!-- Include NativeAOT-LLVM compiler infrastructure when enabled. -->
-    <Import Condition="$(BsLlvm)"
-            Project="$(BsLlvmDir)/microsoft.dotnet.ilcompiler.llvm/build/Microsoft.DotNet.ILCompiler.LLVM.targets"/>
-    <ItemGroup Condition="$(BsLlvm)">
+    <!-- Include NativeAOT-LLVM compiler infrastructure. -->
+    <Import Project="$(BsLlvmDir)/microsoft.dotnet.ilcompiler.llvm/build/Microsoft.DotNet.ILCompiler.LLVM.targets"/>
+    <ItemGroup>
         <PackageDefinitions Condition="'$([MSBuild]::IsOSPlatform(`Windows`))' == 'true'"
                             Include="$(BsLlvmDir)/runtime.win-x64.microsoft.dotnet.ilcompiler.llvm">
             <Name>runtime.win-x64.Microsoft.DotNet.ILCompiler.LLVM</Name>
@@ -64,7 +61,8 @@
                     SerializerFilePath="$(BsSerializerFilePath)"
                     InstancesFilePath="$(BsInstancesFilePath)"
                     ModulesFilePath="$(BsModulesFilePath)"
-                    InteropFilePath="$(BsInteropFilePath)"/>
+                    InteropFilePath="$(BsInteropFilePath)"
+                    Debug="$(BsDebug)"/>
         <ItemGroup>
             <Compile Remove="$(BsSerializerFilePath)"/>
             <Compile Remove="$(BsInstancesFilePath)"/>
@@ -83,11 +81,10 @@
         <RemoveDir Directories="$(BsIntermediateDir)"/>
     </Target>
 
-    <Target Name="BootsharpJS" AfterTargets="$(BsPackAfter)">
+    <Target Name="BootsharpJS" AfterTargets="CopyNativeBinary">
 
         <PropertyGroup>
-            <BsBuildDir Condition="$(BsLlvm)">$(PublishDir)</BsBuildDir>
-            <BsBuildDir Condition="!$(BsLlvm)">$(WasmAppDir)/$(WasmRuntimeAssetsLocation)</BsBuildDir>
+            <BsBuildDir>$(PublishDir)</BsBuildDir>
             <BsBaseOutputPath>$(BaseOutputPath.Replace('\', '/'))</BsBaseOutputPath>
             <BootsharpPublishDirectory Condition="'$(BootsharpPublishDirectory)' == ''">$(BsBaseOutputPath)$(BootsharpName)</BootsharpPublishDirectory>
             <BootsharpBinariesDirectory Condition="'$(BootsharpBinariesDirectory)' == ''">$(BootsharpPublishDirectory)/bin</BootsharpBinariesDirectory>
@@ -121,7 +118,6 @@
                     InspectedDirectory="$(OutputPath)"
                     EntryAssemblyName="$(BsEntryAssembly)"
                     Globalization="$(BsGlobalization)"
-                    LLVM="$(BsLlvm)"
                     Debug="$(BsDebug)"/>
 
         <!-- Publish modules, binaries and type declarations. -->

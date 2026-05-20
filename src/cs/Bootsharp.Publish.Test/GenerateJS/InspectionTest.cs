@@ -27,33 +27,8 @@ public class InspectionTest : GenerateJSTest
     }
 
     [Fact]
-    public void IgnoresAssembliesNotPresentInBuildDirectory ()
+    public void InspectsAllAssembliesRegardlessOfBuildDirectory ()
     {
-        var buildDir = $"{Project.Root}/build";
-        Task.BuildDirectory = buildDir;
-        Directory.CreateDirectory(buildDir);
-        File.WriteAllText($"{buildDir}/foo.wasm", "");
-
-        foreach (var file in Directory.EnumerateFiles(Project.Root))
-            File.WriteAllText($"{buildDir}/{Path.GetFileName(file)}", File.ReadAllText(file));
-
-        AddAssembly("foo.dll",
-            WithClass("[Export] public static void InvFoo () {}")
-        );
-        AddAssembly("bar.dll",
-            WithClass("[Export] public static void InvBar () {}")
-        );
-        Execute();
-
-        Assert.Contains(Engine.Messages, w => w.Contains("foo"));
-        Assert.DoesNotContain(Engine.Messages, w => w.Contains("bar"));
-    }
-
-    [Fact]
-    public void DoesntIgnoreAssembliesWhenLLVM ()
-    {
-        Task.LLVM = true;
-
         var buildDir = $"{Project.Root}/build";
         Task.BuildDirectory = buildDir;
         Directory.CreateDirectory(buildDir);

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace Bootsharp.Publish;
 
@@ -26,6 +27,7 @@ internal sealed class JSModuleGenerator (bool debug)
           import { Event } from "{{md.To("event")}}";
           import { {{(debug ? "exports, getExport" : "exports")}} } from "{{md.To("exports")}}";
           import { {{(debug ? "importEvent, getImport" : "importEvent")}} } from "{{md.To("imports")}}";
+          import { pendingExports as $t } from "{{md.To("tasks")}}";
           import $i from "{{md.ToGen("instances")}}";
           import $s, { serialize, deserialize } from "{{md.ToGen("serializer")}}";
           """;
@@ -147,20 +149,30 @@ internal sealed class JSModuleGenerator (bool debug)
 
     private void EmitMethodExport (MethodMeta method)
     {
-        var wait = ShouldWait(method);
+        if (method.Async) EmitMethodExportAsync(method);
+        else EmitMethodExportSync(method);
+    }
+
+    private void EmitMethodImport (MethodMeta method)
+    {
+        if (method.Async) EmitMethodImportAsync(method);
+        else EmitMethodImportSync(method);
+    }
+
+    private void EmitMethodExportSync (MethodMeta method)
+    {
         var fnName = $"{id}_{method.Name}";
         var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
         var args = string.Join(", ", method.Args.Select(a => a.JSName));
         if (isIt) args = PrependIdArg(args);
         var invArgs = string.Join(", ", method.Args.Select(ImportJS));
         if (isIt) invArgs = PrependIdArg(invArgs);
-        var bodyExp = ExportJS(method.Return, $"{(wait ? "await " : "")}{invName}({invArgs})");
-        bld.Line($"{method.JSName}: {(wait ? "async " : "")}({args}) => {bodyExp}");
+        var bodyExp = ExportJS(method.Return, $"{invName}({invArgs})");
+        bld.Line($"{method.JSName}: ({args}) => {bodyExp}");
     }
 
-    private void EmitMethodImport (MethodMeta method)
+    private void EmitMethodImportSync (MethodMeta method)
     {
-        var wait = ShouldWait(method);
         var name = method.JSName;
         var args = string.Join(", ", method.Args.Select(a => a.JSName));
         if (isIt) args = PrependIdArg(args);
@@ -168,8 +180,8 @@ internal sealed class JSModuleGenerator (bool debug)
         var invName = isIt
             ? $"$i.imported(_id).{name}"
             : $"this.{name}Handler";
-        var bodyExp = ImportJS(method.Return, $"{(wait ? "await " : "")}{invName}({invArgs})");
-        var srdHandler = $"{(wait ? "async " : "")}({args}) => {bodyExp}";
+        var bodyExp = ImportJS(method.Return, $"{invName}({invArgs})");
+        var srdHandler = $"({args}) => {bodyExp}";
         if (isIt) bld.Line($"{name}Serialized: {srdHandler}");
         else
         {
@@ -181,10 +193,60 @@ internal sealed class JSModuleGenerator (bool debug)
         }
     }
 
-    private bool ShouldWait (MethodMeta method)
+    private void EmitMethodExportAsync (MethodMeta method)
     {
-        if (!method.Async) return false;
-        return method.Args.Any(a => a.Value.IsSerialized || a.Value.IsInstanced) ||
-               method.Return.IsSerialized || method.Return.IsInstanced;
+        var fnName = $"{id}_{method.Name}";
+        var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
+        var args = string.Join(", ", method.Args.Select(a => a.JSName));
+        if (isIt) args = PrependIdArg(args);
+        var invArgs = string.Join(", ", method.Args.Select(ImportJS));
+        var callArgs = string.IsNullOrEmpty(invArgs)
+            ? (isIt ? "$t.alloc(_res, _rej), _id" : "$t.alloc(_res, _rej)")
+            : (isIt ? $"$t.alloc(_res, _rej), _id, {invArgs}" : $"$t.alloc(_res, _rej), {invArgs}");
+        bld.Line($"{method.JSName}: ({args}) => new Promise((_res, _rej) => {invName}({callArgs}))");
+
+        var voidReturn = !IsTaskWithResult(method.Info.ReturnType, out _);
+        var notifyBody = voidReturn
+            ? "$t.resolve(_taskId)"
+            : $"$t.resolve(_taskId, {ExportJS(method.Return, "_result")})";
+        bld.Line(voidReturn
+            ? $"{method.JSName}Notify: (_taskId) => {notifyBody}"
+            : $"{method.JSName}Notify: (_taskId, _result) => {notifyBody}");
+        bld.Line($"{method.JSName}Fail: (_taskId, _message) => $t.reject(_taskId, deserialize(_message, $s.std.String))");
+    }
+
+    private void EmitMethodImportAsync (MethodMeta method)
+    {
+        var name = method.JSName;
+        var completeName = $"{id}_{method.Name}_Complete";
+        var failName = $"{id}_{method.Name}_Fail";
+        var completeInv = debug ? $"""getExport("{completeName}")""" : $"exports.{completeName}";
+        var failInv = debug ? $"""getExport("{failName}")""" : $"exports.{failName}";
+
+        var voidReturn = !IsTaskWithResult(method.Info.ReturnType, out _);
+        var args = string.Join(", ", method.Args.Select(a => a.JSName));
+        var invArgs = string.Join(", ", method.Args.Select(ExportJS));
+        var handlerName = isIt ? $"$i.imported(_id).{name}" : $"this.{name}Handler";
+        var srdParams = isIt
+            ? (string.IsNullOrEmpty(args) ? "_taskId, _id" : $"_taskId, _id, {args}")
+            : (string.IsNullOrEmpty(args) ? "_taskId" : $"_taskId, {args}");
+        var resolveCall = voidReturn
+            ? $".then(() => {completeInv}(_taskId))"
+            : $".then(_result => {completeInv}(_taskId, {ImportJS(method.Return, "_result")}))";
+        var failPayload = debug
+            ? "_e?.stack ?? String(_e?.message ?? _e)"
+            : "String(_e?.message ?? _e)";
+        var srdBody = $"Promise.resolve().then(() => {handlerName}({invArgs})){resolveCall}.catch(_e => {failInv}(_taskId, serialize({failPayload}, $s.std.String)))";
+        var srdHandler = $"({srdParams}) => {srdBody}";
+
+        if (isIt) bld.Line($"{name}Serialized: {srdHandler}");
+        else
+        {
+            var srd = $"this.{name}SerializedHandler";
+            var srdExp = debug ? $"getImport(this.{name}Handler, {srd}, \"{srf.JSNode}.{name}\")" : srd;
+            bld.Line($"get {name}() {{ return this.{name}Handler; }}");
+            bld.Line($"set {name}(handler) {{ this.{name}Handler = handler; {srd} = {srdHandler}; }}");
+            bld.Line($"get {name}Serialized() {{ return {srdExp}; }}");
+        }
     }
 }

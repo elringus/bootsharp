@@ -1,11 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace Bootsharp.Publish;
 
 /// <summary>
 /// Generates bindings to be picked by .NET's interop source generator.
 /// </summary>
-internal sealed class InteropGenerator
+internal sealed class InteropGenerator (bool debug)
 {
     [MemberNotNullWhen(true, nameof(it))]
     private bool isIt => srf is InstanceMeta;
@@ -156,40 +157,186 @@ internal sealed class InteropGenerator
 
     private IEnumerable<string> EmitMethodExport (MethodMeta method)
     {
-        var wait = ShouldWait(method);
+        if (method.Async) return EmitMethodExportAsync(method);
+        return EmitMethodExportSync(method);
+    }
+
+    private IEnumerable<string> EmitMethodImport (MethodMeta method)
+    {
+        if (method.Async) return EmitMethodImportAsync(method);
+        return EmitMethodImportSync(method);
+    }
+
+    private IEnumerable<string> EmitMethodExportSync (MethodMeta method)
+    {
         var attr = $"[JSExport] {MarshalAmbiguous(method.Return, true)}";
         var name = $"{id}_{method.Name}";
         var @return = BuildValueSyntax(method.Return);
-        if (wait) @return = $"async global::System.Threading.Tasks.Task<{@return}>";
         var sigArgs = string.Join(", ", method.Args.Select(a => BuildParameter(a.Value, a.Name)));
         if (isIt) sigArgs = $"int {PrependIdArg(sigArgs)}";
         var invArgs = string.Join(", ", method.Args.Select(Import));
         var invName = isIt
             ? $"Instances.Exported<{it.Syntax}>(_id).{method.Name}"
             : $"{stx}.{method.Name}";
-        var body = Export(method.Return, $"{(wait ? "await " : "")}{invName}({invArgs})");
+        var body = Export(method.Return, $"{invName}({invArgs})");
         yield return $"{attr}internal static {@return} {name} ({sigArgs}) => {body};";
     }
 
-    private IEnumerable<string> EmitMethodImport (MethodMeta method)
+    private IEnumerable<string> EmitMethodImportSync (MethodMeta method)
     {
         var attr = $"""[JSImport("{srf.JSNode}.{method.JSName}Serialized", "{srf.JSModule}")]""";
         var marshalAs = MarshalAmbiguous(method.Return, true);
         var name = $"{id}_{method.Name}";
         var @return = BuildValueSyntax(method.Return);
-        if (ShouldWait(method)) @return = $"global::System.Threading.Tasks.Task<{@return}>";
         var args = string.Join(", ", method.Args.Select(a => BuildParameter(a.Value, a.Name)));
         if (isIt) args = $"int {PrependIdArg(args)}";
         yield return $"{attr} {marshalAs}internal static partial {@return} {name}_Serialized ({args});";
 
-        var wait = ShouldWait(method);
-        @return = $"{(wait ? "async " : "")}{method.Return.TypeSyntax}";
+        @return = method.Return.TypeSyntax;
         var sigArgs = string.Join(", ", method.Args.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         if (isIt) sigArgs = $"int {PrependIdArg(sigArgs)}";
         var invArgs = string.Join(", ", method.Args.Select(Export));
         if (isIt) invArgs = PrependIdArg(invArgs);
-        var body = Import(method.Return, $"{(wait ? "await " : "")}{name}_Serialized({invArgs})");
+        var body = Import(method.Return, $"{name}_Serialized({invArgs})");
         yield return $"public static {@return} {name} ({sigArgs}) => {body};";
+    }
+
+    private IEnumerable<string> EmitMethodExportAsync (MethodMeta method)
+    {
+        var name = $"{id}_{method.Name}";
+        var notifyName = $"{name}_Notify";
+        var failName = $"{name}_Fail";
+
+        var sigArgs = string.Join(", ", method.Args.Select(a => BuildParameter(a.Value, a.Name)));
+        if (isIt) sigArgs = $"int {PrependIdArg(sigArgs)}";
+        sigArgs = string.IsNullOrEmpty(sigArgs) ? "int _taskId" : $"int _taskId, {sigArgs}";
+
+        var invArgs = string.Join(", ", method.Args.Select(Import));
+        var invName = isIt
+            ? $"Instances.Exported<{it.Syntax}>(_id).{method.Name}"
+            : $"{stx}.{method.Name}";
+
+        var voidReturn = !IsTaskWithResult(method.Info.ReturnType, out _);
+        var failBody = $"{failName}(_taskId, Serializer.Serialize({BuildFailMessage("_e")}, Serializer.String))";
+        string notifyBody, completeBody;
+        if (voidReturn)
+        {
+            notifyBody = $"{notifyName}(_taskId)";
+            completeBody = $"await {invName}({invArgs});";
+        }
+        else
+        {
+            var exportExp = Export(method.Return, $"await {invName}({invArgs})");
+            notifyBody = $"{notifyName}(_taskId, _result)";
+            completeBody = $"var _result = {exportExp};";
+        }
+
+        yield return
+            $$"""
+              [JSExport] internal static void {{name}} ({{sigArgs}})
+              {
+                  _ = Run();
+                  async global::System.Threading.Tasks.Task Run ()
+                  {
+                      try
+                      {
+                          {{completeBody}}
+                          {{notifyBody}};
+                      }
+                      catch (global::System.Exception _e)
+                      {
+                          {{failBody}};
+                      }
+                  }
+              }
+              """;
+
+        var notifyParams = "int _taskId";
+        if (!voidReturn)
+        {
+            var (wireStx, wireMarshal) = BuildAsyncWire(method);
+            notifyParams = $"int _taskId, {wireMarshal}{wireStx} _result";
+        }
+        yield return $"""[JSImport("{srf.JSNode}.{method.JSName}Notify", "{srf.JSModule}")] internal static partial void {notifyName} ({notifyParams});""";
+        yield return $$"""[JSImport("{{srf.JSNode}}.{{method.JSName}}Fail", "{{srf.JSModule}}")] internal static partial void {{failName}} (int _taskId, [JSMarshalAs<JSType.BigInt>] long _message);""";
+    }
+
+    private IEnumerable<string> EmitMethodImportAsync (MethodMeta method)
+    {
+        var name = $"{id}_{method.Name}";
+        var srdName = $"{name}_Serialized";
+        var completeName = $"{name}_Complete";
+        var failName = $"{name}_Fail";
+
+        var srdArgs = string.Join(", ", method.Args.Select(a => BuildParameter(a.Value, a.Name)));
+        if (isIt) srdArgs = $"int {PrependIdArg(srdArgs)}";
+        srdArgs = string.IsNullOrEmpty(srdArgs) ? "int _taskId" : $"int _taskId, {srdArgs}";
+
+        yield return $"""[JSImport("{srf.JSNode}.{method.JSName}Serialized", "{srf.JSModule}")] internal static partial void {srdName} ({srdArgs});""";
+
+        var voidReturn = !IsTaskWithResult(method.Info.ReturnType, out var resultClr);
+        var innerStx = voidReturn ? "bool" : BuildAsyncInnerSyntax(method);
+
+        if (voidReturn)
+            yield return $"[JSExport] internal static void {completeName} (int _taskId) => PendingImports.Take<bool>(_taskId).SetResult(default);";
+        else
+        {
+            var (wireStx, wireMarshal) = BuildAsyncWire(method);
+            var importExp = Import(method.Return, "_result");
+            yield return $"[JSExport] internal static void {completeName} (int _taskId, {wireMarshal}{wireStx} _result) => PendingImports.Take<{innerStx}>(_taskId).SetResult({importExp});";
+        }
+
+        var tcsT = voidReturn ? "bool" : innerStx;
+        yield return $"[JSExport] internal static void {failName} (int _taskId, [JSMarshalAs<JSType.BigInt>] long _message) => PendingImports.Take<{tcsT}>(_taskId).SetException(new JSException(Serializer.Deserialize(_message, Serializer.String)!));";
+
+        var publicReturn = method.Return.TypeSyntax;
+        var sigArgs = string.Join(", ", method.Args.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
+        if (isIt) sigArgs = $"int {PrependIdArg(sigArgs)}";
+        var invArgs = string.Join(", ", method.Args.Select(Export));
+        var callArgs = string.IsNullOrEmpty(invArgs)
+            ? (isIt ? "_taskId, _id" : "_taskId")
+            : (isIt ? $"_taskId, _id, {invArgs}" : $"_taskId, {invArgs}");
+
+        yield return
+            $$"""
+              public static {{publicReturn}} {{name}} ({{sigArgs}})
+              {
+                  var _tcs = new global::System.Threading.Tasks.TaskCompletionSource<{{tcsT}}>();
+                  var _taskId = PendingImports.Allocate(_tcs);
+                  {{srdName}}({{callArgs}});
+                  return _tcs.Task;
+              }
+              """;
+    }
+
+    private string BuildFailMessage (string exVar)
+    {
+        if (debug) return $"{exVar}.Message + \"\\n\" + {exVar}.StackTrace";
+        return $"{exVar}.Message";
+    }
+
+    private (string syntax, string marshal) BuildAsyncWire (MethodMeta method)
+    {
+        var v = method.Return;
+        if (v.IsSerialized) return ("long", "[JSMarshalAs<JSType.BigInt>] ");
+        if (v.IsInstanced)
+        {
+            var innerNul = GetNullity(method.Info.ReturnParameter).GenericTypeArguments[0];
+            var nil = innerNul.ReadState == NullabilityState.Nullable ? "?" : "";
+            return ($"int{nil}", "");
+        }
+        var inner = BuildAsyncInnerSyntax(method);
+        if (inner.StartsWith("global::System.Int64")) return (inner, "[JSMarshalAs<JSType.BigInt>] ");
+        if (inner.StartsWith("global::System.DateTime")) return (inner, "[JSMarshalAs<JSType.Date>] ");
+        return (inner, "");
+    }
+
+    private string BuildAsyncInnerSyntax (MethodMeta method)
+    {
+        IsTaskWithResult(method.Info.ReturnType, out var inner);
+        var nul = GetNullity(method.Info.ReturnParameter);
+        var innerNul = nul.GenericTypeArguments.Length > 0 ? nul.GenericTypeArguments[0] : null;
+        return BuildSyntax(inner!, innerNul);
     }
 
     private string BuildParameter (ValueMeta value, string name)
@@ -220,11 +367,5 @@ internal sealed class InteropGenerator
         if (promise) result = $"JSType.Promise<{result}>";
         if (@return) return $"[return: JSMarshalAs<{result}>] ";
         return $"[JSMarshalAs<{result}>] ";
-    }
-
-    private bool ShouldWait (MethodMeta method)
-    {
-        if (!method.Async) return false;
-        return method.Return.IsSerialized || method.Return.IsInstanced;
     }
 }

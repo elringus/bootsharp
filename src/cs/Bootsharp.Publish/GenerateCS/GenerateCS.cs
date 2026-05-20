@@ -11,6 +11,7 @@ public sealed class GenerateCS : Microsoft.Build.Utilities.Task
     public required string InstancesFilePath { get; set; }
     public required string ModulesFilePath { get; set; }
     public required string InteropFilePath { get; set; }
+    public bool Debug { get; set; }
 
     public override bool Execute ()
     {
@@ -58,7 +59,7 @@ public sealed class GenerateCS : Microsoft.Build.Utilities.Task
 
     private void GenerateInterop (SolutionInspection spec)
     {
-        var generator = new InteropGenerator();
+        var generator = new InteropGenerator(Debug);
         var surfaces = spec.Types.OfType<SurfaceMeta>().ToArray();
         var content = generator.Generate(surfaces);
         WriteGenerated(InteropFilePath, content);

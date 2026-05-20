@@ -272,7 +272,9 @@ public class JSModuleTest : GenerateJSTest
         Contains(
             """
             export const Class = {
-                nya: () => exports.Class_Nya(),
+                nya: () => new Promise((_res, _rej) => exports.Class_Nya($t.alloc(_res, _rej))),
+                nyaNotify: (_taskId, _result) => $t.resolve(_taskId, _result),
+                nyaFail: (_taskId, _message) => $t.reject(_taskId, deserialize(_message, $s.std.String)),
                 get fun() { return this.funHandler; },
                 set fun(handler) { this.funHandler = handler; this.funSerializedHandler = () => this.funHandler(); },
                 get funSerialized() { return this.funSerializedHandler; }
@@ -330,13 +332,17 @@ public class JSModuleTest : GenerateJSTest
         Contains(
             """
             export const Class = {
-                foo: async (i) => deserialize(await exports.Class_Foo(serialize(i, $s.Info)), $s.Info),
+                foo: (i) => new Promise((_res, _rej) => exports.Class_Foo($t.alloc(_res, _rej), serialize(i, $s.Info))),
+                fooNotify: (_taskId, _result) => $t.resolve(_taskId, deserialize(_result, $s.Info)),
+                fooFail: (_taskId, _message) => $t.reject(_taskId, deserialize(_message, $s.std.String)),
                 get bar() { return this.barHandler; },
-                set bar(handler) { this.barHandler = handler; this.barSerializedHandler = async (i) => serialize(await this.barHandler(deserialize(i, $s.Info)), $s.Info); },
+                set bar(handler) { this.barHandler = handler; this.barSerializedHandler = (_taskId, i) => Promise.resolve().then(() => this.barHandler(deserialize(i, $s.Info))).then(_result => exports.Class_Bar_Complete(_taskId, serialize(_result, $s.Info))).catch(_e => exports.Class_Bar_Fail(_taskId, serialize(String(_e?.message ?? _e), $s.std.String))); },
                 get barSerialized() { return this.barSerializedHandler; },
-                baz: async () => deserialize(await exports.Class_Baz(), $s.System_Collections_Generic_IReadOnlyList_Of_Info),
+                baz: () => new Promise((_res, _rej) => exports.Class_Baz($t.alloc(_res, _rej))),
+                bazNotify: (_taskId, _result) => $t.resolve(_taskId, deserialize(_result, $s.System_Collections_Generic_IReadOnlyList_Of_Info)),
+                bazFail: (_taskId, _message) => $t.reject(_taskId, deserialize(_message, $s.std.String)),
                 get yaz() { return this.yazHandler; },
-                set yaz(handler) { this.yazHandler = handler; this.yazSerializedHandler = async () => serialize(await this.yazHandler(), $s.System_Collections_Generic_IReadOnlyList_Of_Info); },
+                set yaz(handler) { this.yazHandler = handler; this.yazSerializedHandler = (_taskId) => Promise.resolve().then(() => this.yazHandler()).then(_result => exports.Class_Yaz_Complete(_taskId, serialize(_result, $s.System_Collections_Generic_IReadOnlyList_Of_Info))).catch(_e => exports.Class_Yaz_Fail(_taskId, serialize(String(_e?.message ?? _e), $s.std.String))); },
                 get yazSerialized() { return this.yazSerializedHandler; }
             };
             """);

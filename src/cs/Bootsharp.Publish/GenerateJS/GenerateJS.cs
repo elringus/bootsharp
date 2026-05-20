@@ -10,7 +10,6 @@ public sealed class GenerateJS : Microsoft.Build.Utilities.Task
     public required string InspectedDirectory { get; set; }
     public required string EntryAssemblyName { get; set; }
     public required bool Globalization { get; set; }
-    public required bool LLVM { get; set; }
     public required bool Debug { get; set; }
 
     public override bool Execute ()
@@ -31,20 +30,10 @@ public sealed class GenerateJS : Microsoft.Build.Utilities.Task
     private SolutionInspection InspectSolution ()
     {
         var inspector = new SolutionInspector();
-        var inspection = inspector.Inspect(InspectedDirectory, GetFiles());
+        var files = Directory.GetFiles(InspectedDirectory, "*.dll").Order();
+        var inspection = inspector.Inspect(InspectedDirectory, files);
         new InspectionReporter(Log).Report(inspection);
         return inspection;
-
-        IEnumerable<string> GetFiles ()
-        {
-            if (LLVM) return Directory.GetFiles(InspectedDirectory, "*.dll").Order();
-            // Assemblies in publish dir are trimmed and don't contain some data (eg, method arg names).
-            // While the inspected dir contains extra assemblies we don't need in build. Hence the filtering.
-            var included = Directory.GetFiles(BuildDirectory, "*.wasm")
-                .Select(Path.GetFileNameWithoutExtension).ToHashSet();
-            return Directory.GetFiles(InspectedDirectory, "*.dll").Order()
-                .Where(p => included.Contains(Path.GetFileNameWithoutExtension(p)));
-        }
     }
 
     private void GenerateImports (JSModules mds)

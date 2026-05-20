@@ -31,9 +31,11 @@ public class JSInstanceTest : GenerateJSTest
         Contains("index.g.mjs",
             """
             export const Class = {
-                getExported: async (it) => $i.resolve(await exports.Class_GetExported($i.import(it)), $i.IExported),
+                getExported: (it) => new Promise((_res, _rej) => exports.Class_GetExported($t.alloc(_res, _rej), $i.import(it))),
+                getExportedNotify: (_taskId, _result) => $t.resolve(_taskId, $i.resolve(_result, $i.IExported)),
+                getExportedFail: (_taskId, _message) => $t.reject(_taskId, deserialize(_message, $s.std.String)),
                 get getImported() { return this.getImportedHandler; },
-                set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = async (it) => $i.import(await this.getImportedHandler($i.resolve(it, $i.IExported))); },
+                set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = (_taskId, it) => Promise.resolve().then(() => this.getImportedHandler($i.resolve(it, $i.IExported))).then(_result => exports.Class_GetImported_Complete(_taskId, $i.import(_result))).catch(_e => exports.Class_GetImported_Fail(_taskId, serialize(String(_e?.message ?? _e), $s.std.String))); },
                 get getImportedSerialized() { return this.getImportedSerializedHandler; }
             };
             export const IImported = {
