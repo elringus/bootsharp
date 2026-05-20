@@ -65,8 +65,8 @@ async function createRuntime(res: string | BootResources, opt: BootOptions) {
     const cfg = opt.config ?? buildConfig(typeof res === "string" ? await fetchResources(res) : res);
     const runtime = await opt.create?.(cfg) || await app.dotnet.withConfig(cfg).create();
     setRuntime(runtime);
-    if (opt.import) await opt.import(runtime); else bindImports(runtime);
+    if (opt.import) await opt.import(runtime); else bindImports();
+    if (opt.export) await opt.export(runtime); else bindExports(runtime);
     if (opt.run) await opt.run(runtime); else await runtime.runMain(cfg.mainAssemblyName!, []);
-    if (opt.export) await opt.export(runtime); else await bindExports(runtime, cfg.mainAssemblyName!);
     return runtime;
 }

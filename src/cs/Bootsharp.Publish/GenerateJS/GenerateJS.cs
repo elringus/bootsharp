@@ -17,7 +17,7 @@ public sealed class GenerateJS : Microsoft.Build.Utilities.Task
         PreferencesResolver.Resolve(EntryAssemblyName, InspectedDirectory);
         using var spec = InspectSolution();
         var mds = new JSModules(spec.Types);
-        GenerateImports(mds);
+        GenerateImports(mds, spec);
         GenerateModules(mds);
         GenerateSerializer(spec);
         GenerateInstances(spec, mds);
@@ -36,10 +36,11 @@ public sealed class GenerateJS : Microsoft.Build.Utilities.Task
         return inspection;
     }
 
-    private void GenerateImports (JSModules mds)
+    private void GenerateImports (JSModules mds, SolutionInspection spec)
     {
         var generator = new JSImportsGenerator();
-        WriteGenerated("imports.g.mjs", generator.Generate(mds));
+        var bindings = generator.Collect(mds, spec.Types.OfType<SurfaceMeta>().ToArray());
+        WriteGenerated("imports.g.mjs", generator.GenerateBinding(mds, bindings));
     }
 
     private void GenerateModules (JSModules mds)

@@ -3,7 +3,7 @@
     "type": "module",
     "exports": {
         ".": "./bin/bootsharp/index.mjs",
-        "./*": "./bin/bootsharp/generated/*.g.mjs"
+        "./*": "./bin/bootsharp/generated/modules/*.g.mjs"
     },
     "browser": {
         "node:fs": false,

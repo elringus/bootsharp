@@ -1,11 +1,8 @@
 import { Event } from "./event.mjs";
 import { bindImports as bindGeneratedImports } from "./generated/imports.g.mjs";
-import { instances } from "./instances.mjs";
-import type { RuntimeAPI } from "./dotnet/index.mjs";
 
-export function bindImports(runtime: RuntimeAPI) {
-    bindGeneratedImports(runtime);
-    runtime.setModuleImports("Bootsharp", { instances });
+export function bindImports() {
+    bindGeneratedImports();
 }
 
 // noinspection JSUnusedGlobalSymbols (used by the generated code)

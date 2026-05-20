@@ -59,7 +59,7 @@ public class JSModuleTest : GenerateJSTest
         Contains("foo/bar.g.mjs",
             """
             export const Class = {
-                nya: () => exports.Foo_Bar_Class_Nya()
+                nya: () => exports._Foo_Bar_Class_Nya()
             };
             """);
     }
@@ -93,8 +93,8 @@ public class JSModuleTest : GenerateJSTest
                 expEvt: new Event(),
                 broadcastExpEvtSerialized: () => Class.expEvt.broadcast(),
                 evt: new Event(),
-                broadcastEvtSerialized: (obj) => Class.evt.broadcast(obj),
-                impEvt: importEvent((arg1, arg2) => exports.Class_InvokeImpEvt(arg1, arg2))
+                broadcastEvtSerialized: (obj) => Class.evt.broadcast(deserialize(obj, $s.System_String)),
+                impEvt: importEvent((arg1, arg2) => exports._Class_InvokeImpEvt(arg1, arg2))
             };
             """);
     }
@@ -109,10 +109,10 @@ public class JSModuleTest : GenerateJSTest
         Contains(
             """
             export const Class = {
-                get expProp() { return exports.Class_GetExpProp(); },
-                set expProp(value) { exports.Class_SetExpProp(value); },
-                getImpPropSerialized() { return this.impProp.get(); },
-                setImpPropSerialized(value) { this.impProp.set(value); }
+                get expProp() { return exports._Class_GetExpProp(); },
+                set expProp(value) { exports._Class_SetExpProp(value); },
+                getImpPropSerialized() { return serialize(this.impProp.get(), $s.System_String); },
+                setImpPropSerialized(value) { this.impProp.set(deserialize(value, $s.System_String)); }
             };
             """);
     }
@@ -125,7 +125,7 @@ public class JSModuleTest : GenerateJSTest
         Contains("foo.g.mjs",
             """
             export const Class = {
-                bar: () => exports.Foo_Class_Bar()
+                bar: () => exports._Foo_Class_Bar()
             };
             """);
     }
@@ -138,7 +138,7 @@ public class JSModuleTest : GenerateJSTest
         Contains("foo/bar/nya.g.mjs",
             """
             export const Class = {
-                bar: () => exports.Foo_Bar_Nya_Class_Bar()
+                bar: () => exports._Foo_Bar_Nya_Class_Bar()
             };
             """);
     }
@@ -153,7 +153,7 @@ public class JSModuleTest : GenerateJSTest
         Contains("foo.g.mjs",
             """
             export const Class = {
-                foo: () => exports.Foo_Class_Foo()
+                foo: () => exports._Foo_Class_Foo()
             };
             """);
         Contains("bar/nya.g.mjs",
@@ -185,7 +185,7 @@ public class JSModuleTest : GenerateJSTest
         Contains("nya/foo.g.mjs",
             """
             export const Class = {
-                foo: () => exports.Nya_Foo_Class_Foo()
+                foo: () => exports._Nya_Foo_Class_Foo()
             };
             """);
         Contains("nya/bar.g.mjs",
@@ -209,13 +209,13 @@ public class JSModuleTest : GenerateJSTest
         Contains("foo.g.mjs",
             """
             export const Class = {
-                method: () => exports.Foo_Class_Method()
+                method: () => exports._Foo_Class_Method()
             };
             """);
         Contains("foo-bar/baz.g.mjs",
             """
             export const Class = {
-                method: () => exports.FooBar_Baz_Class_Method()
+                method: () => exports._FooBar_Baz_Class_Method()
             };
             """);
     }
@@ -237,7 +237,7 @@ public class JSModuleTest : GenerateJSTest
         Contains("foo.g.mjs",
             """
             export const Class = {
-                foo: () => exports.Foo_Class_Foo()
+                foo: () => exports._Foo_Class_Foo()
             };
             """);
     }
@@ -252,7 +252,7 @@ public class JSModuleTest : GenerateJSTest
         Contains(
             """
             export const ClassA = {
-                inv: () => exports.ClassA_Inv()
+                inv: () => exports._ClassA_Inv()
             };
             export const ClassB = {
                 get fun() { return this.funHandler; },
@@ -272,7 +272,7 @@ public class JSModuleTest : GenerateJSTest
         Contains(
             """
             export const Class = {
-                nya: () => new Promise((_res, _rej) => exports.Class_Nya($t.alloc(_res, _rej))),
+                nya: () => new Promise((_res, _rej) => exports._Class_Nya($t.alloc(_res, _rej))),
                 nyaNotify: (_taskId, _result) => $t.resolve(_taskId, _result),
                 nyaFail: (_taskId, _message) => $t.reject(_taskId, deserialize(_message, $s.std.String)),
                 get fun() { return this.funHandler; },
@@ -290,7 +290,7 @@ public class JSModuleTest : GenerateJSTest
         Contains(
             """
             export const Class = {
-                fun: (fn) => exports.Class_Fun(fn)
+                fun: (fn) => exports._Class_Fun(fn)
             };
             """);
     }
@@ -310,8 +310,8 @@ public class JSModuleTest : GenerateJSTest
             export const Class = {
                 expEvt: new Event(),
                 broadcastExpEvtSerialized: (arg1, arg2) => Class.expEvt.broadcast(deserialize(arg1, $s.InfoArray) ?? undefined, deserialize(arg2, $s.Info)),
-                impEvt: importEvent((arg1, arg2) => exports.Class_InvokeImpEvt(arg1, serialize(arg2, $s.Info))),
-                foo: (i) => deserialize(exports.Class_Foo(serialize(i, $s.Info)), $s.Info),
+                impEvt: importEvent((arg1, arg2) => exports._Class_InvokeImpEvt(arg1, serialize(arg2, $s.Info))),
+                foo: (i) => deserialize(exports._Class_Foo(serialize(i, $s.Info)), $s.Info),
                 get bar() { return this.barHandler; },
                 set bar(handler) { this.barHandler = handler; this.barSerializedHandler = (i) => serialize(this.barHandler(deserialize(i, $s.Info)), $s.Info); },
                 get barSerialized() { return this.barSerializedHandler; }
@@ -332,17 +332,17 @@ public class JSModuleTest : GenerateJSTest
         Contains(
             """
             export const Class = {
-                foo: (i) => new Promise((_res, _rej) => exports.Class_Foo($t.alloc(_res, _rej), serialize(i, $s.Info))),
+                foo: (i) => new Promise((_res, _rej) => exports._Class_Foo($t.alloc(_res, _rej), serialize(i, $s.Info))),
                 fooNotify: (_taskId, _result) => $t.resolve(_taskId, deserialize(_result, $s.Info)),
                 fooFail: (_taskId, _message) => $t.reject(_taskId, deserialize(_message, $s.std.String)),
                 get bar() { return this.barHandler; },
-                set bar(handler) { this.barHandler = handler; this.barSerializedHandler = (_taskId, i) => Promise.resolve().then(() => this.barHandler(deserialize(i, $s.Info))).then(_result => exports.Class_Bar_Complete(_taskId, serialize(_result, $s.Info))).catch(_e => exports.Class_Bar_Fail(_taskId, serialize(String(_e?.message ?? _e), $s.std.String))); },
+                set bar(handler) { this.barHandler = handler; this.barSerializedHandler = (_taskId, i) => Promise.resolve().then(() => this.barHandler(deserialize(i, $s.Info))).then(_result => exports._Class_Bar_Complete(_taskId, serialize(_result, $s.Info))).catch(_e => exports._Class_Bar_Fail(_taskId, serialize(String(_e?.message ?? _e), $s.std.String))); },
                 get barSerialized() { return this.barSerializedHandler; },
-                baz: () => new Promise((_res, _rej) => exports.Class_Baz($t.alloc(_res, _rej))),
+                baz: () => new Promise((_res, _rej) => exports._Class_Baz($t.alloc(_res, _rej))),
                 bazNotify: (_taskId, _result) => $t.resolve(_taskId, deserialize(_result, $s.System_Collections_Generic_IReadOnlyList_Of_Info)),
                 bazFail: (_taskId, _message) => $t.reject(_taskId, deserialize(_message, $s.std.String)),
                 get yaz() { return this.yazHandler; },
-                set yaz(handler) { this.yazHandler = handler; this.yazSerializedHandler = (_taskId) => Promise.resolve().then(() => this.yazHandler()).then(_result => exports.Class_Yaz_Complete(_taskId, serialize(_result, $s.System_Collections_Generic_IReadOnlyList_Of_Info))).catch(_e => exports.Class_Yaz_Fail(_taskId, serialize(String(_e?.message ?? _e), $s.std.String))); },
+                set yaz(handler) { this.yazHandler = handler; this.yazSerializedHandler = (_taskId) => Promise.resolve().then(() => this.yazHandler()).then(_result => exports._Class_Yaz_Complete(_taskId, serialize(_result, $s.System_Collections_Generic_IReadOnlyList_Of_Info))).catch(_e => exports._Class_Yaz_Fail(_taskId, serialize(String(_e?.message ?? _e), $s.std.String))); },
                 get yazSerialized() { return this.yazSerializedHandler; }
             };
             """);
@@ -437,7 +437,7 @@ public class JSModuleTest : GenerateJSTest
         Contains("space.g.mjs",
             """
             export const IExported = {
-                inv: (str, info) => deserialize(exports.Bootsharp_Generated_Exports_Space_JSExported_Inv(str, serialize(info, $s.Space_Info)), $s.Space_Info)
+                inv: (str, info) => deserialize(exports._Bootsharp_Generated_Exports_Space_JSExported_Inv(str, serialize(info, $s.Space_Info)), $s.Space_Info)
             };
             export const IImported = {
                 get fun() { return this.funHandler; },
@@ -475,9 +475,9 @@ public class JSModuleTest : GenerateJSTest
         Contains("space.g.mjs",
             """
             export const IExported = {
-                get state() { return deserialize(exports.Bootsharp_Generated_Exports_Space_JSExported_GetState(), $s.Space_Info) ?? undefined; },
-                set state(value) { exports.Bootsharp_Generated_Exports_Space_JSExported_SetState(serialize(value, $s.Space_Info)); },
-                set count(value) { exports.Bootsharp_Generated_Exports_Space_JSExported_SetCount(value); }
+                get state() { return deserialize(exports._Bootsharp_Generated_Exports_Space_JSExported_GetState(), $s.Space_Info) ?? undefined; },
+                set state(value) { exports._Bootsharp_Generated_Exports_Space_JSExported_SetState(serialize(value, $s.Space_Info)); },
+                set count(value) { exports._Bootsharp_Generated_Exports_Space_JSExported_SetCount(value); }
             };
             export const IImported = {
                 getStateSerialized() { return serialize(this.state.get(), $s.Space_Info); },
@@ -510,7 +510,7 @@ public class JSModuleTest : GenerateJSTest
                 broadcastEvtSerialized: (obj) => IExported.evt.broadcast(deserialize(obj, $s.Space_Info))
             };
             export const IImported = {
-                evt: importEvent((obj) => exports.Bootsharp_Generated_Imports_Space_JSImported_InvokeEvt(serialize(obj, $s.Space_Info)))
+                evt: importEvent((obj) => exports._Bootsharp_Generated_Imports_Space_JSImported_InvokeEvt(serialize(obj, $s.Space_Info)))
             };
             """);
     }
@@ -524,8 +524,7 @@ public class JSModuleTest : GenerateJSTest
         Execute();
         Contains("../imports.g.mjs", """import * as foo_bar from "./modules/foo/bar.g.mjs";""");
         Contains("../imports.g.mjs", """import * as baz from "./modules/baz.g.mjs";""");
-        Contains("../imports.g.mjs", """runtime.setModuleImports("foo/bar", foo_bar);""");
-        Contains("../imports.g.mjs", """runtime.setModuleImports("baz", baz);""");
+        Contains("../imports.g.mjs", "bsi.Baz_Class_B_Serialized = (...a) => baz.Class.bSerialized(...a);");
     }
 
     [Fact]
@@ -553,7 +552,7 @@ public class JSModuleTest : GenerateJSTest
         Contains(
             """
             export const Class = {
-                get: () => deserialize(exports.Class_Get(), $s.Outer_Inner)
+                get: () => deserialize(exports._Class_Get(), $s.Outer_Inner)
             };
             export const Outer = {
                 Inner: {
@@ -705,9 +704,9 @@ public class JSModuleTest : GenerateJSTest
             export const Foo = {
                 qux: new Event(),
                 broadcastEventSerialized: () => Foo.qux.broadcast(),
-                get baz() { return deserialize(exports.Space_Class_GetProperty(), $s.Space_Enum); },
-                set baz(value) { exports.Space_Class_SetProperty(serialize(value, $s.Space_Enum)); },
-                bar: () => deserialize(exports.Space_Class_Method(), $s.Space_Enum)
+                get baz() { return deserialize(exports._Space_Class_GetProperty(), $s.Space_Enum); },
+                set baz(value) { exports._Space_Class_SetProperty(serialize(value, $s.Space_Enum)); },
+                bar: () => deserialize(exports._Space_Class_Method(), $s.Space_Enum)
             };
             export const Enum = {
                 "0": "A",
@@ -754,9 +753,9 @@ public class JSModuleTest : GenerateJSTest
             export const Foo = {
                 quz: new Event(),
                 broadcastChangedSerialized: () => Foo.quz.broadcast(),
-                get qux() { return deserialize(exports.Bootsharp_Generated_Exports_Space_JSExported_GetState(), $s.Space_Enum); },
-                set qux(value) { exports.Bootsharp_Generated_Exports_Space_JSExported_SetState(serialize(value, $s.Space_Enum)); },
-                bar: (e) => exports.Bootsharp_Generated_Exports_Space_JSExported_Inv(serialize(e, $s.Space_Enum)),
+                get qux() { return deserialize(exports._Bootsharp_Generated_Exports_Space_JSExported_GetState(), $s.Space_Enum); },
+                set qux(value) { exports._Bootsharp_Generated_Exports_Space_JSExported_SetState(serialize(value, $s.Space_Enum)); },
+                bar: (e) => exports._Bootsharp_Generated_Exports_Space_JSExported_Inv(serialize(e, $s.Space_Enum)),
                 get baz() { return this.bazHandler; },
                 set baz(handler) { this.bazHandler = handler; this.bazSerializedHandler = (e) => this.bazHandler(deserialize(e, $s.Space_Enum)); },
                 get bazSerialized() { return this.bazSerializedHandler; }
@@ -803,13 +802,13 @@ public class JSModuleTest : GenerateJSTest
         Contains(
             """
             export const Class = {
-                get: () => $i.resolve(exports.Space_Class_Get(), $i.Space_IInst)
+                get: () => $i.resolve(exports._Space_Class_Get(), $i.Space_IInst)
             };
             export const Foo = {
                 broadcastEventSerialized: (_id) => $i.resolve(_id, $i.Space_IInst).broadcastEvent(),
-                getProperty(_id) { return deserialize(exports.Bootsharp_Generated_Exports_Space_JSInst_GetProperty(_id), $s.Space_Enum); },
-                setProperty(_id, value) { exports.Bootsharp_Generated_Exports_Space_JSInst_SetProperty(_id, serialize(value, $s.Space_Enum)); },
-                bar: (_id, e) => exports.Bootsharp_Generated_Exports_Space_JSInst_Method(_id, serialize(e, $s.Space_Enum))
+                getProperty(_id) { return deserialize(exports._Bootsharp_Generated_Exports_Space_JSInst_GetProperty(_id), $s.Space_Enum); },
+                setProperty(_id, value) { exports._Bootsharp_Generated_Exports_Space_JSInst_SetProperty(_id, serialize(value, $s.Space_Enum)); },
+                bar: (_id, e) => exports._Bootsharp_Generated_Exports_Space_JSInst_Method(_id, serialize(e, $s.Space_Enum))
             };
             export const Enum = {
                 "0": "A",

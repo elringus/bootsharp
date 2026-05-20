@@ -42,7 +42,7 @@ internal sealed class JSInstanceGenerator (bool debug, JSModules md)
         string EmitHandler (EventMeta e)
         {
             var fnName = $"{it.Proxy.Id}_Invoke{e.Name}";
-            var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
+            var invName = debug ? $"""getExport("{fnName}")""" : $"exports._{fnName}";
             var args = string.Join(", ", e.Args.Select(a => a.JSName));
             var invArgs = PrependIdArg(string.Join(", ", e.Args.Select(ImportJS)));
             return $"function handle{e.Name}({args}) {{ {invName}({invArgs}); }}";

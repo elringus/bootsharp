@@ -96,7 +96,7 @@ internal sealed class JSModuleGenerator (bool debug)
     {
         if (isIt) return; // instance import events handled in instances.g.mjs
         var fnName = $"{id}_Invoke{evt.Name}";
-        var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
+        var invName = debug ? $"""getExport("{fnName}")""" : $"exports._{fnName}";
         var args = string.Join(", ", evt.Args.Select(a => a.JSName));
         var invArgs = string.Join(", ", evt.Args.Select(ImportJS));
         bld.Line($"{evt.JSName}: importEvent(({args}) => {invName}({invArgs}))");
@@ -107,7 +107,7 @@ internal sealed class JSModuleGenerator (bool debug)
         if (prop.CanGet)
         {
             var fnName = $"{id}_Get{prop.Name}";
-            var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
+            var invName = debug ? $"""getExport("{fnName}")""" : $"exports._{fnName}";
             var body = ExportJS(prop.Get, isIt ? $"{invName}(_id)" : $"{invName}()");
             if (prop.Get.Nullable && !prop.Get.IsInstanced) body += " ?? undefined";
             bld.Line(isIt
@@ -117,7 +117,7 @@ internal sealed class JSModuleGenerator (bool debug)
         if (prop.CanSet)
         {
             var fnName = $"{id}_Set{prop.Name}";
-            var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
+            var invName = debug ? $"""getExport("{fnName}")""" : $"exports._{fnName}";
             var value = ImportJS(prop.Set, "value");
             var call = isIt ? $"{invName}(_id, {value})" : $"{invName}({value})";
             bld.Line(isIt
@@ -161,8 +161,8 @@ internal sealed class JSModuleGenerator (bool debug)
 
     private void EmitMethodExportSync (MethodMeta method)
     {
-        var fnName = $"{id}_{method.Name}";
-        var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
+        var fnName = BuildEntry(srf, method);
+        var invName = debug ? $"""getExport("{fnName}")""" : $"exports._{fnName}";
         var args = string.Join(", ", method.Args.Select(a => a.JSName));
         if (isIt) args = PrependIdArg(args);
         var invArgs = string.Join(", ", method.Args.Select(ImportJS));
@@ -195,8 +195,8 @@ internal sealed class JSModuleGenerator (bool debug)
 
     private void EmitMethodExportAsync (MethodMeta method)
     {
-        var fnName = $"{id}_{method.Name}";
-        var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
+        var fnName = BuildEntry(srf, method);
+        var invName = debug ? $"""getExport("{fnName}")""" : $"exports._{fnName}";
         var args = string.Join(", ", method.Args.Select(a => a.JSName));
         if (isIt) args = PrependIdArg(args);
         var invArgs = string.Join(", ", method.Args.Select(ImportJS));
@@ -218,10 +218,11 @@ internal sealed class JSModuleGenerator (bool debug)
     private void EmitMethodImportAsync (MethodMeta method)
     {
         var name = method.JSName;
-        var completeName = $"{id}_{method.Name}_Complete";
-        var failName = $"{id}_{method.Name}_Fail";
-        var completeInv = debug ? $"""getExport("{completeName}")""" : $"exports.{completeName}";
-        var failInv = debug ? $"""getExport("{failName}")""" : $"exports.{failName}";
+        var entry = BuildEntry(srf, method);
+        var completeName = $"{entry}_Complete";
+        var failName = $"{entry}_Fail";
+        var completeInv = debug ? $"""getExport("{completeName}")""" : $"exports._{completeName}";
+        var failInv = debug ? $"""getExport("{failName}")""" : $"exports._{failName}";
 
         var voidReturn = !IsTaskWithResult(method.Info.ReturnType, out _);
         var args = string.Join(", ", method.Args.Select(a => a.JSName));

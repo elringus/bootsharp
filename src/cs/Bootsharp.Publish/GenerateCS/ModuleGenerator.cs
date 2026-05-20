@@ -140,7 +140,7 @@ internal sealed class ModuleGenerator
     {
         var args = string.Join(", ", method.Args.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         var callArgs = string.Join(", ", method.Args.Select(a => a.Name));
-        var name = $"{md.Proxy.Id}_{method.Name}";
+        var name = BuildEntry(md, method);
         return $"{method.Return.TypeSyntax} {md.Syntax}.{method.Name} ({args}) => " +
                $"global::Bootsharp.Generated.Interop.{name}({callArgs});";
     }

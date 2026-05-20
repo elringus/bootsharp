@@ -14,8 +14,9 @@ public class SerializerTest : GenerateCSTest
     [Fact]
     public void WhenNoSerializableTypesIsEmpty ()
     {
+        // Only true C-ABI primitives stay native; nullable wrappers, dates, etc. cross as long handles.
         AddAssembly(
-            WithClass("[Export] public static bool? Foo (int a, char b, DateTime c, DateTimeOffset d) => default;")
+            WithClass("[Export] public static bool Foo (int a, char b) => default;")
         );
         Execute();
         DoesNotContain("Binary<");

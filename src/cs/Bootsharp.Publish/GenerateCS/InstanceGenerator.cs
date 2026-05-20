@@ -13,7 +13,7 @@ internal sealed class InstanceGenerator
           #pragma warning disable
 
           using System.Runtime.CompilerServices;
-          using System.Runtime.InteropServices.JavaScript;
+          using System.Runtime.InteropServices;
 
           namespace Bootsharp.Generated
           {
@@ -37,8 +37,8 @@ internal sealed class InstanceGenerator
 
                   {{Fmt(its.Where(i => i.Exporter != null).Select(EmitExporter), 2, "\n\n")}}
 
-                  [JSExport] private static void DisposeExported (int id) => Bootsharp.Instances.DisposeExported(id);
-                  [JSImport("instances.disposeImported", "Bootsharp")] private static partial void NotifyImportedDisposed (int id);
+                  [UnmanagedCallersOnly(EntryPoint = "Bootsharp_Instances_DisposeExported")] private static void DisposeExported (int id) => Bootsharp.Instances.DisposeExported(id);
+                  [DllImport("Bootsharp", EntryPoint = "Bootsharp_Instances_NotifyImportedDisposed")] private static extern void NotifyImportedDisposed (int id);
               }
           }
 
@@ -122,7 +122,7 @@ internal sealed class InstanceGenerator
     {
         var args = string.Join(", ", method.Args.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         var callArgs = PrependIdArg(string.Join(", ", method.Args.Select(a => a.Name)));
-        var name = $"{it.Proxy.Id}_{method.Name}";
+        var name = BuildEntry(it, method);
         return $"{method.Return.TypeSyntax} {it.Syntax}.{method.Name} ({args}) => " +
                $"global::Bootsharp.Generated.Interop.{name}({callArgs});";
     }

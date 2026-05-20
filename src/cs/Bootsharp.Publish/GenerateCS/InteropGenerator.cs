@@ -1,10 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 
 namespace Bootsharp.Publish;
 
 /// <summary>
-/// Generates bindings to be picked by .NET's interop source generator.
+/// Generates raw C-ABI bindings: <c>[UnmanagedCallersOnly]</c> exports and <c>[DllImport]</c> imports.
+/// All non-primitive values cross the boundary as <c>long</c> serializer handles or <c>int</c> instance IDs.
 /// </summary>
 internal sealed class InteropGenerator (bool debug)
 {
@@ -24,7 +24,7 @@ internal sealed class InteropGenerator (bool debug)
           #pragma warning disable
 
           using System.Runtime.CompilerServices;
-          using System.Runtime.InteropServices.JavaScript;
+          using System.Runtime.InteropServices;
 
           namespace Bootsharp.Generated;
 
@@ -74,11 +74,10 @@ internal sealed class InteropGenerator (bool debug)
 
     private IEnumerable<string?> EmitEventExport (EventMeta evt)
     {
-        var attr = $"""[JSImport("{srf.JSNode}.broadcast{evt.Name}Serialized", "{srf.JSModule}")] """;
         var name = $"{srf.Id}_Broadcast{evt.Name}_Serialized";
         var args = string.Join(", ", evt.Args.Select(a => BuildParameter(a.Value, a.Name)));
         if (isIt) args = $"int {PrependIdArg(args)}";
-        yield return $"{attr}internal static partial void {name} ({args});";
+        yield return $"""[DllImport("Bootsharp", EntryPoint = "{name}")] internal static extern void {name} ({args});""";
 
         if (isIt) yield break; // instance event handlers are emitted by InstanceGenerator
         var handler = $"Handle_{id}_{evt.Name}";
@@ -96,20 +95,19 @@ internal sealed class InteropGenerator (bool debug)
             : isMd ? $"(({md.Proxy.Syntax})Modules.Imports[typeof({md.Syntax})].Instance).Invoke{evt.Name}"
             : $"{srf.Syntax}.Bootsharp_Invoke_{evt.Name}";
         var invArgs = string.Join(", ", evt.Args.Select(Import));
-        yield return $"[JSExport] internal static void {name} ({args}) => {invName}({invArgs});";
+        yield return $"""[UnmanagedCallersOnly(EntryPoint = "{name}")] internal static void {name} ({args}) => {invName}({invArgs});""";
     }
 
     private IEnumerable<string> EmitPropertyExport (PropertyMeta prop)
     {
         if (prop.CanGet)
         {
-            var attr = $"[JSExport] {MarshalAmbiguous(prop.Get, true)}";
             var name = $"{id}_Get{prop.Name}";
             var args = isIt ? "int _id" : "";
             var body = Export(prop.Get, isIt ? $"Instances.Exported<{it.Syntax}>(_id).{prop.Name}"
                 : isMd ? $"{stx}.Get{prop.Name}()"
                 : $"{stx}.{prop.Name}");
-            yield return $"{attr}internal static {BuildValueSyntax(prop.Get)} {name} ({args}) => {body};";
+            yield return $"""[UnmanagedCallersOnly(EntryPoint = "{name}")] internal static {BuildValueSyntax(prop.Get)} {name} ({args}) => {body};""";
         }
         if (prop.CanSet)
         {
@@ -120,7 +118,7 @@ internal sealed class InteropGenerator (bool debug)
             var body = isIt ? $"Instances.Exported<{it.Syntax}>(_id).{prop.Name} = {value}"
                 : isMd ? $"{stx}.Set{prop.Name}({value})"
                 : $"{stx}.{prop.Name} = {value}";
-            yield return $"[JSExport] internal static void {name} ({args}) => {body};";
+            yield return $"""[UnmanagedCallersOnly(EntryPoint = "{name}")] internal static void {name} ({args}) => {body};""";
         }
     }
 
@@ -128,11 +126,9 @@ internal sealed class InteropGenerator (bool debug)
     {
         if (prop.CanGet)
         {
-            var endpoint = $"""("{srf.JSNode}.get{prop.Name}Serialized", "{srf.JSModule}")""";
-            var attr = $"[JSImport{endpoint}] {MarshalAmbiguous(prop.Get, true)}";
             var srdName = $"{srf.Id}_Get{prop.Name}_Serialized";
             var args = isIt ? "int _id" : "";
-            yield return $"{attr}internal static partial {BuildValueSyntax(prop.Get)} {srdName} ({args});";
+            yield return $"""[DllImport("Bootsharp", EntryPoint = "{srdName}")] internal static extern {BuildValueSyntax(prop.Get)} {srdName} ({args});""";
 
             var name = $"{id}_Get{prop.Name}";
             var body = Import(prop.Get, isIt ? $"{srdName}(_id)" : $"{srdName}()");
@@ -140,11 +136,10 @@ internal sealed class InteropGenerator (bool debug)
         }
         if (prop.CanSet)
         {
-            var attr = $"""[JSImport("{srf.JSNode}.set{prop.Name}Serialized", "{srf.JSModule}")]""";
             var srdName = $"{srf.Id}_Set{prop.Name}_Serialized";
             var srdArgs = BuildParameter(prop.Set, "value");
             if (isIt) srdArgs = $"int {PrependIdArg(srdArgs)}";
-            yield return $"{attr} internal static partial void {srdName} ({srdArgs});";
+            yield return $"""[DllImport("Bootsharp", EntryPoint = "{srdName}")] internal static extern void {srdName} ({srdArgs});""";
 
             var name = $"{id}_Set{prop.Name}";
             var args = $"{prop.Set.TypeSyntax} value";
@@ -169,8 +164,7 @@ internal sealed class InteropGenerator (bool debug)
 
     private IEnumerable<string> EmitMethodExportSync (MethodMeta method)
     {
-        var attr = $"[JSExport] {MarshalAmbiguous(method.Return, true)}";
-        var name = $"{id}_{method.Name}";
+        var name = BuildEntry(srf, method);
         var @return = BuildValueSyntax(method.Return);
         var sigArgs = string.Join(", ", method.Args.Select(a => BuildParameter(a.Value, a.Name)));
         if (isIt) sigArgs = $"int {PrependIdArg(sigArgs)}";
@@ -179,33 +173,32 @@ internal sealed class InteropGenerator (bool debug)
             ? $"Instances.Exported<{it.Syntax}>(_id).{method.Name}"
             : $"{stx}.{method.Name}";
         var body = Export(method.Return, $"{invName}({invArgs})");
-        yield return $"{attr}internal static {@return} {name} ({sigArgs}) => {body};";
+        yield return $"""[UnmanagedCallersOnly(EntryPoint = "{name}")] internal static {@return} {name} ({sigArgs}) => {body};""";
     }
 
     private IEnumerable<string> EmitMethodImportSync (MethodMeta method)
     {
-        var attr = $"""[JSImport("{srf.JSNode}.{method.JSName}Serialized", "{srf.JSModule}")]""";
-        var marshalAs = MarshalAmbiguous(method.Return, true);
-        var name = $"{id}_{method.Name}";
+        var entry = BuildEntry(srf, method);
+        var srdName = $"{entry}_Serialized";
         var @return = BuildValueSyntax(method.Return);
         var args = string.Join(", ", method.Args.Select(a => BuildParameter(a.Value, a.Name)));
         if (isIt) args = $"int {PrependIdArg(args)}";
-        yield return $"{attr} {marshalAs}internal static partial {@return} {name}_Serialized ({args});";
+        yield return $"""[DllImport("Bootsharp", EntryPoint = "{srdName}")] internal static extern {@return} {srdName} ({args});""";
 
         @return = method.Return.TypeSyntax;
         var sigArgs = string.Join(", ", method.Args.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         if (isIt) sigArgs = $"int {PrependIdArg(sigArgs)}";
         var invArgs = string.Join(", ", method.Args.Select(Export));
         if (isIt) invArgs = PrependIdArg(invArgs);
-        var body = Import(method.Return, $"{name}_Serialized({invArgs})");
-        yield return $"public static {@return} {name} ({sigArgs}) => {body};";
+        var body = Import(method.Return, $"{srdName}({invArgs})");
+        yield return $"public static {@return} {entry} ({sigArgs}) => {body};";
     }
 
     private IEnumerable<string> EmitMethodExportAsync (MethodMeta method)
     {
-        var name = $"{id}_{method.Name}";
-        var notifyName = $"{name}_Notify";
-        var failName = $"{name}_Fail";
+        var entry = BuildEntry(srf, method);
+        var notifyName = $"{entry}_Notify";
+        var failName = $"{entry}_Fail";
 
         var sigArgs = string.Join(", ", method.Args.Select(a => BuildParameter(a.Value, a.Name)));
         if (isIt) sigArgs = $"int {PrependIdArg(sigArgs)}";
@@ -233,7 +226,7 @@ internal sealed class InteropGenerator (bool debug)
 
         yield return
             $$"""
-              [JSExport] internal static void {{name}} ({{sigArgs}})
+              [UnmanagedCallersOnly(EntryPoint = "{{entry}}")] internal static void {{entry}} ({{sigArgs}})
               {
                   _ = Run();
                   async global::System.Threading.Tasks.Task Run ()
@@ -252,42 +245,38 @@ internal sealed class InteropGenerator (bool debug)
               """;
 
         var notifyParams = "int _taskId";
-        if (!voidReturn)
-        {
-            var (wireStx, wireMarshal) = BuildAsyncWire(method);
-            notifyParams = $"int _taskId, {wireMarshal}{wireStx} _result";
-        }
-        yield return $"""[JSImport("{srf.JSNode}.{method.JSName}Notify", "{srf.JSModule}")] internal static partial void {notifyName} ({notifyParams});""";
-        yield return $$"""[JSImport("{{srf.JSNode}}.{{method.JSName}}Fail", "{{srf.JSModule}}")] internal static partial void {{failName}} (int _taskId, [JSMarshalAs<JSType.BigInt>] long _message);""";
+        if (!voidReturn) notifyParams = $"int _taskId, {BuildAsyncWire(method)} _result";
+        yield return $"""[DllImport("Bootsharp", EntryPoint = "{notifyName}")] internal static extern void {notifyName} ({notifyParams});""";
+        yield return $$"""[DllImport("Bootsharp", EntryPoint = "{{failName}}")] internal static extern void {{failName}} (int _taskId, long _message);""";
     }
 
     private IEnumerable<string> EmitMethodImportAsync (MethodMeta method)
     {
-        var name = $"{id}_{method.Name}";
-        var srdName = $"{name}_Serialized";
-        var completeName = $"{name}_Complete";
-        var failName = $"{name}_Fail";
+        var entry = BuildEntry(srf, method);
+        var srdName = $"{entry}_Serialized";
+        var completeName = $"{entry}_Complete";
+        var failName = $"{entry}_Fail";
 
         var srdArgs = string.Join(", ", method.Args.Select(a => BuildParameter(a.Value, a.Name)));
         if (isIt) srdArgs = $"int {PrependIdArg(srdArgs)}";
         srdArgs = string.IsNullOrEmpty(srdArgs) ? "int _taskId" : $"int _taskId, {srdArgs}";
 
-        yield return $"""[JSImport("{srf.JSNode}.{method.JSName}Serialized", "{srf.JSModule}")] internal static partial void {srdName} ({srdArgs});""";
+        yield return $"""[DllImport("Bootsharp", EntryPoint = "{srdName}")] internal static extern void {srdName} ({srdArgs});""";
 
         var voidReturn = !IsTaskWithResult(method.Info.ReturnType, out var resultClr);
         var innerStx = voidReturn ? "bool" : BuildAsyncInnerSyntax(method);
 
         if (voidReturn)
-            yield return $"[JSExport] internal static void {completeName} (int _taskId) => PendingImports.Take<bool>(_taskId).SetResult(default);";
+            yield return $"""[UnmanagedCallersOnly(EntryPoint = "{completeName}")] internal static void {completeName} (int _taskId) => PendingImports.Take<bool>(_taskId).SetResult(default);""";
         else
         {
-            var (wireStx, wireMarshal) = BuildAsyncWire(method);
+            var wireStx = BuildAsyncWire(method);
             var importExp = Import(method.Return, "_result");
-            yield return $"[JSExport] internal static void {completeName} (int _taskId, {wireMarshal}{wireStx} _result) => PendingImports.Take<{innerStx}>(_taskId).SetResult({importExp});";
+            yield return $"""[UnmanagedCallersOnly(EntryPoint = "{completeName}")] internal static void {completeName} (int _taskId, {wireStx} _result) => PendingImports.Take<{innerStx}>(_taskId).SetResult({importExp});""";
         }
 
         var tcsT = voidReturn ? "bool" : innerStx;
-        yield return $"[JSExport] internal static void {failName} (int _taskId, [JSMarshalAs<JSType.BigInt>] long _message) => PendingImports.Take<{tcsT}>(_taskId).SetException(new JSException(Serializer.Deserialize(_message, Serializer.String)!));";
+        yield return $"""[UnmanagedCallersOnly(EntryPoint = "{failName}")] internal static void {failName} (int _taskId, long _message) => PendingImports.Take<{tcsT}>(_taskId).SetException(new global::System.Exception(Serializer.Deserialize(_message, Serializer.String)!));""";
 
         var publicReturn = method.Return.TypeSyntax;
         var sigArgs = string.Join(", ", method.Args.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
@@ -299,7 +288,7 @@ internal sealed class InteropGenerator (bool debug)
 
         yield return
             $$"""
-              public static {{publicReturn}} {{name}} ({{sigArgs}})
+              public static {{publicReturn}} {{entry}} ({{sigArgs}})
               {
                   var _tcs = new global::System.Threading.Tasks.TaskCompletionSource<{{tcsT}}>();
                   var _taskId = PendingImports.Allocate(_tcs);
@@ -315,20 +304,12 @@ internal sealed class InteropGenerator (bool debug)
         return $"{exVar}.Message";
     }
 
-    private (string syntax, string marshal) BuildAsyncWire (MethodMeta method)
+    private string BuildAsyncWire (MethodMeta method)
     {
         var v = method.Return;
-        if (v.IsSerialized) return ("long", "[JSMarshalAs<JSType.BigInt>] ");
-        if (v.IsInstanced)
-        {
-            var innerNul = GetNullity(method.Info.ReturnParameter).GenericTypeArguments[0];
-            var nil = innerNul.ReadState == NullabilityState.Nullable ? "?" : "";
-            return ($"int{nil}", "");
-        }
-        var inner = BuildAsyncInnerSyntax(method);
-        if (inner.StartsWith("global::System.Int64")) return (inner, "[JSMarshalAs<JSType.BigInt>] ");
-        if (inner.StartsWith("global::System.DateTime")) return (inner, "[JSMarshalAs<JSType.Date>] ");
-        return (inner, "");
+        if (v.IsSerialized) return "long";
+        if (v.IsInstanced) return "int";
+        return BuildAsyncInnerSyntax(method);
     }
 
     private string BuildAsyncInnerSyntax (MethodMeta method)
@@ -342,30 +323,15 @@ internal sealed class InteropGenerator (bool debug)
     private string BuildParameter (ValueMeta value, string name)
     {
         var type = BuildValueSyntax(value);
-        return $"{MarshalAmbiguous(value, false)}{type} {name}";
+        return $"{type} {name}";
     }
 
     private string BuildValueSyntax (ValueMeta value)
     {
-        var nil = value.Nullable && !value.IsSerialized ? "?" : "";
-        if (value.IsInstanced) return $"int{nil}";
-        if (value.IsSerialized) return $"long{nil}";
+        // C-ABI requires blittable types; nullable wrappers aren't allowed.
+        // Serialized values use 0 as the null sentinel handle, instance refs use 0 as null.
+        if (value.IsInstanced) return "int";
+        if (value.IsSerialized) return "long";
         return value.TypeSyntax;
-    }
-
-    private static string MarshalAmbiguous (ValueMeta value, bool @return)
-    {
-        var stx = value.TypeSyntax;
-        var promise = stx.StartsWith("global::System.Threading.Tasks.Task<");
-        if (promise) stx = stx[36..];
-
-        var result = "";
-        if (value.IsSerialized || stx.StartsWith("global::System.Int64")) result = "JSType.BigInt";
-        else if (stx.StartsWith("global::System.DateTime")) result = "JSType.Date";
-        if (result == "") return "";
-
-        if (promise) result = $"JSType.Promise<{result}>";
-        if (@return) return $"[return: JSMarshalAs<{result}>] ";
-        return $"[JSMarshalAs<{result}>] ";
     }
 }

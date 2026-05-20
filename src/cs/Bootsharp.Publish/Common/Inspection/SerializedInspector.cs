@@ -13,13 +13,12 @@ internal sealed class SerializedInspector (TypeInspector.InspectInstanced inspec
 {
     private record Discard (Type Type) : SerializedMeta(Type);
 
-    // https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/import-export-interop
+    // C-ABI primitives that pass through directly; everything else (string, DateTime, records, etc.) is serialized.
     private static readonly FrozenSet<string> native = new[] {
-        typeof(string).FullName!, typeof(bool).FullName!, typeof(byte).FullName!,
+        typeof(bool).FullName!, typeof(byte).FullName!,
         typeof(char).FullName!, typeof(short).FullName!, typeof(long).FullName!,
         typeof(int).FullName!, typeof(float).FullName!, typeof(double).FullName!,
-        typeof(nint).FullName!, typeof(Task).FullName!, typeof(DateTime).FullName!,
-        typeof(DateTimeOffset).FullName!, typeof(Exception).FullName!
+        typeof(nint).FullName!, typeof(Task).FullName!, typeof(Exception).FullName!
     }.ToFrozenSet();
 
     private readonly Dictionary<string, SerializedMeta> byId = [];
@@ -40,8 +39,9 @@ internal sealed class SerializedInspector (TypeInspector.InspectInstanced inspec
     private static bool IsSerialized (Type type)
     {
         if (IsVoid(type)) return false;
-        if (IsNullable(type, out var value)) return IsSerialized(value);
         if (IsTaskWithResult(type, out var result)) return IsSerialized(result);
+        // Nullable<T> structs cross as serialized handles because Nullable<T> isn't blittable for [UnmanagedCallersOnly].
+        if (IsNullable(type, out _)) return true;
         return !native.Contains(type.FullName!);
     }
 

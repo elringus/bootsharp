@@ -31,19 +31,19 @@ public class JSInstanceTest : GenerateJSTest
         Contains("index.g.mjs",
             """
             export const Class = {
-                getExported: (it) => new Promise((_res, _rej) => exports.Class_GetExported($t.alloc(_res, _rej), $i.import(it))),
+                getExported: (it) => new Promise((_res, _rej) => exports._Class_GetExported($t.alloc(_res, _rej), $i.import(it))),
                 getExportedNotify: (_taskId, _result) => $t.resolve(_taskId, $i.resolve(_result, $i.IExported)),
                 getExportedFail: (_taskId, _message) => $t.reject(_taskId, deserialize(_message, $s.std.String)),
                 get getImported() { return this.getImportedHandler; },
-                set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = (_taskId, it) => Promise.resolve().then(() => this.getImportedHandler($i.resolve(it, $i.IExported))).then(_result => exports.Class_GetImported_Complete(_taskId, $i.import(_result))).catch(_e => exports.Class_GetImported_Fail(_taskId, serialize(String(_e?.message ?? _e), $s.std.String))); },
+                set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = (_taskId, it) => Promise.resolve().then(() => this.getImportedHandler($i.resolve(it, $i.IExported))).then(_result => exports._Class_GetImported_Complete(_taskId, $i.import(_result))).catch(_e => exports._Class_GetImported_Fail(_taskId, serialize(String(_e?.message ?? _e), $s.std.String))); },
                 get getImportedSerialized() { return this.getImportedSerializedHandler; }
             };
             export const IImported = {
                 funSerialized: (_id, it, info) => serialize($i.imported(_id).fun($i.resolve(it, $i.IImported), deserialize(info, $s.Info)), $s.Info),
-                fun: (_id, it, info) => deserialize(exports.Bootsharp_Generated_Exports_JSImported_Fun(_id, $i.import(it), serialize(info, $s.Info)), $s.Info)
+                fun: (_id, it, info) => deserialize(exports._Bootsharp_Generated_Exports_JSImported_Fun(_id, $i.import(it), serialize(info, $s.Info)), $s.Info)
             };
             export const IExported = {
-                inv: (_id, it, info) => deserialize(exports.Bootsharp_Generated_Exports_JSExported_Inv(_id, $i.import(it), serialize(info, $s.Info)), $s.Info),
+                inv: (_id, it, info) => deserialize(exports._Bootsharp_Generated_Exports_JSExported_Inv(_id, $i.import(it), serialize(info, $s.Info)), $s.Info),
                 invSerialized: (_id, it, info) => serialize($i.imported(_id).inv($i.resolve(it, $i.IExported), deserialize(info, $s.Info)), $s.Info)
             };
             """);
@@ -90,7 +90,7 @@ public class JSInstanceTest : GenerateJSTest
         Contains("index.g.mjs",
             """
             export const Class = {
-                getExported: (it) => $i.resolve(exports.Class_GetExported($i.import(it)), $i.IExported),
+                getExported: (it) => $i.resolve(exports._Class_GetExported($i.import(it)), $i.IExported),
                 get getImported() { return this.getImportedHandler; },
                 set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = (it) => $i.import(this.getImportedHandler($i.resolve(it, $i.IExported))); },
                 get getImportedSerialized() { return this.getImportedSerializedHandler; }
@@ -102,10 +102,10 @@ public class JSInstanceTest : GenerateJSTest
                 setExportedSerialized(_id, value) { $i.imported(_id).exported = $i.resolve(value, $i.IExported); }
             };
             export const IExported = {
-                getState(_id) { return deserialize(exports.Bootsharp_Generated_Exports_JSExported_GetState(_id), $s.Info) ?? undefined; },
-                setState(_id, value) { exports.Bootsharp_Generated_Exports_JSExported_SetState(_id, serialize(value, $s.Info)); },
-                getExported(_id) { return $i.resolve(exports.Bootsharp_Generated_Exports_JSExported_GetExported(_id), $i.IExported); },
-                setImported(_id, value) { exports.Bootsharp_Generated_Exports_JSExported_SetImported(_id, $i.import(value)); }
+                getState(_id) { return deserialize(exports._Bootsharp_Generated_Exports_JSExported_GetState(_id), $s.Info) ?? undefined; },
+                setState(_id, value) { exports._Bootsharp_Generated_Exports_JSExported_SetState(_id, serialize(value, $s.Info)); },
+                getExported(_id) { return $i.resolve(exports._Bootsharp_Generated_Exports_JSExported_GetExported(_id), $i.IExported); },
+                setImported(_id, value) { exports._Bootsharp_Generated_Exports_JSExported_SetImported(_id, $i.import(value)); }
             };
             """);
     }
@@ -144,14 +144,14 @@ public class JSInstanceTest : GenerateJSTest
                         it.changed.unsubscribe(handleChanged);
                     };
 
-                    function handleChanged(arg1, arg2) { exports.Bootsharp_Generated_Imports_JSImported_InvokeChanged(_id, $i.import_IImported(arg1), serialize(arg2, $s.Info)); }
+                    function handleChanged(arg1, arg2) { exports._Bootsharp_Generated_Imports_JSImported_InvokeChanged(_id, $i.import_IImported(arg1), serialize(arg2, $s.Info)); }
                 });
             };
             """);
         Contains("index.g.mjs",
             """
             export const Class = {
-                getExported: (it) => $i.resolve(exports.Class_GetExported($i.import_IImported(it)), $i.IExported),
+                getExported: (it) => $i.resolve(exports._Class_GetExported($i.import_IImported(it)), $i.IExported),
                 get getImported() { return this.getImportedHandler; },
                 set getImported(handler) { this.getImportedHandler = handler; this.getImportedSerializedHandler = (it) => $i.import_IImported(this.getImportedHandler($i.resolve(it, $i.IExported))); },
                 get getImportedSerialized() { return this.getImportedSerializedHandler; }

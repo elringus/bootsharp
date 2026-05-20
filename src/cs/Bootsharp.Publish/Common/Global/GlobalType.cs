@@ -106,6 +106,21 @@ internal static class GlobalType
         return $"_id, {args}";
     }
 
+    /// <summary>
+    /// Builds a globally-unique C-ABI entry point name for the method. When the surface has multiple
+    /// methods with the same name (C# overloads), the entry gets an <c>_N</c> suffix derived from the
+    /// method's position among same-named overloads to keep the linker happy.
+    /// </summary>
+    public static string BuildEntry (SurfaceMeta srf, MemberMeta member)
+    {
+        var id = (srf as ProxyMeta)?.Proxy.Id ?? srf.Id;
+        var name = $"{id}_{member.Name}";
+        if (member is not MethodMeta method) return name;
+        var overloads = srf.Members.OfType<MethodMeta>().Where(m => m.Name == method.Name).ToArray();
+        if (overloads.Length <= 1) return name;
+        return $"{name}_{Array.IndexOf(overloads, method)}";
+    }
+
     public static string BuildId (Type type)
     {
         var builder = new StringBuilder();

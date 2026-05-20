@@ -52,6 +52,6 @@ export const instances = {
 /* v8 ignore start -- @preserve */ // Uncoverable, as finalization in Node is not controllable.
 function finalizeExported(id: number) {
     exportedById.delete(id);
-    (exports as { disposeExported: (id: number) => void }).disposeExported(id);
+    (exports as { _Bootsharp_Instances_DisposeExported: (id: number) => void })._Bootsharp_Instances_DisposeExported(id);
 }
 /* v8 ignore stop -- @preserve */

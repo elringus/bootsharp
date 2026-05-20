@@ -1,7 +1,8 @@
 namespace Bootsharp.Publish;
 
 /// <summary>
-/// First pass: emits C# sources to be picked by .NET's source generators.
+/// First pass: emits C# sources to be picked by .NET's source generators
+/// and the Emscripten js-library file consumed by the native linker.
 /// </summary>
 public sealed class GenerateCS : Microsoft.Build.Utilities.Task
 {
@@ -11,6 +12,7 @@ public sealed class GenerateCS : Microsoft.Build.Utilities.Task
     public required string InstancesFilePath { get; set; }
     public required string ModulesFilePath { get; set; }
     public required string InteropFilePath { get; set; }
+    public required string ImportsLibraryFilePath { get; set; }
     public bool Debug { get; set; }
 
     public override bool Execute ()
@@ -21,6 +23,7 @@ public sealed class GenerateCS : Microsoft.Build.Utilities.Task
         GenerateInstances(spec);
         GenerateModules(spec);
         GenerateInterop(spec);
+        GenerateImportsLibrary(spec);
         return true;
     }
 
@@ -63,6 +66,14 @@ public sealed class GenerateCS : Microsoft.Build.Utilities.Task
         var surfaces = spec.Types.OfType<SurfaceMeta>().ToArray();
         var content = generator.Generate(surfaces);
         WriteGenerated(InteropFilePath, content);
+    }
+
+    private void GenerateImportsLibrary (SolutionInspection spec)
+    {
+        var generator = new JSImportsGenerator();
+        var mds = new JSModules(spec.Types);
+        var bindings = generator.Collect(mds, spec.Types.OfType<SurfaceMeta>().ToArray());
+        WriteGenerated(ImportsLibraryFilePath, generator.GenerateLibrary(bindings));
     }
 
     private void WriteGenerated (string path, string content)

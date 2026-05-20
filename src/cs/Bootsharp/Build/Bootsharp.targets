@@ -10,6 +10,7 @@
         <BsInstancesFilePath>$(BsIntermediateDir)/Instances.g.cs</BsInstancesFilePath>
         <BsModulesFilePath>$(BsIntermediateDir)/Modules.g.cs</BsModulesFilePath>
         <BsInteropFilePath>$(BsIntermediateDir)/Interop.g.cs</BsInteropFilePath>
+        <BsImportsLibraryFilePath>$(BsIntermediateDir)/imports.g.js</BsImportsLibraryFilePath>
         <BsEntryAssembly>$(AssemblyName).dll</BsEntryAssembly>
     </PropertyGroup>
 
@@ -55,13 +56,15 @@
         <!-- Pre-compile the solution, as we'll need to inspect the assemblies in the next step. -->
         <MSBuild Projects="$(MSBuildProjectFile)" Targets="BuildCompile" Properties="BsSkip=true"/>
 
-        <!-- Emit C# code to be analyzed by .NET's source generators. -->
+        <!-- Emit C# code to be analyzed by .NET's source generators
+             and the Emscripten js-library file consumed by the native linker. -->
         <GenerateCS InspectedDirectory="$(OutputPath)"
                     EntryAssemblyName="$(BsEntryAssembly)"
                     SerializerFilePath="$(BsSerializerFilePath)"
                     InstancesFilePath="$(BsInstancesFilePath)"
                     ModulesFilePath="$(BsModulesFilePath)"
                     InteropFilePath="$(BsInteropFilePath)"
+                    ImportsLibraryFilePath="$(BsImportsLibraryFilePath)"
                     Debug="$(BsDebug)"/>
         <ItemGroup>
             <Compile Remove="$(BsSerializerFilePath)"/>
@@ -72,6 +75,8 @@
             <Compile Include="$(BsInstancesFilePath)"/>
             <Compile Include="$(BsModulesFilePath)"/>
             <Compile Include="$(BsInteropFilePath)"/>
+            <LinkerArg Include="--js-library &quot;$(BsImportsLibraryFilePath)&quot;"/>
+            <DirectPInvoke Include="Bootsharp"/>
         </ItemGroup>
 
     </Target>
