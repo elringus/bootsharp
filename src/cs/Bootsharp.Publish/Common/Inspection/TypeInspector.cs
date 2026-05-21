@@ -31,6 +31,7 @@ internal sealed class TypeInspector
 
     public IReadOnlyCollection<TypeMeta> Collect ()
     {
+        OverloadDisambiguator.Disambiguate([..surfaces, ..its.Values]);
         TypeMeta[] specialized = [..surfaces, ..its.Values, ..srd.Collect()];
         var clrs = specialized.Select(t => t.Clr).ToHashSet();
         return [..specialized, ..crawled.Values.Where(c => !clrs.Contains(c.Clr))];

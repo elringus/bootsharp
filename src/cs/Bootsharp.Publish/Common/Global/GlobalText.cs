@@ -27,6 +27,12 @@ internal static class GlobalText
         return char.ToLowerInvariant(value[0]) + value[1..];
     }
 
+    public static string ToFirstUpper (string value)
+    {
+        if (value.Length == 1) return value.ToUpperInvariant();
+        return char.ToUpperInvariant(value[0]) + value[1..];
+    }
+
     public static string Slugify (string value)
     {
         var bld = new StringBuilder(value.Length + 4);

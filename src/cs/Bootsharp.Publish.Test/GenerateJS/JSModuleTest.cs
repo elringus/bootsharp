@@ -670,6 +670,67 @@ public class JSModuleTest : GenerateJSTest
     }
 
     [Fact]
+    public void OverloadedMethodsAreDisambiguated ()
+    {
+        AddAssembly(With(
+            """
+            public class Class
+            {
+                [Export] public static void Foo (int a) {}
+                [Export] public static void Foo (string a) {}
+                [Export] public static void Foo (double b, double a) {}
+                [Export] public static void Bar (int x) {}
+                [Export] public static void Bar (int x, string name) {}
+                [Export] public static void Baz (int x, int y) {}
+                [Export] public static void Baz (int x, string y) {}
+                [Export] public static void Qux (int a) {}
+                [Export] public static void Qux (int a, int b) {}
+                [Export] public static void Qux (int a, int b, int c) {}
+                [Export] public static void X (int x, int y) {}
+                [Export] public static void X (string x, int y) {}
+                [Export] public static void X (int x, string y) {}
+                [Export] public static void Bob (int x, int y, string z) {}
+                [Export] public static void Bob (int x, string y, int q) {}
+                [Export] public static void Change (double progress) {}
+                [Export] public static void Change (string info) {}
+                [Export] public static void Change (double progress, string info) {}
+                [Export] public static void Start (string title) {}
+                [Export] public static void Start (string title, string info) {}
+                [Export] public static void Start (string title, double progress) {}
+                [Export] public static void Start (string title, string info, double progress) {}
+            }
+            """));
+        Execute();
+        Contains(
+            """
+            export const Class = {
+                foo: (a) => exports.Class_Foo(a),
+                fooWithA: (a) => exports.Class_Foo(a),
+                fooWithB: (b, a) => exports.Class_Foo(b, a),
+                bar: (x) => exports.Class_Bar(x),
+                barWithName: (x, name) => exports.Class_Bar(x, name),
+                baz: (x, y) => exports.Class_Baz(x, y),
+                bazWithXAndY: (x, y) => exports.Class_Baz(x, y),
+                qux: (a) => exports.Class_Qux(a),
+                quxWithB: (a, b) => exports.Class_Qux(a, b),
+                quxWithBAndC: (a, b, c) => exports.Class_Qux(a, b, c),
+                x: (x, y) => exports.Class_X(x, y),
+                xWithStringAndInt32: (x, y) => exports.Class_X(x, y),
+                xWithInt32AndString: (x, y) => exports.Class_X(x, y),
+                bob: (x, y, z) => exports.Class_Bob(x, y, z),
+                bobWithQ: (x, y, q) => exports.Class_Bob(x, y, q),
+                change: (progress) => exports.Class_Change(progress),
+                changeWithInfo: (info) => exports.Class_Change(info),
+                changeWithProgressAndInfo: (progress, info) => exports.Class_Change(progress, info),
+                start: (title) => exports.Class_Start(title),
+                startWithInfo: (title, info) => exports.Class_Start(title, info),
+                startWithProgress: (title, progress) => exports.Class_Start(title, progress),
+                startWithInfoAndProgress: (title, info, progress) => exports.Class_Start(title, info, progress)
+            };
+            """);
+    }
+
+    [Fact]
     public void RespectsPrefsInStatics ()
     {
         AddAssembly(With(
