@@ -60,6 +60,35 @@ Bar.baz = () => {};
 
 :::
 
+## Overloaded Methods
+
+JavaScript does not have function overloads, so Bootsharp automatically disambiguates them when projecting overloaded C# methods. The overload with the fewest parameters keeps the original name; the rest are suffixed with `With...` derived from the extra parameter names (or, when that is still ambiguous, from the full parameter names or parameter types).
+
+::: code-group
+
+```csharp [Bar.cs]
+namespace Foo;
+
+public class Bar
+{
+    [Export] public static void Start (string title) {}
+    [Export] public static void Start (string title, string info) {}
+    [Export] public static void Start (string title, double progress) {}
+    [Export] public static void Start (string title, string info, double progress) {}
+}
+```
+
+```ts [foo.g.d.mts]
+export namespace Bar {
+    export function start(title: string): void;
+    export function startWithInfo(title: string, info: string): void;
+    export function startWithProgress(title: string, progress: number): void;
+    export function startWithInfoAndProgress(title: string, info: string, progress: number): void;
+}
+```
+
+:::
+
 ## Property Declarations
 
 Exported properties are emitted as variables under the declaring class's TS namespace:
