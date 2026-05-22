@@ -10,6 +10,11 @@ public class InstancesTest
     private class Bar : IBar;
     private class Proxy (int id) : JSProxy(id);
 
+    private class DelegateProxy (int id) : JSProxy(id)
+    {
+        public void Invoke () { }
+    }
+
     [Fact]
     public void CanExportAndDisposeInstance ()
     {
@@ -36,6 +41,18 @@ public class InstancesTest
     public void ShortCircuitsImportedProxies ()
     {
         Assert.Equal(42, Export(new Proxy(42)));
+    }
+
+    [Fact]
+    public void ShortCircuitsImportedDelegates ()
+    {
+        Assert.Equal(42, Export(new DelegateProxy(42).Invoke));
+    }
+
+    [Fact]
+    public void ExportsZeroWhenInstanceIsNull ()
+    {
+        Assert.Equal(0, Export(default(object)));
     }
 
     [Fact]
@@ -85,5 +102,11 @@ public class InstancesTest
     {
         var exported = new object();
         Assert.Same(exported, Resolve<object>(Export(exported)));
+    }
+
+    [Fact]
+    public void ImportsNullWhenInstanceIsZero ()
+    {
+        Assert.Null(Resolve<object>(0));
     }
 }

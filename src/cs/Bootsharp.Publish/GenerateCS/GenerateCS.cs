@@ -34,7 +34,7 @@ public sealed class GenerateCS : Microsoft.Build.Utilities.Task
 
     private void GenerateSerializer (SolutionInspection spec)
     {
-        var generator = new SerializerGenerator();
+        var generator = new CSSerializerGenerator();
         var serialized = spec.Types.OfType<SerializedMeta>().ToArray();
         var content = generator.Generate(serialized);
         WriteGenerated(SerializerFilePath, content);
@@ -42,7 +42,7 @@ public sealed class GenerateCS : Microsoft.Build.Utilities.Task
 
     private void GenerateInstances (SolutionInspection spec)
     {
-        var generator = new InstanceGenerator();
+        var generator = new CSInstanceGenerator();
         var instanced = spec.Types.OfType<InstanceMeta>().ToArray();
         var content = generator.Generate(instanced);
         WriteGenerated(InstancesFilePath, content);
@@ -50,7 +50,7 @@ public sealed class GenerateCS : Microsoft.Build.Utilities.Task
 
     private void GenerateModules (SolutionInspection spec)
     {
-        var generator = new ModuleGenerator();
+        var generator = new CSModuleGenerator();
         var mds = spec.Types.OfType<ModuleMeta>().ToArray();
         var content = generator.Generate(mds);
         WriteGenerated(ModulesFilePath, content);
@@ -58,7 +58,7 @@ public sealed class GenerateCS : Microsoft.Build.Utilities.Task
 
     private void GenerateInterop (SolutionInspection spec)
     {
-        var generator = new InteropGenerator();
+        var generator = new CSInteropGenerator();
         var surfaces = spec.Types.OfType<SurfaceMeta>().ToArray();
         var content = generator.Generate(surfaces);
         WriteGenerated(InteropFilePath, content);

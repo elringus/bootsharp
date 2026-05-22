@@ -20,6 +20,7 @@ public static partial class Modules
         Assert(imported.Record == null);
         var instance = await imported.GetInstanceAsync("module-arg");
         Assert(instance.GetInstanceArg() == "module-arg");
+        Assert(await imported.GetInstanceAsync("", () => instance) == instance);
         Assert((await tcs.Task)?.Id == "event-rec");
         imported.OnRecordChanged -= handler;
     }
@@ -64,8 +65,9 @@ public static partial class Modules
         var js = ImportBi();
         var cs = new Bidirectional();
         IBidirectional? observed = null;
-        Action<IBidirectional> handler = b => observed = b;
+        Action<IBidirectional?> handler = b => observed = b;
         js.OnBiChanged += handler;
+        Assert(js.EchoBi(null) == null);
         Assert(js.EchoBi(js) == js);
         Assert(js.EchoBi(cs) == cs);
         js.Bi = cs;
@@ -74,6 +76,9 @@ public static partial class Modules
         js.Bi = js;
         Assert(observed == js);
         Assert(js.Bi == js);
+        js.Bi = null;
+        Assert(observed == null);
+        Assert(js.Bi == null);
         js.OnBiChanged -= handler;
     }
 

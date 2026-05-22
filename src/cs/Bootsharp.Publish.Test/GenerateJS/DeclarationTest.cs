@@ -145,14 +145,14 @@ public class DeclarationTest : GenerateJSTest
     {
         AddAssembly(
             WithClass("Foo", "[Export] public static event Action? ExpEvt;"),
-            WithClass("Foo", "[Export] public static event Action<string>? Evt;"),
+            WithClass("Foo", "[Export] public static event Action<string?>? Evt;"),
             WithClass("Foo", "[Import] public static event Action<int, bool?>? ImpEvt;"));
         Execute();
         Contains("foo.g.d.mts",
             """
             export namespace Class {
                 export const expEvt: Event<[]>;
-                export const evt: Event<[obj: string]>;
+                export const evt: Event<[obj: string | undefined]>;
                 export const impEvt: Event<[arg1: number, arg2: boolean | undefined]>;
             }
             """);
@@ -357,10 +357,10 @@ public class DeclarationTest : GenerateJSTest
     public void GeneratedForObjectType ()
     {
         AddAssembly(
-            With("n", "public class Foo { public string S { get; set; } public int I { get; set; } }"),
-            WithClass("n", "[Export] public static Foo Method (Foo t) => default;"));
+            With("public class Foo { public string S { get; set; } public int I { get; set; } }"),
+            WithClass("[Export] public static Foo Method (Foo t) => default;"));
         Execute();
-        Contains("n.g.d.mts",
+        Contains(
             """
             export namespace Class {
                 export function method(t: Foo): Foo;
@@ -376,12 +376,12 @@ public class DeclarationTest : GenerateJSTest
     public void GeneratedForInterfaceAndImplementation ()
     {
         AddAssembly(
-            With("n", "public interface Interface { Interface Foo { get; } void Bar (Interface b); }"),
-            With("n", "public class Base { }"),
-            With("n", "public class Derived : Base, Interface { public Interface Foo { get; } public void Bar (Interface b) {} }"),
-            WithClass("n", "[Export] public static Derived Method (Base b) => default;"));
+            With("public interface Interface { Interface Foo { get; } void Bar (Interface b); }"),
+            With("public class Base { }"),
+            With("public class Derived : Base, Interface { public Interface Foo { get; } public void Bar (Interface b) {} }"),
+            WithClass("[Export] public static Derived Method (Base b) => default;"));
         Execute();
-        Contains("n.g.d.mts",
+        Contains(
             """
             export namespace Class {
                 export function method(b: Base): Derived;
@@ -403,11 +403,11 @@ public class DeclarationTest : GenerateJSTest
     public void GeneratedForTypeWithListProperty ()
     {
         AddAssembly(
-            With("n", "public interface Item { }"),
-            With("n", "public class Container { public List<Item> Items { get; } }"),
-            WithClass("n", "[Export] public static Container Combine (List<Item> items) => default;"));
+            With("public interface Item { }"),
+            With("public class Container { public List<Item> Items { get; } }"),
+            WithClass("[Export] public static Container Combine (List<Item> items) => default;"));
         Execute();
-        Contains("n.g.d.mts",
+        Contains(
             """
             export namespace Class {
                 export function combine(items: Array<Item>): Container;
@@ -424,11 +424,11 @@ public class DeclarationTest : GenerateJSTest
     public void GeneratedForTypeWithJaggedArrayProperty ()
     {
         AddAssembly(
-            With("n", "public interface Item { }"),
-            With("n", "public class Container { public Item[][] Items { get; } }"),
-            WithClass("n", "[Export] public static Container Get () => default;"));
+            With("public interface Item { }"),
+            With("public class Container { public Item[][] Items { get; } }"),
+            WithClass("[Export] public static Container Get () => default;"));
         Execute();
-        Contains("n.g.d.mts",
+        Contains(
             """
             export namespace Class {
                 export function get(): Container;
@@ -445,11 +445,11 @@ public class DeclarationTest : GenerateJSTest
     public void GeneratedForTypeWithReadOnlyListProperty ()
     {
         AddAssembly(
-            With("n", "public interface Item { }"),
-            With("n", "public class Container { public IReadOnlyList<Item> Items { get; } }"),
-            WithClass("n", "[Export] public static Container Combine (IReadOnlyList<Item> items) => default;"));
+            With("public interface Item { }"),
+            With("public class Container { public IReadOnlyList<Item> Items { get; } }"),
+            WithClass("[Export] public static Container Combine (IReadOnlyList<Item> items) => default;"));
         Execute();
-        Contains("n.g.d.mts",
+        Contains(
             """
             export namespace Class {
                 export function combine(items: Array<Item>): Container;
@@ -466,11 +466,11 @@ public class DeclarationTest : GenerateJSTest
     public void GeneratedForTypeWithDictionaryProperty ()
     {
         AddAssembly(
-            With("n", "public interface Item { }"),
-            With("n", "public class Container { public Dictionary<string, Item> Items { get; } }"),
-            WithClass("n", "[Export] public static Container Combine (Dictionary<string, Item> items) => default;"));
+            With("public interface Item { }"),
+            With("public class Container { public Dictionary<string, Item> Items { get; } }"),
+            WithClass("[Export] public static Container Combine (Dictionary<string, Item> items) => default;"));
         Execute();
-        Contains("n.g.d.mts",
+        Contains(
             """
             export namespace Class {
                 export function combine(items: Map<string, Item>): Container;
@@ -487,11 +487,11 @@ public class DeclarationTest : GenerateJSTest
     public void GeneratedForTypeWithReadOnlyDictionaryProperty ()
     {
         AddAssembly(
-            With("n", "public interface Item { }"),
-            With("n", "public class Container { public IReadOnlyDictionary<string, Item> Items { get; } }"),
-            WithClass("n", "[Export] public static Container Combine (IReadOnlyDictionary<string, Item> items) => default;"));
+            With("public interface Item { }"),
+            With("public class Container { public IReadOnlyDictionary<string, Item> Items { get; } }"),
+            WithClass("[Export] public static Container Combine (IReadOnlyDictionary<string, Item> items) => default;"));
         Execute();
-        Contains("n.g.d.mts",
+        Contains(
             """
             export namespace Class {
                 export function combine(items: Map<string, Item>): Container;
@@ -508,11 +508,11 @@ public class DeclarationTest : GenerateJSTest
     public void GeneratedForTypeWithCollectionProperty ()
     {
         AddAssembly(
-            With("n", "public interface Item { }"),
-            With("n", "public class Container { public ICollection<Item> Items { get; } }"),
-            WithClass("n", "[Export] public static Container Combine (ICollection<Item> items) => default;"));
+            With("public interface Item { }"),
+            With("public class Container { public ICollection<Item> Items { get; } }"),
+            WithClass("[Export] public static Container Combine (ICollection<Item> items) => default;"));
         Execute();
-        Contains("n.g.d.mts",
+        Contains(
             """
             export namespace Class {
                 export function combine(items: Array<Item>): Container;
@@ -529,11 +529,11 @@ public class DeclarationTest : GenerateJSTest
     public void GeneratedForTypeWithReadOnlyCollectionProperty ()
     {
         AddAssembly(
-            With("n", "public interface Item { }"),
-            With("n", "public class Container { public IReadOnlyCollection<Item> Items { get; } }"),
-            WithClass("n", "[Export] public static Container Combine (IReadOnlyCollection<Item> items) => default;"));
+            With("public interface Item { }"),
+            With("public class Container { public IReadOnlyCollection<Item> Items { get; } }"),
+            WithClass("[Export] public static Container Combine (IReadOnlyCollection<Item> items) => default;"));
         Execute();
-        Contains("n.g.d.mts",
+        Contains(
             """
             export namespace Class {
                 export function combine(items: Array<Item>): Container;
@@ -550,11 +550,11 @@ public class DeclarationTest : GenerateJSTest
     public void GeneratedForGenericClass ()
     {
         AddAssembly(
-            With("n", "public class Generic<T> where T: notnull { public required T Value { get; set; } }"),
-            With("n", "public class GenericNull<T> { public T? Value { get; } public T? Foo (T? t) => default; }"),
-            WithClass("n", "[Export] public static void Method (Generic<string> a, GenericNull<int> b) { }"));
+            With("public class Generic<T> where T: notnull { public required T Value { get; set; } }"),
+            With("public class GenericNull<T> { public T? Value { get; } public T? Foo (T? t) => default; }"),
+            WithClass("[Export] public static void Method (Generic<string> a, GenericNull<int> b) { }"));
         Execute();
-        Contains("n.g.d.mts",
+        Contains(
             """
             export namespace Class {
                 export function method(a: Generic<string>, b: GenericNull<number>): void;
@@ -573,11 +573,11 @@ public class DeclarationTest : GenerateJSTest
     public void GeneratedForGenericRecord ()
     {
         AddAssembly(
-            With("n", "public record Generic<T> where T: notnull { public T Value { get; set; } }"),
-            With("n", "public record GenericNull<T> { public T? Value { get; set; } }"),
-            WithClass("n", "[Export] public static void Method (Generic<string> a, GenericNull<int> b) { }"));
+            With("public record Generic<T> where T: notnull { public T Value { get; set; } }"),
+            With("public record GenericNull<T> { public T? Value { get; set; } }"),
+            WithClass("[Export] public static void Method (Generic<string> a, GenericNull<int> b) { }"));
         Execute();
-        Contains("n.g.d.mts",
+        Contains(
             """
             export namespace Class {
                 export function method(a: Generic<string>, b: GenericNull<number>): void;
@@ -595,10 +595,10 @@ public class DeclarationTest : GenerateJSTest
     public void GeneratedForGenericInterface ()
     {
         AddAssembly(
-            With("n", "public interface IGenericInterface<T> { public T Value { get; set; } }"),
-            WithClass("n", "[Export] public static IGenericInterface<string> Method () => default;"));
+            With("public interface IGenericInterface<T> { public T Value { get; set; } }"),
+            WithClass("[Export] public static IGenericInterface<string> Method () => default;"));
         Execute();
-        Contains("n.g.d.mts",
+        Contains(
             """
             export namespace Class {
                 export function method(): IGenericInterface<string>;
@@ -615,9 +615,9 @@ public class DeclarationTest : GenerateJSTest
         AddAssembly(
             With("Foo", "public class GenericClass<T> { public T Value { get; set; } }"),
             With("Bar", "public interface GenericInterface<T> { public T Value { get; set; } }"),
-            WithClass("n", "[Export] public static void Method (Foo.GenericClass<Bar.GenericInterface<string>> p) { }"));
+            WithClass("[Export] public static void Method (Foo.GenericClass<Bar.GenericInterface<string>> p) { }"));
         Execute();
-        Contains("n.g.d.mts",
+        Contains(
             """
             export namespace Class {
                 export function method(p: foo.GenericClass<bar.GenericInterface<string>>): void;
@@ -629,19 +629,63 @@ public class DeclarationTest : GenerateJSTest
     public void GeneratedForGenericClassWithMultipleTypeArguments ()
     {
         AddAssembly(
-            With("n", "public class GenericClass<T1, T2> { public T1 Key { get; set; } public T2 Value { get; set; } }"),
-            WithClass("n", "[Export] public static void Method (GenericClass<string, int> p) { }"));
+            With("public class GenericClass<T1, T2> { public T1 Key { get; set; } public T2 Value { get; set; } }"),
+            WithClass("[Export] public static void Method (GenericClass<string, int> p) { }"));
         Execute();
-        Contains("n.g.d.mts",
+        Contains(
             """
             export namespace Class {
-                export function method(p: GenericClass<string, number>): void;
+                export function method(p: GenericClass2<string, number>): void;
             }
-            export interface GenericClass<T1, T2> {
+            export interface GenericClass2<T1, T2> {
                 key?: T1;
                 value?: T2;
             }
             """);
+    }
+
+    [Fact]
+    public void GeneratesForDelegates ()
+    {
+        AddAssembly(
+            With("public record Payload;"),
+            With("public delegate void Notify (string? msg, int? num);"),
+            WithClass(
+                """
+                [Export] public static Func<int, string?, Payload?> GetFunc () => default!;
+                [Export] public static Action<Payload?>? GetAction () => default!;
+                [Import] public static Func<int?, string, Payload> GetParse () => default!;
+                [Export] public static Notify GetNotify () => default!;
+                """));
+        Execute();
+        Contains(
+            """
+            export namespace Class {
+                export function getFunc(): system.Func3<number, string | undefined, Payload | undefined>;
+                export function getAction(): system.Action<Payload | undefined> | null;
+                export let getParse: () => system.Func3<number | undefined, string, Payload>;
+                export function getNotify(): Notify;
+            }
+            """);
+        Contains("export type Notify = (msg: string | undefined, num: number | undefined) => void;");
+        Contains("system.g.d.mts", "export type Func3<T1, T2, TResult> = (arg1: T1, arg2: T2) => TResult;");
+        Contains("system.g.d.mts", "export type Action<T> = (obj: T) => void;");
+    }
+
+    [Fact]
+    public void NullabilityPropagatesAcrossNestedArgs ()
+    {
+        AddAssembly(
+            With("public class Foo { }"),
+            With("public interface IBar<T> { }"),
+            WithClass(
+                """
+                [Export] public static Func<string, Foo?> GetFunc () => default!;
+                [Export] public static Func<int, IBar<Foo?>> GetNested () => default!;
+                """));
+        Execute();
+        Contains("export function getFunc(): system.Func2<string, Foo | undefined>;");
+        Contains("export function getNested(): system.Func2<number, IBar<Foo | undefined>>;");
     }
 
     [Fact]
@@ -1062,6 +1106,17 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
+    public void DefaultMethodArgumentsAreOptional ()
+    {
+        AddAssembly(
+            WithClass("[Export] public static void Foo (string bar = \"\", int? nya = null) { }"),
+            WithClass("[Import] public static void Fun (string bar = \"\", int? nya = null) { }"));
+        Execute();
+        Contains("export function foo(bar?: string, nya?: number): void;");
+        Contains("export let fun: (bar?: string, nya?: number) => void;");
+    }
+
+    [Fact]
     public void NullableMethodReturnTypesUnionWithNull ()
     {
         AddAssembly(
@@ -1120,11 +1175,11 @@ public class DeclarationTest : GenerateJSTest
     public void NullablePropertiesHaveOptionalModificator ()
     {
         AddAssembly(
-            With("n", "public class Foo { public bool? Bool { get; } }"),
-            With("n", "public class Bar { public Foo? Foo { get; } }"),
-            WithClass("n", "[Export] public static Foo FooBar (Bar bar) => default;"));
+            With("public class Foo { public bool? Bool { get; } }"),
+            With("public class Bar { public Foo? Foo { get; } }"),
+            WithClass("[Export] public static Foo FooBar (Bar bar) => default;"));
         Execute();
-        Contains("n.g.d.mts",
+        Contains(
             """
             export namespace Class {
                 export function fooBar(bar: Bar): Foo;
@@ -1142,11 +1197,11 @@ public class DeclarationTest : GenerateJSTest
     public void NullableEnumsAreCrawled ()
     {
         AddAssembly(
-            With("n", "public enum Foo { A, B }"),
-            With("n", "public class Bar { public Foo? Foo { get; } }"),
-            WithClass("n", "[Export] public static Bar GetBar () => default;"));
+            With("public enum Foo { A, B }"),
+            With("public class Bar { public Foo? Foo { get; } }"),
+            WithClass("[Export] public static Bar GetBar () => default;"));
         Execute();
-        Contains("n.g.d.mts",
+        Contains(
             """
             export namespace Class {
                 export function getBar(): Bar;

@@ -17,7 +17,7 @@ internal sealed class JSModules
     public JSModules (IReadOnlyCollection<TypeMeta> types)
     {
         List = types
-            .Where(t => IsUserType(t.Clr)).GroupBy(t => t.JSModule)
+            .Where(t => IsUserType(t.Clr) || t is DelegateMeta).GroupBy(t => t.JSModule)
             .Select(g => new JSModule(g.Key, g.ToArray())).ToArray();
         mdByPath = List.ToDictionary(m => m.Path);
         this.types = types;

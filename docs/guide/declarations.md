@@ -1,25 +1,23 @@
 # Type Declarations
 
-Bootsharp will automatically generate [type declarations](https://www.typescriptlang.org/docs/handbook/2/type-declarations) for interop APIs when building the solution. One `.g.d.mts` file is emitted per C# namespace, colocated with the matching `.g.mjs` binding under the `generated/` directory of the compiled module package.
+Bootsharp will automatically generate [type declarations](https://www.typescriptlang.org/docs/handbook/2/type-declarations) for interop APIs when building the solution. One `.g.d.mts` file is emitted per C# namespace, colocated with the matching `.g.mjs` binding under the `generated/modules` directory of the compiled module package.
 
 ## Function Declarations
 
 For interop methods, function declarations are emitted under the class's TS namespace wrapper inside the C# namespace's module:
 
 ```csharp
-namespace Foo;
-
-public class Bar
+public class Class
 {
     [Export]
     public static void Baz() { }
 }
 ```
 
-— will make the following emitted in `generated/foo.g.d.mts`:
+— will make the following emitted in `generated/modules/index.g.d.mts`:
 
 ```ts
-export namespace Bar {
+export namespace Class {
     export function baz(): void;
 }
 ```
@@ -27,35 +25,33 @@ export namespace Bar {
 — which allows consuming the API in JavaScript as:
 
 ```ts
-import { Bar } from "bootsharp/foo";
+import { Class } from "bootsharp";
 
-Bar.baz();
+Class.baz();
 ```
 
 Imported methods will be emitted as properties, which have to be assigned before booting the runtime:
 
 ::: code-group
 
-```csharp [Bar.cs]
-namespace Foo;
-
-public partial class Bar
+```csharp [Class.cs]
+public partial class Class
 {
     [Import]
     public static partial void Baz();
 }
 ```
 
-```ts [foo.g.d.mts]
-export namespace Bar {
+```ts [index.g.d.mts]
+export namespace Class {
     export let baz: () => void;
 }
 ```
 
 ```ts [main.ts]
-import { Bar } from "bootsharp/foo";
+import { Class } from "bootsharp";
 
-Bar.baz = () => {};
+Class.baz = () => {};
 ```
 
 :::
@@ -66,10 +62,8 @@ JavaScript does not have function overloads, so Bootsharp automatically disambig
 
 ::: code-group
 
-```csharp [Bar.cs]
-namespace Foo;
-
-public class Bar
+```csharp [Class.cs]
+public class Class
 {
     [Export] public static void Start (string title) {}
     [Export] public static void Start (string title, string info) {}
@@ -78,13 +72,42 @@ public class Bar
 }
 ```
 
-```ts [foo.g.d.mts]
-export namespace Bar {
+```ts [index.g.d.mts]
+export namespace Class {
     export function start(title: string): void;
     export function startWithInfo(title: string, info: string): void;
     export function startWithProgress(title: string, progress: number): void;
     export function startWithInfoAndProgress(title: string, info: string, progress: number): void;
 }
+```
+
+:::
+
+## Default Arguments
+
+C# method parameters with default values are emitted as optional TypeScript parameters using the `?:` syntax, letting callers omit them at the call site:
+
+::: code-group
+
+```csharp [Class.cs]
+public class Class
+{
+    [Export]
+    public static void Greet (string name, string greeting = "Hello") {}
+}
+```
+
+```ts [index.g.d.mts]
+export namespace Class {
+    export function greet(name: string, greeting?: string): void;
+}
+```
+
+```ts [main.ts]
+import { Class } from "bootsharp";
+
+Class.greet("World");
+Class.greet("World", "Hi");
 ```
 
 :::
@@ -95,26 +118,24 @@ Exported properties are emitted as variables under the declaring class's TS name
 
 ::: code-group
 
-```csharp [Bar.cs]
-namespace Foo;
-
-public class Bar
+```csharp [Class.cs]
+public class Class
 {
     [Export]
     public static string Baz { get; set; } = "";
 }
 ```
 
-```ts [foo.g.d.mts]
-export namespace Bar {
+```ts [index.g.d.mts]
+export namespace Class {
     export let baz: string;
 }
 ```
 
 ```ts [main.ts]
-import { Bar } from "bootsharp/foo";
+import { Class } from "bootsharp";
 
-Bar.baz = "updated";
+Class.baz = "updated";
 ```
 
 :::
@@ -123,27 +144,25 @@ Imported properties are emitted as accessor pairs, which have to be assigned bef
 
 ::: code-group
 
-```csharp [Bar.cs]
-namespace Foo;
-
-public static partial class Bar
+```csharp [Class.cs]
+public static partial class Class
 {
     [Import]
     public static partial string Baz { get; set; }
 }
 ```
 
-```ts [foo.g.d.mts]
-export namespace Bar {
+```ts [index.g.d.mts]
+export namespace Class {
     export let baz: { get: () => string; set: (value: string) => void };
 }
 ```
 
 ```ts [main.ts]
-import { Bar } from "bootsharp/foo";
+import { Class } from "bootsharp";
 
 let baz = "";
-Bar.baz = { get: () => baz, set: value => baz = value };
+Class.baz = { get: () => baz, set: value => baz = value };
 ```
 
 :::
@@ -154,26 +173,24 @@ Exported events are emitted as `EventSubscriber` objects:
 
 ::: code-group
 
-```csharp [Bar.cs]
-namespace Foo;
-
-public class Bar
+```csharp [Class.cs]
+public class Class
 {
     [Export]
     public static event Action<string>? OnBaz;
 }
 ```
 
-```ts [foo.g.d.mts]
-export namespace Bar {
+```ts [index.g.d.mts]
+export namespace Class {
     export const onBaz: EventSubscriber<[payload: string]>;
 }
 ```
 
 ```ts [main.ts]
-import { Bar } from "bootsharp/foo";
+import { Class } from "bootsharp";
 
-Bar.onBaz.subscribe(payload => {});
+Class.onBaz.subscribe(payload => {});
 ```
 
 :::
@@ -182,26 +199,83 @@ Imported events are emitted as `EventBroadcaster` objects:
 
 ::: code-group
 
-```csharp [Bar.cs]
-namespace Foo;
-
-public static partial class Bar
+```csharp [Class.cs]
+public static partial class Class
 {
     [Import]
     public static event Action<string>? OnBaz;
 }
 ```
 
-```ts [foo.g.d.mts]
-export namespace Bar {
+```ts [index.g.d.mts]
+export namespace Class {
     export const onBaz: EventBroadcaster<[payload: string]>;
 }
 ```
 
 ```ts [main.ts]
-import { Bar } from "bootsharp/foo";
+import { Class } from "bootsharp";
 
-Bar.onBaz.broadcast("updated");
+Class.onBaz.broadcast("updated");
+```
+
+:::
+
+## Delegate Declarations
+
+Custom delegates are emitted as TypeScript function-type aliases:
+
+::: code-group
+
+```csharp [Class.cs]
+public delegate void Notify (string msg);
+
+public class Class
+{
+    [Export]
+    public static Notify GetNotify () => msg => Console.WriteLine(msg);
+}
+```
+
+```ts [index.g.d.mts]
+export type Notify = (msg: string) => void;
+
+export namespace Class {
+    export function getNotify(): Notify;
+}
+```
+
+```ts [main.ts]
+import { Class } from "bootsharp";
+
+const notify = Class.getNotify();
+notify("hello");
+```
+
+:::
+
+Built-in `System.Action` and `System.Func` variants are supported as well:
+
+::: code-group
+
+```csharp [Class.cs]
+public class Class
+{
+    [Export] public static Action<string>? Logger { get; set; }
+}
+```
+
+```ts [index.g.d.mts]
+export namespace Class {
+    export let logger: system.Action<string> | undefined;
+}
+```
+
+```ts [main.ts]
+import { Class } from "bootsharp";
+
+Class.logger = msg => console.log(msg);
+Class.logger("hello");
 ```
 
 :::
@@ -213,8 +287,6 @@ When an inspected assembly has XML documentation generated, Bootsharp mirrors th
 ::: code-group
 
 ```csharp [MathApi.cs]
-namespace Foo;
-
 /// <summary>Math API.</summary>
 public class MathApi
 {
@@ -227,7 +299,7 @@ public class MathApi
 }
 ```
 
-```ts [foo.g.d.mts]
+```ts [index.g.d.mts]
 /**
  * Math API.
  */
@@ -255,36 +327,26 @@ Bootsharp uses different TypeScript nullish forms depending on where a nullable 
 
 This is intentional and optimized for TypeScript ergonomics. Refer to the dedicated [nullability guide](/guide/nullability) for the full convention and examples.
 
-## Type Crawling
+## Namespaces
 
-Bootsharp will crawl types from the interop signatures and mirror them as top-level exports of the same C# namespace's declaration module. For example, if you have a custom record with a property of another custom record implementing a custom interface, both records and the interface will be emitted:
+Members declared inside a C# namespace are emitted into a module path derived from that namespace: dots become path separators and casing is lower-kebab-cased. Members without a namespace land in the default `index` module (as shown in the examples above).
 
 ::: code-group
 
-```csharp [Foo.cs]
-namespace Space;
+```csharp [Class.cs]
+namespace Foo.Bar;
 
-public interface IFoo { };
-public record Foo : IFoo;
-public record Bar (Foo foo);
-
-public partial class Holder
+public class Class
 {
-    [Import]
-    public static partial Bar GetBar();
+    [Export]
+    public static void Baz () { }
 }
 ```
 
-```ts [space.g.d.mts]
-export interface IFoo {}
-export type Foo = IFoo & Readonly<{}>;
-export type Bar = Readonly<{
-    foo: Foo;
-}>;
+```ts [main.ts]
+import { Class } from "bootsharp/foo/bar";
 
-export namespace Holder {
-    export function getBar(): Bar;
-}
+Class.baz();
 ```
 
 :::

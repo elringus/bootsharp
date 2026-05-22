@@ -1,5 +1,8 @@
 namespace Bootsharp.Publish;
 
+/// <summary>
+/// Generates a manifest listing resources required to initialize the .NET runtime.
+/// </summary>
 internal sealed class ResourceGenerator (string entryAssemblyName, bool debug, bool g11n)
 {
     private readonly List<string> assemblies = [];

@@ -4,6 +4,9 @@ using System.Xml.Linq;
 
 namespace Bootsharp.Publish;
 
+/// <summary>
+/// Generates JSDoc annotations for the TypeScript type declarations.
+/// </summary>
 internal sealed class DocumentationBuilder
 {
     private readonly Dictionary<(string Assembly, string Key), XElement> xmlByKey = [];

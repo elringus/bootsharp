@@ -1,5 +1,9 @@
 namespace Bootsharp.Publish;
 
+/// <summary>
+/// Generates JavaScript binding proxies for <see cref="InstanceMeta"/>.
+/// Symmetrical to <see cref="CSInstanceGenerator"/>, which generates the same but for the C# side.
+/// </summary>
 internal sealed class JSInstanceGenerator (bool debug, JSModules md)
 {
     public string Generate (IReadOnlyCollection<InstanceMeta> its) =>
@@ -49,7 +53,28 @@ internal sealed class JSInstanceGenerator (bool debug, JSModules md)
         }
     }
 
-    private string EmitProxy (InstanceMeta it) =>
+    private string EmitProxy (InstanceMeta it) => it switch {
+        DelegateMeta del => EmitDelegateProxy(del),
+        _ => EmitOpaqueProxy(it)
+    };
+
+    private string EmitDelegateProxy (DelegateMeta del)
+    {
+        var inv = del.Invoker;
+        var args = string.Join(", ", inv.Args.Select(a => a.JSName));
+        var invArgs = PrependIdArg(args);
+        return $$"""
+                 $i.{{del.Id}} = class {{del.Proxy.Id}} {
+                     constructor(_id) {
+                         const fn = ({{args}}) => {{md.Ref(inv.Surf)}}.{{inv.JSName}}({{invArgs}});
+                         fn._id = _id;
+                         return fn;
+                     }
+                 };
+                 """;
+    }
+
+    private string EmitOpaqueProxy (InstanceMeta it) =>
         $$"""
           $i.{{it.Id}} = class {{it.Proxy.Id}} {
               {{Fmt([
@@ -76,11 +101,11 @@ internal sealed class JSInstanceGenerator (bool debug, JSModules md)
 
     private string EmitMethod (MethodMeta method)
     {
-        var sigArgs = string.Join(", ", method.Args.Select(a => a.JSName));
-        var invArgs = sigArgs.Length > 0 ? $"this._id, {sigArgs}" : "this._id";
+        var args = string.Join(", ", method.Args.Select(a => a.JSName));
+        var invArgs = args.Length > 0 ? $"this._id, {args}" : "this._id";
         var bodyExp = $"{md.Ref(method.Surf)}.{method.JSName}({invArgs})";
         if (!method.Void) bodyExp = $"return {bodyExp}";
-        return $"{method.JSName}({sigArgs}) {{ {bodyExp}; }}";
+        return $"{method.JSName}({args}) {{ {bodyExp}; }}";
     }
 
     private string EmitProperty (PropertyMeta p) => Fmt(0,

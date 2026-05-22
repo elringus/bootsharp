@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 
 namespace Test.Library;
@@ -8,9 +9,9 @@ public class ExportedModule : IExportedModule
 
     public Record? Record { get; set => OnRecordChanged?.Invoke(field = value); }
 
-    public async Task<IExportedInstanced> GetInstanceAsync (string arg)
+    public async Task<IExportedInstanced> GetInstanceAsync (string arg, Func<IExportedInstanced>? factory = null)
     {
         await Task.Delay(1);
-        return new ExportedInstanced(arg);
+        return factory?.Invoke() ?? new ExportedInstanced(arg);
     }
 }

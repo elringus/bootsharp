@@ -163,6 +163,61 @@ public class JSInstanceTest : GenerateJSTest
     }
 
     [Fact]
+    public void EmitsForExportedDelegates ()
+    {
+        AddAssembly(With(
+            """
+            public delegate void Notify (string msg);
+
+            public class Class
+            {
+                [Export] public static System.Action GetAction () => default!;
+                [Export] public static System.Func<int, string> GetFunc () => default!;
+                [Export] public static Notify GetNotify () => default!;
+            }
+            """));
+        Execute();
+        Contains(
+            """
+            $i.System_Action = class JS_Export_System_Action {
+                constructor(_id) {
+                    const fn = () => system.Action.invoke(_id);
+                    fn._id = _id;
+                    return fn;
+                }
+            };
+            """);
+        Contains(
+            """
+            $i.System_Func_Of_System_Int32_And_System_String = class JS_Export_System_Func_Of_System_Int32_And_System_String {
+                constructor(_id) {
+                    const fn = (arg) => system.Func_Of_Int32_And_String.invoke(_id, arg);
+                    fn._id = _id;
+                    return fn;
+                }
+            };
+            """);
+        Contains(
+            """
+            $i.Notify = class JS_Export_Notify {
+                constructor(_id) {
+                    const fn = (msg) => index.Notify.invoke(_id, msg);
+                    fn._id = _id;
+                    return fn;
+                }
+            };
+            """);
+    }
+
+    [Fact]
+    public void DoesNotEmitForImportedDelegate ()
+    {
+        AddAssembly(WithClass("[Import] public static Action GetAction () => default!;"));
+        Execute();
+        DoesNotContain("invoke");
+    }
+
+    [Fact]
     public void DoesNotEmitDuplicateSpecializedImporters ()
     {
         AddAssembly(With(

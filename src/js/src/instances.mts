@@ -6,13 +6,14 @@ const importedById = new Map<number, object>();
 const idByImported = new Map<object, number>();
 const onDisposeById = new Map<number, () => void>();
 const idPool = new Array<number>();
-let nextId = 0; // JS IDs are always positive; C#'s — negative.
+let nextId = 1; // JS IDs are positive; C#'s — negative; 0 reserved for null.
 
 export const instances = {
     /** Resolves a registered instance associated with the specified ID,
      *  or uses the specified factory to register a new exported instance. */
-    resolve<T extends object>(id: number, factory: new (id: number) => T): T {
-        if (id >= 0) return importedById.get(id) as T;
+    resolve<T extends object>(id: number, factory: new (id: number) => T): T | null {
+        if (id === 0) return null;
+        if (id > 0) return importedById.get(id) as T;
         const exported = exportedById.get(id)?.deref() as T;
         if (exported != null) return exported;
         const proxy = new factory(id);
@@ -22,7 +23,8 @@ export const instances = {
     },
     /** Registers specified imported (JS) instance and returns the associated unique ID.
      *  Short-circuits already registered imported and exported instances. */
-    import(instance: object, cb?: (id: number) => () => void): number {
+    import(instance?: object, cb?: (id: number) => () => void): number {
+        if (instance == null) return 0;
         const exportedId = (instance as { _id: number })?._id;
         if (exportedId !== undefined) return exportedId;
         const importedId = idByImported.get(instance);

@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace Bootsharp.Publish;
 
 /// <summary>
@@ -57,6 +59,18 @@ internal record InstanceMeta (Type Clr) : ProxyMeta(Clr)
     /// Name of the specialized JS importer function or null when not required.
     /// </summary>
     public string? Importer { get; init; }
+}
+
+/// <summary>
+/// Describes an instance surface projected from a delegate type.
+/// </summary>
+internal sealed record DelegateMeta (Type Clr) : InstanceMeta(Clr)
+{
+    /// <summary>
+    /// Describes the "Invoke" method of the delegate.
+    /// </summary>
+    public MethodMeta Invoker => (MethodMeta)Members.First();
+    protected override bool PrintMembers (StringBuilder builder) => base.PrintMembers(builder); // w/a C# bug
 }
 
 /// <summary>

@@ -91,13 +91,15 @@ internal static class GlobalType
         return GetNullity(param);
     }
 
+    public static bool IsNullable (NullabilityInfo? info) => info?.ReadState == NullabilityState.Nullable;
     public static bool IsNullable (Type type, NullabilityInfo? info) => IsNullable(type, info, out _);
     public static bool IsNullable (Type type, [NotNullWhen(true)] out Type? value) => IsNullable(type, null, out value);
     public static bool IsNullable (Type type, NullabilityInfo? info, [NotNullWhen(true)] out Type? value)
     {
-        if (info?.ReadState == NullabilityState.Nullable) value = type;
-        else if (type.IsGenericType && type.Name.Contains("Nullable`") && type.GenericTypeArguments.Length == 1)
+        if (type.IsGenericType && type.Name.Contains("Nullable`") && type.GenericTypeArguments.Length == 1)
             value = type.GenericTypeArguments[0];
+        else if (IsNullable(info) && (!type.IsGenericTypeParameter || IsUserType(type)))
+            value = type;
         else value = null;
         return value != null;
     }
@@ -123,7 +125,7 @@ internal static class GlobalType
 
     public static string BuildSyntax (Type type, NullabilityInfo? nul = null, bool forceNil = false, bool full = true)
     {
-        var nil = (forceNil || nul?.ReadState == NullabilityState.Nullable) ? "?" : "";
+        var nil = (forceNil || IsNullable(nul)) ? "?" : "";
         var global = full ? "global::" : "";
         if (IsVoid(type)) return "void";
         if (type.IsArray) return $"{BuildSyntax(type.GetElementType()!, nul?.ElementType)}[]{nil}";

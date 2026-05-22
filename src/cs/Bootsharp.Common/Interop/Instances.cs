@@ -25,7 +25,7 @@ public static class Instances
     private static readonly Dictionary<object, int> idByExported = new(ReferenceEqualityComparer.Instance);
     private static readonly Dictionary<int, Action> onDisposeById = [];
     private static readonly Queue<int> idPool = [];
-    private static int nextId = int.MinValue; // C# IDs are always negative; JS's — positive.
+    private static int nextId = int.MinValue; // C# IDs are negative; JS's — positive; 0 reserved for null.
 
     /// <summary>
     /// Resolves a registered instance associated with the specified ID, or uses a factory that
@@ -33,6 +33,7 @@ public static class Instances
     /// </summary>
     public static T Resolve<T> (int id) where T : class
     {
+        if (id == 0) return null!;
         if (id < 0) return (T)exportedById[id];
         if (importedById.GetValueOrDefault(id) is { } weak) return (T)weak.Target!;
         var instance = (T)importers[typeof(T)](id);
@@ -47,9 +48,11 @@ public static class Instances
     /// <param name="instance">The instance to register.</param>
     /// <param name="cb">Callback to invoke when registering and disposing the instance.</param>
     /// <returns>Unique ID associated with the registered instance.</returns>
-    public static int Export<T> (T instance, ExportCallback<T>? cb = null) where T : class
+    public static int Export<T> (T? instance, ExportCallback<T>? cb = null) where T : class
     {
-        if (instance is JSProxy imported) return imported._id;
+        if (instance is null) return 0;
+        if (instance is JSProxy imp) return imp._id;
+        if (instance is Delegate { Target: JSProxy del }) return del._id;
         if (idByExported.TryGetValue(instance, out var id)) return id;
         id = idPool.Count > 0 ? idPool.Dequeue() : nextId++;
         exportedById[idByExported[instance] = id] = instance;

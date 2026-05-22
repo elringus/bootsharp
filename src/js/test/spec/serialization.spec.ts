@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { bootRuntime } from "../cs";
-import { Serialization } from "../cs/Test/bin/bootsharp/generated/modules/test.g.mjs";
+import { Serialization, ItemA } from "../cs/Test/bin/bootsharp/generated/modules/test.g.mjs";
 import type { Primitives, Union } from "../cs/Test/bin/bootsharp/generated/modules/test.g.mjs";
-import { Registries, IRegistryProvider, TrackType } from "../cs/Test/bin/bootsharp/generated/modules/test/library.g.mjs";
+import { Registries, IRegistryProvider, Modules, TrackType, Record, IBidirectional } from "../cs/Test/bin/bootsharp/generated/modules/test/library.g.mjs";
 
 describe("serialization", () => {
     beforeAll(bootRuntime);
@@ -57,6 +57,18 @@ describe("serialization", () => {
         const b: Union = { shared: "B", b: { ints: [], strings: ["foo", "bar"], times: [new Date()] } };
         expect(Serialization.echoUnions([a, b, null])).toStrictEqual([a, b, null]);
         expect(Serialization.echoUnions(undefined)).toBeNull();
+    });
+    it("instances survive serialization", () => {
+        const bi = Modules.exportBi();
+        const changed = (_?: ItemA, __?: Record) => {};
+        const getChanged = (b: IBidirectional) => b === bi ? changed : <never>null;
+        const echoed = Serialization.echoUnions([{
+            shared: "", a: { bi, changed }, b: { strings: [], times: [], getChanged }
+        }])![0]!;
+        expect(echoed.a!.bi).toStrictEqual(bi);
+        expect(echoed.a!.changed).toStrictEqual(changed);
+        expect(echoed.b!.getChanged).toStrictEqual(getChanged);
+        expect(echoed.b!.getChanged!(bi)).toStrictEqual(changed);
     });
     it("can echo unions with all nullable fields omitted", () => {
         const a: Union = { shared: "A", a: {} };

@@ -2,6 +2,10 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bootsharp.Publish;
 
+/// <summary>
+/// Generates JavaScript bindings under ES modules projected from the C# interop surfaces.
+/// Symmetrical to <see cref="CSInteropGenerator"/>, which generates the same but for the C# side.
+/// </summary>
 internal sealed class JSModuleGenerator (bool debug)
 {
     private readonly CodeBuilder bld = new();
@@ -107,7 +111,7 @@ internal sealed class JSModuleGenerator (bool debug)
             var fnName = $"{id}_Get{prop.Name}";
             var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
             var body = ExportJS(prop.Get, isIt ? $"{invName}(_id)" : $"{invName}()");
-            if (prop.Get.Nullable && !prop.Get.IsInstanced) body += " ?? undefined";
+            if (prop.Get.Nullable) body += " ?? undefined";
             bld.Line(isIt
                 ? $"get{prop.Name}(_id) {{ return {body}; }}"
                 : $"get {prop.JSName}() {{ return {body}; }}");
@@ -165,9 +169,8 @@ internal sealed class JSModuleGenerator (bool debug)
         var args = string.Join(", ", method.Args.Select(a => a.JSName));
         if (isIt) args = PrependIdArg(args);
         var invArgs = string.Join(", ", method.Args.Select(ExportJS));
-        var invName = isIt
-            ? $"$i.imported(_id).{name}"
-            : $"this.{name}Handler";
+        var invName = srf is DelegateMeta ? "$i.imported(_id)"
+            : isIt ? $"$i.imported(_id).{name}" : $"this.{name}Handler";
         var bodyExp = ImportJS(method.Return, $"{(wait ? "await " : "")}{invName}({invArgs})");
         var srdHandler = $"{(wait ? "async " : "")}({args}) => {bodyExp}";
         if (isIt) bld.Line($"{name}Serialized: {srdHandler}");

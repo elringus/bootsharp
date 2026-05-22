@@ -1,5 +1,8 @@
 namespace Bootsharp.Publish;
 
+/// <summary>
+/// Generates import bindings for .NET's JavaScript interop infra.
+/// </summary>
 internal sealed class JSImportsGenerator
 {
     public string Generate (JSModules mds) =>

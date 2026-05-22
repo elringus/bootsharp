@@ -4,8 +4,9 @@ namespace Bootsharp.Publish;
 
 /// <summary>
 /// Generates bindings to be picked by .NET's interop source generator.
+/// Symmetrical to <see cref="JSModuleGenerator"/>, which generates the same but for the JS side.
 /// </summary>
-internal sealed class InteropGenerator
+internal sealed class CSInteropGenerator
 {
     [MemberNotNullWhen(true, nameof(it))]
     private bool isIt => srf is InstanceMeta;
@@ -200,9 +201,8 @@ internal sealed class InteropGenerator
 
     private string BuildValueSyntax (ValueMeta value)
     {
-        var nil = value.Nullable && !value.IsSerialized ? "?" : "";
-        if (value.IsInstanced) return $"int{nil}";
-        if (value.IsSerialized) return $"long{nil}";
+        if (value.IsInstanced) return "int";
+        if (value.IsSerialized) return "long";
         return value.TypeSyntax;
     }
 

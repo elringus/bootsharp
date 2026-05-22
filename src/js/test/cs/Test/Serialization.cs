@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Bootsharp;
+using Test.Library;
 
 namespace Test;
 
@@ -43,8 +44,19 @@ public readonly record struct Union
     private Union (string shared) => Shared = shared;
 }
 
-public readonly record struct ItemA (string? String, IReadOnlyDictionary<string, int?>? Map);
-public readonly record struct ItemB (string[] Strings, IReadOnlyCollection<DateTime?> Times, IReadOnlyList<int>? Ints);
+public readonly record struct ItemA (
+    string? String,
+    IReadOnlyDictionary<string, int?>? Map,
+    IBidirectional? Bi,
+    RecordChanged<ItemA?>? Changed
+);
+
+public readonly record struct ItemB (
+    string[] Strings,
+    IReadOnlyCollection<DateTime?> Times,
+    IReadOnlyList<int>? Ints,
+    Func<IBidirectional, RecordChanged<IBidirectional?>?>? GetChanged
+);
 
 public static class Serialization
 {

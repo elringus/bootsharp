@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 
 namespace Test.Library;
@@ -10,5 +11,5 @@ public interface IImportedModule
 
     Record? Record { get; set; }
 
-    Task<IImportedInstanced> GetInstanceAsync (string arg);
+    Task<IImportedInstanced> GetInstanceAsync (string arg, Func<IImportedInstanced>? factory = null);
 }

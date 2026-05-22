@@ -1,5 +1,9 @@
 namespace Bootsharp.Publish;
 
+/// <summary>
+/// Generates <see cref="SerializedMeta"/> serializers for the JavaScript side.
+/// Symmetrical to <see cref="CSSerializerGenerator"/>, which generates the same but for the C# side.
+/// </summary>
 internal sealed class JSSerializerGenerator
 {
     public string Generate (IReadOnlyCollection<SerializedMeta> srd) =>

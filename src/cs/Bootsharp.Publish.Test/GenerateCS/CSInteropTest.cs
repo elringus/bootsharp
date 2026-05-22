@@ -1,6 +1,6 @@
 namespace Bootsharp.Publish.Test;
 
-public class InteropTest : GenerateCSTest
+public class CSInteropTest : GenerateCSTest
 {
     protected override string TestedContent => GeneratedInterop;
 

@@ -1,6 +1,6 @@
 namespace Bootsharp.Publish.Test;
 
-public class ModulesTest : GenerateCSTest
+public class CSModuleTest : GenerateCSTest
 {
     protected override string TestedContent => GeneratedModules;
 

@@ -1,9 +1,9 @@
 namespace Bootsharp.Publish;
 
 /// <summary>
-/// Generates implementations for interop modules.
+/// Generates C# implementations for <see cref="ModuleMeta"/>.
 /// </summary>
-internal sealed class ModuleGenerator
+internal sealed class CSModuleGenerator
 {
     private ModuleMeta md = null!;
 

@@ -25,12 +25,11 @@ class ImportedInner implements IImportedInnerInstanced {
 }
 
 class BidirectionalJS implements IBidirectional {
-    onBiChanged = new Event<[IBidirectional]>();
-    #bi: IBidirectional;
-    constructor() { this.#bi = this; }
+    onBiChanged = new Event<[IBidirectional | undefined]>();
+    #bi?: IBidirectional;
     get bi() { return this.#bi; }
     set bi(value) { this.onBiChanged.broadcast(this.#bi = value); }
-    echoBi(bi: IBidirectional) { return bi; }
+    echoBi(bi?: IBidirectional) { return bi ?? null; }
 }
 
 describe("while bootsharp is not booted", () => {
@@ -92,9 +91,9 @@ describe("while bootsharp is booted", () => {
     it("can interop with imported modules", async () => {
         let record: Record | undefined = { id: "initial" };
         IImportedModule.record = { get: () => record, set: v => record = v };
-        IImportedModule.getInstanceAsync = async (arg) => {
+        IImportedModule.getInstanceAsync = async (arg, factory) => {
             await new Promise(res => setTimeout(res, 1));
-            return new Imported(arg);
+            return factory?.() ?? new Imported(arg);
         };
         const promise = Modules.canInteropWithImportedModuleAsync();
         IImportedModule.onRecordChanged.broadcast({ id: "event-rec" });
@@ -111,6 +110,7 @@ describe("while bootsharp is booted", () => {
         expect(handler).toHaveBeenCalledWith(undefined);
         const inst = await IExportedModule.getInstanceAsync("module-arg");
         expect(inst.getInstanceArg()).toStrictEqual("module-arg");
+        expect(await IExportedModule.getInstanceAsync("", () => inst)).toStrictEqual(inst);
         IExportedModule.onRecordChanged.unsubscribe(handler);
     });
     it("can interop with imported instances", async () => {
@@ -146,6 +146,7 @@ describe("while bootsharp is booted", () => {
         const js = new BidirectionalJS();
         const handler = vi.fn();
         exp.onBiChanged.subscribe(handler);
+        expect(exp.echoBi(undefined)).toBe(null);
         expect(exp.echoBi(exp)).toBe(exp);
         expect(exp.echoBi(js)).toBe(js);
         exp.bi = js;
@@ -154,6 +155,9 @@ describe("while bootsharp is booted", () => {
         exp.bi = exp;
         expect(handler).toHaveBeenCalledWith(exp);
         expect(exp.bi).toBe(exp);
+        exp.bi = undefined;
+        expect(handler).toHaveBeenCalledWith(undefined);
+        expect(exp.bi).toBe(undefined);
         exp.onBiChanged.unsubscribe(handler);
         Modules.canInteropWithBidirectional();
     });

@@ -4,6 +4,9 @@ using static System.Text.RegularExpressions.RegexOptions;
 
 namespace Bootsharp.Publish;
 
+/// <summary>
+/// Monkey-patches various internal .NET JavaScript files.
+/// </summary>
 internal sealed class DotNetPatcher (string buildDir)
 {
     private readonly string dotnet = Path.Combine(buildDir, "dotnet.js");
