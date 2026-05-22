@@ -69,19 +69,7 @@ public record SurfaceProxy
     /// </summary>
     public required string Id { get; init; }
     /// <summary>
-    /// Namespace of the generated C# proxy type.
-    /// </summary>
-    public required string Space { get; init; }
-    /// <summary>
-    /// Type name of the generated C# proxy type.
-    /// </summary>
-    public required string Name { get; init; }
-    /// <summary>
     /// Fully qualified C# syntax of the generated C# proxy type.
     /// </summary>
     public required string Syntax { get; init; }
-    /// <summary>
-    /// Full object name of the generated proxy on the JavaScript side.
-    /// </summary>
-    public required string JS { get; init; }
 }

@@ -85,6 +85,7 @@ internal sealed class TypeInspector
 
         static bool IsInstanced (Type type)
         {
+            if (IsDelegate(type)) return true;
             // Instanced types are mutable user types that are passed by reference when crossing the
             // interop boundary (as opposed to serialized immutable types, which are copied by value).
             if (!IsUserType(type)) return false;
@@ -176,13 +177,9 @@ internal sealed class TypeInspector
 
     private SurfaceProxy BuildProxy (Type type, InteropKind ik)
     {
-        var space = "Bootsharp.Generated." + (ik == InteropKind.Export ? "Exports" : "Imports");
-        if (type.Namespace != null) space += $".{type.Namespace}";
-        var name = "JS" + (type.IsInterface ? type.Name[1..] : type.Name);
-        var id = $"{space}.{name}".Replace(".", "_").Replace('+', '_');
-        var stx = $"global::{space}.{name}";
-        var js = type.Namespace == null ? name : $"{type.Namespace}.{name}".Replace(".", "_");
-        return new SurfaceProxy { Id = id, Space = space, Name = name, Syntax = stx, JS = js };
+        var id = "JS_" + (ik == InteropKind.Export ? "Export_" : "Import_") + BuildId(type);
+        var stx = $"global::Bootsharp.Generated.{id}";
+        return new SurfaceProxy { Id = id, Syntax = stx };
     }
 
     private InteropKind? ResolveIK (MemberInfo info)

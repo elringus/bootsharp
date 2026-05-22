@@ -8,6 +8,8 @@ namespace Test.Library;
 
 public partial class Registries
 {
+    [Export] public static Func<string> GetFunc () => () => "XXX";
+
     [Export] public static event Action<Vehicle?>? OnVehicleBroadcast;
 
     public static IRegistryProvider Provider { get; set; } = null!;
