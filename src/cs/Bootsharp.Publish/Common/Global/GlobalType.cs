@@ -24,6 +24,14 @@ internal static class GlobalType
         return type.GetMethod(nameof(Task.GetAwaiter)) != null;
     }
 
+    public static bool IsDelegate (Type type)
+    {
+        for (var bs = type.BaseType; bs != null; bs = bs.BaseType)
+            if (bs.FullName == "System.MulticastDelegate")
+                return true;
+        return false;
+    }
+
     public static bool IsTaskWithResult (Type type, [NotNullWhen(true)] out Type? result)
     {
         return (result = IsTaskLike(type) && type.GenericTypeArguments.Length == 1
@@ -92,12 +100,6 @@ internal static class GlobalType
             value = type.GenericTypeArguments[0];
         else value = null;
         return value != null;
-    }
-
-    public static string BuildJSName (string name)
-    {
-        name = ToFirstLower(name);
-        return name == "function" ? "fn" : name;
     }
 
     public static string PrependIdArg (string args)

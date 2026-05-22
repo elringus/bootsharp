@@ -127,7 +127,7 @@ internal sealed class TypeInspector
     private EventMeta InspectEvent (EventInfo evt, InteropKind ik, SurfaceMeta srf) => new(evt) {
         IK = ik,
         Surf = srf,
-        Name = evt.Name,
+        Name = BuildCSName(evt.Name),
         JSName = WithPref(Pref.Event, evt.Name, BuildJSName(evt.Name)),
         TypeSyntax = BuildSyntax(evt.EventHandlerType!, GetNullity(evt)),
         Args = evt.EventHandlerType!.GetMethod("Invoke")!.GetParameters()
@@ -137,7 +137,7 @@ internal sealed class TypeInspector
     private PropertyMeta InspectProperty (PropertyInfo prop, InteropKind ik, SurfaceMeta srf) => new(prop) {
         IK = ik,
         Surf = srf,
-        Name = prop.Name,
+        Name = BuildCSName(prop.Name),
         JSName = WithPref(Pref.Property, prop.Name, BuildJSName(prop.Name)),
         TypeSyntax = BuildSyntax(prop.PropertyType, GetNullity(prop)),
         Get = prop.GetMethod != null ? InspectValue(prop.PropertyType, GetNullity(prop), ik) : null,
@@ -147,7 +147,7 @@ internal sealed class TypeInspector
     private MethodMeta InspectMethod (MethodInfo method, InteropKind ik, SurfaceMeta srf) => new(method) {
         IK = ik,
         Surf = srf,
-        Name = method.Name,
+        Name = BuildCSName(method.Name),
         JSName = WithPref(Pref.Method, method.Name, BuildJSName(method.Name)),
         Args = method.GetParameters().Select(p => InspectArg(p, GetNullity(p), ik.Invert)).ToArray(),
         Return = InspectValue(method.ReturnParameter.ParameterType, GetNullity(method.ReturnParameter), ik),
@@ -156,7 +156,7 @@ internal sealed class TypeInspector
     };
 
     private ArgumentMeta InspectArg (ParameterInfo param, NullabilityInfo nil, InteropKind ik) => new(param) {
-        Name = param.Name!,
+        Name = BuildCSName(param.Name!),
         JSName = BuildJSName(param.Name!),
         Value = InspectValue(param.ParameterType, nil, ik)
     };

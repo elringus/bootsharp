@@ -281,14 +281,14 @@ public class JSModuleTest : GenerateJSTest
     }
 
     [Fact]
-    public void VariablesConflictingWithJSTypesAreRenamed ()
+    public void EscapesReservedArgumentNames ()
     {
-        AddAssembly(WithClass("[Export] public static void Fun (string function) {}"));
+        AddAssembly(WithClass("[Export] public static void Foo (string Class, int Function) {}"));
         Execute();
         Contains(
             """
             export const Class = {
-                fun: (fn) => exports.Class_Fun(fn)
+                foo: ($class, $function) => exports.Class_Foo($class, $function)
             };
             """);
     }

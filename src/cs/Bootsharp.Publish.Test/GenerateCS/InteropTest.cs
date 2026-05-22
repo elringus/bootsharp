@@ -444,6 +444,14 @@ public class InteropTest : GenerateCSTest
     }
 
     [Fact]
+    public void EscapesReservedArgumentNames ()
+    {
+        AddAssembly(WithClass("[Export] public static void Foo (string @object, int @class) {}"));
+        Execute();
+        Contains("[JSExport] internal static void Class_Foo (global::System.String @object, global::System.Int32 @class) => global::Class.Foo(@object, @class);");
+    }
+
+    [Fact]
     public void RespectsSpacePref ()
     {
         AddAssembly(With(

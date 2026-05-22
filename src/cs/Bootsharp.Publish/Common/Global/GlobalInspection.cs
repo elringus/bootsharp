@@ -10,6 +10,28 @@ internal static class GlobalInspection
 {
     public static Preferences Pref => PreferencesResolver.Resolved.Value!;
 
+    private static readonly HashSet<string> csKeywords = [
+        "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char",
+        "checked", "class", "const", "continue", "decimal", "default", "delegate",
+        "do", "double", "else", "enum", "event", "explicit", "extern", "false",
+        "finally", "fixed", "float", "for", "foreach", "goto", "if", "implicit",
+        "in", "int", "interface", "internal", "is", "lock", "long", "namespace",
+        "new", "null", "object", "operator", "out", "override", "params", "private",
+        "protected", "public", "readonly", "ref", "return", "sbyte", "sealed",
+        "short", "sizeof", "stackalloc", "static", "string", "struct", "switch",
+        "this", "throw", "true", "try", "typeof", "uint", "ulong", "unchecked",
+        "unsafe", "ushort", "using", "virtual", "void", "volatile", "while"
+    ];
+
+    private static readonly HashSet<string> jsKeywords = [
+        "await", "break", "case", "catch", "class", "const", "continue", "debugger",
+        "default", "delete", "do", "else", "enum", "export", "extends", "false",
+        "finally", "for", "function", "if", "implements", "import", "in",
+        "instanceof", "interface", "let", "new", "null", "package", "private",
+        "protected", "public", "return", "static", "super", "switch", "this",
+        "throw", "true", "try", "typeof", "var", "void", "while", "with", "yield"
+    ];
+
     public static MetadataLoadContext CreateLoadContext (string directory)
     {
         var runtimeDir = RuntimeEnvironment.GetRuntimeDirectory();
@@ -39,6 +61,17 @@ internal static class GlobalInspection
         var backingField = prop.DeclaringType!.GetField(backingFieldName,
             BindingFlags.NonPublic | BindingFlags.Instance);
         return backingField != null;
+    }
+
+    public static string BuildCSName (string name)
+    {
+        return csKeywords.Contains(name) ? $"@{name}" : name;
+    }
+
+    public static string BuildJSName (string name)
+    {
+        name = ToFirstLower(name);
+        return jsKeywords.Contains(name) ? $"${name}" : name;
     }
 
     public static string WithPref (IReadOnlyCollection<Preference> prefs, string input, string? @default = null)

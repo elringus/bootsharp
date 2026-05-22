@@ -1480,13 +1480,13 @@ public class DeclarationTest : GenerateJSTest
                 [Import] public static event EventHandler<HandlerArgs>? HandlerEvt;
 
                 /// <summary>Runs foo.</summary>
-                /// <param name="function">Function value.</param>
+                /// <param name="fn">Function value.</param>
                 /// <param name="names">Names to run.</param>
                 /// <returns>
                 /// Computed value to be used with <see cref="Get"/> and <see cref="OnFoo"/>,
                 /// or <see langword="null"/> when invalid.
                 /// </returns>
-                [Export] public static int Foo (List<int?> function, string[] names) => 0;
+                [Export] public static int Foo (List<int?> fn, string[] names) => 0;
 
                 /// <summary>Gets payload.</summary>
                 [Export] public static Payload<int> Get (Kind kind) => default;
