@@ -24,10 +24,10 @@ internal static class OverloadDisambiguator
     private static Dictionary<MethodMeta, string[]> MapArgs (IReadOnlyList<MethodMeta> overloaded)
     {
         var baseline = ResolveBaseline(overloaded); // baseline is the method that won't be renamed
-        var baselineArgs = baseline.Args.Select(a => a.Name).ToHashSet();
+        var baselineArgs = baseline.Args.Select(a => a.JSName).ToHashSet();
         return overloaded.Where(m => m != baseline).ToDictionary(m => m, m => m.Args
-            .Where(a => !baselineArgs.Contains(a.Name))
-            .Select(a => ToFirstUpper(a.Name))
+            .Where(a => !baselineArgs.Contains(a.JSName))
+            .Select(a => ToFirstUpper(a.JSName))
             // if an overload has extra args — use their names as discriminator
             .ToArray() is { Length: > 0 } extra ? extra : GetArgNames(m));
     }
@@ -38,7 +38,7 @@ internal static class OverloadDisambiguator
         .SelectMany(g => g.Select(kv => kv.Key));
 
     private static string[] GetArgNames (MethodMeta method) => method.Args
-        .Select(a => ToFirstUpper(a.Name)).ToArray();
+        .Select(a => ToFirstUpper(a.JSName)).ToArray();
 
     private static string[] GetArgTypes (MethodMeta method) => method.Args
         .Select(a => a.Value.Type.Clr.Name).ToArray();

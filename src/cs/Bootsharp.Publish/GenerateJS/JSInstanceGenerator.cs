@@ -76,7 +76,7 @@ internal sealed class JSInstanceGenerator (bool debug, JSModules md)
 
     private string EmitMethod (MethodMeta method)
     {
-        var sigArgs = string.Join(", ", method.Args.Select(a => a.Name));
+        var sigArgs = string.Join(", ", method.Args.Select(a => a.JSName));
         var invArgs = sigArgs.Length > 0 ? $"this._id, {sigArgs}" : "this._id";
         var bodyExp = $"{md.Ref(method.Surf)}.{method.JSName}({invArgs})";
         if (!method.Void) bodyExp = $"return {bodyExp}";
