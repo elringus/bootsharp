@@ -31,23 +31,20 @@ public class InstancesTest : GenerateCSTest
         Execute();
         Contains(
             """
-            namespace Bootsharp.Generated.Imports
+            public class JS_Import_IImported (int id) : global::Bootsharp.JSProxy(id), global::IImported
             {
-                public class JSImported (int id) : global::Bootsharp.JSProxy(id), global::IImported
-                {
-                    ~JSImported() => Instances.DisposeImported(_id);
+                ~JS_Import_IImported() => Instances.DisposeImported(_id);
 
-                    public event global::System.Action<global::Record?> OnRecordChanged;
-                    internal void InvokeOnRecordChanged (global::Record? obj) => OnRecordChanged?.Invoke(obj);
-                    public event global::IImported.SomethingChanged OnSomethingChanged;
-                    internal void InvokeOnSomethingChanged () => OnSomethingChanged?.Invoke();
-                    global::Record? global::IImported.Record
-                    {
-                        get => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_GetRecord(_id);
-                        set => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_SetRecord(_id, value);
-                    }
-                    void global::IImported.Fun (global::System.String arg) => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_Fun(_id, arg);
+                public event global::System.Action<global::Record?> OnRecordChanged;
+                internal void InvokeOnRecordChanged (global::Record? obj) => OnRecordChanged?.Invoke(obj);
+                public event global::IImported.SomethingChanged OnSomethingChanged;
+                internal void InvokeOnSomethingChanged () => OnSomethingChanged?.Invoke();
+                global::Record? global::IImported.Record
+                {
+                    get => global::Bootsharp.Generated.Interop.JS_Import_IImported_GetRecord(_id);
+                    set => global::Bootsharp.Generated.Interop.JS_Import_IImported_SetRecord(_id, value);
                 }
+                void global::IImported.Fun (global::System.String arg) => global::Bootsharp.Generated.Interop.JS_Import_IImported_Fun(_id, arg);
             }
             """);
     }
@@ -117,14 +114,14 @@ public class InstancesTest : GenerateCSTest
         Execute();
         Contains(
             """
-                    internal static int Export (global::IExported it) => Export(it, static (_id, it) => {
-                        it.Changed += HandleChanged;
-                        return () => {
-                            it.Changed -= HandleChanged;
-                        };
+                internal static int Export (global::IExported it) => Export(it, static (_id, it) => {
+                    it.Changed += HandleChanged;
+                    return () => {
+                        it.Changed -= HandleChanged;
+                    };
 
-                        void HandleChanged (global::Record arg1, global::IExported arg2) => Interop.IExported_BroadcastChanged_Serialized(_id, Serializer.Serialize(arg1, SerializerContext.Record), Instances.Export(arg2));
-                    });
+                    void HandleChanged (global::Record arg1, global::IExported arg2) => Interop.IExported_BroadcastChanged_Serialized(_id, Serializer.Serialize(arg1, SerializerContext.Record), Instances.Export(arg2));
+                });
             """);
     }
 
@@ -160,6 +157,6 @@ public class InstancesTest : GenerateCSTest
             public interface IModule { IInstanced Item { get; set; } }
             """));
         Execute();
-        Contains("public class JSInstanced (int id) : global::Bootsharp.JSProxy(id), global::IInstanced");
+        Contains("public class JS_Import_IInstanced (int id) : global::Bootsharp.JSProxy(id), global::IInstanced");
     }
 }

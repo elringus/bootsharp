@@ -15,31 +15,30 @@ internal sealed class InstanceGenerator
           using System.Runtime.CompilerServices;
           using System.Runtime.InteropServices.JavaScript;
 
-          namespace Bootsharp.Generated
+          namespace Bootsharp.Generated;
+
+          public static partial class Instances
           {
-              public static partial class Instances
+              internal static int Export<T> (T it, Bootsharp.Instances.ExportCallback<T>? cb = null) where T : class => Bootsharp.Instances.Export(it, cb);
+              internal static T Exported<T> (int id) where T : class => Bootsharp.Instances.Exported<T>(id);
+              internal static T Resolve<T> (int id) where T : class => Bootsharp.Instances.Resolve<T>(id);
+
+              internal static void DisposeImported (int id)
               {
-                  internal static int Export<T> (T it, Bootsharp.Instances.ExportCallback<T>? cb = null) where T : class => Bootsharp.Instances.Export(it, cb);
-                  internal static T Exported<T> (int id) where T : class => Bootsharp.Instances.Exported<T>(id);
-                  internal static T Resolve<T> (int id) where T : class => Bootsharp.Instances.Resolve<T>(id);
-
-                  internal static void DisposeImported (int id)
-                  {
-                      NotifyImportedDisposed(id);
-                      Bootsharp.Instances.DisposeImported(id);
-                  }
-
-                  [ModuleInitializer]
-                  internal static void RegisterImports ()
-                  {
-                      {{Fmt(its.Where(i => i.IK == InteropKind.Import).Select(EmitImporter), 3)}}
-                  }
-
-                  {{Fmt(its.Where(i => i.Exporter != null).Select(EmitExporter), 2, "\n\n")}}
-
-                  [JSExport] private static void DisposeExported (int id) => Bootsharp.Instances.DisposeExported(id);
-                  [JSImport("instances.disposeImported", "Bootsharp")] private static partial void NotifyImportedDisposed (int id);
+                  NotifyImportedDisposed(id);
+                  Bootsharp.Instances.DisposeImported(id);
               }
+
+              [ModuleInitializer]
+              internal static void RegisterImports ()
+              {
+                  {{Fmt(its.Where(i => i.IK == InteropKind.Import).Select(EmitImporter), 2)}}
+              }
+
+              {{Fmt(its.Where(i => i.Exporter != null).Select(EmitExporter), 1, "\n\n")}}
+
+              [JSExport] private static void DisposeExported (int id) => Bootsharp.Instances.DisposeExported(id);
+              [JSImport("instances.disposeImported", "Bootsharp")] private static partial void NotifyImportedDisposed (int id);
           }
 
           {{Fmt(its.Where(i => i.IK == InteropKind.Import).Select(EmitProxy), 0, "\n\n")}}
@@ -74,14 +73,11 @@ internal sealed class InstanceGenerator
 
     private string EmitProxy (InstanceMeta it) =>
         $$"""
-          namespace {{(this.it = it).Proxy.Space}}
+          public class {{(this.it = it).Proxy.Id}} (int id) : global::Bootsharp.JSProxy(id), {{it.Syntax}}
           {
-              public class {{it.Proxy.Name}} (int id) : global::Bootsharp.JSProxy(id), {{it.Syntax}}
-              {
-                  ~{{it.Proxy.Name}}() => Instances.DisposeImported(_id);
+              ~{{it.Proxy.Id}}() => Instances.DisposeImported(_id);
 
-                  {{Fmt(it.Members.Select(EmitMemberImport), 2)}}
-              }
+              {{Fmt(it.Members.Select(EmitMemberImport))}}
           }
           """;
 

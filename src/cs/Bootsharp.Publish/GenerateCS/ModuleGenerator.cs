@@ -12,15 +12,14 @@ internal sealed class ModuleGenerator
           #nullable enable
           #pragma warning disable
 
-          namespace Bootsharp.Generated
+          namespace Bootsharp.Generated;
+
+          internal static class ModuleRegistrations
           {
-              internal static class ModuleRegistrations
+              [System.Runtime.CompilerServices.ModuleInitializer]
+              internal static void RegisterModules ()
               {
-                  [System.Runtime.CompilerServices.ModuleInitializer]
-                  internal static void RegisterModules ()
-                  {
-                      {{Fmt(mds.Select(EmitRegistration), 3)}}
-                  }
+                  {{Fmt(mds.Select(EmitRegistration), 2)}}
               }
           }
 
@@ -47,33 +46,27 @@ internal sealed class ModuleGenerator
 
     private string EmitModuleExport () =>
         $$"""
-          namespace {{md.Proxy.Space}}
+          public class {{md.Proxy.Id}}
           {
-              public class {{md.Proxy.Name}}
+              private static {{md.Syntax}} handler = null!;
+
+              public {{md.Proxy.Id}} ({{md.Syntax}} handler)
               {
-                  private static {{md.Syntax}} handler = null!;
-
-                  public {{md.Proxy.Name}} ({{md.Syntax}} handler)
-                  {
-                      {{Fmt([
-                          $"{md.Proxy.Name}.handler = handler;",
-                          ..md.Members.OfType<EventMeta>().Select(e => $"handler.{e.Name} += {e.Name}.Invoke;")
-                      ], 3)}}
-                  }
-
-                  {{Fmt(md.Members.Select(EmitMemberExport), 2)}}
+                  {{Fmt([
+                      $"{md.Proxy.Id}.handler = handler;",
+                      ..md.Members.OfType<EventMeta>().Select(e => $"handler.{e.Name} += {e.Name}.Invoke;")
+                  ], 2)}}
               }
+
+              {{Fmt(md.Members.Select(EmitMemberExport))}}
           }
           """;
 
     private string EmitModuleImport () =>
         $$"""
-          namespace {{md.Proxy.Space}}
+          public class {{md.Proxy.Id}} : {{md.Syntax}}
           {
-              public class {{md.Proxy.Name}} : {{md.Syntax}}
-              {
-                  {{Fmt(md.Members.Select(EmitMemberImport), 2)}}
-              }
+              {{Fmt(md.Members.Select(EmitMemberImport))}}
           }
           """;
 

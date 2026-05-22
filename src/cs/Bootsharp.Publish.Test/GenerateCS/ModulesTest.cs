@@ -32,41 +32,37 @@ public class ModulesTest : GenerateCSTest
         Execute();
         Contains(
             """
-            namespace Bootsharp.Generated
+            namespace Bootsharp.Generated;
+
+            internal static class ModuleRegistrations
             {
-                internal static class ModuleRegistrations
+                [System.Runtime.CompilerServices.ModuleInitializer]
+                internal static void RegisterModules ()
                 {
-                    [System.Runtime.CompilerServices.ModuleInitializer]
-                    internal static void RegisterModules ()
-                    {
-                        Modules.Register(typeof(global::Bootsharp.Generated.Exports.JSExported), new ExportModule(typeof(global::IExported), handler => new global::Bootsharp.Generated.Exports.JSExported((global::IExported)handler)));
-                    }
+                    Modules.Register(typeof(global::Bootsharp.Generated.JS_Export_IExported), new ExportModule(typeof(global::IExported), handler => new global::Bootsharp.Generated.JS_Export_IExported((global::IExported)handler)));
                 }
             }
 
-            namespace Bootsharp.Generated.Exports
+            public class JS_Export_IExported
             {
-                public class JSExported
+                private static global::IExported handler = null!;
+
+                public JS_Export_IExported (global::IExported handler)
                 {
-                    private static global::IExported handler = null!;
-
-                    public JSExported (global::IExported handler)
-                    {
-                        JSExported.handler = handler;
-                        handler.OnRecordChanged += OnRecordChanged.Invoke;
-                        handler.OnSomethingChanged += OnSomethingChanged.Invoke;
-                    }
-
-                    [Export] public static event global::System.Action<global::Record?> OnRecordChanged;
-                    [Export] public static event global::IExported.SomethingChanged OnSomethingChanged;
-                    [Export] public static global::Record? GetRecord () => handler.Record;
-                    [Export] public static void SetRecord (global::Record? value) => handler.Record = value;
-                    [Export] public static void Inv (global::System.String? a) => handler.Inv(a);
-                    [Export] public static global::System.Threading.Tasks.Task InvAsync () => handler.InvAsync();
-                    [Export] public static global::Record? InvRecord () => handler.InvRecord();
-                    [Export] public static global::System.Threading.Tasks.Task<global::System.String> InvAsyncResult () => handler.InvAsyncResult();
-                    [Export] public static global::System.String[] InvArray (global::System.Int32[] a) => handler.InvArray(a);
+                    JS_Export_IExported.handler = handler;
+                    handler.OnRecordChanged += OnRecordChanged.Invoke;
+                    handler.OnSomethingChanged += OnSomethingChanged.Invoke;
                 }
+
+                [Export] public static event global::System.Action<global::Record?> OnRecordChanged;
+                [Export] public static event global::IExported.SomethingChanged OnSomethingChanged;
+                [Export] public static global::Record? GetRecord () => handler.Record;
+                [Export] public static void SetRecord (global::Record? value) => handler.Record = value;
+                [Export] public static void Inv (global::System.String? a) => handler.Inv(a);
+                [Export] public static global::System.Threading.Tasks.Task InvAsync () => handler.InvAsync();
+                [Export] public static global::Record? InvRecord () => handler.InvRecord();
+                [Export] public static global::System.Threading.Tasks.Task<global::System.String> InvAsyncResult () => handler.InvAsyncResult();
+                [Export] public static global::System.String[] InvArray (global::System.Int32[] a) => handler.InvArray(a);
             }
             """);
     }
@@ -99,41 +95,37 @@ public class ModulesTest : GenerateCSTest
         Execute();
         Contains(
             """
-            namespace Bootsharp.Generated
+            namespace Bootsharp.Generated;
+
+            internal static class ModuleRegistrations
             {
-                internal static class ModuleRegistrations
+                [System.Runtime.CompilerServices.ModuleInitializer]
+                internal static void RegisterModules ()
                 {
-                    [System.Runtime.CompilerServices.ModuleInitializer]
-                    internal static void RegisterModules ()
-                    {
-                        Modules.Register(typeof(global::Bootsharp.Generated.Exports.JSExported), new ExportModule(typeof(global::Exported), handler => new global::Bootsharp.Generated.Exports.JSExported((global::Exported)handler)));
-                    }
+                    Modules.Register(typeof(global::Bootsharp.Generated.JS_Export_Exported), new ExportModule(typeof(global::Exported), handler => new global::Bootsharp.Generated.JS_Export_Exported((global::Exported)handler)));
                 }
             }
 
-            namespace Bootsharp.Generated.Exports
+            public class JS_Export_Exported
             {
-                public class JSExported
+                private static global::Exported handler = null!;
+
+                public JS_Export_Exported (global::Exported handler)
                 {
-                    private static global::Exported handler = null!;
-
-                    public JSExported (global::Exported handler)
-                    {
-                        JSExported.handler = handler;
-                        handler.OnRecordChanged += OnRecordChanged.Invoke;
-                        handler.OnSomethingChanged += OnSomethingChanged.Invoke;
-                    }
-
-                    [Export] public static event global::System.Action<global::Record?> OnRecordChanged;
-                    [Export] public static event global::Exported.SomethingChanged OnSomethingChanged;
-                    [Export] public static global::Record? GetRecord () => handler.Record;
-                    [Export] public static void SetRecord (global::Record? value) => handler.Record = value;
-                    [Export] public static void Inv (global::System.String? a) => handler.Inv(a);
-                    [Export] public static global::System.Threading.Tasks.Task InvAsync () => handler.InvAsync();
-                    [Export] public static global::Record? InvRecord () => handler.InvRecord();
-                    [Export] public static global::System.Threading.Tasks.Task<global::System.String> InvAsyncResult () => handler.InvAsyncResult();
-                    [Export] public static global::System.String[] InvArray (global::System.Int32[] a) => handler.InvArray(a);
+                    JS_Export_Exported.handler = handler;
+                    handler.OnRecordChanged += OnRecordChanged.Invoke;
+                    handler.OnSomethingChanged += OnSomethingChanged.Invoke;
                 }
+
+                [Export] public static event global::System.Action<global::Record?> OnRecordChanged;
+                [Export] public static event global::Exported.SomethingChanged OnSomethingChanged;
+                [Export] public static global::Record? GetRecord () => handler.Record;
+                [Export] public static void SetRecord (global::Record? value) => handler.Record = value;
+                [Export] public static void Inv (global::System.String? a) => handler.Inv(a);
+                [Export] public static global::System.Threading.Tasks.Task InvAsync () => handler.InvAsync();
+                [Export] public static global::Record? InvRecord () => handler.InvRecord();
+                [Export] public static global::System.Threading.Tasks.Task<global::System.String> InvAsyncResult () => handler.InvAsyncResult();
+                [Export] public static global::System.String[] InvArray (global::System.Int32[] a) => handler.InvArray(a);
             }
             """);
     }
@@ -182,37 +174,33 @@ public class ModulesTest : GenerateCSTest
         Execute();
         Contains(
             """
-            namespace Bootsharp.Generated
+            namespace Bootsharp.Generated;
+
+            internal static class ModuleRegistrations
             {
-                internal static class ModuleRegistrations
+                [System.Runtime.CompilerServices.ModuleInitializer]
+                internal static void RegisterModules ()
                 {
-                    [System.Runtime.CompilerServices.ModuleInitializer]
-                    internal static void RegisterModules ()
-                    {
-                        Modules.Register(typeof(global::IImported), new ImportModule(new global::Bootsharp.Generated.Imports.JSImported()));
-                    }
+                    Modules.Register(typeof(global::IImported), new ImportModule(new global::Bootsharp.Generated.JS_Import_IImported()));
                 }
             }
 
-            namespace Bootsharp.Generated.Imports
+            public class JS_Import_IImported : global::IImported
             {
-                public class JSImported : global::IImported
+                public event global::System.Action<global::Record?> OnRecordChanged;
+                internal void InvokeOnRecordChanged (global::Record? obj) => OnRecordChanged?.Invoke(obj);
+                public event global::IImported.SomethingChanged OnSomethingChanged;
+                internal void InvokeOnSomethingChanged () => OnSomethingChanged?.Invoke();
+                global::Record? global::IImported.Record
                 {
-                    public event global::System.Action<global::Record?> OnRecordChanged;
-                    internal void InvokeOnRecordChanged (global::Record? obj) => OnRecordChanged?.Invoke(obj);
-                    public event global::IImported.SomethingChanged OnSomethingChanged;
-                    internal void InvokeOnSomethingChanged () => OnSomethingChanged?.Invoke();
-                    global::Record? global::IImported.Record
-                    {
-                        get => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_GetRecord();
-                        set => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_SetRecord(value);
-                    }
-                    void global::IImported.Inv (global::System.String? a) => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_Inv(a);
-                    global::System.Threading.Tasks.Task global::IImported.InvAsync () => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_InvAsync();
-                    global::Record? global::IImported.InvRecord () => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_InvRecord();
-                    global::System.Threading.Tasks.Task<global::System.String> global::IImported.InvAsyncResult () => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_InvAsyncResult();
-                    global::System.String[] global::IImported.InvArray (global::System.Int32[] a) => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_JSImported_InvArray(a);
+                    get => global::Bootsharp.Generated.Interop.JS_Import_IImported_GetRecord();
+                    set => global::Bootsharp.Generated.Interop.JS_Import_IImported_SetRecord(value);
                 }
+                void global::IImported.Inv (global::System.String? a) => global::Bootsharp.Generated.Interop.JS_Import_IImported_Inv(a);
+                global::System.Threading.Tasks.Task global::IImported.InvAsync () => global::Bootsharp.Generated.Interop.JS_Import_IImported_InvAsync();
+                global::Record? global::IImported.InvRecord () => global::Bootsharp.Generated.Interop.JS_Import_IImported_InvRecord();
+                global::System.Threading.Tasks.Task<global::System.String> global::IImported.InvAsyncResult () => global::Bootsharp.Generated.Interop.JS_Import_IImported_InvAsyncResult();
+                global::System.String[] global::IImported.InvArray (global::System.Int32[] a) => global::Bootsharp.Generated.Interop.JS_Import_IImported_InvArray(a);
             }
             """);
     }
@@ -251,40 +239,33 @@ public class ModulesTest : GenerateCSTest
         Execute();
         Contains(
             """
-            namespace Bootsharp.Generated
+            namespace Bootsharp.Generated;
+
+            internal static class ModuleRegistrations
             {
-                internal static class ModuleRegistrations
+                [System.Runtime.CompilerServices.ModuleInitializer]
+                internal static void RegisterModules ()
                 {
-                    [System.Runtime.CompilerServices.ModuleInitializer]
-                    internal static void RegisterModules ()
-                    {
-                        Modules.Register(typeof(global::Bootsharp.Generated.Exports.Space.JSExported), new ExportModule(typeof(global::Space.IExported), handler => new global::Bootsharp.Generated.Exports.Space.JSExported((global::Space.IExported)handler)));
-                        Modules.Register(typeof(global::Space.IImported), new ImportModule(new global::Bootsharp.Generated.Imports.Space.JSImported()));
-                    }
+                    Modules.Register(typeof(global::Bootsharp.Generated.JS_Export_Space_IExported), new ExportModule(typeof(global::Space.IExported), handler => new global::Bootsharp.Generated.JS_Export_Space_IExported((global::Space.IExported)handler)));
+                    Modules.Register(typeof(global::Space.IImported), new ImportModule(new global::Bootsharp.Generated.JS_Import_Space_IImported()));
                 }
             }
 
-            namespace Bootsharp.Generated.Exports.Space
+            public class JS_Export_Space_IExported
             {
-                public class JSExported
+                private static global::Space.IExported handler = null!;
+
+                public JS_Export_Space_IExported (global::Space.IExported handler)
                 {
-                    private static global::Space.IExported handler = null!;
-
-                    public JSExported (global::Space.IExported handler)
-                    {
-                        JSExported.handler = handler;
-                    }
-
-                    [Export] public static void Inv (global::Space.Record a) => handler.Inv(a);
+                    JS_Export_Space_IExported.handler = handler;
                 }
+
+                [Export] public static void Inv (global::Space.Record a) => handler.Inv(a);
             }
 
-            namespace Bootsharp.Generated.Imports.Space
+            public class JS_Import_Space_IImported : global::Space.IImported
             {
-                public class JSImported : global::Space.IImported
-                {
-                    void global::Space.IImported.Fun (global::Space.Record a) => global::Bootsharp.Generated.Interop.Bootsharp_Generated_Imports_Space_JSImported_Fun(a);
-                }
+                void global::Space.IImported.Fun (global::Space.Record a) => global::Bootsharp.Generated.Interop.JS_Import_Space_IImported_Fun(a);
             }
             """);
     }
@@ -334,6 +315,6 @@ public class ModulesTest : GenerateCSTest
             [assembly:Import(typeof(IShared))]
             """));
         Execute();
-        Once("class JSShared");
+        Once("class JS_Import_IShared");
     }
 }

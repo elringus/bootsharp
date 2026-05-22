@@ -51,7 +51,7 @@ internal sealed class JSInstanceGenerator (bool debug, JSModules md)
 
     private string EmitProxy (InstanceMeta it) =>
         $$"""
-          $i.{{it.Id}} = class {{it.Proxy.JS}} {
+          $i.{{it.Id}} = class {{it.Proxy.Id}} {
               {{Fmt([
                   "constructor(_id) { this._id = _id; }",
                   ..it.Members.Select(EmitMember)

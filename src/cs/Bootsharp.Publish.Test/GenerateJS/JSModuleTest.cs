@@ -26,7 +26,7 @@ public class JSModuleTest : GenerateJSTest
         Execute();
         Contains("""getExport("Class_InvokeEvt")""");
         Contains("""getExport("Class_InvAsync")""");
-        Contains("""getExport("Bootsharp_Generated_Exports_JSExportedStatic_GetState")""");
+        Contains("""getExport("JS_Export_IExportedStatic_GetState")""");
         Contains("""getImport(this.funHandler, this.funSerializedHandler, "Class.fun")""");
     }
 
@@ -431,7 +431,7 @@ public class JSModuleTest : GenerateJSTest
         Contains("space.g.mjs",
             """
             export const IExported = {
-                inv: (str, info) => deserialize(exports.Bootsharp_Generated_Exports_Space_JSExported_Inv(str, serialize(info, $s.Space_Info)), $s.Space_Info)
+                inv: (str, info) => deserialize(exports.JS_Export_Space_IExported_Inv(str, serialize(info, $s.Space_Info)), $s.Space_Info)
             };
             export const IImported = {
                 get fun() { return this.funHandler; },
@@ -469,9 +469,9 @@ public class JSModuleTest : GenerateJSTest
         Contains("space.g.mjs",
             """
             export const IExported = {
-                get state() { return deserialize(exports.Bootsharp_Generated_Exports_Space_JSExported_GetState(), $s.Space_Info) ?? undefined; },
-                set state(value) { exports.Bootsharp_Generated_Exports_Space_JSExported_SetState(serialize(value, $s.Space_Info)); },
-                set count(value) { exports.Bootsharp_Generated_Exports_Space_JSExported_SetCount(value); }
+                get state() { return deserialize(exports.JS_Export_Space_IExported_GetState(), $s.Space_Info) ?? undefined; },
+                set state(value) { exports.JS_Export_Space_IExported_SetState(serialize(value, $s.Space_Info)); },
+                set count(value) { exports.JS_Export_Space_IExported_SetCount(value); }
             };
             export const IImported = {
                 getStateSerialized() { return serialize(this.state.get(), $s.Space_Info); },
@@ -504,7 +504,7 @@ public class JSModuleTest : GenerateJSTest
                 broadcastEvtSerialized: (obj) => IExported.evt.broadcast(deserialize(obj, $s.Space_Info))
             };
             export const IImported = {
-                evt: importEvent((obj) => exports.Bootsharp_Generated_Imports_Space_JSImported_InvokeEvt(serialize(obj, $s.Space_Info)))
+                evt: importEvent((obj) => exports.JS_Import_Space_IImported_InvokeEvt(serialize(obj, $s.Space_Info)))
             };
             """);
     }
@@ -809,9 +809,9 @@ public class JSModuleTest : GenerateJSTest
             export const Foo = {
                 quz: new Event(),
                 broadcastChangedSerialized: () => Foo.quz.broadcast(),
-                get qux() { return deserialize(exports.Bootsharp_Generated_Exports_Space_JSExported_GetState(), $s.Space_Enum); },
-                set qux(value) { exports.Bootsharp_Generated_Exports_Space_JSExported_SetState(serialize(value, $s.Space_Enum)); },
-                bar: (e) => exports.Bootsharp_Generated_Exports_Space_JSExported_Inv(serialize(e, $s.Space_Enum)),
+                get qux() { return deserialize(exports.JS_Export_Space_IExported_GetState(), $s.Space_Enum); },
+                set qux(value) { exports.JS_Export_Space_IExported_SetState(serialize(value, $s.Space_Enum)); },
+                bar: (e) => exports.JS_Export_Space_IExported_Inv(serialize(e, $s.Space_Enum)),
                 get baz() { return this.bazHandler; },
                 set baz(handler) { this.bazHandler = handler; this.bazSerializedHandler = (e) => this.bazHandler(deserialize(e, $s.Space_Enum)); },
                 get bazSerialized() { return this.bazSerializedHandler; }
@@ -862,9 +862,9 @@ public class JSModuleTest : GenerateJSTest
             };
             export const Foo = {
                 broadcastEventSerialized: (_id) => $i.resolve(_id, $i.Space_IInst).broadcastEvent(),
-                getProperty(_id) { return deserialize(exports.Bootsharp_Generated_Exports_Space_JSInst_GetProperty(_id), $s.Space_Enum); },
-                setProperty(_id, value) { exports.Bootsharp_Generated_Exports_Space_JSInst_SetProperty(_id, serialize(value, $s.Space_Enum)); },
-                bar: (_id, e) => exports.Bootsharp_Generated_Exports_Space_JSInst_Method(_id, serialize(e, $s.Space_Enum))
+                getProperty(_id) { return deserialize(exports.JS_Export_Space_IInst_GetProperty(_id), $s.Space_Enum); },
+                setProperty(_id, value) { exports.JS_Export_Space_IInst_SetProperty(_id, serialize(value, $s.Space_Enum)); },
+                bar: (_id, e) => exports.JS_Export_Space_IInst_Method(_id, serialize(e, $s.Space_Enum))
             };
             export const Enum = {
                 "0": "A",
