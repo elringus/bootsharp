@@ -108,39 +108,41 @@ internal static class GlobalType
         return $"_id, {args}";
     }
 
-    public static string BuildId (Type type)
+    public static string BuildId (Type type, bool full = true, char separator = '_')
     {
-        var builder = new StringBuilder();
-        foreach (var c in BuildSyntax(type).Replace("global::", ""))
-            if (char.IsLetterOrDigit(c) || c == '_') builder.Append(c);
-            else if (c == '.') builder.Append('_');
-            else if (c == '?') builder.Append("OrNull");
-            else if (c == '[') builder.Append("Array");
-            else if (c == '<') builder.Append("_Of_");
-            else if (c == ',') builder.Append("_And_");
-        return builder.ToString();
+        var sb = new StringBuilder();
+        foreach (var c in BuildSyntax(type, full: full).Replace("global::", ""))
+            if (char.IsLetterOrDigit(c) || c == separator) sb.Append(c);
+            else if (c == '.') sb.Append(separator);
+            else if (c == '?') sb.Append("OrNull");
+            else if (c == '[') sb.Append("Array");
+            else if (c == '<') sb.Append("_Of_");
+            else if (c == ',') sb.Append("_And_");
+        return sb.ToString();
     }
 
-    public static string BuildSyntax (Type type, NullabilityInfo? nul = null, bool forceNil = false)
+    public static string BuildSyntax (Type type, NullabilityInfo? nul = null, bool forceNil = false, bool full = true)
     {
         var nil = (forceNil || nul?.ReadState == NullabilityState.Nullable) ? "?" : "";
+        var global = full ? "global::" : "";
         if (IsVoid(type)) return "void";
         if (type.IsArray) return $"{BuildSyntax(type.GetElementType()!, nul?.ElementType)}[]{nil}";
         if (type.IsGenericType) return BuildGeneric(type, type.GenericTypeArguments);
-        return $"global::{ResolveTypeName(type)}{nil}";
+        return $"{global}{ResolveTypeName(type)}{nil}";
 
         string BuildGeneric (Type type, Type[] args)
         {
-            if (IsNullable(type, out var value)) return BuildSyntax(value, nul, true);
+            if (IsNullable(type, out var value)) return BuildSyntax(value, nul, true, full);
             var name = TrimGeneric(ResolveTypeName(type));
-            var typeArgs = string.Join(", ", args.Select((a, i) => BuildSyntax(a, nul?.GenericTypeArguments[i])));
-            return $"global::{name}<{typeArgs}>";
+            var typeArgs = string.Join(", ", args.Select((a, i) =>
+                BuildSyntax(a, nul?.GenericTypeArguments[i], forceNil, full)));
+            return $"{global}{name}<{typeArgs}>";
         }
 
-        static string ResolveTypeName (Type type)
+        string ResolveTypeName (Type type)
         {
             if (type.IsNested) return $"{ResolveTypeName(type.DeclaringType!)}.{type.Name}";
-            if (type.Namespace is null) return type.Name;
+            if (!full || type.Namespace is null) return type.Name;
             return $"{type.Namespace}.{type.Name}";
         }
     }

@@ -4,6 +4,7 @@ namespace Bootsharp.Publish;
 
 internal sealed class DeclarationGenerator
 {
+    private readonly HashSet<Type> declared = [];
     private readonly CodeBuilder bld = new();
     private readonly TypeSyntaxBuilder ts;
     private readonly DocumentationBuilder doc;
@@ -21,6 +22,7 @@ internal sealed class DeclarationGenerator
     public string Generate (JSModule module)
     {
         bld.Clear();
+        declared.Clear();
         ts.EnterModule(module);
         foreach (var node in module.Nodes)
             DeclareNode(node);
@@ -42,13 +44,14 @@ internal sealed class DeclarationGenerator
             if (surf != null) doc.Type(surf);
             bld.Enter($"export namespace {node.Name} {{");
         }
-        // Distinct by CLR to discard the other side of a bidirectional (export+import)
-        // instance surface, because both produce identical declarations.
-        foreach (var type in node.Types.DistinctBy(t => t.Clr))
-            if (type is SerializedEnumMeta enu) DeclareEnum(enu);
-            else if (type is SerializedObjectMeta o) DeclareSerialized(o);
-            else if (type is InstanceMeta it) DeclareInstance(it);
-            else if (type is SurfaceMeta srf) DeclareSurface(srf);
+        foreach (var type in node.Types)
+            // Dedup by CLR to discard the other side of a bidirectional (export+import)
+            // instance surface and closed generic variants (all produce same open type).
+            if (declared.Add(type.Clr.IsGenericType ? type.Clr.GetGenericTypeDefinition() : type.Clr))
+                if (type is SerializedEnumMeta enu) DeclareEnum(enu);
+                else if (type is SerializedObjectMeta o) DeclareSerialized(o);
+                else if (type is InstanceMeta it) DeclareInstance(it);
+                else if (type is SurfaceMeta srf) DeclareSurface(srf);
         foreach (var child in node.Children)
             DeclareNode(child);
         if (wrap) bld.Exit("}");

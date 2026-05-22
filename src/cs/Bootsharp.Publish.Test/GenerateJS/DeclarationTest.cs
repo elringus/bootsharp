@@ -72,7 +72,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void CrawledTypeDoesNotOverrideSpecializedDeclaration ()
+    public void CrawledTypeDoesNotOverrideSpecialized ()
     {
         AddAssembly(With(
             """
@@ -115,7 +115,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void FunctionDeclarationIsExportedForInvokableMethod ()
+    public void FunctionIsExportedForInvokableMethod ()
     {
         AddAssembly(WithClass("Foo", "[Export] public static void Foo () { }"));
         Execute();
@@ -354,7 +354,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForObjectType ()
+    public void GeneratedForObjectType ()
     {
         AddAssembly(
             With("n", "public class Foo { public string S { get; set; } public int I { get; set; } }"),
@@ -373,7 +373,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForInterfaceAndImplementation ()
+    public void GeneratedForInterfaceAndImplementation ()
     {
         AddAssembly(
             With("n", "public interface Interface { Interface Foo { get; } void Bar (Interface b); }"),
@@ -400,7 +400,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForTypeWithListProperty ()
+    public void GeneratedForTypeWithListProperty ()
     {
         AddAssembly(
             With("n", "public interface Item { }"),
@@ -421,7 +421,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForTypeWithJaggedArrayProperty ()
+    public void GeneratedForTypeWithJaggedArrayProperty ()
     {
         AddAssembly(
             With("n", "public interface Item { }"),
@@ -442,7 +442,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForTypeWithReadOnlyListProperty ()
+    public void GeneratedForTypeWithReadOnlyListProperty ()
     {
         AddAssembly(
             With("n", "public interface Item { }"),
@@ -463,7 +463,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForTypeWithDictionaryProperty ()
+    public void GeneratedForTypeWithDictionaryProperty ()
     {
         AddAssembly(
             With("n", "public interface Item { }"),
@@ -484,7 +484,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForTypeWithReadOnlyDictionaryProperty ()
+    public void GeneratedForTypeWithReadOnlyDictionaryProperty ()
     {
         AddAssembly(
             With("n", "public interface Item { }"),
@@ -505,7 +505,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForTypeWithCollectionProperty ()
+    public void GeneratedForTypeWithCollectionProperty ()
     {
         AddAssembly(
             With("n", "public interface Item { }"),
@@ -526,7 +526,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForTypeWithReadOnlyCollectionProperty ()
+    public void GeneratedForTypeWithReadOnlyCollectionProperty ()
     {
         AddAssembly(
             With("n", "public interface Item { }"),
@@ -547,7 +547,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForGenericClass ()
+    public void GeneratedForGenericClass ()
     {
         AddAssembly(
             With("n", "public class Generic<T> where T: notnull { public required T Value { get; set; } }"),
@@ -570,7 +570,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForGenericRecord ()
+    public void GeneratedForGenericRecord ()
     {
         AddAssembly(
             With("n", "public record Generic<T> where T: notnull { public T Value { get; set; } }"),
@@ -592,7 +592,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForGenericInterface ()
+    public void GeneratedForGenericInterface ()
     {
         AddAssembly(
             With("n", "public interface IGenericInterface<T> { public T Value { get; set; } }"),
@@ -610,7 +610,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForNestedGenericTypes ()
+    public void GeneratedForNestedGenericTypes ()
     {
         AddAssembly(
             With("Foo", "public class GenericClass<T> { public T Value { get; set; } }"),
@@ -626,7 +626,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void DefinitionIsGeneratedForGenericClassWithMultipleTypeArguments ()
+    public void GeneratedForGenericClassWithMultipleTypeArguments ()
     {
         AddAssembly(
             With("n", "public class GenericClass<T1, T2> { public T1 Key { get; set; } public T2 Value { get; set; } }"),
@@ -642,6 +642,22 @@ public class DeclarationTest : GenerateJSTest
                 value?: T2;
             }
             """);
+    }
+
+    [Fact]
+    public void DoesNotDuplicateGenerics ()
+    {
+        AddAssembly(
+            With("public interface IGeneric<T> { public T Value { get; set; } }"),
+            With("public record GenericRecord<T> (T Value);"),
+            WithClass(
+                """
+                [Export] public static void Foo (IGeneric<int> a, IGeneric<string> b) { }
+                [Export] public static void Bar (GenericRecord<int> a, GenericRecord<string> b) { }
+                """));
+        Execute();
+        Once("export interface IGeneric<T>");
+        Once("export type GenericRecord<T>");
     }
 
     [Fact]
@@ -1231,7 +1247,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void DeclarationsCrossNamespaceImportsEmitted ()
+    public void CrossNamespaceImportsEmitted ()
     {
         AddAssembly(With(
             """
@@ -1248,7 +1264,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void DeclarationFileImportsRootNamespaceTypeFromPackageRoot ()
+    public void GlobalNamespaceImportsFromIndex ()
     {
         AddAssembly(With(
             """
@@ -1264,7 +1280,7 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void TypeDeclarationGroupsMultipleNestedTypes ()
+    public void GroupsMultipleNestedTypes ()
     {
         AddAssembly(With(
             """

@@ -27,16 +27,14 @@ internal record TypeMeta (Type Clr)
     /// </summary>
     public string JSNode { get; } = BuildNode(Clr);
 
-    private static string BuildModule (Type Clr)
+    private static string BuildModule (Type clr)
     {
-        var slug = Slugify(WithPref(Pref.Space, Clr.Namespace ?? ""));
+        var slug = Slugify(WithPref(Pref.Space, clr.Namespace ?? ""));
         return string.IsNullOrWhiteSpace(slug) ? "index" : slug;
     }
 
-    private static string BuildNode (Type Clr)
+    private static string BuildNode (Type clr)
     {
-        var full = TrimGeneric(Clr.FullName!);
-        var name = full[(full.LastIndexOf('.') + 1)..];
-        return WithPref(Pref.Name, name).Replace('+', '.');
+        return WithPref(Pref.Name, clr.Name, BuildId(clr, false, '.'));
     }
 }

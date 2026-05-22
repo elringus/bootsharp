@@ -128,8 +128,9 @@ internal sealed class TypeSyntaxBuilder (JSModules mds)
         var @ref = mds.Ref(type, module);
         if (!type.IsGenericType) return @ref;
         EnterNullity();
+        var name = @ref[..@ref.IndexOf("_Of_", StringComparison.Ordinal)];
         var args = string.Join(", ", type.GetGenericArguments().Select(Build));
-        return $"{@ref}<{args}>";
+        return $"{name}<{args}>";
     }
 
     private string BuildPrimitive (Type type)

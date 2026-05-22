@@ -30,7 +30,7 @@ public sealed class PreferencesAttribute : Attribute
     /// Customize how C# type names transform into JavaScript object names.
     /// </summary>
     /// <remarks>
-    /// The patterns are matched against the C# type names, with generic identity removed.
+    /// The patterns are matched against the C# type names.
     /// </remarks>
     public string[] Name { get; init; } = [];
     /// <summary>
