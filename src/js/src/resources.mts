@@ -1,4 +1,4 @@
-import generated from "./generated/resources.g.mjs";
+import * as generated from "./generated/resources.g.mjs";
 
 /** Lists resource file names (including extension) required to boot the runtime. */
 export type BootManifest = Readonly<{
@@ -18,8 +18,8 @@ export type BootManifest = Readonly<{
 
 /** Resources required to boot the runtime. */
 export type BootResources = Readonly<{
-    /** Binary content of the compiled WASM runtime module. */
-    wasm: ArrayBuffer;
+    /** Compiled WASM content: either raw bytes or base64 encoded string. */
+    wasm: ArrayBuffer | string;
     /** Compiled runtime assemblies. */
     assemblies?: BinaryResource[];
     /** Globalization data. */
@@ -34,15 +34,17 @@ export type BootResources = Readonly<{
 export type BinaryResource = Readonly<{
     /** Name of the file, including extension. */
     name: string;
-    /** Binary content of the file. */
-    content: ArrayBuffer;
+    /** Binary content of the file: either raw bytes or base64 encoded string. */
+    content: ArrayBuffer | string;
 }>;
 
 /** Lists resource names required to boot the runtime. */
-export const manifest: BootManifest = generated;
+export const manifest: BootManifest = generated.manifest;
 
-/** Fetches required boot resources from the specified root URL. */
-export async function fetchResources(root: string): Promise<BootResources> {
+/** Fetches resources from the specified root URL or from the embedded resources when in embedded mode. */
+export async function fetchResources(root?: string): Promise<BootResources> {
+    /* v8 ignore next -- embedded mode is covered in samples */
+    if (generated.embedded != null) return generated.embedded;
     const [wasm, assemblies, icu, symbols, pdb] = await Promise.all([
         fetchResource(manifest.wasm),
         Promise.all(manifest.assemblies.map(fetchResource)),

@@ -36,11 +36,11 @@ export function getStatus(): BootStatus {
     return status;
 }
 
-/** Initializes the runtime and binds C# APIs.
+/** Initializes the runtime. When not in embedded mode, resources parameter has to be specified.
  *  @param resources Either URL to the boot resources root (eg, <code>/bin</code>) or the preloaded content.
  *  @param options Allows customizing the boot process and the runtime behaviour.
  *  @return Promise that resolves into the runtime instance when the initialization is finished. */
-export async function boot(resources: string | BootResources, options?: BootOptions): Promise<RuntimeAPI> {
+export async function boot(resources?: string | BootResources, options?: BootOptions): Promise<RuntimeAPI> {
     if (status === BootStatus.Booted) throw Error("Failed to boot the C# runtime: already booted.");
     if (status === BootStatus.Booting) throw Error("Failed to boot the C# runtime: already booting.");
     status = BootStatus.Booting;
@@ -53,16 +53,16 @@ export async function boot(resources: string | BootResources, options?: BootOpti
  *  @param code Exit code; will use 0 (normal exit) by default.
  *  @param reason Exit reason description (optional). */
 export async function exit(code?: number, reason?: string): Promise<void> {
-    /* v8 ignore start -- @preserve */ // Uncoverable, as exit terminates the host test process.
+    /* v8 ignore start -- uncoverable, as exit terminates the host test process */
     if (status !== BootStatus.Booted) throw Error("Failed to exit the C# runtime: not booted.");
     try { app.exit(code ?? 0, reason); }
     catch { }
     finally { status = BootStatus.Standby; }
-    /* v8 ignore stop -- @preserve */
+    /* v8 ignore stop */
 }
 
-async function createRuntime(res: string | BootResources, opt: BootOptions) {
-    const cfg = opt.config ?? buildConfig(typeof res === "string" ? await fetchResources(res) : res);
+async function createRuntime(res: string | BootResources | undefined, opt: BootOptions) {
+    const cfg = opt.config ?? buildConfig(typeof res === "object" ? res : await fetchResources(res));
     const runtime = await opt.create?.(cfg) || await app.dotnet.withConfig(cfg).create();
     setRuntime(runtime);
     if (opt.import) await opt.import(runtime); else bindImports(runtime);

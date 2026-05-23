@@ -131,9 +131,8 @@ export class Writer {
 
     private refreshHeapView(): void {
         const heap = getHeap();
-        /* v8 ignore start -- @preserve */ // Uncoverable, as WASM heap growth is not controllable.
+        /* v8 ignore next -- uncoverable, as WASM heap growth is not controllable */
         if (this.heap === heap) return;
-        /* v8 ignore stop -- @preserve */
         this.heap = heap;
         this.view = new DataView(heap.buffer, heap.byteOffset);
     }

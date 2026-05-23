@@ -25,12 +25,13 @@ export function buildConfig(resources: BootResources): RuntimeConfig {
     }
 
     function resolveAsset<T extends Asset>(res: BinaryResource): T {
-        return { name: res.name, virtualPath: res.name, buffer: res.content } as Asset as T;
+        const buffer = resolveBinary(res.content);
+        return { name: res.name, virtualPath: res.name, buffer } as Asset as T;
     }
 
     function resolveSymbols(res: BinaryResource): SymbolsAsset {
         // Use 'resolveAsset<SymbolsAsset>()' once https://github.com/dotnet/runtime/pull/127087 is merged.
-        const txt = new TextDecoder("utf-8").decode(res.content);
+        const txt = new TextDecoder("utf-8").decode(resolveBinary(res.content));
         return {
             name: res.name,
             pendingDownload: {
@@ -45,5 +46,10 @@ export function buildConfig(resources: BootResources): RuntimeConfig {
         if (!resources.icu) return "invariant" as never;
         if (resources.icu.some(res => res.name === "icudt.dat")) return "all" as never;
         return "sharded" as never;
+    }
+
+    function resolveBinary(content: ArrayBuffer | string): ArrayBuffer {
+        if (typeof content !== "string") return content;
+        return Uint8Array.fromBase64(content).buffer;
     }
 }

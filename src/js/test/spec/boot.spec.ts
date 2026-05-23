@@ -105,12 +105,12 @@ describe("boot", () => {
                     }],
                     wasmNative: [{
                         name: "dotnet.native.wasm",
-                        buffer: resources.wasm
+                        buffer: resources.wasm as ArrayBuffer
                     }],
                     assembly: resources.assemblies?.map(a => ({
                         name: a.name,
                         virtualPath: a.name,
-                        buffer: a.content!
+                        buffer: a.content as ArrayBuffer
                     }))
                 }
             },
@@ -124,6 +124,20 @@ describe("boot", () => {
         expect(customs.import).toHaveBeenCalledOnce();
         expect(customs.run).toHaveBeenCalledOnce();
         expect(customs.export).toHaveBeenCalledOnce();
+    });
+    it("can boot with base64 resources", async () => {
+        const { bootsharp, resources, Program } = await setup();
+        const encode = (buf: ArrayBuffer) => Buffer.from(buf).toString("base64");
+        const encodeAll = (bins: typeof resources.assemblies) =>
+            bins?.map(b => ({ name: b.name, content: encode(b.content as ArrayBuffer) }));
+        await bootsharp.boot({
+            wasm: encode(resources.wasm as ArrayBuffer),
+            assemblies: encodeAll(resources.assemblies),
+            icu: encodeAll(resources.icu),
+            symbols: encodeAll(resources.symbols),
+            pdb: encodeAll(resources.pdb)
+        });
+        expect(Program.onMainInvoked).toHaveBeenCalledOnce();
     });
     it("can boot when program has no exports", async () => {
         const { bootsharp, resources } = await setup();

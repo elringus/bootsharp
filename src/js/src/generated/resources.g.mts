@@ -1,3 +1,4 @@
-import { BootManifest } from "../resources.mjs";
+import { BootManifest, BootResources } from "../resources.mjs";
 
-export default {} as BootManifest;
+export const manifest = {} as BootManifest;
+export const embedded: BootResources | undefined = undefined;

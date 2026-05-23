@@ -4,6 +4,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+        <BootsharpBinariesDirectory>bin/bootsharp/bin</BootsharpBinariesDirectory>
         <DefineTrace>true</DefineTrace>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>bin/codegen</CompilerGeneratedFilesOutputPath>

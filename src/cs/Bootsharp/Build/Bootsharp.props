@@ -17,10 +17,10 @@
         <!-- User Preferences -->
         <!-- Name of the generated JavaScript module; 'bootsharp' by default. -->
         <BootsharpName>bootsharp</BootsharpName>
+        <!-- Directory to publish binaries; when not specified, will publish in embedded mode. -->
+        <BootsharpBinariesDirectory/>
         <!-- Directory to publish generated JavaScript module; 'base-output/module-name' by default. -->
         <BootsharpPublishDirectory/>
-        <!-- Directory to publish binaries; 'publish-dir/bin' by default. -->
-        <BootsharpBinariesDirectory/>
         <!-- Directory to publish 'package.json' file; equals project directoy by default. -->
         <BootsharpPackageDirectory/>
 

@@ -42,6 +42,7 @@ public class GenerateJSTest : TaskTest
         BuildEngine = Engine,
         Globalization = false,
         LLVM = false,
-        Debug = false
+        Debug = false,
+        Embed = false
     };
 }

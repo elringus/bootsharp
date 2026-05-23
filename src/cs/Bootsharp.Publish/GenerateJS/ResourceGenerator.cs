@@ -1,9 +1,10 @@
 namespace Bootsharp.Publish;
 
 /// <summary>
-/// Generates a manifest listing resources required to initialize the .NET runtime.
+/// Generates a manifest listing resources required to initialize the .NET runtime,
+/// optionally embedding the binary content as base64 strings.
 /// </summary>
-internal sealed class ResourceGenerator (string entryAssemblyName, bool debug, bool g11n)
+internal sealed class ResourceGenerator (string entryAssemblyName, bool debug, bool g11n, bool embed)
 {
     private readonly List<string> assemblies = [];
     private readonly List<string> symbols = [];
@@ -14,43 +15,64 @@ internal sealed class ResourceGenerator (string entryAssemblyName, bool debug, b
     public string Generate (string buildDir, string debugDir)
     {
         foreach (var path in Directory.GetFiles(buildDir, "*.wasm").Order())
-            if (path.EndsWith("dotnet.native.wasm")) wasm = BuildResourceName(path);
-            else assemblies.Add(BuildResourceName(path));
+            if (path.EndsWith("dotnet.native.wasm")) wasm = Path.GetFileName(path);
+            else assemblies.Add(Path.GetFileName(path));
         if (g11n)
-        {
             foreach (var path in Directory.GetFiles(buildDir, "*.dat").Order())
-                icu.Add(BuildResourceName(path));
-        }
+                icu.Add(Path.GetFileName(path));
         if (debug)
         {
             foreach (var path in Directory.GetFiles(debugDir, "*.symbols").Order())
-                symbols.Add(BuildResourceName(path));
+                symbols.Add(Path.GetFileName(path));
             foreach (var path in Directory.GetFiles(debugDir, "*.pdb").Order())
-                pdb.Add(BuildResourceName(path));
+                pdb.Add(Path.GetFileName(path));
         }
-        return
-            $$"""
-              export default {
-                  wasm: {{wasm}},
-                  assemblies: [
-                      {{Fmt(assemblies, 2, ",\n")}}
-                  ],
-                  icu: [
-                      {{Fmt(icu, 2, ",\n")}}
-                  ],
-                  symbols: [
-                      {{Fmt(symbols, 2, ",\n")}}
-                  ],
-                  pdb: [
-                      {{Fmt(pdb, 2, ",\n")}}
-                  ],
-                  entryAssemblyName: "{{entryAssemblyName}}"
-              };
-              """;
+        return $"{GenerateManifest()}\n\n{GenerateEmbedded(buildDir, debugDir)}";
     }
 
-    private string BuildResourceName (string path)
-    {
-        return $"\"{Path.GetFileName(path)}\"";
-    }
+    private string GenerateManifest () =>
+        $$"""
+          export const manifest = {
+              wasm: "{{wasm}}",
+              assemblies: [
+                  {{FmtNames(assemblies)}}
+              ],
+              icu: [
+                  {{FmtNames(icu)}}
+              ],
+              symbols: [
+                  {{FmtNames(symbols)}}
+              ],
+              pdb: [
+                  {{FmtNames(pdb)}}
+              ],
+              entryAssemblyName: "{{entryAssemblyName}}"
+          };
+          """;
+
+    private string GenerateEmbedded (string buildDir, string debugDir) => embed ?
+        $$"""
+          export const embedded = {
+              wasm: "{{ReadBase64(buildDir, wasm)}}",
+              assemblies: [
+                  {{FmtBins(buildDir, assemblies)}}
+              ],
+              icu: [
+                  {{FmtBins(buildDir, icu)}}
+              ],
+              symbols: [
+                  {{FmtBins(debugDir, symbols)}}
+              ],
+              pdb: [
+                  {{FmtBins(debugDir, pdb)}}
+              ]
+          };
+          """ : "export const embedded = undefined;";
+
+    private static string FmtNames (IEnumerable<string> names) =>
+        Fmt(names.Select(n => $"\"{n}\""), 2, ",\n");
+    private static string FmtBins (string dir, IEnumerable<string> names) =>
+        Fmt(names.Select(n => $"{{ name: \"{n}\", content: \"{ReadBase64(dir, n)}\" }}"), 2, ",\n");
+    private static string ReadBase64 (string dir, string name) =>
+        Convert.ToBase64String(File.ReadAllBytes(Path.Combine(dir, name)));
 }

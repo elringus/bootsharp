@@ -55,4 +55,23 @@ public class ResourceTest : GenerateJSTest
         Execute();
         DoesNotContain("icudt.dat");
     }
+
+    [Fact]
+    public void WhenEmbedEnabledBinaryContentEmbeddedAsBase64 ()
+    {
+        Task.Embed = true;
+        Task.Globalization = true;
+        Task.Debug = true;
+        AddAssembly("Foo.dll");
+        Project.WriteFile("Foo.wasm", "MockFooContent"u8);
+        Project.WriteFile("icudt.dat", "MockIcuContent"u8);
+        Project.WriteFile("Foo.pdb", "MockPdbContent"u8);
+        Project.WriteFile("dotnet.native.js.symbols", "MockSymbolsContent"u8);
+        Execute();
+        Contains($"wasm: \"{Convert.ToBase64String(MockWasmBinary)}\"");
+        Contains($"{{ name: \"Foo.wasm\", content: \"{Convert.ToBase64String("MockFooContent"u8)}\" }}");
+        Contains($"{{ name: \"icudt.dat\", content: \"{Convert.ToBase64String("MockIcuContent"u8)}\" }}");
+        Contains($"{{ name: \"Foo.pdb\", content: \"{Convert.ToBase64String("MockPdbContent"u8)}\" }}");
+        Contains($"{{ name: \"dotnet.native.js.symbols\", content: \"{Convert.ToBase64String("MockSymbolsContent"u8)}\" }}");
+    }
 }

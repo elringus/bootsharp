@@ -13,6 +13,7 @@
         <BsEntryAssembly>$(AssemblyName).dll</BsEntryAssembly>
         <BsPackAfter Condition="$(BsLlvm)">CopyNativeBinary</BsPackAfter>
         <BsPackAfter Condition="!$(BsLlvm)">WasmNestedPublishApp</BsPackAfter>
+        <BsEmbed>$([System.String]::IsNullOrEmpty('$(BootsharpBinariesDirectory)'))</BsEmbed>
     </PropertyGroup>
 
     <!-- Include NativeAOT-LLVM compiler infrastructure when enabled. -->
@@ -90,7 +91,6 @@
             <BsBuildDir Condition="!$(BsLlvm)">$(WasmAppDir)/$(WasmRuntimeAssetsLocation)</BsBuildDir>
             <BsBaseOutputPath>$(BaseOutputPath.Replace('\', '/'))</BsBaseOutputPath>
             <BootsharpPublishDirectory Condition="'$(BootsharpPublishDirectory)' == ''">$(BsBaseOutputPath)$(BootsharpName)</BootsharpPublishDirectory>
-            <BootsharpBinariesDirectory Condition="'$(BootsharpBinariesDirectory)' == ''">$(BootsharpPublishDirectory)/bin</BootsharpBinariesDirectory>
             <BootsharpPackageDirectory Condition="'$(BootsharpPackageDirectory)' == ''">$(MSBuildProjectDirectory)</BootsharpPackageDirectory>
             <BsGlobalization>$([System.String]::Equals('$(InvariantGlobalization)', 'false'))</BsGlobalization>
         </PropertyGroup>
@@ -122,7 +122,8 @@
                     EntryAssemblyName="$(BsEntryAssembly)"
                     Globalization="$(BsGlobalization)"
                     LLVM="$(BsLlvm)"
-                    Debug="$(BsDebug)"/>
+                    Debug="$(BsDebug)"
+                    Embed="$(BsEmbed)"/>
 
         <!-- Publish modules, binaries and type declarations. -->
         <ItemGroup>
@@ -137,8 +138,8 @@
         </ItemGroup>
         <RemoveDir Directories="$(BootsharpBinariesDirectory)"/>
         <RemoveDir Directories="$(BootsharpPublishDirectory)"/>
-        <Copy SourceFiles="@(BsWasmFiles)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy SourceFiles="@(BsIcuFiles)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
+        <Copy Condition="!$(BsEmbed)" SourceFiles="@(BsWasmFiles)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
+        <Copy Condition="!$(BsEmbed)" SourceFiles="@(BsIcuFiles)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
         <Copy SourceFiles="@(BsDotNetFile)" DestinationFolder="$(BootsharpPublishDirectory)/dotnet"/>
         <Copy SourceFiles="@(BsRuntimeFile)" DestinationFolder="$(BootsharpPublishDirectory)/dotnet"/>
         <Copy SourceFiles="@(BsNativeFile)" DestinationFolder="$(BootsharpPublishDirectory)/dotnet"/>
@@ -152,8 +153,8 @@
             <BsPdbs Include="$(PublishDir)/*.pdb"/>
         </ItemGroup>
         <Copy Condition="$(BsDebug)" SourceFiles="@(BsMaps)" DestinationFolder="$(BootsharpPublishDirectory)"/>
-        <Copy Condition="$(BsDebug)" SourceFiles="@(BsSymbols)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
-        <Copy Condition="$(BsDebug)" SourceFiles="@(BsPdbs)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
+        <Copy Condition="$(BsDebug) And !$(BsEmbed)" SourceFiles="@(BsSymbols)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
+        <Copy Condition="$(BsDebug) And !$(BsEmbed)" SourceFiles="@(BsPdbs)" DestinationFolder="$(BootsharpBinariesDirectory)"/>
 
         <!-- Publish package file. -->
         <ItemGroup>
