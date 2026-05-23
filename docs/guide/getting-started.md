@@ -104,7 +104,7 @@ console.log(`Hello ${Program.getBackendName()}!`);
     Program.onMainInvoked.subscribe(console.log);
 
     // Initializing dotnet runtime and invoking entry point.
-    await bootsharp.boot("/bin");
+    await bootsharp.boot();
 
     // Invoking 'Program.GetBackendName' C# method.
     console.log(`Hello ${Program.getBackendName()}!`);

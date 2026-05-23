@@ -2,12 +2,12 @@
 
 Build and publish related options are configured in `.csproj` file via MSBuild properties.
 
-| Property                   | Default          | Description                                       |
-|----------------------------|------------------|---------------------------------------------------|
-| BootsharpName              | bootsharp        | Name of the generated JavaScript module.          |
-| BootsharpPublishDirectory  | /bin/bootsharp   | Directory to publish generated JavaScript module. |
-| BootsharpBinariesDirectory | publish-dir/bin  | Directory to publish binaries.                    |
-| BootsharpPackageDirectory  | project-dir      | Directory to publish `package.json` file.         |
+| Property                   | Default          | Description                                                                       |
+|----------------------------|------------------|-----------------------------------------------------------------------------------|
+| BootsharpName              | bootsharp        | Name of the generated JavaScript module.                                          |
+| BootsharpPublishDirectory  | /bin/bootsharp   | Directory to publish generated JavaScript module.                                 |
+| BootsharpBinariesDirectory | (empty)          | Directory to publish binaries; when empty, binaries are embedded (see [Sideloading](sideloading)). |
+| BootsharpPackageDirectory  | project-dir      | Directory to publish `package.json` file.                                         |
 
 Below is an example configuration, which will make Bootsharp name the compiled module "backend" (instead of the default "bootsharp"), publish the `package.json` under the solution directory root and emit the runtime binaries into a "public/bin" directory one level above the solution root:
 
