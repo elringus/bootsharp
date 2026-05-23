@@ -14,7 +14,7 @@ Program.getFrontendName = () => "Browser";
 Program.onMainInvoked.subscribe(console.log);
 
 // Initializing dotnet runtime and invoking entry point.
-await bootsharp.boot("/cs/bin/bootsharp/bin");
+await bootsharp.boot();
 
 // Invoking 'Program.GetBackendName' C# method.
 document.getElementById("msg").innerHTML = `Hello ${Program.getBackendName()}!`;
