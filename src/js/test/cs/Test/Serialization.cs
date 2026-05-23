@@ -79,4 +79,15 @@ public static class Serialization
     [Export] public static IReadOnlyCollection<int> EchoReadOnlyCollection (IReadOnlyCollection<int> value) => value;
     [Export] public static IDictionary<int, int> EchoDictionaryInterface (IDictionary<int, int> value) => value;
     [Export] public static IReadOnlyDictionary<int, int> EchoReadOnlyDictionary (IReadOnlyDictionary<int, int> value) => value;
+
+    [Export]
+    public static void ImportedInstancesSurviveSerialization (Union union, IBidirectional bi)
+    {
+        Assert(union.A?.Bi == bi);
+        var biChanged = union.B?.GetChanged?.Invoke(bi);
+        Assert(biChanged != null);
+        Assert(union.B?.GetChanged?.Invoke(new Bidirectional()) == null);
+        union.A?.Changed?.Invoke(union.A, new Record("a-rec"));
+        biChanged!.Invoke(bi, new Record("bi-rec"));
+    }
 }
