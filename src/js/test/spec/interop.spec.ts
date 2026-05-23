@@ -14,6 +14,10 @@ class Imported implements IImportedInstanced {
         await new Promise(res => setTimeout(res, 1));
         return record.id;
     }
+    async getBiAsync(factory?: () => IBidirectional): Promise<IBidirectional> {
+        await new Promise(res => setTimeout(res, 1));
+        return factory?.() ?? new BidirectionalJS();
+    }
 }
 
 class ImportedInner implements IImportedInnerInstanced {
@@ -91,9 +95,9 @@ describe("while bootsharp is booted", () => {
     it("can interop with imported modules", async () => {
         let record: Record | undefined = { id: "initial" };
         IImportedModule.record = { get: () => record, set: v => record = v };
-        IImportedModule.getInstanceAsync = async (arg, factory) => {
+        IImportedModule.getInstanceAsync = async (arg) => {
             await new Promise(res => setTimeout(res, 1));
-            return factory?.() ?? new Imported(arg);
+            return new Imported(arg);
         };
         const promise = Modules.canInteropWithImportedModuleAsync();
         IImportedModule.onRecordChanged.broadcast({ id: "event-rec" });
@@ -110,7 +114,6 @@ describe("while bootsharp is booted", () => {
         expect(handler).toHaveBeenCalledWith(undefined);
         const inst = await IExportedModule.getInstanceAsync("module-arg");
         expect(inst.getInstanceArg()).toStrictEqual("module-arg");
-        expect(await IExportedModule.getInstanceAsync("", () => inst)).toStrictEqual(inst);
         IExportedModule.onRecordChanged.unsubscribe(handler);
     });
     it("can interop with imported instances", async () => {
@@ -125,6 +128,8 @@ describe("while bootsharp is booted", () => {
         const handler = vi.fn();
         expect(exported.getInstanceArg()).toStrictEqual("instance-arg");
         expect(await exported.getRecordIdAsync({ id: "rec" })).toStrictEqual("rec");
+        expect(await exported.getBiAsync()).not.toBeInstanceOf(BidirectionalJS);
+        expect(await exported.getBiAsync(() => new BidirectionalJS())).toBeInstanceOf(BidirectionalJS);
         expect(exported.record).toBeUndefined();
         exported.onRecordChanged.subscribe(handler);
         exported.record = { id: "set" };

@@ -2,7 +2,7 @@ using System;
 
 namespace Test.Library;
 
-public class Bidirectional : IBidirectional
+public class BidirectionalCS : IBidirectional
 {
     public event Action<IBidirectional?>? OnBiChanged;
 

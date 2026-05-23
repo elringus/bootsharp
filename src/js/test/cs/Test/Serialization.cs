@@ -86,7 +86,7 @@ public static class Serialization
         Assert(union.A?.Bi == bi);
         var biChanged = union.B?.GetChanged?.Invoke(bi);
         Assert(biChanged != null);
-        Assert(union.B?.GetChanged?.Invoke(new Bidirectional()) == null);
+        Assert(union.B?.GetChanged?.Invoke(new BidirectionalCS()) == null);
         union.A?.Changed?.Invoke(union.A, new Record("a-rec"));
         biChanged!.Invoke(bi, new Record("bi-rec"));
     }
