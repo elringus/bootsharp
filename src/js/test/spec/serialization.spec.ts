@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { bootRuntime } from "../cs";
 import { Serialization, ItemA } from "../cs/Test/bin/bootsharp/generated/modules/test.g.mjs";
 import type { Primitives, Union } from "../cs/Test/bin/bootsharp/generated/modules/test.g.mjs";
@@ -60,7 +60,8 @@ describe("serialization", () => {
     });
     it("instances survive serialization", () => {
         const bi = Modules.exportBi();
-        const changed = (_?: ItemA, __?: Record) => {};
+        const handler = vi.fn();
+        const changed = (item?: ItemA, record?: Record) => handler(item, record);
         const getChanged = (b: IBidirectional) => b === bi ? changed : <never>null;
         const echoed = Serialization.echoUnions([{
             shared: "", a: { bi, changed }, b: { strings: [], times: [], getChanged }
@@ -69,6 +70,8 @@ describe("serialization", () => {
         expect(echoed.a!.changed).toStrictEqual(changed);
         expect(echoed.b!.getChanged).toStrictEqual(getChanged);
         expect(echoed.b!.getChanged!(bi)).toStrictEqual(changed);
+        echoed.b!.getChanged!(bi)!(bi, undefined);
+        expect(handler).toHaveBeenCalledWith(bi, undefined);
     });
     it("can echo unions with all nullable fields omitted", () => {
         const a: Union = { shared: "A", a: {} };
