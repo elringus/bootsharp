@@ -31,7 +31,7 @@ public class CSInstanceTest : GenerateCSTest
         Execute();
         Contains(
             """
-            public class JS_Import_IImported (int id) : global::Bootsharp.JSProxy(id), global::IImported
+            public sealed class JS_Import_IImported (int id) : global::Bootsharp.JSProxy(id), global::IImported
             {
                 ~JS_Import_IImported() => Instances.DisposeImported(_id);
 
@@ -120,7 +120,7 @@ public class CSInstanceTest : GenerateCSTest
                         it.Changed -= HandleChanged;
                     };
 
-                    void HandleChanged (global::Record arg1, global::IExported arg2) => Interop.IExported_BroadcastChanged_Serialized(_id, Serializer.Serialize(arg1, SerializerContext.Record), Instances.Export(arg2));
+                    void HandleChanged (global::Record arg1, global::IExported arg2) => Interop.JS_Export_IExported_BroadcastChanged_Serialized(_id, Serializer.Serialize(arg1, SerializerContext.Record), Instances.Export(arg2));
                 });
             """);
     }
@@ -157,7 +157,7 @@ public class CSInstanceTest : GenerateCSTest
             public interface IModule { IInstanced Item { get; set; } }
             """));
         Execute();
-        Contains("public class JS_Import_IInstanced (int id) : global::Bootsharp.JSProxy(id), global::IInstanced");
+        Contains("public sealed class JS_Import_IInstanced (int id) : global::Bootsharp.JSProxy(id), global::IInstanced");
     }
 
     [Fact]
@@ -216,11 +216,141 @@ public class CSInstanceTest : GenerateCSTest
     }
 
     [Fact]
-    public void ReclassifiesImportedClassesAsExports ()
+    public void GeneratesForCustomSpecialization ()
     {
-        // it's impossible to import a concrete C# class, so it's either a user error in the authored interop
+        AddAssembly(With(
+            """
+            public class Custom
+            {
+                public event Action ErasedEvent;
+                public string ErasedProperty { get; set; }
+                public string ErasedMethod () => "";
+            }
+
+            [SpecializeImport(typeof(Custom))]
+            public abstract class CustomImport (int id) : SpecializedImport(id)
+            {
+                public abstract event Action AddedEvent;
+                public abstract string AddedProperty { get; set; }
+                public abstract string AddedMethod ();
+            }
+
+            [SpecializeExport(typeof(Custom))]
+            public sealed class CustomExport (Custom it) : SpecializedExport(it)
+            {
+                public event Action AddedEvent;
+                public string AddedProperty { get; set; }
+                public string AddedMethod () => "";
+            }
+
+            public class Class
+            {
+                [Export] public static Custom Foo (Custom it) => default!;
+            }
+            """));
+        Execute();
+        Contains("Instances.RegisterImport(typeof(global::Custom), static id => new global::Bootsharp.Generated.JS_Import_Custom(id));");
+        Contains(
+            """
+            public sealed class JS_Import_Custom (int id) : global::CustomImport(id)
+            {
+                ~JS_Import_Custom() => Instances.DisposeImported(_id);
+
+                public override event global::System.Action AddedEvent;
+                internal void InvokeAddedEvent () => AddedEvent?.Invoke();
+                public override global::System.String AddedProperty
+                {
+                    get => global::Bootsharp.Generated.Interop.JS_Import_Custom_GetAddedProperty(_id);
+                    set => global::Bootsharp.Generated.Interop.JS_Import_Custom_SetAddedProperty(_id, value);
+                }
+                public override global::System.String AddedMethod () => global::Bootsharp.Generated.Interop.JS_Import_Custom_AddedMethod(_id);
+            }
+            """);
+        Contains(
+            """
+                internal static int Export (global::Custom it) => Export(new global::CustomExport(it), static (_id, it) => {
+                    it.AddedEvent += HandleAddedEvent;
+                    return () => {
+                        it.AddedEvent -= HandleAddedEvent;
+                    };
+
+                    void HandleAddedEvent () => Interop.JS_Export_Custom_BroadcastAddedEvent_Serialized(_id);
+                });
+            """);
+    }
+
+    [Fact]
+    public void GeneratesForBuiltInSpecializations ()
+    {
+        AddAssembly(WithClass(
+            """
+            [Export] public static ICollection<int> Foo (ICollection<int> col) => default!;
+            [Export] public static IList<int> Baz (IList<int> list) => default!;
+            [Export] public static IDictionary<int, string> Dic (IDictionary<int, string> dic) => default!;
+            [Export] public static CancellationToken Bar (CancellationToken ct) => default!;
+            """));
+        Execute();
+        Contains("int Export (global::System.Collections.Generic.ICollection<global::System.Int32> it) => Export(new global::Bootsharp.Specialized.CollectionExport<global::System.Int32>(it)");
+        Contains("int Export (global::System.Collections.Generic.IList<global::System.Int32> it) => Export(new global::Bootsharp.Specialized.ListExport<global::System.Int32>(it)");
+        Contains("int Export (global::System.Collections.Generic.IDictionary<global::System.Int32, global::System.String> it) => Export(new global::Bootsharp.Specialized.DictionaryExport<global::System.Int32, global::System.String>(it)");
+        Contains("int Export (global::System.Threading.CancellationToken it) => Export(new global::Bootsharp.Specialized.CancellationTokenExport(it)");
+        Contains("class JS_Import_System_Collections_Generic_ICollection_Of_System_Int32 (int id) : global::Bootsharp.Specialized.CollectionImport<global::System.Int32>");
+        Contains("class JS_Import_System_Collections_Generic_IList_Of_System_Int32 (int id) : global::Bootsharp.Specialized.ListImport<global::System.Int32>");
+        Contains("class JS_Import_System_Collections_Generic_IDictionary_Of_System_Int32_And_System_String (int id) : global::Bootsharp.Specialized.DictionaryImport<global::System.Int32, global::System.String>");
+        Contains("class JS_Import_System_Threading_CancellationToken (int id) : global::Bootsharp.Specialized.CancellationTokenImport(id)");
+    }
+
+    [Fact]
+    public void IgnoresTopLevelNullity ()
+    {
+        // Top-level nullity (IFoo? vs IFoo, IFoo<T>? vs IFoo<T>) must not split the generated proxies,
+        // because it does not affect the marshalling/interop shape of the surface members.
+        AddAssembly(With(
+            """
+            public interface IFoo;
+            public interface IBar<T>;
+
+            public class Class
+            {
+                [Import] public static IFoo GetFoo () => default!;
+                [Import] public static IFoo? GetFooNullable () => default!;
+                [Import] public static IBar<string> GetBar () => default!;
+                [Import] public static IBar<string>? GetBarNullable () => default!;
+            }
+            """));
+        Execute();
+        Once("class JS_Import_IFoo ");
+        Once("class JS_Import_IBar_Of_System_String ");
+        DoesNotContain("class JS_Import_IFooOrNull ");
+        DoesNotContain("class JS_Import_IBar_Of_System_StringOrNull ");
+    }
+
+    [Fact]
+    public void DiscriminatesGenericArgNullity ()
+    {
+        // Generic-arg nullity (IBar<T> vs IBar<T?>) however does affect surface member signatures,
+        // so distinct proxies must be generated per nullity variant.
+        AddAssembly(With(
+            """
+            public interface IBar<T>;
+
+            public class Class
+            {
+                [Import] public static IBar<string> GetBar () => default!;
+                [Import] public static IBar<string?> GetBarNullableArg () => default!;
+            }
+            """));
+        Execute();
+        Once("class JS_Import_IBar_Of_System_String ");
+        Once("class JS_Import_IBar_Of_System_StringOrNull ");
+    }
+
+    [Fact]
+    public void ReclassifiesImportedNonInterfaceAsExports ()
+    {
+        // It's impossible to import a concrete C# type, so it's either a user error in the authored interop
         // surface or the intention is to pass back previously exported instance — we assume the latter in the
-        // implementation and reclassify to export direction in such cases
+        // implementation and reclassify to export direction in such cases.
         AddAssembly(With(
             """
             public class Exported;
@@ -237,5 +367,15 @@ public class CSInstanceTest : GenerateCSTest
         Execute();
         DoesNotContain("JS_Import_Exported");
         DoesNotContain("RegisterImport(typeof(global::Exported)");
+    }
+
+    [Fact]
+    public void DoesNotReclassifySpecializedNonInterfaceImports ()
+    {
+        // Any specialized type is expected to have hand-rolled exporter and importer proxies,
+        // so they're safe to import even when the type is not an interface.
+        AddAssembly(WithClass("[Export] public static void Foo (CancellationToken ct) {}"));
+        Execute();
+        Contains("Instances.RegisterImport(typeof(global::System.Threading.CancellationToken),");
     }
 }

@@ -1,6 +1,6 @@
 import { describe, it, beforeAll, expect, vi } from "vitest";
 import { Event, bootRuntime } from "../cs";
-import { Platform, Static } from "../cs/Test/bin/bootsharp/generated/modules/test.g.mjs";
+import { BCL, Platform, Static } from "../cs/Test/bin/bootsharp/generated/modules/test.g.mjs";
 import { IExportedModule, IImportedModule, Modules, Registries, IRegistryProvider, TrackType } from "../cs/Test/bin/bootsharp/generated/modules/test/library.g.mjs";
 import type { IBidirectional, IImportedInstanced, IImportedInnerInstanced, Record } from "../cs/Test/bin/bootsharp/generated/modules/test/library.g.mjs";
 
@@ -54,6 +54,17 @@ describe("while bootsharp is booted", () => {
         expect(IRegistryProvider.getRegistries).toBeUndefined();
         expect(IRegistryProvider.getRegistryMap).toBeUndefined();
         expect(IImportedModule.getInstanceAsync).toBeUndefined();
+        expect(BCL.importCancellationToken).toBeUndefined();
+        expect(BCL.cancelImportedCancellationToken).toBeUndefined();
+        expect(BCL.echoCancellationTokenImport).toBeUndefined();
+        expect(BCL.importCollection).toBeUndefined();
+        expect(BCL.echoCollectionImport).toBeUndefined();
+        expect(BCL.importList).toBeUndefined();
+        expect(BCL.echoListImport).toBeUndefined();
+        expect(BCL.importDictionary).toBeUndefined();
+        expect(BCL.echoDictionaryImport).toBeUndefined();
+        expect(BCL.importComparer).toBeUndefined();
+        expect(BCL.echoComparerImport).toBeUndefined();
     });
     it("errs when invoking unassigned imported function", () => {
         expect(() => Static.invokeImportedFunction())
@@ -143,6 +154,17 @@ describe("while bootsharp is booted", () => {
     it("can interop with imported inner instances", () => {
         Modules.canInteropWithImportedInnerInstance(new Imported(""));
     });
+    it("can interop with exported inner instances", async () => {
+        const handler = vi.fn();
+        const inner = (await IExportedModule.getInstanceAsync("bar")).inner;
+        inner.onCountChanged.subscribe(handler);
+        inner.count = 0;
+        expect(handler).toHaveBeenCalledWith(0);
+        inner.increment();
+        expect(handler).toHaveBeenCalledWith(1);
+        inner.increment();
+        expect(inner.count).toStrictEqual(2);
+    });
     it("can interop with bidirectional instances", () => {
         const factory = () => new BidirectionalJS();
         Modules.importBi = factory;
@@ -165,17 +187,6 @@ describe("while bootsharp is booted", () => {
         expect(exp.bi).toBe(undefined);
         exp.onBiChanged.unsubscribe(handler);
         Modules.canInteropWithBidirectional();
-    });
-    it("can interop with exported inner instances", async () => {
-        const handler = vi.fn();
-        const inner = (await IExportedModule.getInstanceAsync("bar")).inner;
-        inner.onCountChanged.subscribe(handler);
-        inner.count = 0;
-        expect(handler).toHaveBeenCalledWith(0);
-        inner.increment();
-        expect(handler).toHaveBeenCalledWith(1);
-        inner.increment();
-        expect(inner.count).toStrictEqual(2);
     });
     it("releases instances after use", async () => {
         IImportedModule.getInstanceAsync = async (arg) => new Imported(arg);

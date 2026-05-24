@@ -33,7 +33,7 @@ internal sealed class DeclarationGenerator
     }
 
     private string EmitImports (JSModule md) => Fmt([
-        $$"""import type { Event } from "{{md.To("event")}}";""",
+        $$"""import type { Event } from "{{md.To("bcl/event")}}";""",
         ..mds.GetImported(md).Select(imp =>
             $"""import type * as {imp.Alias} from "{md.ToMd(imp.Path)}";""")
     ], 0);
@@ -103,10 +103,12 @@ internal sealed class DeclarationGenerator
             if (member is EventMeta evt) DeclareEvent(evt);
             else if (member is PropertyMeta prop) DeclareProperty(prop);
             else if (member is MethodMeta method) DeclareMethod(method);
+        if (it.Proxy is SpecializedProxy { Decl: { } decl }) bld.Line(decl);
         bld.Exit("}");
 
         string BuildExtensions ()
         {
+            if (it.Proxy is SpecializedProxy) return ""; // specialized surfaces are self-contained
             var ext = it.Clr.GetInterfaces().Where(IsUserType).ToList();
             if (spec.Types.HasBase(it.Clr, out var bs)) ext.Insert(0, bs.Clr);
             return ext.Count == 0 ? "" : $" extends {string.Join(", ", ext.Select(ts.BuildFullName))}";

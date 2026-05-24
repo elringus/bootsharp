@@ -46,12 +46,12 @@ internal sealed class CSSerializerGenerator
         $$"""
           private static void Write_{{it.Id}} (ref Writer writer, {{it.Syntax}} value)
           {
-              writer.WriteInt32({{Export(it.Instance, "value")}});
+              writer.WriteInt32({{ExportCS(it.Instance, "value")}});
           }
 
           private static {{it.Syntax}} Read_{{it.Id}} (ref Reader reader)
           {
-              return {{Import(it.Instance, "reader.ReadInt32()")}};
+              return {{ImportCS(it.Instance, "reader.ReadInt32()")}};
           }
           """;
 

@@ -11,7 +11,7 @@ export default {
     dotnet: app.dotnet
 };
 
-export * from "./event.mjs";
+export * from "./bcl/index.mjs";
 export * from "./generated/modules/index.g.mjs";
 export type { BootOptions } from "./boot.mjs";
 export type { BootManifest, BootResources, BinaryResource } from "./resources.mjs";

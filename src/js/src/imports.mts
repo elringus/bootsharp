@@ -1,4 +1,4 @@
-import { Event } from "./event.mjs";
+import { Event } from "./bcl/event.mjs";
 import { bindImports as bindGeneratedImports } from "./generated/imports.g.mjs";
 import { instances } from "./instances.mjs";
 import type { RuntimeAPI } from "./dotnet/index.mjs";

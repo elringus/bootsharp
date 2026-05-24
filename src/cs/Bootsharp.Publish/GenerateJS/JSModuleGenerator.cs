@@ -27,7 +27,7 @@ internal sealed class JSModuleGenerator (bool debug)
 
     private string EmitImports (JSModule md) =>
         $$"""
-          import { Event } from "{{md.To("event")}}";
+          import { Event } from "{{md.To("bcl/event")}}";
           import { {{(debug ? "exports, getExport" : "exports")}} } from "{{md.To("exports")}}";
           import { {{(debug ? "importEvent, getImport" : "importEvent")}} } from "{{md.To("imports")}}";
           import $i from "{{md.ToGen("instances")}}";

@@ -8,7 +8,7 @@ internal sealed class JSInstanceGenerator (bool debug, JSModules md)
 {
     public string Generate (IReadOnlyCollection<InstanceMeta> its) =>
         $$"""
-          import { Event } from "../event.mjs";
+          import { Event } from "../bcl/event.mjs";
           import { {{(debug ? "exports, getExport" : "exports")}} } from "../exports.mjs";
           import { instances as $i } from "../instances.mjs";
           import $s, { serialize } from "./serializer.g.mjs";
@@ -55,6 +55,7 @@ internal sealed class JSInstanceGenerator (bool debug, JSModules md)
 
     private string EmitProxy (InstanceMeta it) => it switch {
         DelegateMeta del => EmitDelegateProxy(del),
+        { Proxy: SpecializedProxy sp } => EmitSpecializedProxy(it, sp),
         _ => EmitOpaqueProxy(it)
     };
 
@@ -80,6 +81,17 @@ internal sealed class JSInstanceGenerator (bool debug, JSModules md)
               {{Fmt([
                   "constructor(_id) { this._id = _id; }",
                   ..it.Members.Select(EmitMember)
+              ])}}
+          };
+          """;
+
+    private string EmitSpecializedProxy (InstanceMeta it, SpecializedProxy sp) =>
+        $$"""
+          $i.{{it.Id}} = class {{it.Proxy.Id}} {
+              {{Fmt([
+                  "constructor(_id) { this._id = _id; }",
+                  ..it.Members.Select(EmitMember),
+                  sp.JS
               ])}}
           };
           """;

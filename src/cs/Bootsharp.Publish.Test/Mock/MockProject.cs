@@ -46,6 +46,7 @@ public sealed class MockProject : IDisposable
     {
         foreach (var path in GetReferencePaths())
             File.Copy(path, Path.Combine(Root, Path.GetFileName(path)), true);
+        File.WriteAllText(Path.Combine(Root, "Bootsharp.Common.wasm"), "");
     }
 
     private static string[] GetReferencePaths ()

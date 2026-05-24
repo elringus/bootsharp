@@ -17,7 +17,6 @@ public sealed class GenerateJS : Microsoft.Build.Utilities.Task
 
     public override bool Execute ()
     {
-        PreferencesResolver.Resolve(EntryAssemblyName, InspectedDirectory);
         using var spec = InspectSolution();
         var mds = new JSModules(spec.Types);
         GenerateImports(mds);
@@ -32,12 +31,11 @@ public sealed class GenerateJS : Microsoft.Build.Utilities.Task
 
     private SolutionInspection InspectSolution ()
     {
-        var inspector = new SolutionInspector();
-        var inspection = inspector.Inspect(InspectedDirectory, GetFiles());
-        new InspectionReporter(Log).Report(inspection);
-        return inspection;
+        var inspector = new SolutionInspector(EntryAssemblyName, Log);
+        var inspected = ResolveInspectedFiles();
+        return inspector.Inspect(InspectedDirectory, inspected);
 
-        IEnumerable<string> GetFiles ()
+        IEnumerable<string> ResolveInspectedFiles ()
         {
             if (LLVM) return Directory.GetFiles(InspectedDirectory, "*.dll").Order();
             // Assemblies in publish dir are trimmed and don't contain some data (eg, method arg names).

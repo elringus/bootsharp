@@ -8,7 +8,7 @@ namespace Bootsharp.Publish;
 
 internal static class GlobalInspection
 {
-    public static Preferences Pref => PreferencesResolver.Resolved.Value!;
+    public static Preferences Pref => PreferencesResolver.Resolved.Value ?? new();
 
     private static readonly HashSet<string> csKeywords = [
         "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char",
@@ -51,8 +51,20 @@ internal static class GlobalInspection
 
     public static bool IsUserType (Type type)
     {
+        if (SpecializationResolver.IsSpecialized(type)) return true;
+        if (IsDelegate(type)) return true;
         if (type.IsArray) return false;
         return IsUserAssembly(type.Assembly.FullName!);
+    }
+
+    public static bool IsAttribute<T> (CustomAttributeData attr) where T : Attribute
+    {
+        return attr.AttributeType.FullName == typeof(T).FullName;
+    }
+
+    public static T? GetAttributeArg<T> (CustomAttributeData attr, int idx = 0) where T : class
+    {
+        return attr.ConstructorArguments.ElementAtOrDefault(idx).Value as T;
     }
 
     public static bool IsAutoProperty (PropertyInfo prop)

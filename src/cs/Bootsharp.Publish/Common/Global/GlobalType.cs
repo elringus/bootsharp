@@ -1,6 +1,7 @@
 global using static Bootsharp.Publish.GlobalType;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -76,8 +77,10 @@ internal static class GlobalType
              type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyDictionary<,>).FullName);
     }
 
-    public static NullabilityInfo GetNullity (PropertyInfo prop) => new NullabilityInfoContext().Create(prop);
-    public static NullabilityInfo GetNullity (ParameterInfo param) => new NullabilityInfoContext().Create(param);
+    public static NullabilityInfo GetNullity (PropertyInfo prop) =>
+        FixNullity(new NullabilityInfoContext().Create(prop), prop.CustomAttributes, prop.DeclaringType);
+    public static NullabilityInfo GetNullity (ParameterInfo param) =>
+        FixNullity(new NullabilityInfoContext().Create(param), param.CustomAttributes, param.Member);
     public static NullabilityInfo GetNullity (EventInfo evt) => new NullabilityInfoContext().Create(evt);
     public static NullabilityInfo GetNullity (EventInfo evt, ParameterInfo param)
     {
@@ -98,8 +101,7 @@ internal static class GlobalType
     {
         if (type.IsGenericType && type.Name.Contains("Nullable`") && type.GenericTypeArguments.Length == 1)
             value = type.GenericTypeArguments[0];
-        else if (IsNullable(info) && (!type.IsGenericTypeParameter || IsUserType(type)))
-            value = type;
+        else if (IsNullable(info)) value = type;
         else value = null;
         return value != null;
     }
@@ -110,10 +112,10 @@ internal static class GlobalType
         return $"_id, {args}";
     }
 
-    public static string BuildId (Type type, bool full = true, char separator = '_')
+    public static string BuildId (Type type, NullabilityInfo? nul = null, bool full = true, char separator = '_')
     {
         var sb = new StringBuilder();
-        foreach (var c in BuildSyntax(type, full: full).Replace("global::", ""))
+        foreach (var c in BuildSyntax(type, nul, full: full).Replace("global::", ""))
             if (char.IsLetterOrDigit(c) || c == separator) sb.Append(c);
             else if (c == '.') sb.Append(separator);
             else if (c == '?') sb.Append("OrNull");
@@ -154,18 +156,18 @@ internal static class GlobalType
         return Regex.Replace(typeName, @"`\d+(\[\[.*\]\])?", "");
     }
 
-    public static string Export (ArgumentMeta arg) => Export(arg.Value, arg.Name);
-    public static string Export (ValueMeta value, string exp) => Export(value.Type, exp);
-    public static string Export (TypeMeta type, string exp)
+    public static string ExportCS (ArgumentMeta arg) => ExportCS(arg.Value, arg.Name);
+    public static string ExportCS (ValueMeta value, string exp) => ExportCS(value.Type, exp);
+    public static string ExportCS (TypeMeta type, string exp)
     {
         if (type is InstanceMeta) return $"Instances.Export({exp})";
         if (type is SerializedMeta sm) return $"Serializer.Serialize({exp}, SerializerContext.{sm.Id})";
         return exp;
     }
 
-    public static string Import (ArgumentMeta arg) => Import(arg.Value, arg.Name);
-    public static string Import (ValueMeta value, string exp) => Import(value.Type, exp);
-    public static string Import (TypeMeta type, string exp)
+    public static string ImportCS (ArgumentMeta arg) => ImportCS(arg.Value, arg.Name);
+    public static string ImportCS (ValueMeta value, string exp) => ImportCS(value.Type, exp);
+    public static string ImportCS (TypeMeta type, string exp)
     {
         if (type is InstanceMeta it) return $"Instances.Resolve<{it.Syntax}>({exp})";
         if (type is SerializedMeta sm) return $"Serializer.Deserialize({exp}, SerializerContext.{sm.Id})";
@@ -190,5 +192,35 @@ internal static class GlobalType
             else return $"$i.import({exp})";
         if (type is SerializedMeta sm) return $"serialize({exp}, $s.{sm.Id})";
         return exp;
+    }
+
+    private static NullabilityInfo FixNullity (NullabilityInfo nul,
+        IEnumerable<CustomAttributeData> attrs, MemberInfo? scope)
+    {
+        // Nullity is conservatively reported as nullable for unconstrained generic parameters; this workaround
+        // resolves actual nullability via a compiler heuristic. https://github.com/dotnet/runtime/issues/115014
+
+        if (!nul.Type.IsGenericTypeParameter) return nul;
+        var state = IsAnnotated() ? NullabilityState.Nullable : NullabilityState.NotNull;
+        SetReadState(nul, state);
+        SetWriteState(nul, state);
+        return nul;
+
+        bool IsAnnotated ()
+        {
+            foreach (var attr in attrs)
+                if (attr.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute")
+                    return (byte)attr.ConstructorArguments[0].Value! == 2;
+            for (var type = scope; type != null; type = type.DeclaringType)
+                foreach (var attr in type.CustomAttributes)
+                    if (attr.AttributeType.FullName == "System.Runtime.CompilerServices.NullableContextAttribute")
+                        return (byte)attr.ConstructorArguments[0].Value! == 2;
+            return false;
+        }
+
+        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_ReadState")]
+        static extern void SetReadState (NullabilityInfo info, NullabilityState value);
+        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_WriteState")]
+        static extern void SetWriteState (NullabilityInfo info, NullabilityState value);
     }
 }

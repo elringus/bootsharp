@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace Bootsharp.Publish;
 
 /// <summary>
@@ -17,7 +15,7 @@ internal abstract record SurfaceMeta (Type Clr) : TypeMeta(Clr)
 /// Describes an interop surface encompassing static interop members specified via class-level
 /// <see cref="ExportAttribute"/> or <see cref="ImportAttribute"/> attributes.
 /// </summary>
-internal record StaticMeta (Type Clr) : SurfaceMeta(Clr);
+internal sealed record StaticMeta (Type Clr) : SurfaceMeta(Clr);
 
 /// <summary>
 /// Describes an interop surface that uses a generated proxy to bind with the source.
@@ -38,7 +36,7 @@ internal abstract record ProxyMeta (Type Clr) : SurfaceMeta(Clr)
 /// Describes an interop surface specified via assembly-level <see cref="ExportAttribute"/> or
 /// <see cref="ImportAttribute"/> attributes.
 /// </summary>
-internal record ModuleMeta (Type Clr) : ProxyMeta(Clr);
+internal sealed record ModuleMeta (Type Clr) : ProxyMeta(Clr);
 
 /// <summary>
 /// Describes an interop surface projected from an instanced type.
@@ -70,11 +68,10 @@ internal sealed record DelegateMeta (Type Clr) : InstanceMeta(Clr)
     /// Describes the "Invoke" method of the delegate.
     /// </summary>
     public MethodMeta Invoker => (MethodMeta)Members.First();
-    protected override bool PrintMembers (StringBuilder builder) => base.PrintMembers(builder); // w/a C# bug
 }
 
 /// <summary>
-/// Describes the generated proxy used by <see cref="ProxyMeta"/>.
+/// Describes a generated proxy used by <see cref="ProxyMeta"/>.
 /// </summary>
 public record SurfaceProxy
 {
@@ -86,4 +83,24 @@ public record SurfaceProxy
     /// Fully qualified C# syntax of the generated C# proxy type.
     /// </summary>
     public required string Syntax { get; init; }
+}
+
+/// <summary>
+/// Describes a proxy authored by user for a type specialized with <see cref="SpecializeExportAttribute"/>
+/// and <see cref="SpecializeImportAttribute"/> attributes.
+/// </summary>
+internal sealed record SpecializedProxy : SurfaceProxy
+{
+    /// <summary>
+    /// The import proxy type annotated with <see cref="SpecializeImportAttribute"/>.
+    /// </summary>
+    public required TypeMeta Import { get; init; }
+    /// <summary>
+    /// The export proxy type annotated with <see cref="SpecializeExportAttribute"/>.
+    /// </summary>
+    public required TypeMeta Export { get; init; }
+    /// <inheritdoc cref="SpecializeImportAttribute.JS"/>
+    public string? JS { get; init; }
+    /// <inheritdoc cref="SpecializeImportAttribute.Decl"/>
+    public string? Decl { get; init; }
 }

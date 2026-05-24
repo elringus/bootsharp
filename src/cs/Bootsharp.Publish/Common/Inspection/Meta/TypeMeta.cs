@@ -35,6 +35,6 @@ internal record TypeMeta (Type Clr)
 
     private static string BuildNode (Type clr)
     {
-        return WithPref(Pref.Name, clr.Name, BuildId(clr, false, '.'));
+        return WithPref(Pref.Name, clr.Name, BuildId(clr, full: false, separator: '.'));
     }
 }

@@ -8,6 +8,7 @@ namespace Bootsharp.Common.Test;
 
 public class TypesTest
 {
+    private class SpecializedImport (int id) : Bootsharp.SpecializedImport(id);
     private readonly CustomAttributeData export = GetMockExportAttribute();
     private readonly CustomAttributeData import = GetMockImportAttribute();
 
@@ -16,7 +17,11 @@ public class TypesTest
     {
         Assert.Equal([typeof(IBackend)], new ExportAttribute(typeof(IBackend)).Types);
         Assert.Equal([typeof(IFrontend)], new ImportAttribute(typeof(IFrontend)).Types);
-        Assert.Equal("Space", (new PreferencesAttribute { Space = ["Space"] }).Space[0]);
+        Assert.Equal(typeof(IBackend), new SpecializeExportAttribute(typeof(IBackend)).Clr);
+        Assert.Equal(typeof(IFrontend), new SpecializeImportAttribute(typeof(IFrontend)).Clr);
+        Assert.Equal("JS", new SpecializeImportAttribute(typeof(IFrontend), JS: "JS").JS);
+        Assert.Equal("Decl", new SpecializeImportAttribute(typeof(IFrontend), Decl: "Decl").Decl);
+        Assert.Equal("Space", new PreferencesAttribute { Space = ["Space"] }.Space[0]);
     }
 
     [Fact]
@@ -33,6 +38,13 @@ public class TypesTest
         Assert.Equal([typeof(IFrontend)],
             (import.ConstructorArguments[0].Value as IReadOnlyCollection<CustomAttributeTypedArgument>)
             .Select(a => a.Value));
+    }
+
+    [Fact]
+    public void SpecializedImportUnwrapsToItself ()
+    {
+        var imported = new SpecializedImport(1);
+        Assert.Same(imported, imported.Unwrap());
     }
 
     private static CustomAttributeData GetMockExportAttribute () =>

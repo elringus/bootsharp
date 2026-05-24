@@ -9,6 +9,12 @@ public class InstancesTest
     private class Foo : IFoo;
     private class Bar : IBar;
     private class Proxy (int id) : JSProxy(id);
+    private class SpecializedExport (object it) : Bootsharp.SpecializedExport(it);
+
+    private class SpecializedImport (int id, object it) : Bootsharp.SpecializedImport(id)
+    {
+        protected internal override object Unwrap () => it;
+    }
 
     private class DelegateProxy (int id) : JSProxy(id)
     {
@@ -40,13 +46,25 @@ public class InstancesTest
     [Fact]
     public void ShortCircuitsImportedProxies ()
     {
-        Assert.Equal(42, Export(new Proxy(42)));
+        Assert.Equal(Export(new Proxy(1)), Export(new Proxy(1)));
+    }
+
+    [Fact]
+    public void ShortCircuitsSpecializedExportsWrappingImportedProxy ()
+    {
+        Assert.Equal(Export(new SpecializedExport(new Proxy(1))), Export(new SpecializedExport(new Proxy(1))));
+    }
+
+    [Fact]
+    public void GeneratesUniqueIdsForSpecializedExportsNotWrappingImportedProxy ()
+    {
+        Assert.NotEqual(Export(new SpecializedExport(new object())), Export(new SpecializedExport(new object())));
     }
 
     [Fact]
     public void ShortCircuitsImportedDelegates ()
     {
-        Assert.Equal(42, Export(new DelegateProxy(42).Invoke));
+        Assert.Equal(Export(new DelegateProxy(1).Invoke), Export(new DelegateProxy(1).Invoke));
     }
 
     [Fact]
@@ -95,6 +113,7 @@ public class InstancesTest
         DisposeImported(42);
         // Now we exercise the factory and register the new instance as '42'.
         Assert.NotSame(imported, Resolve<IBar>(42));
+        DisposeImported(42);
     }
 
     [Fact]
@@ -105,7 +124,32 @@ public class InstancesTest
     }
 
     [Fact]
-    public void ImportsNullWhenInstanceIsZero ()
+    public void UnwrapsResolvedSpecializedImportsOfRefType ()
+    {
+        var imported = new Bar();
+        RegisterImport(typeof(IBar), id => new SpecializedImport(id, imported));
+        Assert.Same(imported, Resolve<IBar>(1));
+        DisposeImported(1);
+    }
+
+    [Fact]
+    public void UnwrapsResolvedSpecializedImportsOfValueType ()
+    {
+        var imported = DateTime.Now;
+        RegisterImport(typeof(DateTime), id => new SpecializedImport(id, imported));
+        Assert.Equal(imported, Resolve<DateTime>(1));
+        DisposeImported(1);
+    }
+
+    [Fact]
+    public void UnwrapsResolvedSpecializedExports ()
+    {
+        var exported = new Foo();
+        Assert.Same(exported, Resolve<IFoo>(Export(new SpecializedExport(exported))));
+    }
+
+    [Fact]
+    public void ResolvesNullWhenIdIsZero ()
     {
         Assert.Null(Resolve<object>(0));
     }

@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Bootsharp.Publish;
 
 /// <summary>
@@ -8,15 +6,11 @@ namespace Bootsharp.Publish;
 /// </summary>
 internal sealed class CSInteropGenerator
 {
-    [MemberNotNullWhen(true, nameof(it))]
     private bool isIt => srf is InstanceMeta;
-    [MemberNotNullWhen(true, nameof(md))]
     private bool isMd => srf is ModuleMeta;
 
-    private string id = null!, stx = null!;
     private SurfaceMeta srf = null!;
-    private InstanceMeta? it => srf as InstanceMeta;
-    private ModuleMeta? md => srf as ModuleMeta;
+    private string id = null!, stx = null!, key = null!;
 
     public string Generate (IReadOnlyCollection<SurfaceMeta> srf) =>
         $$"""
@@ -49,11 +43,11 @@ internal sealed class CSInteropGenerator
             yield return $"{stx}.{evt.Name} += Handle_{id}_{evt.Name};";
         if (srf is not StaticMeta) yield break;
         foreach (var mem in srf.Members.OfType<MethodMeta>().Where(m => m.IK == InteropKind.Import))
-            yield return $"{srf.Syntax}.Bootsharp_{mem.Name} = &{srf.Id}_{mem.Name};";
+            yield return $"{stx}.Bootsharp_{mem.Name} = &{id}_{mem.Name};";
         foreach (var p in srf.Members.OfType<PropertyMeta>().Where(p => p.IK == InteropKind.Import))
         {
-            if (p.CanGet) yield return $"{srf.Syntax}.Bootsharp_Get{p.Name} = &{srf.Id}_Get{p.Name};";
-            if (p.CanSet) yield return $"{srf.Syntax}.Bootsharp_Set{p.Name} = &{srf.Id}_Set{p.Name};";
+            if (p.CanGet) yield return $"{stx}.Bootsharp_Get{p.Name} = &{id}_Get{p.Name};";
+            if (p.CanSet) yield return $"{stx}.Bootsharp_Set{p.Name} = &{id}_Set{p.Name};";
         }
     }
 
@@ -62,6 +56,9 @@ internal sealed class CSInteropGenerator
         this.srf = srf;
         id = (srf as ProxyMeta)?.Proxy.Id ?? srf.Id;
         stx = (srf as ProxyMeta)?.Proxy.Syntax ?? srf.Syntax;
+        key = srf is InstanceMeta { Proxy: SpecializedProxy sp } it
+            ? (it.IK == InteropKind.Import ? sp.Import.Syntax : sp.Export.Syntax)
+            : srf.Syntax;
         return member switch {
             EventMeta { IK: InteropKind.Export } e => EmitEventExport(e),
             EventMeta { IK: InteropKind.Import } e => EmitEventImport(e),
@@ -75,7 +72,7 @@ internal sealed class CSInteropGenerator
     private IEnumerable<string?> EmitEventExport (EventMeta evt)
     {
         var attr = $"""[JSImport("{srf.JSNode}.broadcast{evt.Name}Serialized", "{srf.JSModule}")] """;
-        var name = $"{srf.Id}_Broadcast{evt.Name}_Serialized";
+        var name = $"{id}_Broadcast{evt.Name}_Serialized";
         var args = string.Join(", ", evt.Args.Select(a => BuildParameter(a.Value, a.Name)));
         if (isIt) args = $"int {PrependIdArg(args)}";
         yield return $"{attr}internal static partial void {name} ({args});";
@@ -83,7 +80,7 @@ internal sealed class CSInteropGenerator
         if (isIt) yield break; // instance event handlers are emitted by InstanceGenerator
         var handler = $"Handle_{id}_{evt.Name}";
         var sigArgs = string.Join(", ", evt.Args.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
-        var invArgs = string.Join(", ", evt.Args.Select(Export));
+        var invArgs = string.Join(", ", evt.Args.Select(ExportCS));
         yield return $"private static void {handler} ({sigArgs}) => {name}({invArgs});";
     }
 
@@ -92,10 +89,10 @@ internal sealed class CSInteropGenerator
         var name = $"{id}_Invoke{evt.Name}";
         var args = string.Join(", ", evt.Args.Select(a => BuildParameter(a.Value, a.Name)));
         if (isIt) args = $"int {PrependIdArg(args)}";
-        var invName = isIt ? $"(({it.Proxy.Syntax})Instances.Resolve<{it.Syntax}>(_id)).Invoke{evt.Name}"
-            : isMd ? $"(({md.Proxy.Syntax})Modules.Imports[typeof({md.Syntax})].Instance).Invoke{evt.Name}"
-            : $"{srf.Syntax}.Bootsharp_Invoke_{evt.Name}";
-        var invArgs = string.Join(", ", evt.Args.Select(Import));
+        var invName = isIt ? $"(({stx})Instances.Resolve<{key}>(_id)).Invoke{evt.Name}"
+            : isMd ? $"(({stx})Modules.Imports[typeof({key})].Instance).Invoke{evt.Name}"
+            : $"{stx}.Bootsharp_Invoke_{evt.Name}";
+        var invArgs = string.Join(", ", evt.Args.Select(ImportCS));
         yield return $"[JSExport] internal static void {name} ({args}) => {invName}({invArgs});";
     }
 
@@ -106,7 +103,7 @@ internal sealed class CSInteropGenerator
             var attr = $"[JSExport] {MarshalAmbiguous(prop.Get, true)}";
             var name = $"{id}_Get{prop.Name}";
             var args = isIt ? "int _id" : "";
-            var body = Export(prop.Get, isIt ? $"Instances.Exported<{it.Syntax}>(_id).{prop.Name}"
+            var body = ExportCS(prop.Get, isIt ? $"Instances.Exported<{key}>(_id).{prop.Name}"
                 : isMd ? $"{stx}.Get{prop.Name}()"
                 : $"{stx}.{prop.Name}");
             yield return $"{attr}internal static {BuildValueSyntax(prop.Get)} {name} ({args}) => {body};";
@@ -116,8 +113,8 @@ internal sealed class CSInteropGenerator
             var name = $"{id}_Set{prop.Name}";
             var args = BuildParameter(prop.Set, "value");
             if (isIt) args = $"int {PrependIdArg(args)}";
-            var value = Import(prop.Set, "value");
-            var body = isIt ? $"Instances.Exported<{it.Syntax}>(_id).{prop.Name} = {value}"
+            var value = ImportCS(prop.Set, "value");
+            var body = isIt ? $"Instances.Exported<{key}>(_id).{prop.Name} = {value}"
                 : isMd ? $"{stx}.Set{prop.Name}({value})"
                 : $"{stx}.{prop.Name} = {value}";
             yield return $"[JSExport] internal static void {name} ({args}) => {body};";
@@ -130,18 +127,18 @@ internal sealed class CSInteropGenerator
         {
             var endpoint = $"""("{srf.JSNode}.get{prop.Name}Serialized", "{srf.JSModule}")""";
             var attr = $"[JSImport{endpoint}] {MarshalAmbiguous(prop.Get, true)}";
-            var srdName = $"{srf.Id}_Get{prop.Name}_Serialized";
+            var srdName = $"{id}_Get{prop.Name}_Serialized";
             var args = isIt ? "int _id" : "";
             yield return $"{attr}internal static partial {BuildValueSyntax(prop.Get)} {srdName} ({args});";
 
             var name = $"{id}_Get{prop.Name}";
-            var body = Import(prop.Get, isIt ? $"{srdName}(_id)" : $"{srdName}()");
+            var body = ImportCS(prop.Get, isIt ? $"{srdName}(_id)" : $"{srdName}()");
             yield return $"public static {prop.Get.TypeSyntax} {name}({args}) => {body};";
         }
         if (prop.CanSet)
         {
             var attr = $"""[JSImport("{srf.JSNode}.set{prop.Name}Serialized", "{srf.JSModule}")]""";
-            var srdName = $"{srf.Id}_Set{prop.Name}_Serialized";
+            var srdName = $"{id}_Set{prop.Name}_Serialized";
             var srdArgs = BuildParameter(prop.Set, "value");
             if (isIt) srdArgs = $"int {PrependIdArg(srdArgs)}";
             yield return $"{attr} internal static partial void {srdName} ({srdArgs});";
@@ -149,7 +146,7 @@ internal sealed class CSInteropGenerator
             var name = $"{id}_Set{prop.Name}";
             var args = $"{prop.Set.TypeSyntax} value";
             if (isIt) args = $"int {PrependIdArg(args)}";
-            var value = Export(prop.Set, "value");
+            var value = ExportCS(prop.Set, "value");
             var body = isIt ? $"{srdName}(_id, {value})" : $"{srdName}({value})";
             yield return $"public static void {name}({args}) => {body};";
         }
@@ -164,11 +161,11 @@ internal sealed class CSInteropGenerator
         if (wait) @return = $"async global::System.Threading.Tasks.Task<{@return}>";
         var sigArgs = string.Join(", ", method.Args.Select(a => BuildParameter(a.Value, a.Name)));
         if (isIt) sigArgs = $"int {PrependIdArg(sigArgs)}";
-        var invArgs = string.Join(", ", method.Args.Select(Import));
+        var invArgs = string.Join(", ", method.Args.Select(ImportCS));
         var invName = isIt
-            ? $"Instances.Exported<{it.Syntax}>(_id).{method.Name}"
+            ? $"Instances.Exported<{key}>(_id).{method.Name}"
             : $"{stx}.{method.Name}";
-        var body = Export(method.Return, $"{(wait ? "await " : "")}{invName}({invArgs})");
+        var body = ExportCS(method.Return, $"{(wait ? "await " : "")}{invName}({invArgs})");
         yield return $"{attr}internal static {@return} {name} ({sigArgs}) => {body};";
     }
 
@@ -187,9 +184,9 @@ internal sealed class CSInteropGenerator
         @return = $"{(wait ? "async " : "")}{method.Return.TypeSyntax}";
         var sigArgs = string.Join(", ", method.Args.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         if (isIt) sigArgs = $"int {PrependIdArg(sigArgs)}";
-        var invArgs = string.Join(", ", method.Args.Select(Export));
+        var invArgs = string.Join(", ", method.Args.Select(ExportCS));
         if (isIt) invArgs = PrependIdArg(invArgs);
-        var body = Import(method.Return, $"{(wait ? "await " : "")}{name}_Serialized({invArgs})");
+        var body = ImportCS(method.Return, $"{(wait ? "await " : "")}{name}_Serialized({invArgs})");
         yield return $"public static {@return} {name} ({sigArgs}) => {body};";
     }
 

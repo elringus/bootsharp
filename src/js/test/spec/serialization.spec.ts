@@ -96,9 +96,9 @@ describe("serialization", () => {
         expect(Serialization.echoIntList([1, 2, 3])).toStrictEqual([1, 2, 3]);
         expect(Serialization.echoStringList(["a", null, "", "b"])).toStrictEqual(["a", null, "", "b"]);
         expect(Serialization.echoNestedIntList([[1, 2], null, []])).toStrictEqual([[1, 2], null, []]);
-        expect(Serialization.echoListInterface([1, 2, 3])).toStrictEqual([1, 2, 3]);
+        expect(Serialization.echoListInterface(["a", "b", "c"])).toStrictEqual(["a", "b", "c"]);
         expect(Serialization.echoReadOnlyList([1, 2, 3])).toStrictEqual([1, 2, 3]);
-        expect(Serialization.echoCollection([1, 2, 3])).toStrictEqual([1, 2, 3]);
+        expect(Serialization.echoCollection(["a", "b", "c"])).toStrictEqual(["a", "b", "c"]);
         expect(Serialization.echoReadOnlyCollection([1, 2, 3])).toStrictEqual([1, 2, 3]);
         expect(Serialization.echoIntList(undefined)).toBeNull();
         expect(Serialization.echoStringList(undefined)).toBeNull();
@@ -109,10 +109,10 @@ describe("serialization", () => {
             .toStrictEqual(new Map([["1", "a"], ["2", null], ["3", ""]]));
         expect(Serialization.echoNestedDictionary([new Map([["1", "a"]]), null, new Map([["2", null]])]))
             .toStrictEqual([new Map([["1", "a"]]), null, new Map([["2", null]])]);
-        expect(Serialization.echoDictionaryInterface(new Map([[1, 2], [3, 4], [5, 0]])))
-            .toStrictEqual(new Map([[1, 2], [3, 4], [5, 0]]));
-        expect(Serialization.echoReadOnlyDictionary(new Map([[1, 2], [3, 4], [5, 0]])))
-            .toStrictEqual(new Map([[1, 2], [3, 4], [5, 0]]));
+        expect(Serialization.echoDictionaryInterface(new Map([["a", "b"], ["c", "d"]])))
+            .toStrictEqual(new Map([["a", "b"], ["c", "d"]]));
+        expect(Serialization.echoReadOnlyDictionary(new Map([["a", "b"], ["c", "d"]])))
+            .toStrictEqual(new Map([["a", "b"], ["c", "d"]]));
         expect(Serialization.echoDictionary(undefined)).toBeNull();
         expect(Serialization.echoNestedDictionary(undefined)).toBeNull();
     });

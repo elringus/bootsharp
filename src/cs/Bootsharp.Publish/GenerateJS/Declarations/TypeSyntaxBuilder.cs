@@ -75,9 +75,9 @@ internal sealed class TypeSyntaxBuilder (JSModules mds)
         if (type.IsGenericTypeParameter) return type.Name;
         if (IsNullable(type, out var inner)) return Build(inner, EnterNullity(nul));
         if (IsTaskLike(type)) return BuildTask(type, nul);
+        if (IsUserType(type)) return BuildUser(type, nul);
         if (IsList(type, out var element)) return BuildList(type, element, nul);
         if (IsDictionary(type, out var key, out var value)) return BuildDictionary(key, value, nul);
-        if (IsUserType(type) || IsDelegate(type)) return BuildUser(type, nul);
         return BuildPrimitive(type);
     }
 

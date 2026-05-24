@@ -6,14 +6,14 @@ public class InspectionTest : GenerateJSTest
     public void AllAssembliesAreInspected ()
     {
         AddAssembly("foo.dll",
-            WithClass("[Export] public static void Inv () {}")
+            WithClass("Foo", "[Export] public static void Inv () {}")
         );
         Execute();
-        Assert.Contains(Engine.Messages, w => w.Contains("foo"));
+        Assert.True(File.Exists($"{Task.BuildDirectory}/generated/modules/foo.g.mjs"));
     }
 
     [Fact]
-    public void WhenAssemblyInspectionFailsWarningIsLogged ()
+    public void WarnsWhenAssemblyFailedToLoad ()
     {
         AddAssembly("foo.dll",
             WithClass("[Export] public static void InvFoo () {}")
@@ -24,6 +24,19 @@ public class InspectionTest : GenerateJSTest
         File.WriteAllText(Path.Combine(Project.Root, "foo.dll"), "corrupted");
         Execute();
         Assert.Contains(Engine.Warnings, w => w.Contains("Failed to inspect 'foo.dll' assembly"));
+    }
+
+    [Fact]
+    public void WarnsWhenMissingSpecializationPair ()
+    {
+        AddAssembly(With(
+            """
+            public class Custom;
+            [SpecializeExport(typeof(Custom))]
+            public sealed class CustomExport (Custom it) : SpecializedExport(it);
+            """));
+        Execute();
+        Assert.Contains(Engine.Warnings, w => w.Contains("missing the paired import"));
     }
 
     [Fact]
@@ -38,15 +51,15 @@ public class InspectionTest : GenerateJSTest
             File.WriteAllText($"{buildDir}/{Path.GetFileName(file)}", File.ReadAllText(file));
 
         AddAssembly("foo.dll",
-            WithClass("[Export] public static void InvFoo () {}")
+            WithClass("Foo", "[Export] public static void InvFoo () {}")
         );
         AddAssembly("bar.dll",
-            WithClass("[Export] public static void InvBar () {}")
+            WithClass("Bar", "[Export] public static void InvBar () {}")
         );
         Execute();
 
-        Assert.Contains(Engine.Messages, w => w.Contains("foo"));
-        Assert.DoesNotContain(Engine.Messages, w => w.Contains("bar"));
+        Assert.True(File.Exists($"{Task.BuildDirectory}/generated/modules/foo.g.mjs"));
+        Assert.False(File.Exists($"{Task.BuildDirectory}/generated/modules/bar.g.mjs"));
     }
 
     [Fact]
@@ -63,14 +76,14 @@ public class InspectionTest : GenerateJSTest
             File.WriteAllText($"{buildDir}/{Path.GetFileName(file)}", File.ReadAllText(file));
 
         AddAssembly("foo.dll",
-            WithClass("[Export] public static void InvFoo () {}")
+            WithClass("Foo", "[Export] public static void InvFoo () {}")
         );
         AddAssembly("bar.dll",
-            WithClass("[Export] public static void InvBar () {}")
+            WithClass("Bar", "[Export] public static void InvBar () {}")
         );
         Execute();
 
-        Assert.Contains(Engine.Messages, w => w.Contains("foo"));
-        Assert.Contains(Engine.Messages, w => w.Contains("bar"));
+        Assert.True(File.Exists($"{Task.BuildDirectory}/generated/modules/foo.g.mjs"));
+        Assert.True(File.Exists($"{Task.BuildDirectory}/generated/modules/bar.g.mjs"));
     }
 }

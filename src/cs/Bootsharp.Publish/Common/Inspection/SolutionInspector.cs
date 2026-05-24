@@ -1,13 +1,14 @@
 using System.Reflection;
 using System.Xml.Linq;
+using Microsoft.Build.Utilities;
 
 namespace Bootsharp.Publish;
 
-internal sealed class SolutionInspector
+internal sealed class SolutionInspector (string entryAssemblyName, TaskLoggingHelper logger)
 {
+    private readonly List<Assembly> asses = [];
     private readonly TypeInspector types = new();
     private readonly List<DocMeta> docs = [];
-    private readonly List<string> warns = [];
 
     /// <summary>
     /// Inspects specified solution assembly paths in the output directory.
@@ -17,35 +18,35 @@ internal sealed class SolutionInspector
     public SolutionInspection Inspect (string directory, IEnumerable<string> paths)
     {
         var ctx = CreateLoadContext(directory);
-        foreach (var assemblyPath in paths)
-            try { InspectAssembly(assemblyPath, ctx); }
-            catch (Exception e) { AddSkippedWarning(assemblyPath, e); }
-        return new(ctx) {
-            Types = types.Collect(),
-            Docs = docs.ToArray(),
-            Warnings = warns.ToArray()
-        };
+        foreach (var pth in paths) LoadAssembly(pth, ctx);
+        foreach (var ass in asses) ResolvePreferences(ass);
+        foreach (var ass in asses) types.Inspect(ass);
+        foreach (var ass in asses) InspectDocs(ass);
+        return new(ctx) { Types = types.Collect(), Docs = docs.ToArray() };
     }
 
-    private void InspectAssembly (string assemblyPath, MetadataLoadContext ctx)
+    private void LoadAssembly (string path, MetadataLoadContext ctx)
     {
-        var name = Path.GetFileNameWithoutExtension(assemblyPath);
-        if (!IsUserAssembly(name)) return;
-        types.Inspect(ctx.LoadFromAssemblyPath(assemblyPath));
-        InspectDocs(assemblyPath, name);
+        if (!IsUserAssembly(Path.GetFileNameWithoutExtension(path))) return;
+        try { asses.Add(ctx.LoadFromAssemblyPath(path)); }
+        catch (Exception e) { Warn(path, e); }
     }
 
-    private void AddSkippedWarning (string assemblyPath, Exception exception)
+    private void ResolvePreferences (Assembly ass)
     {
-        var fileName = Path.GetFileName(assemblyPath);
-        var message = $"Failed to inspect '{fileName}' assembly; " +
-                      $"affected interop members won't be available in JavaScript. Error: {exception.Message}";
-        warns.Add(message);
+        if (ass.GetName().Name == Path.GetFileNameWithoutExtension(entryAssemblyName))
+            PreferencesResolver.Resolve(ass);
+        try { SpecializationResolver.Resolve(ass); }
+        catch (Exception e) { Warn(ass.Location, e); }
     }
 
-    private void InspectDocs (string assemblyPath, string assemblyName)
+    private void InspectDocs (Assembly ass)
     {
-        var xmlPath = Path.ChangeExtension(assemblyPath, ".xml");
-        if (File.Exists(xmlPath)) docs.Add(new(assemblyName, XDocument.Load(xmlPath)));
+        var xmlPath = Path.ChangeExtension(ass.Location, ".xml");
+        var name = Path.GetFileNameWithoutExtension(ass.Location);
+        if (File.Exists(xmlPath)) docs.Add(new(name, XDocument.Load(xmlPath)));
     }
+
+    private void Warn (string path, Exception ex) => logger.LogWarning(
+        $"Failed to inspect '{Path.GetFileName(path)}' assembly. Error: {ex}");
 }

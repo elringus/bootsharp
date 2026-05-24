@@ -56,6 +56,7 @@ export default defineConfig({
                         { text: "Interop Modules", link: "/guide/interop-modules" },
                         { text: "Interop Instances", link: "/guide/interop-instances" },
                         { text: "Preferences", link: "/guide/preferences" },
+                        { text: "Specialization", link: "/guide/specialization" },
                         { text: "Build Configuration", link: "/guide/build-config" },
                         { text: "Sideloading", link: "/guide/sideloading" },
                         { text: "NativeAOT-LLVM", link: "/guide/llvm" }

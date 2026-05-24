@@ -73,12 +73,12 @@ public static class Serialization
     [Export] public static List<int>?[]? EchoNestedIntList (List<int>?[]? value) => value;
     [Export] public static Dictionary<string, string?>? EchoDictionary (Dictionary<string, string?>? value) => value;
     [Export] public static Dictionary<string, string?>?[]? EchoNestedDictionary (Dictionary<string, string?>?[]? value) => value;
-    [Export] public static IList<int> EchoListInterface (IList<int> value) => value;
+    [Export] public static IList<string> EchoListInterface (IList<string> value) => value;
     [Export] public static IReadOnlyList<int> EchoReadOnlyList (IReadOnlyList<int> value) => value;
-    [Export] public static ICollection<int> EchoCollection (ICollection<int> value) => value;
+    [Export] public static ICollection<string> EchoCollection (ICollection<string> value) => value;
     [Export] public static IReadOnlyCollection<int> EchoReadOnlyCollection (IReadOnlyCollection<int> value) => value;
-    [Export] public static IDictionary<int, int> EchoDictionaryInterface (IDictionary<int, int> value) => value;
-    [Export] public static IReadOnlyDictionary<int, int> EchoReadOnlyDictionary (IReadOnlyDictionary<int, int> value) => value;
+    [Export] public static IDictionary<string, string> EchoDictionaryInterface (IDictionary<string, string> value) => value;
+    [Export] public static IReadOnlyDictionary<string, string> EchoReadOnlyDictionary (IReadOnlyDictionary<string, string> value) => value;
 
     [Export]
     public static void ImportedInstancesSurviveSerialization (Union union, IBidirectional bi)

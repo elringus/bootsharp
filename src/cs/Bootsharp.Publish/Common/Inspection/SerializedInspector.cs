@@ -56,9 +56,9 @@ internal sealed class SerializedInspector (TypeInspector.InspectInstanced inspec
             type.IsEnum ? new SerializedEnumMeta(type) :
             IsPrimitive(type) ? new SerializedPrimitiveMeta(type) :
             type.IsArray ? new SerializedArrayMeta(type, Build(type.GetElementType()!)) :
+            inspectInstanced(type, ik, null) is { } it ? new SerializedInstanceMeta(it) :
             IsList(type, out var element) ? new SerializedListMeta(type, Build(element)) :
             IsDictionary(type, out var k, out var v) ? new SerializedDictionaryMeta(type, Build(k), Build(v)) :
-            inspectInstanced(type, ik, null) is { } it ? new SerializedInstanceMeta(it) :
             BuildObject(type);
         cycle.Remove(type);
         return meta;

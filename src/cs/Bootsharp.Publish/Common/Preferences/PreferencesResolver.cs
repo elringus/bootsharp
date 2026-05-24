@@ -9,11 +9,8 @@ internal static class PreferencesResolver
     /// </summary>
     internal static AsyncLocal<Preferences> Resolved { get; } = new();
 
-    public static void Resolve (string entryAssemblyName, string outDir)
+    public static void Resolve (Assembly assembly)
     {
-        using var ctx = CreateLoadContext(outDir);
-        var assemblyPath = Path.Combine(outDir, entryAssemblyName);
-        var assembly = ctx.LoadFromAssemblyPath(assemblyPath);
         var attribute = FindPreferencesAttribute(assembly);
         Resolved.Value = CreatePreferences(attribute);
     }
@@ -21,7 +18,7 @@ internal static class PreferencesResolver
     private static CustomAttributeData? FindPreferencesAttribute (Assembly assembly)
     {
         foreach (var attr in assembly.CustomAttributes)
-            if (attr.AttributeType.FullName == typeof(PreferencesAttribute).FullName)
+            if (IsAttribute<PreferencesAttribute>(attr))
                 return attr;
         return null;
     }

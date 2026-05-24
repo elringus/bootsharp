@@ -14,7 +14,6 @@ public sealed class GenerateCS : Microsoft.Build.Utilities.Task
 
     public override bool Execute ()
     {
-        PreferencesResolver.Resolve(EntryAssemblyName, InspectedDirectory);
         using var spec = InspectSolution();
         GenerateSerializer(spec);
         GenerateInstances(spec);
@@ -25,11 +24,9 @@ public sealed class GenerateCS : Microsoft.Build.Utilities.Task
 
     private SolutionInspection InspectSolution ()
     {
-        var inspector = new SolutionInspector();
+        var inspector = new SolutionInspector(EntryAssemblyName, Log);
         var inspected = Directory.GetFiles(InspectedDirectory, "*.dll").Order();
-        var inspection = inspector.Inspect(InspectedDirectory, inspected);
-        new InspectionReporter(Log).Report(inspection);
-        return inspection;
+        return inspector.Inspect(InspectedDirectory, inspected);
     }
 
     private void GenerateSerializer (SolutionInspection spec)

@@ -305,47 +305,6 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void ListAndArrayTranslatedToArray ()
-    {
-        AddAssembly(WithClass("[Export] public static List<string> Goo (DateTime[] d) => default;"));
-        Execute();
-        Contains("goo(d: Array<Date>): Array<string>");
-    }
-
-    [Fact]
-    public void JaggedArrayAndListOfListsTranslatedToArrayOfArrays ()
-    {
-        AddAssembly(WithClass("[Export] public static List<List<string>> Goo (DateTime[][] d) => default;"));
-        Execute();
-        Contains("goo(d: Array<Array<Date>>): Array<Array<string>>");
-    }
-
-    [Fact]
-    public void IntArraysTranslatedToRelatedTypes ()
-    {
-        AddAssembly(
-            WithClass("[Export] public static void Uint8 (byte[] foo) {}"),
-            WithClass("[Export] public static void Int8 (sbyte[] foo) {}"),
-            WithClass("[Export] public static void Uint16 (ushort[] foo) {}"),
-            WithClass("[Export] public static void Int16 (short[] foo) {}"),
-            WithClass("[Export] public static void Uint32 (uint[] foo) {}"),
-            WithClass("[Export] public static void Int32 (int[] foo) {}"),
-            WithClass("[Export] public static void BigInt64 (long[] foo) {}"),
-            WithClass("[Export] public static void Float32 (float[] foo) {}"),
-            WithClass("[Export] public static void Float64 (double[] foo) {}"));
-        Execute();
-        Contains("uint8(foo: Uint8Array): void");
-        Contains("int8(foo: Int8Array): void");
-        Contains("uint16(foo: Uint16Array): void");
-        Contains("int16(foo: Int16Array): void");
-        Contains("uint32(foo: Uint32Array): void");
-        Contains("int32(foo: Int32Array): void");
-        Contains("bigInt64(foo: BigInt64Array): void");
-        Contains("float32(foo: Float32Array): void");
-        Contains("float64(foo: Float64Array): void");
-    }
-
-    [Fact]
     public void OtherTypesAreTranslatedToAny ()
     {
         AddAssembly(WithClass("[Export] public static DBNull Method (IEnumerable<string> t) => default;"));
@@ -400,150 +359,88 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
-    public void GeneratedForTypeWithListProperty ()
+    public void GeneratedForSpecializedTypes ()
     {
-        AddAssembly(
-            With("public interface Item { }"),
-            With("public class Container { public List<Item> Items { get; } }"),
-            WithClass("[Export] public static Container Combine (List<Item> items) => default;"));
+        AddAssembly(With(
+            """
+            public interface Item { }
+            public class Container
+            {
+                public IList<Item> List { get; }
+                public ICollection<Item> Collection { get; }
+                public CancellationToken Token { get; }
+            }
+            public class Class { [Export] public static Container Get () => default; }
+            """));
         Execute();
         Contains(
             """
-            export namespace Class {
-                export function combine(items: Array<Item>): Container;
-            }
-            export interface Item {
-            }
             export interface Container {
-                readonly items: Array<Item>;
+                readonly list: system_collections_generic.IList<Item>;
+                readonly collection: system_collections_generic.ICollection<Item>;
+                readonly token: system_threading.CancellationToken;
             }
             """);
     }
 
     [Fact]
-    public void GeneratedForTypeWithJaggedArrayProperty ()
+    public void GeneratedForCollections ()
     {
-        AddAssembly(
-            With("public interface Item { }"),
-            With("public class Container { public Item[][] Items { get; } }"),
-            WithClass("[Export] public static Container Get () => default;"));
+        AddAssembly(With(
+            """
+            public interface Item { }
+            public class Container
+            {
+                public Item[] Array { get; }
+                public Item[][] JaggedArray { get; }
+                public List<Item> List { get; }
+                public IReadOnlyList<Item> ReadOnlyList { get; }
+                public IReadOnlyList<IReadOnlyList<Item>> NestedReadOnlyList { get; }
+                public IReadOnlyCollection<Item> ReadOnlyCollection { get; }
+                public Dictionary<string, Item> Dictionary { get; }
+                public IReadOnlyDictionary<string, Item> ReadOnlyDictionary { get; }
+            }
+            public class Class { [Export] public static Container Get () => default; }
+            """));
         Execute();
         Contains(
             """
-            export namespace Class {
-                export function get(): Container;
-            }
             export interface Container {
-                readonly items: Array<Array<Item>>;
-            }
-            export interface Item {
+                readonly array: Array<Item>;
+                readonly jaggedArray: Array<Array<Item>>;
+                readonly list: Array<Item>;
+                readonly readOnlyList: Array<Item>;
+                readonly nestedReadOnlyList: Array<Array<Item>>;
+                readonly readOnlyCollection: Array<Item>;
+                readonly dictionary: Map<string, Item>;
+                readonly readOnlyDictionary: Map<string, Item>;
             }
             """);
     }
 
     [Fact]
-    public void GeneratedForTypeWithReadOnlyListProperty ()
+    public void IntArraysTranslatedToRelatedTypes ()
     {
         AddAssembly(
-            With("public interface Item { }"),
-            With("public class Container { public IReadOnlyList<Item> Items { get; } }"),
-            WithClass("[Export] public static Container Combine (IReadOnlyList<Item> items) => default;"));
+            WithClass("[Export] public static void Uint8 (byte[] foo) {}"),
+            WithClass("[Export] public static void Int8 (sbyte[] foo) {}"),
+            WithClass("[Export] public static void Uint16 (ushort[] foo) {}"),
+            WithClass("[Export] public static void Int16 (short[] foo) {}"),
+            WithClass("[Export] public static void Uint32 (uint[] foo) {}"),
+            WithClass("[Export] public static void Int32 (int[] foo) {}"),
+            WithClass("[Export] public static void BigInt64 (long[] foo) {}"),
+            WithClass("[Export] public static void Float32 (float[] foo) {}"),
+            WithClass("[Export] public static void Float64 (double[] foo) {}"));
         Execute();
-        Contains(
-            """
-            export namespace Class {
-                export function combine(items: Array<Item>): Container;
-            }
-            export interface Item {
-            }
-            export interface Container {
-                readonly items: Array<Item>;
-            }
-            """);
-    }
-
-    [Fact]
-    public void GeneratedForTypeWithDictionaryProperty ()
-    {
-        AddAssembly(
-            With("public interface Item { }"),
-            With("public class Container { public Dictionary<string, Item> Items { get; } }"),
-            WithClass("[Export] public static Container Combine (Dictionary<string, Item> items) => default;"));
-        Execute();
-        Contains(
-            """
-            export namespace Class {
-                export function combine(items: Map<string, Item>): Container;
-            }
-            export interface Item {
-            }
-            export interface Container {
-                readonly items: Map<string, Item>;
-            }
-            """);
-    }
-
-    [Fact]
-    public void GeneratedForTypeWithReadOnlyDictionaryProperty ()
-    {
-        AddAssembly(
-            With("public interface Item { }"),
-            With("public class Container { public IReadOnlyDictionary<string, Item> Items { get; } }"),
-            WithClass("[Export] public static Container Combine (IReadOnlyDictionary<string, Item> items) => default;"));
-        Execute();
-        Contains(
-            """
-            export namespace Class {
-                export function combine(items: Map<string, Item>): Container;
-            }
-            export interface Item {
-            }
-            export interface Container {
-                readonly items: Map<string, Item>;
-            }
-            """);
-    }
-
-    [Fact]
-    public void GeneratedForTypeWithCollectionProperty ()
-    {
-        AddAssembly(
-            With("public interface Item { }"),
-            With("public class Container { public ICollection<Item> Items { get; } }"),
-            WithClass("[Export] public static Container Combine (ICollection<Item> items) => default;"));
-        Execute();
-        Contains(
-            """
-            export namespace Class {
-                export function combine(items: Array<Item>): Container;
-            }
-            export interface Item {
-            }
-            export interface Container {
-                readonly items: Array<Item>;
-            }
-            """);
-    }
-
-    [Fact]
-    public void GeneratedForTypeWithReadOnlyCollectionProperty ()
-    {
-        AddAssembly(
-            With("public interface Item { }"),
-            With("public class Container { public IReadOnlyCollection<Item> Items { get; } }"),
-            WithClass("[Export] public static Container Combine (IReadOnlyCollection<Item> items) => default;"));
-        Execute();
-        Contains(
-            """
-            export namespace Class {
-                export function combine(items: Array<Item>): Container;
-            }
-            export interface Item {
-            }
-            export interface Container {
-                readonly items: Array<Item>;
-            }
-            """);
+        Contains("uint8(foo: Uint8Array): void");
+        Contains("int8(foo: Int8Array): void");
+        Contains("uint16(foo: Uint16Array): void");
+        Contains("int16(foo: Int16Array): void");
+        Contains("uint32(foo: Uint32Array): void");
+        Contains("int32(foo: Int32Array): void");
+        Contains("bigInt64(foo: BigInt64Array): void");
+        Contains("float32(foo: Float32Array): void");
+        Contains("float64(foo: Float64Array): void");
     }
 
     [Fact]
@@ -595,16 +492,17 @@ public class DeclarationTest : GenerateJSTest
     public void GeneratedForGenericInterface ()
     {
         AddAssembly(
-            With("public interface IGenericInterface<T> { public T Value { get; set; } }"),
-            WithClass("[Export] public static IGenericInterface<string> Method () => default;"));
+            With("public interface IGenericInterface<T> { public T? X { get; set; } public T Y { get; } }"),
+            WithClass("[Export] public static IGenericInterface<string?> Method () => default;"));
         Execute();
         Contains(
             """
             export namespace Class {
-                export function method(): IGenericInterface<string>;
+                export function method(): IGenericInterface<string | undefined>;
             }
             export interface IGenericInterface<T> {
-                value?: T;
+                x?: T;
+                readonly y: T;
             }
             """);
     }
@@ -638,8 +536,8 @@ public class DeclarationTest : GenerateJSTest
                 export function method(p: GenericClass2<string, number>): void;
             }
             export interface GenericClass2<T1, T2> {
-                key?: T1;
-                value?: T2;
+                key: T1;
+                value: T2;
             }
             """);
     }
@@ -1212,6 +1110,45 @@ public class DeclarationTest : GenerateJSTest
             export enum Foo {
                 A,
                 B
+            }
+            """);
+    }
+
+    [Fact]
+    public void NullityResolvedForUnconstrainedGenericParameters ()
+    {
+        AddAssembly(With(
+            """
+            public interface INotAnno<T> { T A { get; } T B { get; } T? C { get; } }
+            public interface IAnno<T> { T A { get; } T? B { get; } T? C { get; } }
+            public delegate void Notify<T>(T msg);
+            #nullable disable
+            public interface IObv<T> { T Value { get; } }
+            #nullable restore
+            public partial class Class
+            {
+                [Export] public static INotAnno<string> A () => default;
+                [Export] public static IAnno<string> B () => default;
+                [Export] public static Notify<int> C () => default;
+                [Export] public static IObv<int> D () => default;
+            }
+            """));
+        Execute();
+        Contains(
+            """
+            export interface INotAnno<T> {
+                readonly a: T;
+                readonly b: T;
+                readonly c?: T;
+            }
+            export interface IAnno<T> {
+                readonly a: T;
+                readonly b?: T;
+                readonly c?: T;
+            }
+            export type Notify<T> = (msg: T) => void;
+            export interface IObv<T> {
+                readonly value: T;
             }
             """);
     }

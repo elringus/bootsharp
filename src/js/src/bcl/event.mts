@@ -23,7 +23,7 @@ export type EventOptions = {
     warn?: (message: string) => void
 };
 
-/** Allows attaching handlers and broadcasting events. */
+/** Allows attaching handlers and broadcasting events; compatible with C# events. */
 export class Event<T extends unknown[]> implements EventBroadcaster<T>, EventSubscriber<T> {
     private readonly handlers = new Map<string, (...args: [...T]) => void>();
     private readonly warn: (message: string) => void;
