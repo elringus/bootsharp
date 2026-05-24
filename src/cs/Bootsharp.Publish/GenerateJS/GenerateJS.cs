@@ -9,6 +9,7 @@ public sealed class GenerateJS : Microsoft.Build.Utilities.Task
     public required string DebugDirectory { get; set; }
     public required string InspectedDirectory { get; set; }
     public required string EntryAssemblyName { get; set; }
+    public required string PackageName { get; set; }
     public required bool Globalization { get; set; }
     public required bool LLVM { get; set; }
     public required bool Debug { get; set; }
@@ -84,7 +85,7 @@ public sealed class GenerateJS : Microsoft.Build.Utilities.Task
 
     private void GenerateResources (SolutionInspection spec)
     {
-        var generator = new ResourceGenerator(EntryAssemblyName, Debug, Globalization, Embed);
+        var generator = new ResourceGenerator(EntryAssemblyName, PackageName, Debug, Globalization, Embed);
         var content = generator.Generate(BuildDirectory, DebugDirectory);
         WriteGenerated("resources.g.mjs", content);
     }

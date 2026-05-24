@@ -104,9 +104,13 @@
         </ItemGroup>
         <Copy SourceFiles="@(BsSourceFiles)" DestinationFolder="$(BsBuildDir)/%(RecursiveDir)"/>
 
+        <!-- Rename the native WASM binary to the configured Bootsharp name. -->
+        <Move SourceFiles="$(BsBuildDir)/dotnet.native.wasm"
+              DestinationFiles="$(BsBuildDir)/$(BootsharpName).wasm"/>
+
         <!-- Optimize the produced WASM with Binaryen when publishing release builds. -->
         <Exec Condition="!$(BsDebug)"
-              Command="wasm-opt dotnet.native.wasm -O3 -o dotnet.native.wasm --all-features --strip-dwarf --strip-debug --vacuum"
+              Command="wasm-opt $(BootsharpName).wasm -O3 -o $(BootsharpName).wasm --all-features --strip-dwarf --strip-debug --vacuum"
               WorkingDirectory="$(BsBuildDir)"
               StdOutEncoding="utf-8" StdErrEncoding="utf-8"
               IgnoreExitCode="true">
@@ -120,6 +124,7 @@
                     DebugDirectory="$(PublishDir)"
                     InspectedDirectory="$(OutputPath)"
                     EntryAssemblyName="$(BsEntryAssembly)"
+                    PackageName="$(BootsharpName)"
                     Globalization="$(BsGlobalization)"
                     LLVM="$(BsLlvm)"
                     Debug="$(BsDebug)"

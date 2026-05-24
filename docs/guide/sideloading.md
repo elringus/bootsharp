@@ -10,7 +10,7 @@ To disable embedding, set `BootsharpBinariesDirectory` to the directory where th
 </PropertyGroup>
 ```
 
-The `dotnet.native.wasm`, solution assemblies, ICU data and (in debug builds) debug symbols will be emitted to that directory as separate files instead of being inlined into the module. You then have two ways to feed them to `boot`:
+The compiled WASM module, solution assemblies, ICU data and (in debug builds) debug symbols will be emitted to that directory as separate files instead of being inlined into the module. You then have two ways to feed them to `boot`:
 
 Pass a root URL to fetch the resources from at runtime:
 
@@ -24,7 +24,7 @@ Or load the binaries yourself and pass them as a `BootResources` object:
 ```ts
 import { readFileSync } from "node:fs";
 
-const wasm = readFileSync("public/dotnet.native.wasm");
+const wasm = readFileSync("public/bootsharp.wasm");
 await bootsharp.boot({ wasm });
 ```
 

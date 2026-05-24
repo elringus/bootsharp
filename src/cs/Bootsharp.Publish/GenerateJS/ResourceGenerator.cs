@@ -4,7 +4,7 @@ namespace Bootsharp.Publish;
 /// Generates a manifest listing resources required to initialize the .NET runtime,
 /// optionally embedding the binary content as base64 strings.
 /// </summary>
-internal sealed class ResourceGenerator (string entryAssemblyName, bool debug, bool g11n, bool embed)
+internal sealed class ResourceGenerator (string entryAssemblyName, string packageName, bool debug, bool g11n, bool embed)
 {
     private readonly List<string> assemblies = [];
     private readonly List<string> symbols = [];
@@ -14,8 +14,9 @@ internal sealed class ResourceGenerator (string entryAssemblyName, bool debug, b
 
     public string Generate (string buildDir, string debugDir)
     {
+        var wasmName = $"{packageName}.wasm";
         foreach (var path in Directory.GetFiles(buildDir, "*.wasm").Order())
-            if (path.EndsWith("dotnet.native.wasm")) wasm = Path.GetFileName(path);
+            if (Path.GetFileName(path) == wasmName) wasm = wasmName;
             else assemblies.Add(Path.GetFileName(path));
         if (g11n)
             foreach (var path in Directory.GetFiles(buildDir, "*.dat").Order())

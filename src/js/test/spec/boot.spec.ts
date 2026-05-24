@@ -86,7 +86,7 @@ describe("boot", () => {
         try { await bootsharp.boot("/bin"); }
         finally { global.fetch = fetch; }
         expect(Program.onMainInvoked).toHaveBeenCalled();
-        expect(fetchSpy).toHaveBeenCalledWith("/bin/dotnet.native.wasm");
+        expect(fetchSpy).toHaveBeenCalledWith("/bin/bootsharp.wasm");
         expect(fetchSpy).toHaveBeenCalledWith("/bin/Bootsharp.Common.wasm");
     });
     it("respects boot customs", async () => {
@@ -104,7 +104,7 @@ describe("boot", () => {
                         resolvedUrl: resolve("test/cs/Test/bin/bootsharp/dotnet/dotnet.native.js")
                     }],
                     wasmNative: [{
-                        name: "dotnet.native.wasm",
+                        name: "bootsharp.wasm",
                         buffer: resources.wasm as ArrayBuffer
                     }],
                     assembly: resources.assemblies?.map(a => ({

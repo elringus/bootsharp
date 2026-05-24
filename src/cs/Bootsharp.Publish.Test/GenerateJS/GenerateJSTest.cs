@@ -18,7 +18,7 @@ public class GenerateJSTest : TaskTest
         Project.WriteFile("dotnet.native.js", MockNativeContent);
         Project.WriteFile("dotnet.runtime.g.js", "MockRuntimeGeneratedContent");
         Project.WriteFile("dotnet.native.g.js", "MockNativeGeneratedContent");
-        Project.WriteFile("dotnet.native.wasm", MockWasmBinary);
+        Project.WriteFile("bootsharp.wasm", MockWasmBinary);
     }
 
     public override void Execute ()
@@ -39,6 +39,7 @@ public class GenerateJSTest : TaskTest
         DebugDirectory = Project.Root,
         InspectedDirectory = Project.Root,
         EntryAssemblyName = "System.Runtime.dll",
+        PackageName = "bootsharp",
         BuildEngine = Engine,
         Globalization = false,
         LLVM = false,
