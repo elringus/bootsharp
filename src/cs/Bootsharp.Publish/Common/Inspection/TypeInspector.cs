@@ -4,9 +4,9 @@ namespace Bootsharp.Publish;
 
 internal sealed class TypeInspector
 {
-    internal delegate InstanceMeta? InspectInstanced (Type type, InteropKind ik);
+    internal delegate InstanceMeta? InspectInstanced (Type type, InteropKind ik, NullabilityInfo? nul);
 
-    private readonly Dictionary<(Type, InteropKind), InstanceMeta> its = [];
+    private readonly Dictionary<(string Syntax, InteropKind IK), InstanceMeta> its = [];
     private readonly Dictionary<Type, TypeMeta> crawled = [];
     private readonly HashSet<Type> inspectedModuleTypes = [];
     private readonly List<SurfaceMeta> surfaces = [];
@@ -67,16 +67,17 @@ internal sealed class TypeInspector
         return InspectMembers(md, ik);
     }
 
-    private InstanceMeta? InspectInstance (Type type, InteropKind ik)
+    private InstanceMeta? InspectInstance (Type type, InteropKind ik, NullabilityInfo? nul)
     {
-        if (its.TryGetValue((type, ik), out var it)) return it;
-        if (IsTaskWithResult(type, out var result)) return InspectInstance(result, ik);
-        if (IsDelegate(type)) return its[(type, ik)] = InspectDelegate(type, ik);
+        var key = (BuildSyntax(type, nul), ik);
+        if (its.TryGetValue(key, out var it)) return it;
+        if (IsTaskWithResult(type, out var result)) return InspectInstance(result, ik, nul);
+        if (IsDelegate(type)) return its[key] = InspectDelegate(type, ik);
         if (!IsInstanced(type)) return null;
         if (ik == InteropKind.Import && !type.IsInterface) // likely passing back an exported instance — reclassify
-            return InspectInstance(type, InteropKind.Export)!;
+            return InspectInstance(type, InteropKind.Export, nul)!;
         var special = type.GetEvents().Length > 0; // instances with events need specialized registrars to un-/sub
-        it = its[(type, ik)] = new(type) {
+        it = its[key] = new(type) {
             IK = ik,
             Proxy = BuildProxy(type, ik),
             Members = new List<MemberMeta>(),
@@ -165,23 +166,23 @@ internal sealed class TypeInspector
         Async = IsTaskLike(method.ReturnParameter.ParameterType)
     };
 
-    private ArgumentMeta InspectArg (ParameterInfo param, NullabilityInfo nil, InteropKind ik) => new(param) {
+    private ArgumentMeta InspectArg (ParameterInfo param, NullabilityInfo nul, InteropKind ik) => new(param) {
         Name = BuildCSName(param.Name!),
         JSName = BuildJSName(param.Name!),
-        Value = InspectValue(param.ParameterType, nil, ik)
+        Value = InspectValue(param.ParameterType, nul, ik)
     };
 
-    private ValueMeta InspectValue (Type type, NullabilityInfo nil, InteropKind ik) => new() {
-        Type = InspectType(type, ik),
-        TypeSyntax = BuildSyntax(type, nil),
-        Nullable = IsNullable(type, nil)
+    private ValueMeta InspectValue (Type type, NullabilityInfo nul, InteropKind ik) => new() {
+        Type = InspectType(type, ik, nul),
+        TypeSyntax = BuildSyntax(type, nul),
+        Nullable = IsNullable(type, nul)
     };
 
-    private TypeMeta InspectType (Type type, InteropKind ik)
+    private TypeMeta InspectType (Type type, InteropKind ik, NullabilityInfo? nul = null)
     {
         for (var clr = type; clr.IsNested && IsUserType(clr.DeclaringType!); clr = clr.DeclaringType!)
             crawled.TryAdd(clr.DeclaringType!, new(clr.DeclaringType!));
-        return InspectInstance(type, ik) ?? srd.Inspect(type, ik) ?? new TypeMeta(type);
+        return InspectInstance(type, ik, nul) ?? srd.Inspect(type, ik) ?? new TypeMeta(type);
     }
 
     private SurfaceProxy BuildProxy (Type type, InteropKind ik)
