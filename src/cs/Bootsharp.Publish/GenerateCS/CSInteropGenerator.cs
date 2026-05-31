@@ -43,7 +43,7 @@ internal sealed class CSInteropGenerator
             yield return $"{stx}.{evt.Name} += Handle_{id}_{evt.Name};";
         if (srf is not StaticMeta) yield break;
         foreach (var mem in srf.Members.OfType<MethodMeta>().Where(m => m.IK == InteropKind.Import))
-            yield return $"{stx}.Bootsharp_{mem.Name} = &{id}_{mem.Name};";
+            yield return $"{stx}.Bootsharp_{mem.Name} = &{id}_{mem.Endpoint};";
         foreach (var p in srf.Members.OfType<PropertyMeta>().Where(p => p.IK == InteropKind.Import))
         {
             if (p.CanGet) yield return $"{stx}.Bootsharp_Get{p.Name} = &{id}_Get{p.Name};";
@@ -156,14 +156,14 @@ internal sealed class CSInteropGenerator
     {
         var wait = ShouldWait(method);
         var attr = $"[JSExport] {MarshalAmbiguous(method.Return, true)}";
-        var name = $"{id}_{method.Name}";
+        var name = $"{id}_{method.Endpoint}";
         var @return = BuildValueSyntax(method.Return);
         if (wait) @return = $"async global::System.Threading.Tasks.Task<{@return}>";
         var sigArgs = string.Join(", ", method.Args.Select(a => BuildParameter(a.Value, a.Name)));
         if (isIt) sigArgs = $"int {PrependIdArg(sigArgs)}";
         var invArgs = string.Join(", ", method.Args.Select(ImportCS));
-        var invName = isIt
-            ? $"Instances.Exported<{key}>(_id).{method.Name}"
+        var invName = isIt ? $"Instances.Exported<{key}>(_id).{method.Name}"
+            : isMd ? $"{stx}.{method.Endpoint}"
             : $"{stx}.{method.Name}";
         var body = ExportCS(method.Return, $"{(wait ? "await " : "")}{invName}({invArgs})");
         yield return $"{attr}internal static {@return} {name} ({sigArgs}) => {body};";
@@ -173,7 +173,7 @@ internal sealed class CSInteropGenerator
     {
         var attr = $"""[JSImport("{srf.JSNode}.{method.JSName}Serialized", "{srf.JSModule}")]""";
         var marshalAs = MarshalAmbiguous(method.Return, true);
-        var name = $"{id}_{method.Name}";
+        var name = $"{id}_{method.Endpoint}";
         var @return = BuildValueSyntax(method.Return);
         if (ShouldWait(method)) @return = $"global::System.Threading.Tasks.Task<{@return}>";
         var args = string.Join(", ", method.Args.Select(a => BuildParameter(a.Value, a.Name)));

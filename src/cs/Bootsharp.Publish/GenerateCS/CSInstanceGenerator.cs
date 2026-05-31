@@ -160,10 +160,10 @@ internal sealed class CSInstanceGenerator
     {
         var args = string.Join(", ", method.Args.Select(a => $"{a.Value.TypeSyntax} {a.Name}"));
         var callArgs = PrependIdArg(string.Join(", ", method.Args.Select(a => a.Name)));
-        var name = $"{it.Proxy.Id}_{method.Name}";
-        var head = it.Proxy is SpecializedProxy
+        var name = $"{it.Proxy.Id}_{method.Endpoint}";
+        var sig = it.Proxy is SpecializedProxy
             ? $"public override {method.Return.TypeSyntax} {method.Name}"
             : $"{method.Return.TypeSyntax} {it.Syntax}.{method.Name}";
-        return $"{head} ({args}) => global::Bootsharp.Generated.Interop.{name}({callArgs});";
+        return $"{sig} ({args}) => global::Bootsharp.Generated.Interop.{name}({callArgs});";
     }
 }

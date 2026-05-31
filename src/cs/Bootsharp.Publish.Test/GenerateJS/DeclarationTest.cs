@@ -543,6 +543,28 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
+    public void GeneratedForGenericMethods ()
+    {
+        AddAssembly(With(
+            """
+            public interface IShape {}
+            public class Circle : IShape { public double Radius { get; set; } }
+            public class Square : IShape { public double Side { get; set; } }
+
+            public class Class
+            {
+                [Export] public static T Make<T> () where T : IShape => default!;
+                [Export] public static void Take<T> (T shape) where T : IShape {}
+            }
+            """));
+        Execute();
+        Contains("export function makeWithCircle(): Circle;");
+        Contains("export function makeWithSquare(): Square;");
+        Contains("export function takeWithCircle(shape: Circle): void;");
+        Contains("export function takeWithSquare(shape: Square): void;");
+    }
+
+    [Fact]
     public void GeneratesForDelegates ()
     {
         AddAssembly(

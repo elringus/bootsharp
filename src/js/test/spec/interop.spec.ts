@@ -296,4 +296,19 @@ describe("while bootsharp is booted", () => {
         const actual = new Date(Static.addDays(date, 7));
         expect(actual).toStrictEqual(expected);
     });
+    it("can interop with generic methods", () => {
+        const circle = Static.makeGenericWithCircle();
+        const square = Static.makeGenericWithSquare();
+        expect(circle.describe()).toBe("circle");
+        expect(circle.area()).toBe(3.14);
+        expect(square.describe()).toBe("square");
+        expect(square.area()).toBe(4.0);
+        expect(Static.echoGenericWithCircle(circle)).toBe(circle);
+        expect(Static.echoGenericWithSquare(square)).toBe(square);
+    });
+    it("can interop with overloaded methods", () => {
+        expect(Static.combine(42)).toBe("int:42");
+        expect(Static.combineWithA("foo")).toBe("str:foo");
+        expect(Static.combineWithB(1, 2)).toBe("sum:3");
+    });
 });

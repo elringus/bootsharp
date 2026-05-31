@@ -1,10 +1,13 @@
 namespace Bootsharp.Publish;
 
+/// <summary>
+/// Renames <see cref="MethodMeta"/> associated with the overloaded methods making the names unique.
+/// </summary>
 internal static class OverloadDisambiguator
 {
-    public static void Disambiguate (IEnumerable<SurfaceMeta> surfaces)
+    public static void Disambiguate (IEnumerable<TypeMeta> types)
     {
-        foreach (var surface in surfaces)
+        foreach (var surface in types.OfType<SurfaceMeta>())
         foreach (var overloaded in surface.Members.OfType<MethodMeta>()
                      .GroupBy(m => m.JSName).Where(g => g.Count() > 1))
             Disambiguate(surface, overloaded.ToArray());
@@ -27,7 +30,7 @@ internal static class OverloadDisambiguator
         var baselineArgs = baseline.Args.Select(a => a.JSName).ToHashSet();
         return overloaded.Where(m => m != baseline).ToDictionary(m => m, m => m.Args
             .Where(a => !baselineArgs.Contains(a.JSName))
-            .Select(a => ToFirstUpper(a.JSName))
+            .Select(a => ToFirstUpper(a.Info.Name!))
             // if an overload has extra args — use their names as discriminator
             .ToArray() is { Length: > 0 } extra ? extra : GetArgNames(m));
     }
@@ -38,7 +41,7 @@ internal static class OverloadDisambiguator
         .SelectMany(g => g.Select(kv => kv.Key));
 
     private static string[] GetArgNames (MethodMeta method) => method.Args
-        .Select(a => ToFirstUpper(a.JSName)).ToArray();
+        .Select(a => ToFirstUpper(a.Info.Name!)).ToArray();
 
     private static string[] GetArgTypes (MethodMeta method) => method.Args
         .Select(a => a.Value.Type.Clr.Name).ToArray();
@@ -48,9 +51,12 @@ internal static class OverloadDisambiguator
         .ThenBy(m => string.Join("|", m.Args.Select(a => a.Value.Type.Clr.FullName)))
         .First();
 
-    private static void Rename (SurfaceMeta srf, MethodMeta method, string discriminator)
+    private static void Rename (SurfaceMeta srf, MethodMeta meth, string discriminator)
     {
         var members = (IList<MemberMeta>)srf.Members;
-        members[members.IndexOf(method)] = method with { JSName = $"{method.JSName}With{discriminator}" };
+        members[members.IndexOf(meth)] = meth with {
+            JSName = $"{meth.JSName}With{discriminator}",
+            Endpoint = $"{meth.Endpoint}With{discriminator}"
+        };
     }
 }

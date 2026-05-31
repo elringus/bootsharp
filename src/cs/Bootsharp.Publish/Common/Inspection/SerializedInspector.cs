@@ -39,7 +39,7 @@ internal sealed class SerializedInspector (TypeInspector.InspectInstanced inspec
 
     private static bool IsSerialized (Type type)
     {
-        if (IsVoid(type)) return false;
+        if (IsVoid(type) || type.ContainsGenericParameters) return false;
         if (IsNullable(type, out var value)) return IsSerialized(value);
         if (IsTaskWithResult(type, out var result)) return IsSerialized(result);
         return !native.Contains(type.FullName!);

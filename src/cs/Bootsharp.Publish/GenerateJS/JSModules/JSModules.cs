@@ -38,7 +38,7 @@ internal sealed class JSModules
     /// <inheritdoc cref="Ref(System.Type,Bootsharp.Publish.JSModule?)"/>
     public string Ref (Type clr, JSModule? fromMd = null)
     {
-        return Ref(types.Get(clr), fromMd);
+        return Ref(types.First(clr), fromMd);
     }
 
     /// <summary>

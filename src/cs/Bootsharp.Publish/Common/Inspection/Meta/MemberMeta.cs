@@ -41,6 +41,10 @@ internal record MethodMeta (MethodInfo Info) : MemberMeta
     /// </summary>
     public override MethodInfo Info { get; } = Info;
     /// <summary>
+    /// Identifier of the generated interop endpoint.
+    /// </summary>
+    public required string Endpoint { get; init; }
+    /// <summary>
     /// Arguments of the method.
     /// </summary>
     public required IReadOnlyList<ArgumentMeta> Args { get; init; }

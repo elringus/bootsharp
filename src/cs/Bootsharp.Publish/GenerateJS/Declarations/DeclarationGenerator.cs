@@ -109,7 +109,7 @@ internal sealed class DeclarationGenerator
         string BuildExtensions ()
         {
             if (it.Proxy is SpecializedProxy) return ""; // specialized surfaces are self-contained
-            var ext = it.Clr.GetInterfaces().Where(IsUserType).ToList();
+            var ext = it.Clr.GetInterfaces().Where(i => IsUserType(i) && spec.Types.Has(i)).ToList();
             if (spec.Types.HasBase(it.Clr, out var bs)) ext.Insert(0, bs.Clr);
             return ext.Count == 0 ? "" : $" extends {string.Join(", ", ext.Select(ts.BuildFullName))}";
         }

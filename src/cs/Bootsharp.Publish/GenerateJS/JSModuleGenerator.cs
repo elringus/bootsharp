@@ -152,7 +152,7 @@ internal sealed class JSModuleGenerator (bool debug)
     private void EmitMethodExport (MethodMeta method)
     {
         var wait = ShouldWait(method);
-        var fnName = $"{id}_{method.Name}";
+        var fnName = $"{id}_{method.Endpoint}";
         var invName = debug ? $"""getExport("{fnName}")""" : $"exports.{fnName}";
         var args = string.Join(", ", method.Args.Select(a => a.JSName));
         if (isIt) args = PrependIdArg(args);

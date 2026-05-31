@@ -705,29 +705,97 @@ public class JSModuleTest : GenerateJSTest
             """
             export const Class = {
                 foo: (a) => exports.Class_Foo(a),
-                fooWithA: (a) => exports.Class_Foo(a),
-                fooWithB: (b, a) => exports.Class_Foo(b, a),
+                fooWithA: (a) => exports.Class_FooWithA(a),
+                fooWithB: (b, a) => exports.Class_FooWithB(b, a),
                 bar: (x) => exports.Class_Bar(x),
-                barWithName: (x, name) => exports.Class_Bar(x, name),
+                barWithName: (x, name) => exports.Class_BarWithName(x, name),
                 baz: (x, y) => exports.Class_Baz(x, y),
-                bazWithXAndY: (x, y) => exports.Class_Baz(x, y),
+                bazWithXAndY: (x, y) => exports.Class_BazWithXAndY(x, y),
                 qux: (a) => exports.Class_Qux(a),
-                quxWithB: (a, b) => exports.Class_Qux(a, b),
-                quxWithBAndC: (a, b, c) => exports.Class_Qux(a, b, c),
+                quxWithB: (a, b) => exports.Class_QuxWithB(a, b),
+                quxWithBAndC: (a, b, c) => exports.Class_QuxWithBAndC(a, b, c),
                 x: (x, y) => exports.Class_X(x, y),
-                xWithStringAndInt32: (x, y) => exports.Class_X(x, y),
-                xWithInt32AndString: (x, y) => exports.Class_X(x, y),
+                xWithStringAndInt32: (x, y) => exports.Class_XWithStringAndInt32(x, y),
+                xWithInt32AndString: (x, y) => exports.Class_XWithInt32AndString(x, y),
                 bob: (x, y, z) => exports.Class_Bob(x, y, z),
-                bobWithQ: (x, y, q) => exports.Class_Bob(x, y, q),
+                bobWithQ: (x, y, q) => exports.Class_BobWithQ(x, y, q),
                 change: (progress) => exports.Class_Change(progress),
-                changeWithInfo: (info) => exports.Class_Change(info),
-                changeWithProgressAndInfo: (progress, info) => exports.Class_Change(progress, info),
+                changeWithInfo: (info) => exports.Class_ChangeWithInfo(info),
+                changeWithProgressAndInfo: (progress, info) => exports.Class_ChangeWithProgressAndInfo(progress, info),
                 start: (title) => exports.Class_Start(title),
-                startWithInfo: (title, info) => exports.Class_Start(title, info),
-                startWithProgress: (title, progress) => exports.Class_Start(title, progress),
-                startWithInfoAndProgress: (title, info, progress) => exports.Class_Start(title, info, progress)
+                startWithInfo: (title, info) => exports.Class_StartWithInfo(title, info),
+                startWithProgress: (title, progress) => exports.Class_StartWithProgress(title, progress),
+                startWithInfoAndProgress: (title, info, progress) => exports.Class_StartWithInfoAndProgress(title, info, progress)
             };
             """);
+    }
+
+    [Fact]
+    public void GeneratesSupportedGenericMethods ()
+    {
+        AddAssembly(With(
+            """
+            public interface IShape {}
+            public class Circle : IShape { public double Radius { get; set; } }
+            public class Square : IShape { public double Side { get; set; } }
+
+            public class Class
+            {
+                [Export] public static T Make<T> () where T : IShape => default!;
+                [Export] public static void Take<T> (T shape) where T : IShape {}
+            }
+            """));
+        Execute();
+        Contains("makeWithCircle: () =>");
+        Contains("makeWithSquare: () =>");
+        Contains("takeWithCircle: (shape) =>");
+        Contains("takeWithSquare: (shape) =>");
+        Contains("exports.Class_MakeCircle()");
+        Contains("exports.Class_MakeSquare()");
+        Contains("exports.Class_TakeCircle(");
+        Contains("exports.Class_TakeSquare(");
+    }
+
+    [Fact]
+    public void DiscardsUnsupportedGenericMethods ()
+    {
+        AddAssembly(With(
+            """
+            using System.Collections.Generic;
+            public interface IShape {}
+            public static class Box<T> { [Export] public static void Stored (T item) {} }
+            public class Class
+            {
+                [Export] public static void Pair<T1, T2> () where T1 : IShape where T2 : IShape {}
+                [Export] public static void Many<T> (List<T> items) where T : IShape {}
+                [Export] public static void Free<T> () {}
+                [Export] public static void Real () {}
+            }
+            """));
+        Execute();
+        Contains("real:");
+        DoesNotContain("stored"); // method declared on a generic type
+        DoesNotContain("pair"); // multiple type parameters
+        DoesNotContain("many"); // type parameter used nested
+        DoesNotContain("free"); // type parameter not constrained to a user type
+    }
+
+    [Fact]
+    public void DiscardsGeneratedTypesFromGenericCandidates ()
+    {
+        AddAssembly(With(
+            """
+            public interface IShape {}
+            public class Circle : IShape { public double Radius { get; set; } }
+            namespace Bootsharp.Generated { public class JS_Import_Leaked : global::IShape {} }
+            public class Class
+            {
+                [Export] public static T Make<T> () where T : IShape => default!;
+            }
+            """));
+        Execute();
+        Contains("makeWithCircle:");
+        DoesNotContain("makeWithJS_Import_Leaked");
     }
 
     [Fact]

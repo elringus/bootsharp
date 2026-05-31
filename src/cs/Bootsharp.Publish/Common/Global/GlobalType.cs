@@ -77,6 +77,10 @@ internal static class GlobalType
              type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyDictionary<,>).FullName);
     }
 
+    public static bool IsSameType (Type a, Type b) =>
+        (a.IsGenericType ? a.GetGenericTypeDefinition() : a) ==
+        (b.IsGenericType ? b.GetGenericTypeDefinition() : b);
+
     public static NullabilityInfo GetNullity (PropertyInfo prop) =>
         FixNullity(new NullabilityInfoContext().Create(prop), prop.CustomAttributes, prop.DeclaringType);
     public static NullabilityInfo GetNullity (ParameterInfo param) =>

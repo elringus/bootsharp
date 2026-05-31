@@ -36,6 +36,7 @@ internal static class GlobalInspection
 
     public static bool IsUserType (Type type)
     {
+        if (type.Namespace?.StartsWith("Bootsharp.Generated") == true) return false;
         if (Preferences.IsSpecialized(type)) return true;
         if (IsDelegate(type)) return true;
         if (type.IsArray) return false;
@@ -79,10 +80,14 @@ internal static class GlobalInspection
             return bs != null && IsUserType(bs.Clr);
         }
 
-        public TypeMeta Get (Type clr)
+        public TypeMeta First (Type clr)
         {
-            var def = clr.IsGenericType ? clr.GetGenericTypeDefinition() : clr;
-            return types.First(t => (t.Clr.IsGenericType ? t.Clr.GetGenericTypeDefinition() : t.Clr) == def);
+            return types.First(t => IsSameType(t.Clr, clr));
+        }
+
+        public bool Has (Type clr)
+        {
+            return types.Any(t => IsSameType(t.Clr, clr));
         }
     }
 }

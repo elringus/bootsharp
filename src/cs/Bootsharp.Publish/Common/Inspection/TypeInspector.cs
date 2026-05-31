@@ -31,15 +31,16 @@ internal sealed class TypeInspector
 
     public IReadOnlyCollection<TypeMeta> Collect ()
     {
-        OverloadDisambiguator.Disambiguate([..surfaces, ..its.Values]);
-        TypeMeta[] specialized = [..surfaces, ..its.Values, ..srd.Collect()];
-        var clrs = specialized.Select(t => t.Clr).ToHashSet();
-        return Preferences.Rename([..specialized, ..crawled.Values.Where(c => !clrs.Contains(c.Clr))]);
+        TypeMeta[] types = [..surfaces, ..its.Values, ..srd.Collect()];
+        GenericDisambiguator.Disambiguate(types);
+        OverloadDisambiguator.Disambiguate(types);
+        var clrs = types.Select(t => t.Clr).ToHashSet();
+        return Preferences.Rename([..types, ..crawled.Values.Where(c => !clrs.Contains(c.Clr))]);
     }
 
     private StaticMeta? InspectStatic (Type type)
     {
-        if (type.Namespace?.StartsWith("Bootsharp.Generated") == true) return null;
+        if (!IsUserType(type)) return null;
         var members = new List<MemberMeta>();
         var st = new StaticMeta(type) { Members = members };
         var flags = BindingFlags.Public | BindingFlags.Static;
@@ -86,7 +87,7 @@ internal sealed class TypeInspector
         {
             // Instanced types are mutable user types that are passed by reference when crossing the
             // interop boundary (as opposed to serialized immutable types, which are copied by value).
-            if (!IsUserType(type)) return false;
+            if (!IsUserType(type) || type.ContainsGenericParameters) return false;
             if (type.IsInterface || Preferences.IsSpecialized(type)) return true;
             return type.IsClass && !IsStatic(type) && !IsRecord(type); // records are immutable by convention
         }
@@ -172,6 +173,7 @@ internal sealed class TypeInspector
         IK = ik,
         Surf = srf,
         Name = BuildCSName(method.Name),
+        Endpoint = BuildCSName(method.Name),
         JSName = BuildJSName(method.Name),
         Args = method.GetParameters().Select(p => InspectArg(p, GetNullity(p), ik.Invert)).ToArray(),
         Return = InspectValue(method.ReturnParameter.ParameterType, GetNullity(method.ReturnParameter), ik),
@@ -193,8 +195,7 @@ internal sealed class TypeInspector
 
     private TypeMeta InspectType (Type type, InteropKind ik, NullabilityInfo? nul = null)
     {
-        for (var clr = type; clr.IsNested && IsUserType(clr.DeclaringType!); clr = clr.DeclaringType!)
-            crawled.TryAdd(clr.DeclaringType!, new(clr.DeclaringType!));
+        CrawlInspected(type, ik);
         return InspectInstance(type, ik, nul) ?? srd.Inspect(type, ik) ?? new TypeMeta(type);
     }
 
@@ -211,6 +212,23 @@ internal sealed class TypeInspector
             JS = sp.JS,
             Decl = sp.Decl
         };
+    }
+
+    private void CrawlInspected (Type type, InteropKind ik)
+    {
+        for (var clr = type; clr.IsNested && IsUserType(clr.DeclaringType!); clr = clr.DeclaringType!)
+            crawled.TryAdd(clr.DeclaringType!, new(clr.DeclaringType!));
+        if (type.IsGenericMethodParameter)
+            foreach (var compatible in FindCompatible(type))
+                InspectInstance(compatible, ik, null);
+
+        static IEnumerable<Type> FindCompatible (Type param)
+        {
+            foreach (var ct in param.GetGenericParameterConstraints().Where(IsUserType))
+            foreach (var type in ct.Assembly.GetExportedTypes())
+                if (!type.IsAbstract && !type.ContainsGenericParameters && ct.IsAssignableFrom(type))
+                    yield return type;
+        }
     }
 
     private InteropKind? ResolveIK (MemberInfo info)
