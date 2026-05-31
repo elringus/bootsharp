@@ -55,7 +55,7 @@ export default defineConfig({
                         { text: "Serialization", link: "/guide/serialization" },
                         { text: "Interop Modules", link: "/guide/interop-modules" },
                         { text: "Interop Instances", link: "/guide/interop-instances" },
-                        { text: "Preferences", link: "/guide/preferences" },
+                        { text: "Renaming", link: "/guide/renaming" },
                         { text: "Specialization", link: "/guide/specialization" },
                         { text: "Build Configuration", link: "/guide/build-config" },
                         { text: "Sideloading", link: "/guide/sideloading" },

@@ -11,8 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 [assembly: Export(typeof(Backend.IComputer))]
 // Generate JavaScript -> C# interop handlers for specified contracts.
 [assembly: Import(typeof(Backend.Prime.IPrimeUI))]
-// Group all generated JavaScript APIs under "Computer" namespace.
-[assembly: Preferences(Space = [".+", "Computer"])]
 
 // Perform dependency injection.
 new ServiceCollection()
@@ -20,3 +18,9 @@ new ServiceCollection()
     .AddBootsharp() // inject generated interop handlers
     .BuildServiceProvider()
     .RunBootsharp(); // initialize interop services
+
+public static class Prefs
+{
+    [RenameModule] // Group generated JavaScript APIs under the "computer" module.
+    public static string RenameModule (Type type, string @default) => "computer";
+}

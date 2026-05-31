@@ -351,8 +351,8 @@ Class.baz();
 
 :::
 
-You can control how the C#-side namespace path resolves to the generated module path with the `Space` and `Name` options in [preferences](/guide/preferences).
+You can control how the C#-side namespace and type names resolve to the generated module and node names with the [rename attributes](/guide/renaming).
 
 ## Configuring Type Mappings
 
-You can override which type declaration is generated for associated C# types via `Type` patterns of [emit preferences](/guide/preferences).
+You can rename or omit the JavaScript node generated for an associated C# type via the [rename attributes](/guide/renaming).
