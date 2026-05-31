@@ -6,7 +6,6 @@ namespace Bootsharp.Publish;
 public sealed class GenerateCS : Microsoft.Build.Utilities.Task
 {
     public required string InspectedDirectory { get; set; }
-    public required string EntryAssemblyName { get; set; }
     public required string SerializerFilePath { get; set; }
     public required string InstancesFilePath { get; set; }
     public required string ModulesFilePath { get; set; }
@@ -24,9 +23,9 @@ public sealed class GenerateCS : Microsoft.Build.Utilities.Task
 
     private SolutionInspection InspectSolution ()
     {
-        var inspector = new SolutionInspector(EntryAssemblyName, Log);
+        var inspector = new SolutionInspector(Log);
         var inspected = Directory.GetFiles(InspectedDirectory, "*.dll").Order();
-        return inspector.Inspect(InspectedDirectory, inspected);
+        return inspector.Inspect(inspected);
     }
 
     private void GenerateSerializer (SolutionInspection spec)

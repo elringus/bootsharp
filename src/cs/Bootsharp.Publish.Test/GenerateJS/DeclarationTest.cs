@@ -1295,14 +1295,6 @@ public class DeclarationTest : GenerateJSTest
     {
         AddAssembly(With(
             """
-            [assembly:Preferences(
-                Space = [@".+", "index"],
-                Name = [@"^Class$", "Foo"],
-                Method = [@"^Method$", "bar"],
-                Property = [@"^Property$", "baz"],
-                Event = [@"^Event$", "qux"]
-            )]
-
             namespace Space;
 
             public enum Enum { A, B }
@@ -1312,6 +1304,20 @@ public class DeclarationTest : GenerateJSTest
                 [Export] public static Enum Method () => default;
                 [Export] public static Enum Property { get; set; }
                 [Export] public static event Action? Event;
+            }
+
+            public static class Prefs
+            {
+                [RenameModule] 
+                public static string Module (Type type, string @default) => "index";
+                
+                [RenameNode] 
+                public static string Node (Type type, string @default) => type.Name == "Class" ? "Foo" : @default;
+                
+                [RenameMember] 
+                public static string Member (MemberInfo info, string @default) => info.Name switch {
+                    "Method" => "bar", "Property" => "baz", "Event" => "qux", _ => @default
+                };
             }
             """));
         Execute();
@@ -1334,13 +1340,6 @@ public class DeclarationTest : GenerateJSTest
     {
         AddAssembly(With(
             """
-            [assembly:Preferences(
-                Space = [@".+", "index"],
-                Name = [@"^I.+$", "Foo"],
-                Method = [@"^Inv$", "bar", @"^Fun$", "baz"],
-                Property = [@"^State$", "qux"],
-                Event = [@"^Changed$", "quz"]
-            )]
             [assembly:Export(typeof(Space.IExported))]
             [assembly:Import(typeof(Space.IImported))]
 
@@ -1357,6 +1356,20 @@ public class DeclarationTest : GenerateJSTest
             public interface IImported
             {
                 void Fun (Enum e);
+            }
+
+            public static class Prefs
+            {
+                [RenameModule] 
+                public static string Module (Type type, string @default) => "index";
+                
+                [RenameNode]
+                public static string Node (Type type, string @default) => type.IsInterface ? "Foo" : @default;
+                
+                [RenameMember]
+                public static string Member (MemberInfo info, string @default) => info.Name switch {
+                    "Inv" => "bar", "Fun" => "baz", "State" => "qux", "Changed" => "quz", _ => @default
+                };
             }
             """));
         Execute();
@@ -1380,14 +1393,6 @@ public class DeclarationTest : GenerateJSTest
     {
         AddAssembly(With(
             """
-            [assembly:Preferences(
-                Space = [@".+", "index"],
-                Name = [@"^IInst$", "Foo"],
-                Method = [@"^Method$", "bar"],
-                Property = [@"^Property$", "baz"],
-                Event = [@"^Event$", "qux"]
-            )]
-
             namespace Space;
 
             public enum Enum { A, B }
@@ -1402,6 +1407,20 @@ public class DeclarationTest : GenerateJSTest
             public class Class
             {
                 [Export] public static IInst Get () => default;
+            }
+
+            public static class Prefs
+            {
+                [RenameModule]
+                public static string Module (Type type, string @default) => null;
+                
+                [RenameNode]
+                public static string Node (Type type, string @default) => type.Name == "IInst" ? "Foo" : @default;
+                
+                [RenameMember]
+                public static string Member (MemberInfo info, string @default) => info.Name switch {
+                    "Method" => "bar", "Property" => "baz", "Event" => "qux", _ => @default
+                };
             }
             """));
         Execute();
@@ -1420,6 +1439,47 @@ public class DeclarationTest : GenerateJSTest
                 B
             }
             """);
+    }
+
+    [Fact]
+    public void ErasesNodeRenamedToNull ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:Export(typeof(IKept), typeof(IGone))]
+
+            public interface IKept { void Foo (); }
+            public interface IGone { void Bar (); }
+
+            public static class Prefs
+            {
+                [RenameNode] 
+                public static string Node (Type type, string @default) => type.Name == "IGone" ? null : @default;
+            }
+            """));
+        Execute();
+        Contains("export namespace IKept");
+        DoesNotContain("IGone");
+    }
+
+    [Fact]
+    public void ErasesMemberWhenRenamedToNull ()
+    {
+        AddAssembly(With(
+            """
+            [assembly:Export(typeof(IFoo))]
+
+            public interface IFoo { void Foo (); void Bar(); }
+
+            public static class Prefs
+            {
+                [RenameMember] 
+                public static string Member (MemberInfo info, string @default) => @default == "bar" ? null : @default;
+            }
+            """));
+        Execute();
+        Contains("function foo");
+        DoesNotContain("function bar");
     }
 
     [Fact]

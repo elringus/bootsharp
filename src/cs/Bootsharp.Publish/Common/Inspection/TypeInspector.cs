@@ -34,7 +34,7 @@ internal sealed class TypeInspector
         OverloadDisambiguator.Disambiguate([..surfaces, ..its.Values]);
         TypeMeta[] specialized = [..surfaces, ..its.Values, ..srd.Collect()];
         var clrs = specialized.Select(t => t.Clr).ToHashSet();
-        return [..specialized, ..crawled.Values.Where(c => !clrs.Contains(c.Clr))];
+        return Preferences.Rename([..specialized, ..crawled.Values.Where(c => !clrs.Contains(c.Clr))]);
     }
 
     private StaticMeta? InspectStatic (Type type)
@@ -72,7 +72,7 @@ internal sealed class TypeInspector
         if (IsTaskWithResult(type, out var result)) return InspectInstance(result, ik, nul!.GenericTypeArguments[0]);
         if (!IsInstanced(type)) return null;
         if (IsDelegate(type)) return its[key] = InspectDelegate(type, ik);
-        if (!SpecializationResolver.IsSpecialized(type, out var sp) && ik == InteropKind.Import && !type.IsInterface)
+        if (!Preferences.IsSpecialized(type, out var sp) && ik == InteropKind.Import && !type.IsInterface)
             return InspectInstance(type, InteropKind.Export, nul)!; // likely passing back an exported instance
         return InspectMembers(its[key] = new(type) {
             IK = ik,
@@ -87,7 +87,7 @@ internal sealed class TypeInspector
             // Instanced types are mutable user types that are passed by reference when crossing the
             // interop boundary (as opposed to serialized immutable types, which are copied by value).
             if (!IsUserType(type)) return false;
-            if (type.IsInterface || SpecializationResolver.IsSpecialized(type)) return true;
+            if (type.IsInterface || Preferences.IsSpecialized(type)) return true;
             return type.IsClass && !IsStatic(type) && !IsRecord(type); // records are immutable by convention
         }
 
@@ -152,7 +152,7 @@ internal sealed class TypeInspector
         IK = ik,
         Surf = srf,
         Name = BuildCSName(evt.Name),
-        JSName = WithPref(Pref.Event, evt.Name, BuildJSName(evt.Name)),
+        JSName = BuildJSName(evt.Name),
         TypeSyntax = BuildSyntax(evt.EventHandlerType!, GetNullity(evt)),
         Args = evt.EventHandlerType!.GetMethod("Invoke")!.GetParameters()
             .Select(p => InspectArg(p, GetNullity(evt, p), ik)).ToArray()
@@ -162,7 +162,7 @@ internal sealed class TypeInspector
         IK = ik,
         Surf = srf,
         Name = BuildCSName(prop.Name),
-        JSName = WithPref(Pref.Property, prop.Name, BuildJSName(prop.Name)),
+        JSName = BuildJSName(prop.Name),
         TypeSyntax = BuildSyntax(prop.PropertyType, GetNullity(prop)),
         Get = prop.GetMethod != null ? InspectValue(prop.PropertyType, GetNullity(prop), ik) : null,
         Set = prop.SetMethod != null ? InspectValue(prop.PropertyType, GetNullity(prop), ik.Invert) : null
@@ -172,7 +172,7 @@ internal sealed class TypeInspector
         IK = ik,
         Surf = srf,
         Name = BuildCSName(method.Name),
-        JSName = WithPref(Pref.Method, method.Name, BuildJSName(method.Name)),
+        JSName = BuildJSName(method.Name),
         Args = method.GetParameters().Select(p => InspectArg(p, GetNullity(p), ik.Invert)).ToArray(),
         Return = InspectValue(method.ReturnParameter.ParameterType, GetNullity(method.ReturnParameter), ik),
         Void = IsVoid(method.ReturnParameter.ParameterType),

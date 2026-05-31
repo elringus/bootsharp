@@ -20,14 +20,11 @@ public class GenerateCSTest : TaskTest
 
     public override void Execute ()
     {
-        if (LastAddedAssemblyName is not null)
-            Task.EntryAssemblyName = LastAddedAssemblyName;
         Task.Execute();
     }
 
     private GenerateCS CreateTask () => new() {
         InspectedDirectory = Project.Root,
-        EntryAssemblyName = "System.Runtime.dll",
         SerializerFilePath = serializerPath,
         InstancesFilePath = instancesPath,
         ModulesFilePath = modulesPath,

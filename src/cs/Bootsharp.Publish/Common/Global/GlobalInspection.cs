@@ -1,15 +1,11 @@
 global using static Bootsharp.Publish.GlobalInspection;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 
 namespace Bootsharp.Publish;
 
 internal static class GlobalInspection
 {
-    public static Preferences Pref => PreferencesResolver.Resolved.Value ?? new();
-
     private static readonly HashSet<string> csKeywords = [
         "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char",
         "checked", "class", "const", "continue", "decimal", "default", "delegate",
@@ -32,17 +28,6 @@ internal static class GlobalInspection
         "throw", "true", "try", "typeof", "var", "void", "while", "with", "yield"
     ];
 
-    public static MetadataLoadContext CreateLoadContext (string directory)
-    {
-        var runtimeDir = RuntimeEnvironment.GetRuntimeDirectory();
-        var assemblyPaths = Directory.GetFiles(runtimeDir, "*.dll").Order().ToList();
-        foreach (var path in Directory.GetFiles(directory, "*.dll").Order())
-            if (assemblyPaths.All(p => Path.GetFileName(p) != Path.GetFileName(path)))
-                assemblyPaths.Add(path);
-        var resolver = new PathAssemblyResolver(assemblyPaths);
-        return new MetadataLoadContext(resolver);
-    }
-
     public static bool IsUserAssembly (string assemblyName) =>
         !assemblyName.StartsWith("System.", StringComparison.OrdinalIgnoreCase) &&
         !assemblyName.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase) &&
@@ -51,7 +36,7 @@ internal static class GlobalInspection
 
     public static bool IsUserType (Type type)
     {
-        if (SpecializationResolver.IsSpecialized(type)) return true;
+        if (Preferences.IsSpecialized(type)) return true;
         if (IsDelegate(type)) return true;
         if (type.IsArray) return false;
         return IsUserAssembly(type.Assembly.FullName!);
@@ -84,14 +69,6 @@ internal static class GlobalInspection
     {
         name = ToFirstLower(name);
         return jsKeywords.Contains(name) ? $"${name}" : name;
-    }
-
-    public static string WithPref (IReadOnlyCollection<Preference> prefs, string input, string? @default = null)
-    {
-        foreach (var pref in prefs)
-            if (Regex.IsMatch(input, pref.Pattern))
-                return Regex.Replace(input, pref.Pattern, pref.Replacement);
-        return @default ?? input;
     }
 
     extension (IReadOnlyCollection<TypeMeta> types)

@@ -1,4 +1,4 @@
-using System.Reflection;
+using System.Runtime.Loader;
 
 namespace Bootsharp.Publish;
 
@@ -7,11 +7,11 @@ namespace Bootsharp.Publish;
 /// code and other Bootsharp-specific resources.
 /// </summary>
 /// <param name="ctx">
-/// Context in which the solution's assemblies were loaded and inspected.
-/// Shouldn't be disposed to keep C# reflection APIs usable on the inspected types.
-/// Dispose to remove file lock on the inspected assemblies.
+/// Collectible context in which the solution's assemblies were loaded and inspected.
+/// Shouldn't be unloaded to keep C# reflection APIs usable on the inspected types.
+/// Dispose to unload the context and reclaim the associated memory.
 /// </param>
-internal sealed class SolutionInspection (MetadataLoadContext ctx) : IDisposable
+internal sealed class SolutionInspection (AssemblyLoadContext ctx) : IDisposable
 {
     /// <summary>
     /// The discovered interop artifacts.
@@ -22,5 +22,5 @@ internal sealed class SolutionInspection (MetadataLoadContext ctx) : IDisposable
     /// </summary>
     public required IReadOnlyCollection<DocMeta> Docs { get; init; }
 
-    public void Dispose () => ctx.Dispose();
+    public void Dispose () => ctx.Unload();
 }

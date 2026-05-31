@@ -21,20 +21,9 @@ internal record TypeMeta (Type Clr)
     /// <summary>
     /// The path to the module containing the node that represents the type in JavaScript.
     /// </summary>
-    public string JSModule { get; } = BuildModule(Clr);
+    public string JSModule { get; } = Clr.Namespace is { } ns ? Slugify(ns) : "index";
     /// <summary>
     /// The path to the node inside the module that represents the type in JavaScript.
     /// </summary>
-    public string JSNode { get; } = BuildNode(Clr);
-
-    private static string BuildModule (Type clr)
-    {
-        var slug = Slugify(WithPref(Pref.Space, clr.Namespace ?? ""));
-        return string.IsNullOrWhiteSpace(slug) ? "index" : slug;
-    }
-
-    private static string BuildNode (Type clr)
-    {
-        return WithPref(Pref.Name, clr.Name, BuildId(clr, full: false, separator: '.'));
-    }
+    public string JSNode { get; } = BuildId(Clr, full: false, separator: '.');
 }

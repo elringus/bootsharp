@@ -452,11 +452,10 @@ public class CSInteropTest : GenerateCSTest
     }
 
     [Fact]
-    public void RespectsSpacePref ()
+    public void RespectsPref ()
     {
         AddAssembly(With(
             """
-            [assembly:Preferences(Space = [@"Space", "Foo"])]
             [assembly:Export(typeof(Space.IExported))]
             [assembly:Import(typeof(Space.IImported))]
 
@@ -470,6 +469,12 @@ public class CSInteropTest : GenerateCSTest
                 [Export] public static event Action? Evt;
                 [Export] public static void Inv () {}
                 [Import] public static void Fun () => Proxies.Get<Action>("Class.Fun")();
+            }
+
+            public static class Prefs
+            {
+                [RenameModule]
+                public static string Module (Type type, string @default) => @default.Replace("space", "foo");
             }
             """));
         Execute();

@@ -61,7 +61,6 @@
 
         <!-- Emit C# code to be analyzed by .NET's source generators. -->
         <GenerateCS InspectedDirectory="$(OutputPath)"
-                    EntryAssemblyName="$(BsEntryAssembly)"
                     SerializerFilePath="$(BsSerializerFilePath)"
                     InstancesFilePath="$(BsInstancesFilePath)"
                     ModulesFilePath="$(BsModulesFilePath)"

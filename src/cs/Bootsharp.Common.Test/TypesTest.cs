@@ -21,7 +21,6 @@ public class TypesTest
         Assert.Equal(typeof(IFrontend), new SpecializeImportAttribute(typeof(IFrontend)).Clr);
         Assert.Equal("JS", new SpecializeImportAttribute(typeof(IFrontend), JS: "JS").JS);
         Assert.Equal("Decl", new SpecializeImportAttribute(typeof(IFrontend), Decl: "Decl").Decl);
-        Assert.Equal("Space", new PreferencesAttribute { Space = ["Space"] }.Space[0]);
     }
 
     [Fact]

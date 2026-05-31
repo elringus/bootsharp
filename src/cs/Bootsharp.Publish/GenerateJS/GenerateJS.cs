@@ -31,9 +31,9 @@ public sealed class GenerateJS : Microsoft.Build.Utilities.Task
 
     private SolutionInspection InspectSolution ()
     {
-        var inspector = new SolutionInspector(EntryAssemblyName, Log);
+        var inspector = new SolutionInspector(Log);
         var inspected = ResolveInspectedFiles();
-        return inspector.Inspect(InspectedDirectory, inspected);
+        return inspector.Inspect(inspected);
 
         IEnumerable<string> ResolveInspectedFiles ()
         {

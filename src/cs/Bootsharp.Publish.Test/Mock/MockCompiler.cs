@@ -10,6 +10,7 @@ public class MockCompiler
         "System.Collections.Generic",
         "System.Threading",
         "System.Threading.Tasks",
+        "System.Reflection",
         "Bootsharp"
     ];
 
