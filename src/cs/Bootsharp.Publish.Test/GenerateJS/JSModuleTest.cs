@@ -748,12 +748,12 @@ public class JSModuleTest : GenerateJSTest
 
             public static class Prefs
             {
-                [RenameModule] 
+                [RenameModule]
                 public static string Module (Type type, string @default) => "index";
-                
+
                 [RenameNode]
                 public static string Node (Type type, string @default) => type.Name == "Class" ? "Foo" : @default;
-                
+
                 [RenameMember]
                 public static string Member (MemberInfo info, string @default) => info.Name switch {
                     "Method" => "bar", "Property" => "baz", "Event" => "qux", _ => @default
@@ -806,10 +806,10 @@ public class JSModuleTest : GenerateJSTest
             {
                 [RenameModule]
                 public static string Module (Type type, string @default) => "index";
-                
+
                 [RenameNode]
                 public static string Node (Type type, string @default) => type.IsInterface ? "Foo" : @default;
-                
+
                 [RenameMember]
                 public static string Member (MemberInfo info, string @default) => info.Name switch {
                     "Inv" => "bar", "Fun" => "baz", "State" => "qux", "Changed" => "quz", _ => @default
@@ -863,10 +863,10 @@ public class JSModuleTest : GenerateJSTest
             {
                 [RenameModule]
                 public static string Module (Type type, string @default) => "index";
-                
+
                 [RenameNode]
                 public static string Node (Type type, string @default) => type.Name == "IInst" ? "Foo" : @default;
-                
+
                 [RenameMember]
                 public static string Member (MemberInfo info, string @default) => info.Name switch {
                     "Method" => "bar", "Property" => "baz", "Event" => "qux", _ => @default

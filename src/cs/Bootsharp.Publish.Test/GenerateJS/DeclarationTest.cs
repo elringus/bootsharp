@@ -1308,13 +1308,13 @@ public class DeclarationTest : GenerateJSTest
 
             public static class Prefs
             {
-                [RenameModule] 
+                [RenameModule]
                 public static string Module (Type type, string @default) => "index";
-                
-                [RenameNode] 
+
+                [RenameNode]
                 public static string Node (Type type, string @default) => type.Name == "Class" ? "Foo" : @default;
-                
-                [RenameMember] 
+
+                [RenameMember]
                 public static string Member (MemberInfo info, string @default) => info.Name switch {
                     "Method" => "bar", "Property" => "baz", "Event" => "qux", _ => @default
                 };
@@ -1360,12 +1360,12 @@ public class DeclarationTest : GenerateJSTest
 
             public static class Prefs
             {
-                [RenameModule] 
+                [RenameModule]
                 public static string Module (Type type, string @default) => "index";
-                
+
                 [RenameNode]
                 public static string Node (Type type, string @default) => type.IsInterface ? "Foo" : @default;
-                
+
                 [RenameMember]
                 public static string Member (MemberInfo info, string @default) => info.Name switch {
                     "Inv" => "bar", "Fun" => "baz", "State" => "qux", "Changed" => "quz", _ => @default
@@ -1413,10 +1413,10 @@ public class DeclarationTest : GenerateJSTest
             {
                 [RenameModule]
                 public static string Module (Type type, string @default) => null;
-                
+
                 [RenameNode]
                 public static string Node (Type type, string @default) => type.Name == "IInst" ? "Foo" : @default;
-                
+
                 [RenameMember]
                 public static string Member (MemberInfo info, string @default) => info.Name switch {
                     "Method" => "bar", "Property" => "baz", "Event" => "qux", _ => @default
@@ -1453,7 +1453,7 @@ public class DeclarationTest : GenerateJSTest
 
             public static class Prefs
             {
-                [RenameNode] 
+                [RenameNode]
                 public static string Node (Type type, string @default) => type.Name == "IGone" ? null : @default;
             }
             """));
@@ -1473,7 +1473,7 @@ public class DeclarationTest : GenerateJSTest
 
             public static class Prefs
             {
-                [RenameMember] 
+                [RenameMember]
                 public static string Member (MemberInfo info, string @default) => @default == "bar" ? null : @default;
             }
             """));
