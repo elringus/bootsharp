@@ -37,8 +37,8 @@ internal static class GenericDisambiguator
         .GetParameters().Select(p => p.ParameterType).Prepend(meth.ReturnType)
         .Any(t => t.ContainsGenericParameters && !t.IsGenericMethodParameter);
 
-    private static IEnumerable<TypeMeta> GetCompatible (Type constraint, TypeMeta[] types) => types
-        .Where(t => t is InstanceMeta && !t.Clr.IsAbstract && constraint.IsAssignableFrom(t.Clr))
+    private static IEnumerable<TypeMeta> GetCompatible (Type ct, TypeMeta[] types) => types
+        .Where(t => t is InstanceMeta or SerializedObjectMeta && !t.Clr.IsAbstract && ct.IsAssignableFrom(t.Clr))
         .DistinctBy(t => t.Clr);
 
     private static MethodMeta CloseGeneric (MethodMeta meth, TypeMeta closeType)

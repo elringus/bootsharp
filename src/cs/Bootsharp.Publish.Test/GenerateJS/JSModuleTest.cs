@@ -737,7 +737,7 @@ public class JSModuleTest : GenerateJSTest
             """
             public interface IShape {}
             public class Circle : IShape { public double Radius { get; set; } }
-            public class Square : IShape { public double Side { get; set; } }
+            public record Square : IShape { public double Side { get; set; } }
 
             public class Class
             {

@@ -298,13 +298,17 @@ describe("while bootsharp is booted", () => {
     });
     it("can interop with generic methods", () => {
         const circle = Static.makeGenericOfCircle();
-        const square = Static.makeGenericOfSquare();
-        expect(circle.describe()).toBe("circle");
-        expect(circle.area()).toBe(3.14);
-        expect(square.describe()).toBe("square");
-        expect(square.area()).toBe(4.0);
+        expect(circle.name).toBe("circle");
+        circle.name = "foo";
+        expect(circle.name).toBe("foo");
+        expect(circle.getRadius()).toBe(3.14);
         expect(Static.echoGenericOfCircle(circle)).toBe(circle);
-        expect(Static.echoGenericOfSquare(square)).toBe(square);
+        const square = Static.makeGenericOfSquare();
+        expect(square.name).toBe("square");
+        expect(square.area).toBe(0);
+        const echoed = Static.echoGenericOfSquare(square);
+        expect(echoed).toEqual(square);
+        expect(echoed).not.toBe(square);
     });
     it("can interop with overloaded methods", () => {
         expect(Static.combine(42)).toBe("int:42");

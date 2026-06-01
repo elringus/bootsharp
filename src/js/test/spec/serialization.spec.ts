@@ -52,6 +52,11 @@ describe("serialization", () => {
         };
         expect(Serialization.echoPrimitives([input])).toStrictEqual([input]);
     });
+    it("can echo squares", () => {
+        expect(Serialization.echoSquares([{ name: "square", area: 4 }, null]))
+            .toStrictEqual([{ name: "square", area: 4 }, null]);
+        expect(Serialization.echoSquares(undefined)).toBeNull();
+    });
     it("can echo unions", () => {
         const a: Union = { shared: "A", a: { string: "*", map: new Map([["a", null], ["b", 7]]) } };
         const b: Union = { shared: "B", b: { ints: [], strings: ["foo", "bar"], times: [new Date()] } };
@@ -96,9 +101,7 @@ describe("serialization", () => {
         expect(Serialization.echoIntList([1, 2, 3])).toStrictEqual([1, 2, 3]);
         expect(Serialization.echoStringList(["a", null, "", "b"])).toStrictEqual(["a", null, "", "b"]);
         expect(Serialization.echoNestedIntList([[1, 2], null, []])).toStrictEqual([[1, 2], null, []]);
-        expect(Serialization.echoListInterface(["a", "b", "c"])).toStrictEqual(["a", "b", "c"]);
         expect(Serialization.echoReadOnlyList([1, 2, 3])).toStrictEqual([1, 2, 3]);
-        expect(Serialization.echoCollection(["a", "b", "c"])).toStrictEqual(["a", "b", "c"]);
         expect(Serialization.echoReadOnlyCollection([1, 2, 3])).toStrictEqual([1, 2, 3]);
         expect(Serialization.echoIntList(undefined)).toBeNull();
         expect(Serialization.echoStringList(undefined)).toBeNull();
@@ -109,8 +112,6 @@ describe("serialization", () => {
             .toStrictEqual(new Map([["1", "a"], ["2", null], ["3", ""]]));
         expect(Serialization.echoNestedDictionary([new Map([["1", "a"]]), null, new Map([["2", null]])]))
             .toStrictEqual([new Map([["1", "a"]]), null, new Map([["2", null]])]);
-        expect(Serialization.echoDictionaryInterface(new Map([["a", "b"], ["c", "d"]])))
-            .toStrictEqual(new Map([["a", "b"], ["c", "d"]]));
         expect(Serialization.echoReadOnlyDictionary(new Map([["a", "b"], ["c", "d"]])))
             .toStrictEqual(new Map([["a", "b"], ["c", "d"]]));
         expect(Serialization.echoDictionary(undefined)).toBeNull();

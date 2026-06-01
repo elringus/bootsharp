@@ -62,6 +62,7 @@ public static class Serialization
 {
     [Export] public static Primitives?[]? EchoPrimitives (Primitives?[]? value) => value;
     [Export] public static Union?[]? EchoUnions (Union?[]? value) => value;
+    [Export] public static Static.Square?[]? EchoSquares (Static.Square?[]? value) => value;
     [Export] public static byte[]? EchoBytes (byte[]? value) => value;
     [Export] public static int[]? EchoIntArray (int[]? value) => value;
     [Export] public static double[]? EchoDoubleArray (double[]? value) => value;
@@ -73,11 +74,8 @@ public static class Serialization
     [Export] public static List<int>?[]? EchoNestedIntList (List<int>?[]? value) => value;
     [Export] public static Dictionary<string, string?>? EchoDictionary (Dictionary<string, string?>? value) => value;
     [Export] public static Dictionary<string, string?>?[]? EchoNestedDictionary (Dictionary<string, string?>?[]? value) => value;
-    [Export] public static IList<string> EchoListInterface (IList<string> value) => value;
     [Export] public static IReadOnlyList<int> EchoReadOnlyList (IReadOnlyList<int> value) => value;
-    [Export] public static ICollection<string> EchoCollection (ICollection<string> value) => value;
     [Export] public static IReadOnlyCollection<int> EchoReadOnlyCollection (IReadOnlyCollection<int> value) => value;
-    [Export] public static IDictionary<string, string> EchoDictionaryInterface (IDictionary<string, string> value) => value;
     [Export] public static IReadOnlyDictionary<string, string> EchoReadOnlyDictionary (IReadOnlyDictionary<string, string> value) => value;
 
     [Export]

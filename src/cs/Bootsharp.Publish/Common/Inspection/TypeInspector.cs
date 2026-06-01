@@ -221,15 +221,15 @@ internal sealed class TypeInspector
             crawled.TryAdd(clr.DeclaringType!, new(clr.DeclaringType!));
         if (type.IsGenericMethodParameter)
             foreach (var compatible in FindCompatible(type))
-                InspectInstance(compatible, ik, null);
+                InspectType(compatible, ik);
 
         static IEnumerable<Type> FindCompatible (Type param)
         {
             foreach (var ct in param.GetGenericParameterConstraints().Where(IsUserType))
             foreach (var ass in AssemblyLoadContext.GetLoadContext(ct.Assembly)!.Assemblies)
-            foreach (var type in ass.GetExportedTypes())
-                if (!type.IsAbstract && !type.ContainsGenericParameters && ct.IsAssignableFrom(type))
-                    yield return type;
+            foreach (var clr in ass.GetExportedTypes())
+                if (IsUserType(clr) && !clr.IsAbstract && !clr.ContainsGenericParameters && ct.IsAssignableFrom(clr))
+                    yield return clr;
         }
     }
 

@@ -14,19 +14,19 @@ public static partial class Static
 
     public interface IShape
     {
-        string Describe ();
+        string Name { get; set; }
     }
 
     public class Circle : IShape
     {
-        public string Describe () => "circle";
-        public double Area () => 3.14;
+        public string Name { get; set; } = "circle";
+        public double GetRadius () => 3.14;
     }
 
-    public class Square : IShape
+    public record Square : IShape
     {
-        public string Describe () => "square";
-        public double Area () => 4.0;
+        public string Name { get; set; } = "square";
+        public double Area { get; set; }
     }
 
     [Import] public static event Action<string?>? ImportedEvent;
@@ -45,7 +45,7 @@ public static partial class Static
     [Export] public static void BroadcastExportedEvent (string? payload) => ExportedEvent?.Invoke(payload);
     [Export] public static DateTime AddDays (DateTime date, int days) => date.AddDays(days);
     [Export] public static Enum GetEnum (int idx) => (Enum)idx;
-    [Export] public static T MakeGeneric<T> () where T : IShape, new() => new T();
+    [Export] public static T MakeGeneric<T> () where T : IShape, new() => new();
     [Export] public static T EchoGeneric<T> (T shape) where T : IShape => shape;
     [Export] public static string Combine (int a) => $"int:{a}";
     [Export] public static string Combine (string a) => $"str:{a}";
