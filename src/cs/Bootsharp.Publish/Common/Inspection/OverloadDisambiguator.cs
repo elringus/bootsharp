@@ -5,7 +5,7 @@ namespace Bootsharp.Publish;
 /// </summary>
 internal static class OverloadDisambiguator
 {
-    public static void Disambiguate (IEnumerable<TypeMeta> types)
+    public static void Disambiguate (TypeMeta[] types)
     {
         foreach (var surface in types.OfType<SurfaceMeta>())
         foreach (var overloaded in surface.Members.OfType<MethodMeta>()

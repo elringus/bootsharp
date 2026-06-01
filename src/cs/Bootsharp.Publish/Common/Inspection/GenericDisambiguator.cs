@@ -8,34 +8,36 @@ namespace Bootsharp.Publish;
 /// </summary>
 internal static class GenericDisambiguator
 {
-    private static IReadOnlyCollection<TypeMeta> types = null!;
-
-    public static void Disambiguate (IReadOnlyCollection<TypeMeta> types)
+    public static void Disambiguate (TypeMeta[] types)
     {
-        GenericDisambiguator.types = types;
         foreach (var surface in types.OfType<SurfaceMeta>())
         foreach (var method in surface.Members.OfType<MethodMeta>().ToArray())
             if (method.IK == InteropKind.Export && method.Info.ContainsGenericParameters)
-                Disambiguate(surface, method);
+                Disambiguate(surface, method, types);
     }
 
-    private static void Disambiguate (SurfaceMeta surf, MethodMeta meth)
+    private static void Disambiguate (SurfaceMeta surf, MethodMeta meth, TypeMeta[] types)
     {
         surf.MemberList.Remove(meth);
-        foreach (var expanded in Expand(meth))
+        foreach (var expanded in Expand(meth, types))
             surf.MemberList.Add(expanded);
     }
 
-    private static IEnumerable<MethodMeta> Expand (MethodMeta meth)
+    private static IEnumerable<MethodMeta> Expand (MethodMeta meth, TypeMeta[] types)
     {
         if (!meth.Info.IsGenericMethodDefinition) yield break; // ignore methods declared on a generic type
         if (meth.Info.GetGenericArguments() is not [{ } param]) yield break; // only single <T> supported
         if (param.GetGenericParameterConstraints().FirstOrDefault(IsUserType) is not { } ct) yield break;
-        foreach (var compatible in GetCompatible(ct))
+        if (HasNestedGeneric(meth.Info)) yield break; // type parameter nested in another type can't be rewritten
+        foreach (var compatible in GetCompatible(ct, types))
             yield return CloseGeneric(meth, compatible);
     }
 
-    private static IEnumerable<TypeMeta> GetCompatible (Type constraint) => types
+    private static bool HasNestedGeneric (MethodInfo meth) => meth
+        .GetParameters().Select(p => p.ParameterType).Prepend(meth.ReturnType)
+        .Any(t => t.ContainsGenericParameters && !t.IsGenericMethodParameter);
+
+    private static IEnumerable<TypeMeta> GetCompatible (Type constraint, TypeMeta[] types) => types
         .Where(t => t is InstanceMeta && !t.Clr.IsAbstract && constraint.IsAssignableFrom(t.Clr))
         .DistinctBy(t => t.Clr);
 

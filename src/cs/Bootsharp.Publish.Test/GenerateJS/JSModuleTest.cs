@@ -761,12 +761,13 @@ public class JSModuleTest : GenerateJSTest
     {
         AddAssembly(With(
             """
-            using System.Collections.Generic;
             public interface IShape {}
+            public class Circle : IShape { public double Radius { get; set; } }
             public static class Box<T> { [Export] public static void Stored (T item) {} }
             public class Class
             {
                 [Export] public static void Pair<T1, T2> () where T1 : IShape where T2 : IShape {}
+                [Export] public static void Take<T> (T shape) where T : IShape {}
                 [Export] public static void Many<T> (List<T> items) where T : IShape {}
                 [Export] public static void Free<T> () {}
                 [Export] public static void Real () {}
@@ -774,6 +775,7 @@ public class JSModuleTest : GenerateJSTest
             """));
         Execute();
         Contains("real:");
+        Contains("takeWithCircle:");
         DoesNotContain("stored"); // method declared on a generic type
         DoesNotContain("pair"); // multiple type parameters
         DoesNotContain("many"); // type parameter used nested
