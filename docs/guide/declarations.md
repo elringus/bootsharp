@@ -83,6 +83,40 @@ export namespace Class {
 
 :::
 
+## Generic Methods
+
+JavaScript does not have generic functions, so Bootsharp projects an exported generic method as a concrete overload for each user type that satisfies the method's type parameter constraint, suffixing each with `Of...` derived from the bound type's name. Only a single type parameter, constrained to a user type, is expanded.
+
+::: code-group
+
+```csharp [Class.cs]
+public interface IShape {}
+public class Circle : IShape {}
+public class Square : IShape {}
+
+public class Class
+{
+    [Export]
+    public static T CreateShape<T> () where T : IShape
+    {
+        if (typeof(T) == typeof(Circle)) return new Circle();
+        if (typeof(T) == typeof(Square)) return new Square();
+    }
+}
+```
+
+```ts [index.g.d.mts]
+export interface Circle {}
+export interface Square {}
+
+export namespace Class {
+    export function createShapeOfCircle(): Circle;
+    export function createShapeOfSquare(): Square;
+}
+```
+
+:::
+
 ## Default Arguments
 
 C# method parameters with default values are emitted as optional TypeScript parameters using the `?:` syntax, letting callers omit them at the call site:

@@ -406,12 +406,12 @@ public class CSInteropTest : GenerateCSTest
             }
             """));
         Execute();
-        Contains("Class_MakeCircle () => Instances.Export(global::Class.Make<global::Circle>())");
-        Contains("Class_MakeSquare () => Instances.Export(global::Class.Make<global::Square>())");
-        Contains("Class_TakeCircle (int shape) => global::Class.Take<global::Circle>(Instances.Resolve<global::Circle>(shape))");
-        Contains("Class_TakeSquare (int shape) => global::Class.Take<global::Square>(Instances.Resolve<global::Square>(shape))");
-        Contains("Class_MixCircle (int shape, global::System.Int32 n) => global::Class.Mix<global::Circle>(Instances.Resolve<global::Circle>(shape), n)");
-        Contains("Class_EchoNullCircle (int shape) => Instances.Export(global::Class.EchoNull<global::Circle>(Instances.Resolve<global::Circle>(shape)))");
+        Contains("Class_MakeOfCircle () => Instances.Export(global::Class.Make<global::Circle>())");
+        Contains("Class_MakeOfSquare () => Instances.Export(global::Class.Make<global::Square>())");
+        Contains("Class_TakeOfCircle (int shape) => global::Class.Take<global::Circle>(Instances.Resolve<global::Circle>(shape))");
+        Contains("Class_TakeOfSquare (int shape) => global::Class.Take<global::Square>(Instances.Resolve<global::Square>(shape))");
+        Contains("Class_MixOfCircle (int shape, global::System.Int32 n) => global::Class.Mix<global::Circle>(Instances.Resolve<global::Circle>(shape), n)");
+        Contains("Class_EchoNullOfCircle (int shape) => Instances.Export(global::Class.EchoNull<global::Circle>(Instances.Resolve<global::Circle>(shape)))");
     }
 
     [Fact]
@@ -429,8 +429,8 @@ public class CSInteropTest : GenerateCSTest
             }
             """));
         Execute();
-        Contains("Class_MakeCircle () => Instances.Export(global::Class.Make<global::Circle>())");
-        Contains("Class_MakeSquare () => Instances.Export(global::Class.Make<global::Square>())");
+        Contains("Class_MakeOfCircle () => Instances.Export(global::Class.Make<global::Circle>())");
+        Contains("Class_MakeOfSquare () => Instances.Export(global::Class.Make<global::Square>())");
     }
 
     [Fact]

@@ -746,14 +746,14 @@ public class JSModuleTest : GenerateJSTest
             }
             """));
         Execute();
-        Contains("makeWithCircle: () =>");
-        Contains("makeWithSquare: () =>");
-        Contains("takeWithCircle: (shape) =>");
-        Contains("takeWithSquare: (shape) =>");
-        Contains("exports.Class_MakeCircle()");
-        Contains("exports.Class_MakeSquare()");
-        Contains("exports.Class_TakeCircle(");
-        Contains("exports.Class_TakeSquare(");
+        Contains("makeOfCircle: () =>");
+        Contains("makeOfSquare: () =>");
+        Contains("takeOfCircle: (shape) =>");
+        Contains("takeOfSquare: (shape) =>");
+        Contains("exports.Class_MakeOfCircle()");
+        Contains("exports.Class_MakeOfSquare()");
+        Contains("exports.Class_TakeOfCircle(");
+        Contains("exports.Class_TakeOfSquare(");
     }
 
     [Fact]
@@ -775,7 +775,7 @@ public class JSModuleTest : GenerateJSTest
             """));
         Execute();
         Contains("real:");
-        Contains("takeWithCircle:");
+        Contains("takeOfCircle:");
         DoesNotContain("stored"); // method declared on a generic type
         DoesNotContain("pair"); // multiple type parameters
         DoesNotContain("many"); // type parameter used nested
@@ -796,8 +796,8 @@ public class JSModuleTest : GenerateJSTest
             }
             """));
         Execute();
-        Contains("makeWithCircle:");
-        DoesNotContain("makeWithJS_Import_Leaked");
+        Contains("makeOfCircle:");
+        DoesNotContain("makeOfJS_Import_Leaked");
     }
 
     [Fact]

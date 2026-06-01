@@ -297,14 +297,14 @@ describe("while bootsharp is booted", () => {
         expect(actual).toStrictEqual(expected);
     });
     it("can interop with generic methods", () => {
-        const circle = Static.makeGenericWithCircle();
-        const square = Static.makeGenericWithSquare();
+        const circle = Static.makeGenericOfCircle();
+        const square = Static.makeGenericOfSquare();
         expect(circle.describe()).toBe("circle");
         expect(circle.area()).toBe(3.14);
         expect(square.describe()).toBe("square");
         expect(square.area()).toBe(4.0);
-        expect(Static.echoGenericWithCircle(circle)).toBe(circle);
-        expect(Static.echoGenericWithSquare(square)).toBe(square);
+        expect(Static.echoGenericOfCircle(circle)).toBe(circle);
+        expect(Static.echoGenericOfSquare(square)).toBe(square);
     });
     it("can interop with overloaded methods", () => {
         expect(Static.combine(42)).toBe("int:42");

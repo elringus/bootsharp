@@ -558,10 +558,10 @@ public class DeclarationTest : GenerateJSTest
             }
             """));
         Execute();
-        Contains("export function makeWithCircle(): Circle;");
-        Contains("export function makeWithSquare(): Square;");
-        Contains("export function takeWithCircle(shape: Circle): void;");
-        Contains("export function takeWithSquare(shape: Square): void;");
+        Contains("export function makeOfCircle(): Circle;");
+        Contains("export function makeOfSquare(): Square;");
+        Contains("export function takeOfCircle(shape: Circle): void;");
+        Contains("export function takeOfSquare(shape: Square): void;");
     }
 
     [Fact]
