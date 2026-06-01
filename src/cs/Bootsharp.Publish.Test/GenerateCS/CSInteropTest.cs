@@ -415,6 +415,25 @@ public class CSInteropTest : GenerateCSTest
     }
 
     [Fact]
+    public void GeneratesGenericMethodsForCompatibleTypesInOtherAssemblies ()
+    {
+        AddAssembly("Contracts.dll", With("public interface IShape {}"));
+        AddAssembly("Shapes.dll", With(
+            """
+            public class Circle : IShape { public double Radius { get; set; } }
+            public class Square : IShape { public double Side { get; set; } }
+
+            public class Class
+            {
+                [Export] public static T Make<T> () where T : IShape => default!;
+            }
+            """));
+        Execute();
+        Contains("Class_MakeCircle () => Instances.Export(global::Class.Make<global::Circle>())");
+        Contains("Class_MakeSquare () => Instances.Export(global::Class.Make<global::Square>())");
+    }
+
+    [Fact]
     public void DoesNotSerializeTypesThatShouldNotBeSerialized ()
     {
         AddAssembly(With(

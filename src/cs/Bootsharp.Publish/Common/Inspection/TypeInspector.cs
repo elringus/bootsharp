@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.Loader;
 
 namespace Bootsharp.Publish;
 
@@ -225,7 +226,8 @@ internal sealed class TypeInspector
         static IEnumerable<Type> FindCompatible (Type param)
         {
             foreach (var ct in param.GetGenericParameterConstraints().Where(IsUserType))
-            foreach (var type in ct.Assembly.GetExportedTypes())
+            foreach (var ass in AssemblyLoadContext.GetLoadContext(ct.Assembly)!.Assemblies)
+            foreach (var type in ass.GetExportedTypes())
                 if (!type.IsAbstract && !type.ContainsGenericParameters && ct.IsAssignableFrom(type))
                     yield return type;
         }
