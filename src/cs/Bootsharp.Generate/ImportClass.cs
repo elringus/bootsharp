@@ -15,13 +15,12 @@ internal sealed record ImportClass (string Space, string Name, string TypeParams
                $"{space}{mods} class {Name}{TypeParams}\n{{\n{code}\n}}";
     }
 
-    public static IEnumerable<ImportClass> Group (IEnumerable<ImportMember> members) =>
-        members
-            .GroupBy(static member => (member.Space, member.Class, member.TypeParams))
-            .Select(static byClass => new ImportClass(
-                Space: byClass.Key.Space,
-                Name: byClass.Key.Class,
-                TypeParams: byClass.Key.TypeParams,
-                Modifiers: byClass.First().Modifiers,
-                Members: string.Join("\n", byClass.Select(static m => m.Code))));
+    public static IEnumerable<ImportClass> Group (IEnumerable<ImportMember> members) => members
+        .GroupBy(static member => (member.Space, member.Class, member.TypeParams))
+        .Select(static byClass => new ImportClass(
+            Space: byClass.Key.Space,
+            Name: byClass.Key.Class,
+            TypeParams: byClass.Key.TypeParams,
+            Modifiers: byClass.First().Modifiers,
+            Members: string.Join("\n", byClass.Select(static m => m.Code))));
 }

@@ -211,7 +211,7 @@ public class CSSerializerTest : GenerateCSTest
     }
 
     [Fact]
-    public void UsesParameterizedConstructorForGetterOnlyProperties ()
+    public void UsesParamizedCtorForGetterOnlyProperties ()
     {
         AddAssembly(With(
             """
@@ -231,7 +231,7 @@ public class CSSerializerTest : GenerateCSTest
     }
 
     [Fact]
-    public void UsesParameterlessConstructorForWritablePropertiesWhenAvailable ()
+    public void UsesParamlessCtorForWritablePropertiesWhenAvailable ()
     {
         AddAssembly(With(
             """
@@ -272,7 +272,7 @@ public class CSSerializerTest : GenerateCSTest
     }
 
     [Fact]
-    public void DoesNotAssignConstructorBoundPropertiesTwice ()
+    public void DoesNotAssignCtorBoundPropertiesTwice ()
     {
         AddAssembly(With(
             """
@@ -342,7 +342,7 @@ public class CSSerializerTest : GenerateCSTest
     }
 
     [Fact]
-    public void UsesBackingFieldAssignmentWhenConstructorParameterNameDoesNotMatchProperty ()
+    public void UsesBackingFieldWhenCtorParamNameDoesNotMatchProperty ()
     {
         AddAssembly(With(
             """
@@ -362,7 +362,7 @@ public class CSSerializerTest : GenerateCSTest
     }
 
     [Fact]
-    public void UsesBackingFieldAssignmentWhenConstructorParameterTypeDoesNotMatchProperty ()
+    public void UsesBackingFieldWhenCtorParamTypeDoesNotMatchProperty ()
     {
         AddAssembly(With(
             """
@@ -370,6 +370,25 @@ public class CSSerializerTest : GenerateCSTest
             {
                 public Node (int id) => Id = id.ToString();
                 public string Id { get; }
+            }
+
+            public class Class
+            {
+                [Export] public static Node Echo (Node node) => node;
+            }
+            """));
+        Execute();
+        Contains("<Id>k__BackingField");
+    }
+
+    [Fact]
+    public void UsesBackingFieldForPropertyWithNonPublicSetter ()
+    {
+        AddAssembly(With(
+            """
+            public record Node
+            {
+                public string Id { get; private set; }
             }
 
             public class Class

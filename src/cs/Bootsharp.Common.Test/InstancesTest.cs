@@ -31,6 +31,15 @@ public class InstancesTest
     }
 
     [Fact]
+    public void IgnoresUnknownIdsOnDispose ()
+    {
+        var exported = new object();
+        var id = Export(exported);
+        DisposeExported(-1);
+        Assert.Same(exported, Exported<object>(id));
+    }
+
+    [Fact]
     public void GeneratesUniqueIdsForUniqueExports ()
     {
         Assert.NotEqual(Export(new object()), Export(new object()));
