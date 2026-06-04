@@ -101,6 +101,22 @@ public static class ImportMethodTest
             }
             """
         },
+        // Method under a generic class.
+        {
+            """
+            partial class Foo<T> where T : class
+            {
+                [Import] partial void Bar (T a);
+            }
+            """,
+            """
+            unsafe partial class Foo<T>
+            {
+                public static delegate* managed<T, void> Bootsharp_Bar;
+                partial void Bar (T a) => Bootsharp_Bar(a);
+            }
+            """
+        },
         // Existing 'unsafe' modifier is not duplicated.
         {
             """

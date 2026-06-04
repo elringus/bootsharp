@@ -6,7 +6,7 @@ namespace Bootsharp.Generate;
 /// <summary>
 /// An imported member (method, property or event) resolved into the C# code required to implement its binding.
 /// </summary>
-internal sealed record ImportMember (string Space, string Class, string Modifiers, string Code)
+internal sealed record ImportMember (string Space, string Class, string TypeParams, string Modifiers, string Code)
 {
     public static ImportMember? Resolve (GeneratorAttributeSyntaxContext ctx, CancellationToken _)
     {
@@ -14,7 +14,8 @@ internal sealed record ImportMember (string Space, string Class, string Modifier
         if (Emit(ctx.TargetSymbol, ctx.TargetNode) is not { } code) return null;
         var ns = ctx.TargetSymbol.ContainingType!.ContainingNamespace;
         var space = ns.IsGlobalNamespace ? "" : ns.ToDisplayString();
-        return new(space, cls.Identifier.ToString(), cls.Modifiers.ToString(), code);
+        var paras = cls.TypeParameterList?.ToString() ?? "";
+        return new(space, cls.Identifier.ToString(), paras, cls.Modifiers.ToString(), code);
     }
 
     private static string? Emit (ISymbol smb, SyntaxNode stx) => smb switch {
@@ -57,10 +58,11 @@ internal sealed record ImportMember (string Space, string Class, string Modifier
     {
         if (t.SpecialType == SpecialType.System_Void) return "void";
         if (t is IArrayTypeSymbol array) return $"{BuildSyntax(array.ElementType)}[]";
+        if (t.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+            return $"{BuildSyntax(((INamedTypeSymbol)t).TypeArguments[0])}?";
+        var nil = t.NullableAnnotation == NullableAnnotation.Annotated ? "?" : "";
+        if (t is ITypeParameterSymbol) return $"{t.Name}{nil}";
         var nt = (INamedTypeSymbol)t;
-        if (nt.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
-            return $"{BuildSyntax(nt.TypeArguments[0])}?";
-        var nil = nt.NullableAnnotation == NullableAnnotation.Annotated ? "?" : "";
         var args = nt.IsGenericType ? $"<{string.Join(", ", nt.TypeArguments.Select(BuildSyntax))}>" : "";
         var space = t.ContainingNamespace.IsGlobalNamespace ? t.Name : $"{t.ContainingNamespace}.{t.Name}";
         return $"global::{space}{args}{nil}";
