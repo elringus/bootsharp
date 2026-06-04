@@ -1,60 +1,25 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-
 namespace Bootsharp.Generate;
 
-internal sealed class ImportClass (Compilation cmp, ClassDeclarationSyntax stx, IReadOnlyList<ImportMethod> methods,
-    IReadOnlyList<ImportProperty> props, IReadOnlyList<ImportEvent> events)
+/// <summary>
+/// A class hosting one or more imported members, grouped from the resolved members.
+/// Emits a single partial declaration implementing all the bindings of that class.
+/// </summary>
+internal sealed record ImportClass (string Space, string Name, string Modifiers, string Members)
 {
-    public string Name { get; } = stx.Identifier.ToString();
-
-    public string EmitSource () =>
-        """
-        #nullable enable
-        #pragma warning disable
-
-        """ +
-        EmitUsings() +
-        WrapNamespace(
-            EmitHeader() +
-            EmitMembers() +
-            EmitFooter()
-        );
-
-    private string EmitUsings ()
+    public string Emit ()
     {
-        var usings = string.Join("\n", stx.SyntaxTree.GetRoot()
-            .DescendantNodesAndSelf().OfType<UsingDirectiveSyntax>());
-        return string.IsNullOrEmpty(usings) ? "" : usings + "\n\n";
+        var mods = Modifiers.Contains("unsafe") ? Modifiers : Modifiers.Replace("partial", "unsafe partial");
+        var code = string.Join("\n", Members.Split('\n').Select(static line => $"    {line}"));
+        var space = Space.Length == 0 ? "" : $"namespace {Space};\n\n";
+        return $"#nullable enable\n#pragma warning disable\n\n{space}{mods} class {Name}\n{{\n{code}\n}}";
     }
 
-    private string EmitHeader ()
-    {
-        var mods = stx.Modifiers.ToString();
-        if (!mods.Contains("unsafe")) mods = mods.Replace("partial", "unsafe partial");
-        return $"{mods} class {stx.Identifier}{stx.TypeParameterList}{stx.BaseList}{stx.ConstraintClauses}\n{{";
-    }
-
-    private string EmitMembers () => "\n" + string.Join("\n", [
-        ..events.Select(e => "    " + e.EmitSource(cmp)),
-        ..props.Select(p => "    " + p.EmitSource(cmp)),
-        ..methods.Select(m => "    " + m.EmitSource(cmp))
-    ]);
-
-    private string EmitFooter () => "\n}";
-
-    private string WrapNamespace (string src)
-    {
-        if (stx.Parent is NamespaceDeclarationSyntax space)
-            return $$"""
-                     namespace {{space.Name}}
-                     {
-                         {{string.Join("\n", src.Split(["\r\n", "\r", "\n"], StringSplitOptions.None)
-                             .Select((s, i) => i > 0 && s.Length > 0 ? "    " + s : s))}}
-                     }
-                     """;
-        if (stx.Parent is FileScopedNamespaceDeclarationSyntax fileSpace)
-            return $"namespace {fileSpace.Name};\n\n{src}";
-        return src;
-    }
+    public static IEnumerable<ImportClass> Group (IEnumerable<ImportMember> members) =>
+        members
+            .GroupBy(static member => (member.Space, member.Class))
+            .Select(static byClass => new ImportClass(
+                Space: byClass.Key.Space,
+                Name: byClass.Key.Class,
+                Modifiers: byClass.First().Modifiers,
+                Members: string.Join("\n", byClass.Select(static m => m.Code))));
 }

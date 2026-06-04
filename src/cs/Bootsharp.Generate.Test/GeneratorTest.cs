@@ -1,129 +1,87 @@
-using System.Text;
-using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.Text;
+using Microsoft.CodeAnalysis;
 
 namespace Bootsharp.Generate.Test;
 
 public class GeneratorTest
 {
-    private static readonly List<(string file, string content)> sourceCache = [];
-    private readonly Verifier<SourceGenerator> verifier = new();
-
-    [Fact]
-    public async Task WhenSourceIsEmptyNothingIsGenerated ()
-    {
-        await Verify("");
-    }
-
-    [Fact]
-    public async Task NothingIsGeneratedWhenNoAttributes ()
-    {
-        await Verify("partial class Foo { }");
-    }
-
-    [Fact]
-    public async Task WhenAttributeIsFromOtherNamespaceItsIgnored ()
-    {
-        await Verify(
-            """
-            [assembly:Import([])]
-            public class ImportAttribute : System.Attribute { public ImportAttribute (Type[] _) { } }
-            """);
-    }
-
-    [Fact]
-    public async Task DoesntEmitDuplicateImportSources ()
-    {
-        verifier.TestBehaviors = TestBehaviors.SkipGeneratedSourcesCheck;
-        await Verify(
-            """
-            partial class ImportMethodAfterExport
-            {
-                [Export] static void Bar () { }
-                [Import] partial void Baz ();
-            }
-            partial class ImportEventAfterExport
-            {
-                [Export] static void Bar () { }
-                [Import] static event Action? Baz;
-            }
-            partial class ImportEventAfterMethod
-            {
-                [Import] partial void Bar ();
-                [Import] static event Action? Baz;
-            }
-            """);
-    }
-
-    [Fact]
-    public async Task DoesntAnalyzeGeneratedFiles ()
-    {
-        // otherwise it'll pick files emitted in publish task
-        verifier.TestState.Sources.Add(("foo.g.cs",
-            """
-            public static partial class Foo
-            {
-                [Export] public static void Bar () { }
-                [Import] public static void Baz () { }
-                [Import] public static event Action? Nya;
-            }
-            """));
-        await Verify("");
-    }
-
     [Theory, MemberData(nameof(ImportMethodTest.Data), MemberType = typeof(ImportMethodTest))]
-    public Task ImportedMethodsImplemented (string source, string expected)
-        => Verify(source, ("FooImports.g.cs", expected));
+    public void ImplementsImportedMethods (string source, string expected) => Verify(source, expected);
 
     [Theory, MemberData(nameof(ImportPropertyTest.Data), MemberType = typeof(ImportPropertyTest))]
-    public Task ImportedPropertiesImplemented (string source, string expected)
-        => Verify(source, ("FooImports.g.cs", expected));
+    public void ImplementsImportedProperties (string source, string expected) => Verify(source, expected);
 
     [Theory, MemberData(nameof(ImportEventTest.Data), MemberType = typeof(ImportEventTest))]
-    public Task ImportedEventsImplemented (string source, string expected)
-        => Verify(source, ("FooImports.g.cs", expected));
+    public void ImplementsImportedEvents (string source, string expected) => Verify(source, expected);
 
-    private async Task Verify (string source, params (string file, string content)[] expected)
-    {
-        IncludeBootsharpSources(verifier.TestState.Sources);
-        verifier.TestCode = source;
-        for (int i = 0; i < expected.Length; i++)
-        {
-            IncludeCommonExpected(ref expected[i].content);
-            verifier.TestState.GeneratedSources.Add((typeof(SourceGenerator), expected[i].file,
-                SourceText.From(expected[i].content, Encoding.UTF8, SourceHashAlgorithm.Sha256)));
-        }
-        await verifier.RunAsync();
-    }
+    [Fact]
+    public void GeneratesNothingWhenSourceIsEmpty () =>
+        VerifyNone("");
 
-    private static void IncludeBootsharpSources (SourceFileList sources)
-    {
-        if (sourceCache.Count > 0)
-        {
-            foreach (var source in sourceCache)
-                sources.Add(source);
-            return;
-        }
-        var root = Path.GetFullPath($"{Environment.CurrentDirectory}/../../../../Bootsharp.Common");
-        foreach (var path in Directory.EnumerateFiles(root, "*.cs", SearchOption.AllDirectories))
-            if (!path.Replace("\\", "/").Contains("/obj/"))
-                sourceCache.Add((Path.GetFileName(path), File.ReadAllText(path)));
-        sourceCache.Add(("GlobalUsings.cs",
+    [Fact]
+    public void GeneratesNothingWithoutImportAttributes () =>
+        VerifyNone("partial class Foo { [Export] static void Bar () { } }");
+
+    [Fact]
+    public void IgnoresAssemblyLevelImport () =>
+        VerifyNone("[assembly: Import(typeof(string))]");
+
+    [Fact]
+    public void IgnoresImportAttributeFromOtherNamespace () =>
+        VerifyNone(
             """
-            global using System;
-            global using System.Collections.Generic;
-            global using System.IO;
-            global using System.Linq;
-            global using System.Threading;
-            global using Bootsharp;
-            """));
-        IncludeBootsharpSources(sources);
-    }
+            namespace Other { public sealed class ImportAttribute : Attribute { } }
 
-    private void IncludeCommonExpected (ref string expected) =>
-        expected = $"""
-                    #nullable enable
-                    #pragma warning disable
-                    {expected}
-                    """;
+            partial class Foo
+            {
+                [Other.Import] partial void Bar ();
+            }
+            """);
+
+    [Fact]
+    public void MergesAllMembersOfClassIntoSingleSource () => Verify(
+        """
+        partial class Foo
+        {
+            [Export] static void Exported () { }
+            [Import] partial void Method ();
+            [Import] static partial int Prop { get; set; }
+            [Import] static event Action? Event;
+        }
+        """,
+        """
+        unsafe partial class Foo
+        {
+            public static delegate* managed<void> Bootsharp_Method;
+            partial void Method () => Bootsharp_Method();
+            static partial global::System.Int32 Prop { get => Bootsharp_GetProp(); set => Bootsharp_SetProp(value); }
+            public static delegate* managed<global::System.Int32> Bootsharp_GetProp;
+            public static delegate* managed<global::System.Int32, void> Bootsharp_SetProp;
+            internal static void Bootsharp_Invoke_Event () => Event?.Invoke();
+        }
+        """);
+
+    [Fact]
+    public void RunsIncrementally ()
+    {
+        var foo = Parse("partial class Foo { [Import] partial void Bar (); }");
+        var compilation = Compile(foo);
+        var generator = CreateGenerator().RunGenerators(compilation);
+
+        // an unrelated edit must not re-run the semantic resolution ("members") or grouping ("classes")
+        var unrelated = compilation.AddSyntaxTrees(Parse("class Other;"));
+        generator = generator.RunGenerators(unrelated);
+        AssertSteps(generator, IncrementalStepRunReason.Cached);
+
+        // editing the import itself invalidates the cache and regenerates
+        var edited = unrelated.ReplaceSyntaxTree(foo, Parse("partial class Foo { [Import] partial void Baz (); }"));
+        generator = generator.RunGenerators(edited);
+        AssertSteps(generator, IncrementalStepRunReason.Modified);
+
+        static void AssertSteps (GeneratorDriver generator, IncrementalStepRunReason reason)
+        {
+            var steps = generator.GetRunResult().Results.Single().TrackedSteps;
+            Assert.All(steps["members"], step => Assert.All(step.Outputs, o => Assert.Equal(reason, o.Reason)));
+            Assert.All(steps["classes"], step => Assert.All(step.Outputs, o => Assert.Equal(reason, o.Reason)));
+        }
+    }
 }

@@ -3,7 +3,7 @@ namespace Bootsharp.Generate.Test;
 public static class ImportEventTest
 {
     public static TheoryData<string, string> Data { get; } = new() {
-        // Can generate import event without namespace and arguments.
+        // Event without a namespace or arguments.
         {
             """
             partial class Foo
@@ -18,7 +18,7 @@ public static class ImportEventTest
             }
             """
         },
-        // Can generate import event with namespace and arguments.
+        // Event with a namespace and arguments.
         {
             """
             namespace Space;
@@ -37,7 +37,7 @@ public static class ImportEventTest
             }
             """
         },
-        // Ignores non-static events.
+        // Non-static events are ignored.
         {
             """
             partial class Foo

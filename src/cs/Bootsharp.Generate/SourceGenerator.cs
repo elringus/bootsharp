@@ -5,23 +5,18 @@ namespace Bootsharp.Generate;
 [Generator(LanguageNames.CSharp)]
 public sealed class SourceGenerator : IIncrementalGenerator
 {
-    public void Initialize (IncrementalGeneratorInitializationContext ctx) => ctx
-        .RegisterSourceOutput(ctx.CompilationProvider, Compile);
-
-    private static void Compile (SourceProductionContext ctx, Compilation cmp)
+    public void Initialize (IncrementalGeneratorInitializationContext ctx)
     {
-        var receiver = VisitNodes(cmp);
-        foreach (var @class in receiver.ImportClasses)
-            ctx.AddSource($"{@class.Name}Imports.g", @class.EmitSource());
-    }
-
-    private static SyntaxReceiver VisitNodes (Compilation cmp)
-    {
-        var receiver = new SyntaxReceiver();
-        foreach (var tree in cmp.SyntaxTrees)
-            if (!tree.FilePath.EndsWith(".g.cs"))
-                foreach (var node in tree.GetRoot().DescendantNodesAndSelf())
-                    receiver.VisitNode(node, cmp);
-        return receiver;
+        var members = ctx.SyntaxProvider.ForAttributeWithMetadataName(
+                "Bootsharp.ImportAttribute",
+                static (_, _) => true,
+                ImportMember.Resolve)
+            .Where(static m => m is not null)
+            .WithTrackingName("members");
+        var classes = members.Collect()
+            .SelectMany(static (flat, _) => ImportClass.Group(flat))
+            .WithTrackingName("classes");
+        ctx.RegisterSourceOutput(classes,
+            static (ctx, cls) => ctx.AddSource($"{cls.Name}Imports.g", cls.Emit()));
     }
 }

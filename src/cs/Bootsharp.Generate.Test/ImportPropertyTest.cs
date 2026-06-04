@@ -3,7 +3,7 @@ namespace Bootsharp.Generate.Test;
 public static class ImportPropertyTest
 {
     public static TheoryData<string, string> Data { get; } = new() {
-        // Can generate import property without namespace.
+        // Property with both accessors under the root namespace.
         {
             """
             partial class Foo
@@ -20,7 +20,7 @@ public static class ImportPropertyTest
             }
             """
         },
-        // Can generate getter-only import property under namespace.
+        // Getter-only property under a namespace.
         {
             """
             namespace Space;
@@ -40,7 +40,7 @@ public static class ImportPropertyTest
             }
             """
         },
-        // Can generate setter-only import property.
+        // Setter-only property.
         {
             """
             partial class Foo
@@ -56,7 +56,7 @@ public static class ImportPropertyTest
             }
             """
         },
-        // Ignores non-static properties.
+        // Non-static properties are ignored.
         {
             """
             partial class Foo

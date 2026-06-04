@@ -3,7 +3,7 @@ namespace Bootsharp.Generate.Test;
 public static class ImportMethodTest
 {
     public static TheoryData<string, string> Data { get; } = new() {
-        // Can generate void import method under root namespace.
+        // Void method under the root namespace.
         {
             """
             partial class Foo
@@ -19,11 +19,9 @@ public static class ImportMethodTest
             }
             """
         },
-        // Can generate void task import method under file-scoped namespace.
+        // Task method with array and nullable value parameters under a file-scoped namespace.
         {
             """
-            using System.Threading.Tasks;
-
             namespace File.Scoped;
 
             public static partial class Foo
@@ -32,8 +30,6 @@ public static class ImportMethodTest
             }
             """,
             """
-            using System.Threading.Tasks;
-
             namespace File.Scoped;
 
             public static unsafe partial class Foo
@@ -43,11 +39,9 @@ public static class ImportMethodTest
             }
             """
         },
-        // Can generate value task import method.
+        // Generic task method with a nullable reference type argument.
         {
             """
-            using System.Threading.Tasks;
-
             namespace File.Scoped;
 
             public static partial class Foo
@@ -56,8 +50,6 @@ public static class ImportMethodTest
             }
             """,
             """
-            using System.Threading.Tasks;
-
             namespace File.Scoped;
 
             public static unsafe partial class Foo
@@ -67,7 +59,7 @@ public static class ImportMethodTest
             }
             """
         },
-        // Can generate custom types.
+        // Custom type under the global namespace.
         {
             """
             public record Record;
@@ -85,12 +77,9 @@ public static class ImportMethodTest
             }
             """
         },
-        // Can generate under classic namespace.
+        // Multiple methods under a classic namespace are emitted file-scoped.
         {
             """
-            using System;
-            using System.Threading.Tasks;
-
             namespace Classic
             {
                 partial class Foo
@@ -101,42 +90,18 @@ public static class ImportMethodTest
             }
             """,
             """
-            using System;
-            using System.Threading.Tasks;
-
-            namespace Classic
-            {
-                unsafe partial class Foo
-                {
-                    public static delegate* managed<global::System.DateTime, global::System.DateTime> Bootsharp_GetTime;
-                    public partial global::System.DateTime GetTime (global::System.DateTime time) => Bootsharp_GetTime(time);
-                    public static delegate* managed<global::System.DateTime, global::System.Threading.Tasks.Task<global::System.DateTime>> Bootsharp_GetTimeAsync;
-                    public partial global::System.Threading.Tasks.Task<global::System.DateTime> GetTimeAsync (global::System.DateTime time) => Bootsharp_GetTimeAsync(time);
-                }
-            }
-            """
-        },
-        // Special corner case when UsingDirectiveSyntax.Name is null.
-        {
-            """
-            using x = (System.String, System.Boolean);
-
-            partial class Foo
-            {
-                [Import] partial void Bar ();
-            }
-            """,
-            """
-            using x = (System.String, System.Boolean);
+            namespace Classic;
 
             unsafe partial class Foo
             {
-                public static delegate* managed<void> Bootsharp_Bar;
-                partial void Bar () => Bootsharp_Bar();
+                public static delegate* managed<global::System.DateTime, global::System.DateTime> Bootsharp_GetTime;
+                public partial global::System.DateTime GetTime (global::System.DateTime time) => Bootsharp_GetTime(time);
+                public static delegate* managed<global::System.DateTime, global::System.Threading.Tasks.Task<global::System.DateTime>> Bootsharp_GetTimeAsync;
+                public partial global::System.Threading.Tasks.Task<global::System.DateTime> GetTimeAsync (global::System.DateTime time) => Bootsharp_GetTimeAsync(time);
             }
             """
         },
-        // Doesn't add 'unsafe' class modified when it's already specified.
+        // Existing 'unsafe' modifier is not duplicated.
         {
             """
             unsafe partial class Foo
