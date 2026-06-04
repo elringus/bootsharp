@@ -273,7 +273,7 @@ describe("BCL", () => {
             BCL.testDictionaryImport();
         });
     });
-    describe("user-specified specialization", () => {
+    describe("custom specializations", () => {
         const comparer = { compare: (x: string, y: string) => x < y ? -1 : x > y ? 1 : 0 };
         it("can interop with exported comparer", () => {
             const cmp = BCL.exportComparer();
