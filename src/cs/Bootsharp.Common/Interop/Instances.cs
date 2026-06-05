@@ -15,9 +15,9 @@ public static class Instances
     /// Invoked on <see cref="Export"/> when registering the instance.
     /// </summary>
     /// <param name="id">The unique identifier of the instance.</param>
-    /// <param name="instance">The registered instance.</param>
+    /// <param name="it">The registered instance.</param>
     /// <returns>The callback to invoke when disposing the instance.</returns>
-    public delegate Action ExportCallback<T> (int id, T instance) where T : class;
+    public delegate Action ExportCallback<T> (int id, T it) where T : class;
 
     private static readonly Dictionary<int, WeakReference> importedById = [];
     private static readonly Dictionary<Type, Func<int, object>> importers = [];
@@ -57,9 +57,9 @@ public static class Instances
         if (it is JSProxy js) return js._id;
         if (it is Delegate { Target: JSProxy del }) return del._id;
         if (it is SpecializedExport { _it: JSProxy ejs }) return ejs._id;
-        if (idByExported.TryGetValue(it, out var id)) return id;
+        if (idByExported.TryGetValue(Key(it), out var id)) return id;
         id = idPool.Count > 0 ? idPool.Dequeue() : nextId++;
-        exportedById[idByExported[it] = id] = it;
+        exportedById[idByExported[Key(it)] = id] = it;
         if (cb != null) onDisposeById[id] = cb(id, it);
         return id;
     }
@@ -78,7 +78,7 @@ public static class Instances
     /// </summary>
     public static void DisposeExported (int id)
     {
-        if (exportedById.Remove(id, out var instance)) idByExported.Remove(instance);
+        if (exportedById.Remove(id, out var it)) idByExported.Remove(Key(it));
         if (onDisposeById.Remove(id, out var onDispose)) onDispose();
         idPool.Enqueue(id);
     }
@@ -98,5 +98,11 @@ public static class Instances
     public static void DisposeImported (int id)
     {
         importedById.Remove(id);
+    }
+
+    private static object Key (object it)
+    {
+        // preserves specialized export instance identity
+        return it is SpecializedExport sp ? sp._it : it;
     }
 }

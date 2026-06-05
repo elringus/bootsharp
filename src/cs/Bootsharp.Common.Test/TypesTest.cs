@@ -19,7 +19,9 @@ public class TypesTest
         Assert.Equal([typeof(IFrontend)], new ImportAttribute(typeof(IFrontend)).Types);
         Assert.Equal(typeof(IBackend), new SpecializeExportAttribute(typeof(IBackend)).Clr);
         Assert.Equal(typeof(IFrontend), new SpecializeImportAttribute(typeof(IFrontend)).Clr);
+        Assert.Equal("CS", new SpecializeImportAttribute(typeof(IFrontend), CS: "CS").CS);
         Assert.Equal("JS", new SpecializeImportAttribute(typeof(IFrontend), JS: "JS").JS);
+        Assert.Equal("JSCtor", new SpecializeImportAttribute(typeof(IFrontend), JSCtor: "JSCtor").JSCtor);
         Assert.Equal("Decl", new SpecializeImportAttribute(typeof(IFrontend), Decl: "Decl").Decl);
     }
 

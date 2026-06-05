@@ -67,18 +67,19 @@ internal static class Preferences
 
     private static void ResolveSpecs (Assembly ass)
     {
-        var imports = new Dictionary<Type, (Type Type, string? JS, string? Decl)>();
+        var imports = new Dictionary<Type, (Type Type, string? CS, string? JS, string? JSCtor, string? Decl)>();
         var exports = new List<(Type Clr, Type Type)>();
         foreach (var type in ass.GetExportedTypes())
         foreach (var attr in type.CustomAttributes)
             if (IsAttribute<SpecializeImportAttribute>(attr))
-                imports[GetAttributeArg<Type>(attr)!] =
-                    (type, GetAttributeArg<string>(attr, 1), GetAttributeArg<string>(attr, 2));
+                imports[GetAttributeArg<Type>(attr)!] = (type,
+                    GetAttributeArg<string>(attr, 1), GetAttributeArg<string>(attr, 2),
+                    GetAttributeArg<string>(attr, 3), GetAttributeArg<string>(attr, 4));
             else if (IsAttribute<SpecializeExportAttribute>(attr))
                 exports.Add((GetAttributeArg<Type>(attr)!, type));
         foreach (var (clr, export) in exports)
-            prefs.Specs[clr] = imports.TryGetValue(clr, out var import)
-                ? new() { Import = import.Type, Export = export, JS = import.JS, Decl = import.Decl }
+            prefs.Specs[clr] = imports.TryGetValue(clr, out var i)
+                ? new() { Import = i.Type, Export = export, CS = i.CS, JS = i.JS, JSCtor = i.JSCtor, Decl = i.Decl }
                 : throw new Error($"Specialized export '{export.FullName}' is missing the paired import.");
     }
 

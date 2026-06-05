@@ -77,10 +77,7 @@ internal sealed class JSModuleGenerator (bool debug)
     {
         var name = $"broadcast{evt.Name}Serialized";
         var args = string.Join(", ", evt.Args.Select(a => a.JSName));
-        var invArgs = string.Join(", ", evt.Args.Select(arg =>
-            // By default, we use 'null' for missing collection items, but here the event args array
-            // represents args specified to the event's 'broadcast' function, so user expects 'undefined'.
-            $"{ExportJS(arg)}{(arg.Value.Nullable ? " ?? undefined" : "")}"));
+        var invArgs = string.Join(", ", evt.Args.Select(ExportJS));
         if (isIt)
         {
             var invName = $"$i.resolve(_id, $i.{it.Id}).broadcast{evt.Name}";

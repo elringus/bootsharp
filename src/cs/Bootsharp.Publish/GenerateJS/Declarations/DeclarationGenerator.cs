@@ -33,7 +33,7 @@ internal sealed class DeclarationGenerator
     }
 
     private string EmitImports (JSModule md) => Fmt([
-        $$"""import type { Event } from "{{md.To("bcl/event")}}";""",
+        $$"""import type * as $bcl from "{{md.To("bcl/index")}}";""",
         ..mds.GetImported(md).Select(imp =>
             $"""import type * as {imp.Alias} from "{md.ToMd(imp.Path)}";""")
     ], 0);
@@ -89,7 +89,7 @@ internal sealed class DeclarationGenerator
 
     private void DeclareDelegate (DelegateMeta del)
     {
-        doc.Type(del);
+        doc.Delegate(del);
         var inv = del.Invoker;
         var args = string.Join(", ", inv.Args.Select(a => $"{a.JSName}{ts.BuildArg(a.Info)}"));
         bld.Line($"export type {ts.BuildName(del.Clr)} = ({args}) => {ts.BuildReturn(inv.Info)};");
@@ -98,6 +98,11 @@ internal sealed class DeclarationGenerator
     private void DeclareInstance (InstanceMeta it)
     {
         doc.Type(it);
+        if (it.Proxy is SpecializedProxy { Decl: { } sp } && sp.StartsWith("export "))
+        {
+            bld.Line(sp);
+            return;
+        }
         bld.Enter($$"""export interface {{ts.BuildName(it.Clr)}}{{BuildExtensions()}} {""");
         foreach (var member in it.Members.Where(m => ShouldDeclareOn(it.Clr, m.Info)))
             if (member is EventMeta evt) DeclareEvent(evt);
@@ -118,7 +123,7 @@ internal sealed class DeclarationGenerator
         {
             doc.Event(evt);
             var args = string.Join(", ", evt.Args.Select(a => $"{a.JSName}{ts.BuildArg(evt.Info, a.Info)}"));
-            bld.Line($"{evt.JSName}: Event<[{args}]>;");
+            bld.Line($"{evt.JSName}: $bcl.Event<[{args}]>;");
         }
 
         void DeclareProperty (PropertyMeta prop)
@@ -147,7 +152,7 @@ internal sealed class DeclarationGenerator
         {
             doc.Event(evt);
             var args = string.Join(", ", evt.Args.Select(a => $"{a.JSName}{ts.BuildArg(evt.Info, a.Info)}"));
-            bld.Line($"export const {evt.JSName}: Event<[{args}]>;");
+            bld.Line($"export const {evt.JSName}: $bcl.Event<[{args}]>;");
         }
 
         void DeclareProperty (PropertyMeta prop)

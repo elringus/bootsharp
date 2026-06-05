@@ -29,6 +29,18 @@ internal sealed class DocumentationBuilder
             Append(GetSummary(xml));
     }
 
+    public void Delegate (DelegateMeta del)
+    {
+        var asm = del.Clr.Assembly.GetName().Name!;
+        var key = $"T:{GetXmlKey(del.Clr)}";
+        if (GetXml(asm, key) is not { } xml) return;
+        var sum = GetSummary(xml);
+        foreach (var arg in del.Invoker.Args)
+            if (GetArgXml(xml, arg) is { } x)
+                sum.Add($"@param {arg.JSName} {RenderXml(x)}");
+        Append(sum);
+    }
+
     public void Event (EventMeta evt)
     {
         var asm = evt.Info.DeclaringType!.Assembly.GetName().Name!;

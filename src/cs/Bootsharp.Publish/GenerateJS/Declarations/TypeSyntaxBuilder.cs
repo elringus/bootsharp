@@ -70,7 +70,7 @@ internal sealed class TypeSyntaxBuilder (JSModules mds)
         return Build(prop.PropertyType, nul) + post;
     }
 
-    private string Build (Type type, NullabilityInfo? nul)
+    private string Build (Type type, Nullity? nul)
     {
         if (type.IsGenericTypeParameter) return type.Name;
         if (IsNullable(type, out var inner)) return Build(inner, EnterNullity(nul));
@@ -81,7 +81,7 @@ internal sealed class TypeSyntaxBuilder (JSModules mds)
         return BuildPrimitive(type);
     }
 
-    private string BuildTask (Type type, NullabilityInfo? nul)
+    private string BuildTask (Type type, Nullity? nul)
     {
         nul = EnterNullity(nul);
         var nil = IsNullable(nul) ? " | null" : "";
@@ -89,7 +89,7 @@ internal sealed class TypeSyntaxBuilder (JSModules mds)
         return $"Promise<{Build(result, nul)}{nil}>";
     }
 
-    private string BuildList (Type type, Type element, NullabilityInfo? nul)
+    private string BuildList (Type type, Type element, Nullity? nul)
     {
         nul = EnterNullity(nul);
         if (IsNullable(element, nul)) return $"Array<{Build(element, nul)} | null>";
@@ -108,14 +108,14 @@ internal sealed class TypeSyntaxBuilder (JSModules mds)
         };
     }
 
-    private string BuildDictionary (Type key, Type value, NullabilityInfo? nul)
+    private string BuildDictionary (Type key, Type value, Nullity? nul)
     {
         nul = EnterNullity(nul, 1);
         var nil = IsNullable(value, nul) ? " | null" : "";
         return $"Map<{Build(key, null)}, {Build(value, nul)}{nil}>";
     }
 
-    private string BuildUser (Type type, NullabilityInfo? nul)
+    private string BuildUser (Type type, Nullity? nul)
     {
         var @ref = mds.Ref(type, module);
         if (!type.IsGenericType) return @ref;
@@ -149,7 +149,7 @@ internal sealed class TypeSyntaxBuilder (JSModules mds)
         TypeCode.Byte or TypeCode.SByte or TypeCode.UInt16 or TypeCode.UInt32 or TypeCode.UInt64 or
         TypeCode.Int16 or TypeCode.Int32 or TypeCode.Decimal or TypeCode.Double or TypeCode.Single;
 
-    private static NullabilityInfo? EnterNullity (NullabilityInfo? nul, int idx = 0)
+    private static Nullity? EnterNullity (Nullity? nul, int idx = 0)
     {
         if (nul == null) return null;
         if (nul.GenericTypeArguments.Length > idx) return nul.GenericTypeArguments[idx];

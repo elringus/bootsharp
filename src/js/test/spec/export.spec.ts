@@ -11,6 +11,9 @@ describe("export", () => {
         expect(bootsharp.dotnet.withConfig).toBeTypeOf("function");
     });
     it("exports documentation declarations", () => {
-        expect(getDeclarations()).toContain(`Sample class documentation.`);
+        const decls = getDeclarations();
+        expect(decls).toContain(" * Sample class documentation.");
+        expect(decls).toContain(" * Specialized event handler.");
+        expect(decls).toContain(" * @param nul Nul parameter doc.");
     });
 });

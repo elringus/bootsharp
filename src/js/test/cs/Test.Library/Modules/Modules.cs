@@ -65,22 +65,29 @@ public static partial class Modules
     {
         var js = ImportBi();
         var cs = new BidirectionalCS();
-        IBidirectional? observed = null;
-        Action<IBidirectional?> handler = b => observed = b;
-        js.OnBiChanged += handler;
+        IBidirectional? eventObserved = null;
+        IBidirectional? specialObserved = null;
+        Action<IBidirectional?> eventHandler = b => eventObserved = b;
+        SpecialBiHandler specialHandler = b => specialObserved = b;
+        js.OnBiChanged += eventHandler;
+        js.OnSpecial.Subscribe(specialHandler);
         Assert(js.EchoBi(null) == null);
         Assert(js.EchoBi(js) == js);
         Assert(js.EchoBi(cs) == cs);
         js.Bi = cs;
-        Assert(observed == cs);
+        Assert(eventObserved == cs);
+        Assert(specialObserved == cs);
         Assert(js.Bi == cs);
         js.Bi = js;
-        Assert(observed == js);
+        Assert(eventObserved == js);
+        Assert(specialObserved == js);
         Assert(js.Bi == js);
         js.Bi = null;
-        Assert(observed == null);
+        Assert(eventObserved == null);
+        Assert(specialObserved == null);
         Assert(js.Bi == null);
-        js.OnBiChanged -= handler;
+        js.OnBiChanged -= eventHandler;
+        js.OnSpecial.Unsubscribe(specialHandler);
     }
 
     [Export]

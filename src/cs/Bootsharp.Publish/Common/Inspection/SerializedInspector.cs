@@ -24,12 +24,10 @@ internal sealed class SerializedInspector (TypeInspector.InspectInstanced inspec
 
     private readonly Dictionary<string, SerializedMeta> byId = [];
     private readonly HashSet<Type> cycle = [];
-    private InteropKind ik;
 
-    public SerializedMeta? Inspect (Type type, InteropKind ik)
+    public SerializedMeta? Inspect (Type type, InteropKind ik, Nullity? nul)
     {
-        this.ik = ik;
-        return IsSerialized(type) ? Build(type) : null;
+        return IsSerialized(type) ? Build(type, ik, nul) : null;
     }
 
     public IReadOnlyList<SerializedMeta> Collect ()
@@ -45,21 +43,21 @@ internal sealed class SerializedInspector (TypeInspector.InspectInstanced inspec
         return !native.Contains(type.FullName!);
     }
 
-    private SerializedMeta Build (Type type)
+    private SerializedMeta Build (Type type, InteropKind ik, Nullity? nul = null)
     {
         if (IsTaskWithResult(type, out var result)) type = result; // tasks are natively supported - ignore them
         var id = BuildId(type);
         if (byId.TryGetValue(id, out var existing)) return existing;
         if (!cycle.Add(type)) return new Discard(type); // break self-ref cycle
         var meta = byId[id] =
-            IsNullable(type, out var value) ? new SerializedNullableMeta(type, Build(value)) :
+            IsNullable(type, out var value) ? new SerializedNullableMeta(type, Build(value, ik)) :
             type.IsEnum ? new SerializedEnumMeta(type) :
             IsPrimitive(type) ? new SerializedPrimitiveMeta(type) :
-            type.IsArray ? new SerializedArrayMeta(type, Build(type.GetElementType()!)) :
-            inspectInstanced(type, ik, null) is { } it ? new SerializedInstanceMeta(it) :
-            IsList(type, out var element) ? new SerializedListMeta(type, Build(element)) :
-            IsDictionary(type, out var k, out var v) ? new SerializedDictionaryMeta(type, Build(k), Build(v)) :
-            BuildObject(type);
+            type.IsArray ? new SerializedArrayMeta(type, Build(type.GetElementType()!, ik)) :
+            inspectInstanced(type, ik, nul) is { } it ? new SerializedInstanceMeta(it) :
+            IsList(type, out var element) ? new SerializedListMeta(type, Build(element, ik)) :
+            IsDictionary(type, out var k, out var v) ? new SerializedDictionaryMeta(type, Build(k, ik), Build(v, ik)) :
+            BuildObject(type, ik);
         cycle.Remove(type);
         return meta;
     }
@@ -69,7 +67,7 @@ internal sealed class SerializedInspector (TypeInspector.InspectInstanced inspec
         type.FullName == typeof(DateTimeOffset).FullName ||
         type.FullName == typeof(nint).FullName;
 
-    private SerializedObjectMeta BuildObject (Type type)
+    private SerializedObjectMeta BuildObject (Type type, InteropKind ik)
     {
         var ctor = ResolveConstructor(type);
         var ctorParams = ctor?.GetParameters() ?? [];
@@ -80,21 +78,22 @@ internal sealed class SerializedInspector (TypeInspector.InspectInstanced inspec
             .Where(p => p.GetMethod != null && p.GetIndexParameters().Length == 0 &&
                         (p.SetMethod is { IsPublic: true } || IsAutoProperty(p)))
             .OrderBy(p => paramOrders.GetValueOrDefault(p.Name, int.MaxValue))
-            .Select(p => BuildProperty(p, paramOrders.ContainsKey(p.Name))).ToArray();
+            .Select(p => BuildProperty(p, paramOrders.ContainsKey(p.Name), ik)).ToArray();
         return new(type, props);
     }
 
-    private SerializedPropertyMeta BuildProperty (PropertyInfo prop, bool ctor)
+    private SerializedPropertyMeta BuildProperty (PropertyInfo prop, bool ctor, InteropKind ik)
     {
+        var nul = GetNullity(prop);
         var setter = prop.SetMethod is { IsPublic: true } ? prop.SetMethod : null;
         var initOnly = setter?.ReturnParameter.GetRequiredCustomModifiers()
             .Any(m => m.FullName == typeof(IsExternalInit).FullName) == true;
         return new() {
             Info = prop,
-            Type = Build(prop.PropertyType),
+            Type = Build(prop.PropertyType, ik, nul),
             Name = prop.Name,
             JSName = BuildJSName(prop.Name),
-            Nullable = IsNullable(prop.PropertyType, GetNullity(prop)),
+            Nullable = IsNullable(prop.PropertyType, nul),
             Required = prop.CustomAttributes
                 .Any(a => a.AttributeType.FullName == typeof(RequiredMemberAttribute).FullName),
             Ctor = ctor,

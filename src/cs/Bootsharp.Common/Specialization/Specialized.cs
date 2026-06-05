@@ -152,14 +152,14 @@ public static class Specialized
         public abstract bool IsCancellationRequested { get; }
 
         internal static readonly ConditionalWeakTable
-            <CancellationTokenSource, CancellationTokenImport> ImportBySrc = new();
+            <CancellationTokenSource, CancellationTokenImport> ImportedBySrc = new();
         private CancellationTokenSource? src;
 
         protected internal override object Unwrap ()
         {
             if (src == null)
             {
-                ImportBySrc.Add(src = new(), this);
+                ImportedBySrc.Add(src = new(), this);
                 if (IsCancellationRequested) src.Cancel();
                 else OnCancellationRequested += src.Cancel;
             }
@@ -187,7 +187,7 @@ public static class Specialized
             // Preserving the imported token's cancellation sources identity
             // when they round trip via an exported interop API.
             if (GetSource(ref ct) is not { } src) return ct;
-            return CancellationTokenImport.ImportBySrc.TryGetValue(src, out var i) ? i : ct;
+            return CancellationTokenImport.ImportedBySrc.TryGetValue(src, out var i) ? i : ct;
             [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_source")]
             static extern ref CancellationTokenSource? GetSource (ref CancellationToken ct);
         }

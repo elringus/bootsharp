@@ -98,7 +98,7 @@ internal sealed class CSInstanceGenerator
           {
               ~{{it.Proxy.Id}}() => Instances.DisposeImported(_id);
 
-              {{Fmt(it.Members.Select(EmitMemberImport))}}
+              {{Fmt([..it.Members.Select(EmitMemberImport), sp.CS])}}
           }
           """;
 

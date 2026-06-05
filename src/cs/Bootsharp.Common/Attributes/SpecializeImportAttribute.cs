@@ -8,18 +8,28 @@ namespace Bootsharp;
 /// specialization of the class annotated with <see cref="SpecializeExportAttribute"/>.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class)]
-public sealed class SpecializeImportAttribute (Type clr, string? JS = null, string? Decl = null) : Attribute
+public sealed class SpecializeImportAttribute (Type clr, string? CS = null, string? JS = null,
+    string? JSCtor = null, string? Decl = null) : Attribute
 {
     /// <summary>
     /// The CLR type to specialize the import for.
     /// </summary>
     public Type Clr { get; } = clr;
     /// <summary>
-    /// Raw snippet spliced into the generated JavaScript proxy class.
+    /// Raw snippet spliced into the generated C# import proxy class body.
+    /// </summary>
+    public string? CS { get; } = CS;
+    /// <summary>
+    /// Raw snippet spliced into the generated JavaScript export proxy class body.
     /// </summary>
     public string? JS { get; } = JS;
     /// <summary>
+    /// Raw snippet spliced into the generated JavaScript export proxy constructor.
+    /// </summary>
+    public string? JSCtor { get; } = JSCtor;
+    /// <summary>
     /// Raw snippet spliced into the generated TypeScript declaration.
+    /// When starts with 'export ' will instead replace the whole declaration.
     /// </summary>
     public string? Decl { get; } = Decl;
 }

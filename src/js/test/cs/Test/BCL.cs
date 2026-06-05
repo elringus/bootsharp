@@ -172,22 +172,11 @@ public static partial class BCL
         Assert(cmp.Compare("a", "b") < 0);
         Assert(cmp.Compare("b", "a") > 0);
         Assert(cmp.Compare("a", "a") == 0);
+        Assert(cmp.Compare(null, null) == 0);
         Assert(new[] { "c", "a", "b" }.OrderBy(i => i, cmp).SequenceEqual(["a", "b", "c"]));
         var source = Comparer<string>.Create(string.CompareOrdinal);
         var echoed = EchoComparerImport(source);
         Assert(ReferenceEquals(source, echoed));
         Assert(ReferenceEquals(source, EchoComparerImport(echoed)));
     }
-}
-
-[SpecializeImport(typeof(IComparer<>))] // Testing user-specified specialization.
-public abstract class ComparerImport<T> (int id) : SpecializedImport(id), IComparer<T>
-{
-    public abstract int Compare (T? x, T? y);
-}
-
-[SpecializeExport(typeof(IComparer<>))]
-public class ComparerExport<T> (IComparer<T> cmp) : SpecializedExport(cmp)
-{
-    public int Compare (T? x, T? y) => cmp.Compare(x, y);
 }

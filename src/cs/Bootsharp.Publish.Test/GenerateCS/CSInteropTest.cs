@@ -489,6 +489,31 @@ public class CSInteropTest : GenerateCSTest
     }
 
     [Fact]
+    public void SerializedDelegatesKeepDirection ()
+    {
+        AddAssembly(With(
+            """
+            public delegate void Imported ();
+            public delegate void Exported ();
+            public interface IFoo { string Value { get; set; } }
+            public interface IBar { string Value { get; set; } }
+            public record RecordX (IFoo Foo, Imported Cb);
+            public record RecordY (IBar Bar, Exported Cb);
+
+            public class Class
+            {
+                [Export] public static RecordY Export () => default!;
+                [Import] public static RecordX Import () => default!;
+            }
+            """));
+        Execute();
+        Contains("JS_Import_Imported_Invoke");
+        Contains("JS_Export_Exported_Invoke");
+        DoesNotContain("JS_Export_Imported");
+        DoesNotContain("JS_Import_Exported");
+    }
+
+    [Fact]
     public void EscapesReservedArgumentNames ()
     {
         AddAssembly(WithClass("[Export] public static void Foo (string @object, int @class) {}"));

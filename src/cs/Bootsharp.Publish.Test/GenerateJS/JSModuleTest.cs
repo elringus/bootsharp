@@ -311,7 +311,7 @@ public class JSModuleTest : GenerateJSTest
                 impEvt: importEvent((arg1, arg2) => exports.Class_InvokeImpEvt(arg1, serialize(arg2, $s.Info))),
                 foo: (i) => deserialize(exports.Class_Foo(serialize(i, $s.Info)), $s.Info),
                 get bar() { return this.barHandler; },
-                set bar(handler) { this.barHandler = handler; this.barSerializedHandler = (i) => serialize(this.barHandler(deserialize(i, $s.Info)), $s.Info); },
+                set bar(handler) { this.barHandler = handler; this.barSerializedHandler = (i) => serialize(this.barHandler(deserialize(i, $s.Info) ?? undefined), $s.Info); },
                 get barSerialized() { return this.barSerializedHandler; }
             };
             """);
@@ -332,7 +332,7 @@ public class JSModuleTest : GenerateJSTest
             export const Class = {
                 foo: async (i) => deserialize(await exports.Class_Foo(serialize(i, $s.Info)), $s.Info),
                 get bar() { return this.barHandler; },
-                set bar(handler) { this.barHandler = handler; this.barSerializedHandler = async (i) => serialize(await this.barHandler(deserialize(i, $s.Info)), $s.Info); },
+                set bar(handler) { this.barHandler = handler; this.barSerializedHandler = async (i) => serialize(await this.barHandler(deserialize(i, $s.Info) ?? undefined), $s.Info); },
                 get barSerialized() { return this.barSerializedHandler; },
                 baz: async () => deserialize(await exports.Class_Baz(), $s.System_Collections_Generic_IReadOnlyList_Of_Info),
                 get yaz() { return this.yazHandler; },
@@ -798,6 +798,57 @@ public class JSModuleTest : GenerateJSTest
         Execute();
         Contains("makeOfCircle:");
         DoesNotContain("makeOfJS_Import_Leaked");
+    }
+
+    [Fact]
+    public void GenericArgumentNullabilityFollowsTypeArgument ()
+    {
+        AddAssembly(With(
+            """
+            public interface IFoo { void Foo (); }
+            public interface IBar { void Bar (); }
+            public record Data (string Id);
+            public record struct Point (int X);
+
+            public interface IBox<T> { void Set (T val); void SetOpt (T? opt); }
+            [SpecializeImport(typeof(IBox<>))]
+            public abstract class BoxImport<T> (int id) : SpecializedImport(id), IBox<T>
+            {
+                public abstract void Set (T val);
+                public abstract void SetOpt (T? opt);
+            }
+            [SpecializeExport(typeof(IBox<>))]
+            public class BoxExport<T> (IBox<T> box) : SpecializedExport(box)
+            {
+                public void Set (T val) => box.Set(val);
+                public void SetOpt (T? opt) => box.SetOpt(opt);
+            }
+
+            public delegate void Plain<T> (T caller);
+            public delegate void Opt<T> (T thing);
+            public delegate void OnData<T> (T data);
+            public delegate void OnPoint<T> (T pt);
+            public record Rec (Plain<IFoo>? OnFoo, Opt<IBar?>? OnBar, OnData<Data>? OnDataReq, OnPoint<Point?>? OnPt);
+
+            public class Class
+            {
+                [Import] public static IBox<string> ImportBox () => default!;
+                [Import] public static IBox<Data> ImportDataBox () => default!;
+                [Export] public static IBox<string> ExportBox () => default!;
+                [Export] public static void UseRec (Rec rec) { }
+            }
+            """));
+        Execute();
+        // Not nullable (does not contain ?? undefined).
+        Contains("$i.imported(_id).set(val)");
+        Contains("$i.imported(_id).set(deserialize(val, $s.Data))");
+        Contains("$i.imported(_id)($i.resolve(caller, $i.IFoo))");
+        Contains("$i.imported(_id)(deserialize(data, $s.Data))");
+        // Nullable (contains ?? undefined).
+        Contains("$i.imported(_id).setOpt(opt ?? undefined)");
+        Contains("$i.imported(_id).setOpt(deserialize(opt, $s.Data) ?? undefined)");
+        Contains("$i.imported(_id)($i.resolve(thing, $i.IBar) ?? undefined)");
+        Contains("$i.imported(_id)(deserialize(pt, $s.PointOrNull) ?? undefined)");
     }
 
     [Fact]

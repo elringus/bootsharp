@@ -4,7 +4,9 @@ internal sealed record Specialization
 {
     public required Type Import { get; init; }
     public required Type Export { get; init; }
+    public string? CS { get; init; }
     public string? JS { get; init; }
+    public string? JSCtor { get; init; }
     public string? Decl { get; init; }
 
     public Type For (Type specialized, InteropKind ik)

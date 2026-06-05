@@ -91,7 +91,11 @@ internal sealed class JSInstanceGenerator (bool debug, JSModules md)
         $$"""
           $i.{{it.Id}} = class {{it.Proxy.Id}} {
               {{Fmt([
-                  "constructor(_id) { this._id = _id; }",
+                  $$"""
+                    constructor(_id) {
+                        {{Fmt("this._id = _id;", sp.JSCtor)}}
+                    }
+                    """,
                   ..it.Members.Select(EmitMember),
                   sp.JS
               ])}}

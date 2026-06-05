@@ -5,7 +5,7 @@ namespace Bootsharp.Publish;
 
 internal sealed class TypeInspector
 {
-    internal delegate InstanceMeta? InspectInstanced (Type type, InteropKind ik, NullabilityInfo? nul);
+    internal delegate InstanceMeta? InspectInstanced (Type type, InteropKind ik, Nullity? nul);
 
     private readonly Dictionary<(string Syntax, InteropKind IK), InstanceMeta> its = [];
     private readonly Dictionary<Type, TypeMeta> crawled = [];
@@ -53,7 +53,7 @@ internal sealed class TypeInspector
                 members.Add(InspectProperty(prop, ik, st));
         foreach (var method in type.GetMethods(flags))
             if (ResolveIK(method) is { } ik)
-                members.Add(InspectMethod(method, ik, st));
+                members.Add(InspectMethod(method, ik, st, null));
         return members.Count > 0 ? st : null;
     }
 
@@ -62,18 +62,18 @@ internal sealed class TypeInspector
         if (!inspectedModuleTypes.Add(type) || IsStatic(type) ||
             (ik == InteropKind.Import && !type.IsInterface)) return null;
         var proxy = BuildProxy(type, BuildId(type), ik);
-        var members = new List<MemberMeta>();
-        return InspectMembers(new ModuleMeta(type) { IK = ik, Proxy = proxy, Members = members }, ik);
+        var md = new ModuleMeta(type) { IK = ik, Proxy = proxy, Members = new List<MemberMeta>() };
+        return InspectMembers(md, ik, null);
     }
 
-    private InstanceMeta? InspectInstance (Type type, InteropKind ik, NullabilityInfo? nul)
+    private InstanceMeta? InspectInstance (Type type, InteropKind ik, Nullity? nul)
     {
         var id = BuildId(type, type.IsGenericType ? nul : null); // nullity only matter for generic args
         var key = (id, ik);
         if (its.TryGetValue(key, out var it)) return it;
         if (IsTaskWithResult(type, out var result)) return InspectInstance(result, ik, nul!.GenericTypeArguments[0]);
         if (!IsInstanced(type)) return null;
-        if (IsDelegate(type)) return its[key] = InspectDelegate(type, ik);
+        if (IsDelegate(type)) return its[key] = InspectDelegate(type, ik, nul);
         if (!Preferences.IsSpecialized(type, out var sp) && ik == InteropKind.Import && !type.IsInterface)
             return InspectInstance(type, InteropKind.Export, nul)!; // likely passing back an exported instance
         return InspectMembers(its[key] = new(type) {
@@ -82,7 +82,7 @@ internal sealed class TypeInspector
             Members = new List<MemberMeta>(),
             Exporter = ResolveExporter(),
             Importer = ResolveImporter(),
-        }, ik);
+        }, ik, nul);
 
         static bool IsInstanced (Type type)
         {
@@ -108,16 +108,16 @@ internal sealed class TypeInspector
         }
     }
 
-    private DelegateMeta InspectDelegate (Type type, InteropKind ik)
+    private DelegateMeta InspectDelegate (Type type, InteropKind ik, Nullity? nul)
     {
         var members = new List<MemberMeta>();
         var proxy = BuildProxy(type, BuildId(type), ik);
         var del = new DelegateMeta(type) { IK = ik, Proxy = proxy, Members = members };
-        members.Add(InspectMethod(type.GetMethod("Invoke")!, ik, del));
+        members.Add(InspectMethod(type.GetMethod("Invoke")!, ik, del, nul));
         return del;
     }
 
-    private T InspectMembers<T> (T surf, InteropKind ik) where T : ProxyMeta
+    private T InspectMembers<T> (T surf, InteropKind ik, Nullity? nul) where T : ProxyMeta
     {
         var members = (ICollection<MemberMeta>)surf.Members;
         var sp = surf.Proxy as SpecializedProxy;
@@ -129,7 +129,7 @@ internal sealed class TypeInspector
                 members.Add(InspectProperty(prop, ik, surf));
         foreach (var method in clr.GetMethods())
             if (ShouldInspectMethod(method))
-                members.Add(InspectMethod(method, ik, surf));
+                members.Add(InspectMethod(method, ik, surf, nul));
         return surf;
 
         bool ShouldInspectProperty (PropertyInfo prop)
@@ -170,34 +170,34 @@ internal sealed class TypeInspector
         Set = prop.SetMethod != null ? InspectValue(prop.PropertyType, GetNullity(prop), ik.Invert) : null
     };
 
-    private MethodMeta InspectMethod (MethodInfo method, InteropKind ik, SurfaceMeta srf) => new(method) {
+    private MethodMeta InspectMethod (MethodInfo meth, InteropKind ik, SurfaceMeta srf, Nullity? nul) => new(meth) {
         IK = ik,
         Surf = srf,
-        Name = BuildCSName(method.Name),
-        Endpoint = BuildCSName(method.Name),
-        JSName = BuildJSName(method.Name),
-        Args = method.GetParameters().Select(p => InspectArg(p, GetNullity(p), ik.Invert)).ToArray(),
-        Return = InspectValue(method.ReturnParameter.ParameterType, GetNullity(method.ReturnParameter), ik),
-        Void = IsVoid(method.ReturnParameter.ParameterType),
-        Async = IsTaskLike(method.ReturnParameter.ParameterType)
+        Name = BuildCSName(meth.Name),
+        Endpoint = BuildCSName(meth.Name),
+        JSName = BuildJSName(meth.Name),
+        Args = meth.GetParameters().Select(p => InspectArg(p, GetNullity(p, nul), ik.Invert)).ToArray(),
+        Return = InspectValue(meth.ReturnParameter.ParameterType, GetNullity(meth.ReturnParameter, nul), ik),
+        Void = IsVoid(meth.ReturnParameter.ParameterType),
+        Async = IsTaskLike(meth.ReturnParameter.ParameterType)
     };
 
-    private ArgumentMeta InspectArg (ParameterInfo param, NullabilityInfo nul, InteropKind ik) => new(param) {
+    private ArgumentMeta InspectArg (ParameterInfo param, Nullity nul, InteropKind ik) => new(param) {
         Name = BuildCSName(param.Name!),
         JSName = BuildJSName(param.Name!),
         Value = InspectValue(param.ParameterType, nul, ik)
     };
 
-    private ValueMeta InspectValue (Type type, NullabilityInfo nul, InteropKind ik) => new() {
+    private ValueMeta InspectValue (Type type, Nullity nul, InteropKind ik) => new() {
         Type = InspectType(type, ik, nul),
         TypeSyntax = BuildSyntax(type, nul),
         Nullable = IsNullable(type, nul)
     };
 
-    private TypeMeta InspectType (Type type, InteropKind ik, NullabilityInfo? nul = null)
+    private TypeMeta InspectType (Type type, InteropKind ik, Nullity? nul)
     {
-        CrawlInspected(type, ik);
-        return InspectInstance(type, ik, nul) ?? srd.Inspect(type, ik) ?? new TypeMeta(type);
+        CrawlInspected(type, ik, nul);
+        return InspectInstance(type, ik, nul) ?? srd.Inspect(type, ik, nul) ?? new TypeMeta(type);
     }
 
     private SurfaceProxy BuildProxy (Type type, string typeId, InteropKind ik, Specialization? sp = null)
@@ -210,18 +210,20 @@ internal sealed class TypeInspector
             Syntax = stx,
             Import = new(sp.For(type, InteropKind.Import)),
             Export = new(sp.For(type, InteropKind.Export)),
+            CS = sp.CS,
             JS = sp.JS,
+            JSCtor = sp.JSCtor,
             Decl = sp.Decl
         };
     }
 
-    private void CrawlInspected (Type type, InteropKind ik)
+    private void CrawlInspected (Type type, InteropKind ik, Nullity? nul)
     {
         for (var clr = type; clr.IsNested && IsUserType(clr.DeclaringType!); clr = clr.DeclaringType!)
             crawled.TryAdd(clr.DeclaringType!, new(clr.DeclaringType!));
         if (type.IsGenericMethodParameter)
             foreach (var compatible in FindCompatible(type))
-                InspectType(compatible, ik);
+                InspectType(compatible, ik, nul);
 
         static IEnumerable<Type> FindCompatible (Type param)
         {

@@ -99,8 +99,12 @@ internal sealed record SpecializedProxy : SurfaceProxy
     /// The export proxy type annotated with <see cref="SpecializeExportAttribute"/>.
     /// </summary>
     public required TypeMeta Export { get; init; }
+    /// <inheritdoc cref="SpecializeImportAttribute.CS"/>
+    public string? CS { get; init; }
     /// <inheritdoc cref="SpecializeImportAttribute.JS"/>
     public string? JS { get; init; }
+    /// <inheritdoc cref="SpecializeImportAttribute.JSCtor"/>
+    public string? JSCtor { get; init; }
     /// <inheritdoc cref="SpecializeImportAttribute.Decl"/>
     public string? Decl { get; init; }
 }

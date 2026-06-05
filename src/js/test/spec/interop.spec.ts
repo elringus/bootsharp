@@ -30,9 +30,14 @@ class ImportedInner implements IImportedInnerInstanced {
 
 class BidirectionalJS implements IBidirectional {
     onBiChanged = new Event<[IBidirectional | undefined]>();
+    onSpecial = new Event<[IBidirectional | undefined]>();
     #bi?: IBidirectional;
     get bi() { return this.#bi; }
-    set bi(value) { this.onBiChanged.broadcast(this.#bi = value); }
+    set bi(value) {
+        this.#bi = value;
+        this.onBiChanged.broadcast(value);
+        this.onSpecial.broadcast(value);
+    }
     echoBi(bi?: IBidirectional) { return bi ?? null; }
 }
 
@@ -78,6 +83,8 @@ describe("while bootsharp is booted", () => {
     it("can interop with imported statics", async () => {
         let prop = "initial imported";
         Static.importedProperty = { get: () => prop, set: v => prop = v };
+        const importedSpecial = new Event<[string | undefined, string, number | undefined]>();
+        Static.importedSpecial = { get: () => importedSpecial };
         Static.echoImported = bytes => bytes;
         Static.echoImportedAsync = async bytes => {
             await new Promise(res => setTimeout(res, 1));
@@ -85,6 +92,7 @@ describe("while bootsharp is booted", () => {
         };
         const promise = Static.canInteropWithImportedStaticsAsync();
         Static.importedEvent.broadcast("event payload");
+        importedSpecial.broadcast(undefined, "special payload", undefined);
         await promise;
     });
     it("can interop with exported statics", async () => {
@@ -93,15 +101,25 @@ describe("while bootsharp is booted", () => {
         expect(Static.exportedProperty).toStrictEqual("initial exported");
         Static.exportedProperty = "set";
         expect(Static.exportedProperty).toStrictEqual("set");
-        const handler = vi.fn();
-        Static.exportedEvent.subscribe(handler);
+        const eventHandler = vi.fn();
+        Static.exportedEvent.subscribe(eventHandler);
         Static.broadcastExportedEvent("foo");
-        expect(handler).toHaveBeenCalledWith("foo");
+        expect(eventHandler).toHaveBeenCalledWith("foo");
         Static.broadcastExportedEvent(undefined);
-        expect(handler).toHaveBeenCalledWith(undefined);
-        Static.exportedEvent.unsubscribe(handler);
+        expect(eventHandler).toHaveBeenCalledWith(undefined);
+        Static.exportedEvent.unsubscribe(eventHandler);
         Static.broadcastExportedEvent("bar");
-        expect(handler).not.toHaveBeenCalledWith("bar");
+        expect(eventHandler).not.toHaveBeenCalledWith("bar");
+        const specialHandler = vi.fn();
+        expect(Static.exportedSpecial).toBe(Static.exportedSpecial);
+        Static.exportedSpecial.subscribe(specialHandler);
+        Static.broadcastExportedSpecial(undefined, "hello", 7);
+        expect(specialHandler).toHaveBeenCalledWith(undefined, "hello", 7);
+        expect(Static.exportedSpecial.last).toStrictEqual([undefined, "hello", 7]);
+        Static.exportedSpecial.unsubscribe(specialHandler);
+        Static.broadcastExportedSpecial(undefined, "bye", undefined);
+        expect(specialHandler).not.toHaveBeenCalledWith(undefined, "bye", undefined);
+        expect(Static.exportedSpecial.last).toStrictEqual([undefined, "bye", undefined]);
     });
     it("can interop with imported modules", async () => {
         let record: Record | undefined = { id: "initial" };
@@ -169,23 +187,33 @@ describe("while bootsharp is booted", () => {
         const factory = () => new BidirectionalJS();
         Modules.importBi = factory;
         expect(Modules.importBi).toBe(factory);
-        const exp = Modules.exportBi();
+        const cs = Modules.exportBi();
         const js = new BidirectionalJS();
-        const handler = vi.fn();
-        exp.onBiChanged.subscribe(handler);
-        expect(exp.echoBi(undefined)).toBe(null);
-        expect(exp.echoBi(exp)).toBe(exp);
-        expect(exp.echoBi(js)).toBe(js);
-        exp.bi = js;
-        expect(handler).toHaveBeenCalledWith(js);
-        expect(exp.bi).toBe(js);
-        exp.bi = exp;
-        expect(handler).toHaveBeenCalledWith(exp);
-        expect(exp.bi).toBe(exp);
-        exp.bi = undefined;
-        expect(handler).toHaveBeenCalledWith(undefined);
-        expect(exp.bi).toBe(undefined);
-        exp.onBiChanged.unsubscribe(handler);
+        const eventHandler = vi.fn();
+        const specialHandler = vi.fn();
+        cs.onBiChanged.subscribe(eventHandler);
+        expect(cs.onSpecial).toBe(cs.onSpecial);
+        cs.onSpecial.subscribe(specialHandler);
+        expect(cs.echoBi(undefined)).toBe(null);
+        expect(cs.echoBi(cs)).toBe(cs);
+        expect(cs.echoBi(js)).toBe(js);
+        cs.bi = js;
+        expect(eventHandler).toHaveBeenCalledWith(js);
+        expect(specialHandler).toHaveBeenCalledWith(js);
+        expect(cs.onSpecial.last).toStrictEqual([js]);
+        expect(cs.bi).toBe(js);
+        cs.bi = cs;
+        expect(eventHandler).toHaveBeenCalledWith(cs);
+        expect(specialHandler).toHaveBeenCalledWith(cs);
+        expect(cs.onSpecial.last).toStrictEqual([cs]);
+        expect(cs.bi).toBe(cs);
+        cs.bi = undefined;
+        expect(eventHandler).toHaveBeenCalledWith(undefined);
+        expect(specialHandler).toHaveBeenCalledWith(undefined);
+        expect(cs.onSpecial.last).toStrictEqual([undefined]);
+        expect(cs.bi).toBe(undefined);
+        cs.onBiChanged.unsubscribe(eventHandler);
+        cs.onSpecial.unsubscribe(specialHandler);
         Modules.canInteropWithBidirectional();
     });
     it("releases instances after use", async () => {

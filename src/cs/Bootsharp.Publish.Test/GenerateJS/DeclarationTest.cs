@@ -151,9 +151,9 @@ public class DeclarationTest : GenerateJSTest
         Contains("foo.g.d.mts",
             """
             export namespace Class {
-                export const expEvt: Event<[]>;
-                export const evt: Event<[obj: string | undefined]>;
-                export const impEvt: Event<[arg1: number, arg2: boolean | undefined]>;
+                export const expEvt: $bcl.Event<[]>;
+                export const evt: $bcl.Event<[obj: string | undefined]>;
+                export const impEvt: $bcl.Event<[arg1: number, arg2: boolean | undefined]>;
             }
             """);
     }
@@ -381,6 +381,23 @@ public class DeclarationTest : GenerateJSTest
                 readonly token: system_threading.CancellationToken;
             }
             """);
+    }
+
+    [Fact]
+    public void SpecializedDeclarationStartingWithExportReplacesWholeDeclaration ()
+    {
+        AddAssembly(With(
+            """
+            public class Foo;
+            [SpecializeImport(typeof(Foo), Decl: "export type Foo = () => void;")]
+            public abstract class FooImport (int id) : SpecializedImport(id);
+            [SpecializeExport(typeof(Foo))]
+            public sealed class FooExport (Foo it) : SpecializedExport(it);
+            public class Class { [Export] public static Foo Get () => default; }
+            """));
+        Execute();
+        Contains("export type Foo = () => void;");
+        DoesNotContain("export interface Foo");
     }
 
     [Fact]
@@ -963,10 +980,10 @@ public class DeclarationTest : GenerateJSTest
         Contains(
             """
             export namespace IExported {
-                export const evt: Event<[arg1: string, arg2: Info, arg3: IExportedInstanced]>;
+                export const evt: $bcl.Event<[arg1: string, arg2: Info, arg3: IExportedInstanced]>;
             }
             export namespace IImported {
-                export const evt: Event<[arg1: string, arg2: Info, arg3: IImportedInstanced]>;
+                export const evt: $bcl.Event<[arg1: string, arg2: Info, arg3: IImportedInstanced]>;
             }
             export interface IExportedInstanced {
             }
@@ -1002,11 +1019,11 @@ public class DeclarationTest : GenerateJSTest
                 export let getImported: (it: IExported) => IImported;
             }
             export interface IImported {
-                changed: Event<[arg1: IImported, arg2: Info, arg3: string]>;
+                changed: $bcl.Event<[arg1: IImported, arg2: Info, arg3: string]>;
             }
             export interface IExported {
-                changed: Event<[obj: Info]>;
-                done: Event<[]>;
+                changed: $bcl.Event<[obj: Info]>;
+                done: $bcl.Event<[]>;
             }
             export type Info = Readonly<{
                 value: string;
@@ -1346,7 +1363,7 @@ public class DeclarationTest : GenerateJSTest
         Contains(
             """
             export namespace Foo {
-                export const qux: Event<[]>;
+                export const qux: $bcl.Event<[]>;
                 export let baz: Enum;
                 export function bar(): Enum;
             }
@@ -1398,7 +1415,7 @@ public class DeclarationTest : GenerateJSTest
         Contains(
             """
             export namespace Foo {
-                export const quz: Event<[]>;
+                export const quz: $bcl.Event<[]>;
                 export let qux: Enum;
                 export function bar(e: Enum): void;
                 export let baz: (e: Enum) => void;
@@ -1452,7 +1469,7 @@ public class DeclarationTest : GenerateJSTest
                 export function get(): Foo;
             }
             export interface Foo {
-                qux: Event<[]>;
+                qux: $bcl.Event<[]>;
                 baz: Enum;
                 bar(e: Enum): void;
             }
@@ -1538,7 +1555,7 @@ public class DeclarationTest : GenerateJSTest
             /// <summary>Payload changed callback.</summary>
             /// <param name="payload">Payload from custom delegate.</param>
             /// <param name="label">Label from custom delegate.</param>
-            public delegate void PayloadChanged (Payload<int> payload, string label);
+            public delegate void PayloadChanged (Payload<int> payload, string label, int op);
 
             /// <summary>
             /// Exported instance API.
@@ -1584,6 +1601,9 @@ public class DeclarationTest : GenerateJSTest
                 /// <summary>Gets exported instance.</summary>
                 [Export] public static IExportedInstanced GetExported () => default;
 
+                /// <summary>Gets the payload callback delegate.</summary>
+                [Export] public static PayloadChanged GetDelegate () => default;
+
                 /// <summary>Receives foo.</summary>
                 /// <param name="count">Count to receive.</param>
                 [Import] public static void OnFoo (Payload<int> count) { }
@@ -1624,6 +1644,15 @@ public class DeclarationTest : GenerateJSTest
         Contains(
             """
             /**
+             * Payload changed callback.
+             * @param payload Payload from custom delegate.
+             * @param label Label from custom delegate.
+             */
+            export type PayloadChanged = (payload: Payload<number>, label: string, op: number) => void;
+            """);
+        Contains(
+            """
+            /**
              * Exported instance API.
              */
             export interface IExportedInstanced {
@@ -1647,23 +1676,23 @@ public class DeclarationTest : GenerateJSTest
                 /**
                  * Exports completion signal.
                  */
-                export const expEvt: Event<[obj: boolean]>;
+                export const expEvt: $bcl.Event<[obj: boolean]>;
                 /**
                  * Imports completion signal.
                  */
-                export const impEvt: Event<[arg1: string, arg2: number]>;
+                export const impEvt: $bcl.Event<[arg1: string, arg2: number]>;
                 /**
                  * Exports payload changes.
                  * @param payload Payload from custom delegate.
                  * @param label Label from custom delegate.
                  */
-                export const payloadChanged: Event<[payload: Payload<number>, label: string]>;
+                export const payloadChanged: $bcl.Event<[payload: Payload<number>, label: string, op: number]>;
                 /**
                  * Imports handler signal.
                  * @param sender Sender from event handler.
                  * @param e Payload from event handler.
                  */
-                export const handlerEvt: Event<[sender: any | undefined, e: HandlerArgs]>;
+                export const handlerEvt: $bcl.Event<[sender: any | undefined, e: HandlerArgs]>;
                 /**
                  * Runs foo.
                  * @param fn Function value.
@@ -1679,6 +1708,10 @@ public class DeclarationTest : GenerateJSTest
                  * Gets exported instance.
                  */
                 export function getExported(): IExportedInstanced;
+                /**
+                 * Gets the payload callback delegate.
+                 */
+                export function getDelegate(): PayloadChanged;
                 /**
                  * Receives foo.
                  * @param count Count to receive.

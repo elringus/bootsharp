@@ -1,4 +1,5 @@
 global using static Bootsharp.Publish.GlobalType;
+global using Nullity = System.Reflection.NullabilityInfo;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -81,31 +82,31 @@ internal static class GlobalType
         (a.IsGenericType ? a.GetGenericTypeDefinition() : a) ==
         (b.IsGenericType ? b.GetGenericTypeDefinition() : b);
 
-    public static NullabilityInfo GetNullity (PropertyInfo prop) =>
+    public static Nullity GetNullity (EventInfo evt) => new NullabilityInfoContext().Create(evt);
+    public static Nullity GetNullity (EventInfo evt, ParameterInfo param) =>
+        GetNullity(param, new NullabilityInfoContext().Create(evt));
+    public static Nullity GetNullity (PropertyInfo prop) =>
         FixNullity(new NullabilityInfoContext().Create(prop), prop.CustomAttributes, prop.DeclaringType);
-    public static NullabilityInfo GetNullity (ParameterInfo param) =>
-        FixNullity(new NullabilityInfoContext().Create(param), param.CustomAttributes, param.Member);
-    public static NullabilityInfo GetNullity (EventInfo evt) => new NullabilityInfoContext().Create(evt);
-    public static NullabilityInfo GetNullity (EventInfo evt, ParameterInfo param)
+    public static Nullity GetNullity (ParameterInfo param, Nullity? nul = null)
     {
-        if (evt.EventHandlerType!.IsGenericType)
-        {
-            var arg = evt.EventHandlerType.GetGenericTypeDefinition()
-                .GetMethod("Invoke")!.GetParameters()[param.Position].ParameterType;
-            if (arg.IsGenericParameter)
-                return GetNullity(evt).GenericTypeArguments[arg.GenericParameterPosition];
-        }
-        return GetNullity(param);
+        var self = FixNullity(new NullabilityInfoContext().Create(param), param.CustomAttributes, param.Member);
+        if (nul?.GenericTypeArguments is not { Length: > 0 } args) return self;
+        // resolve nullability from the open (unbound) generic form of the method
+        var method = param.Member.Module.ResolveMethod(((MethodBase)param.Member).MetadataToken)!;
+        param = param.Position < 0 ? ((MethodInfo)method).ReturnParameter : method.GetParameters()[param.Position];
+        if (!param.ParameterType.IsGenericParameter) return self;
+        if (IsNullable(GetNullity(param))) return self;
+        return args[param.ParameterType.GenericParameterPosition];
     }
 
-    public static bool IsNullable (NullabilityInfo? info) => info?.ReadState == NullabilityState.Nullable;
-    public static bool IsNullable (Type type, NullabilityInfo? info) => IsNullable(type, info, out _);
+    public static bool IsNullable (Nullity? nul) => nul?.ReadState == NullabilityState.Nullable;
+    public static bool IsNullable (Type type, Nullity? nul) => IsNullable(type, nul, out _);
     public static bool IsNullable (Type type, [NotNullWhen(true)] out Type? value) => IsNullable(type, null, out value);
-    public static bool IsNullable (Type type, NullabilityInfo? info, [NotNullWhen(true)] out Type? value)
+    public static bool IsNullable (Type type, Nullity? nul, [NotNullWhen(true)] out Type? value)
     {
         if (type.IsGenericType && type.Name.Contains("Nullable`") && type.GenericTypeArguments.Length == 1)
             value = type.GenericTypeArguments[0];
-        else if (IsNullable(info)) value = type;
+        else if (IsNullable(nul)) value = type;
         else value = null;
         return value != null;
     }
@@ -116,7 +117,7 @@ internal static class GlobalType
         return $"_id, {args}";
     }
 
-    public static string BuildId (Type type, NullabilityInfo? nul = null, bool full = true, char separator = '_')
+    public static string BuildId (Type type, Nullity? nul = null, bool full = true, char separator = '_')
     {
         var sb = new StringBuilder();
         foreach (var c in BuildSyntax(type, nul, full: full).Replace("global::", ""))
@@ -129,7 +130,7 @@ internal static class GlobalType
         return sb.ToString();
     }
 
-    public static string BuildSyntax (Type type, NullabilityInfo? nul = null, bool forceNil = false, bool full = true)
+    public static string BuildSyntax (Type type, Nullity? nul = null, bool forceNil = false, bool full = true)
     {
         var nil = (forceNil || IsNullable(nul)) ? "?" : "";
         var global = full ? "global::" : "";
@@ -178,7 +179,8 @@ internal static class GlobalType
         return exp;
     }
 
-    public static string ExportJS (ArgumentMeta arg) => ExportJS(arg.Value, arg.JSName);
+    public static string ExportJS (ArgumentMeta arg) // arguments are undefined (not null) by convention
+        => ExportJS(arg.Value, arg.JSName) + (arg.Value.Nullable ? " ?? undefined" : "");
     public static string ExportJS (ValueMeta value, string exp) => ExportJS(value.Type, exp);
     public static string ExportJS (TypeMeta type, string exp)
     {
@@ -198,8 +200,7 @@ internal static class GlobalType
         return exp;
     }
 
-    private static NullabilityInfo FixNullity (NullabilityInfo nul,
-        IEnumerable<CustomAttributeData> attrs, MemberInfo? scope)
+    private static Nullity FixNullity (Nullity nul, IEnumerable<CustomAttributeData> attrs, MemberInfo? scope)
     {
         // Nullity is conservatively reported as nullable for unconstrained generic parameters; this workaround
         // resolves actual nullability via a compiler heuristic. https://github.com/dotnet/runtime/issues/115014
@@ -223,8 +224,8 @@ internal static class GlobalType
         }
 
         [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_ReadState")]
-        static extern void SetReadState (NullabilityInfo info, NullabilityState value);
+        static extern void SetReadState (Nullity nul, NullabilityState value);
         [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_WriteState")]
-        static extern void SetWriteState (NullabilityInfo info, NullabilityState value);
+        static extern void SetWriteState (Nullity nul, NullabilityState value);
     }
 }

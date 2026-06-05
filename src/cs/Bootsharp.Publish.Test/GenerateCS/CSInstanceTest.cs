@@ -193,7 +193,7 @@ public class CSInstanceTest : GenerateCSTest
             {
                 ~JS_Import_System_Func_Of_System_Int32_And_System_String() => Instances.DisposeImported(_id);
 
-                public global::System.String? Invoke (global::System.Int32 arg) => global::Bootsharp.Generated.Interop.JS_Import_System_Func_Of_System_Int32_And_System_String_Invoke(_id, arg);
+                public global::System.String Invoke (global::System.Int32 arg) => global::Bootsharp.Generated.Interop.JS_Import_System_Func_Of_System_Int32_And_System_String_Invoke(_id, arg);
             }
             """);
         Contains(
