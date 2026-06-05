@@ -46,15 +46,21 @@ const comparer = Program.getComparer();
 comparer.compare("a", "b"); // -1
 ```
 
-## Injecting JavaScript
+## Injecting Code
 
-The `[SpecializeImport]` attribute accepts optional `JS` and `Decl` snippets that are spliced verbatim into the generated JavaScript proxy class and its TypeScript declaration. This lets the imported proxy satisfy JS-side contracts that aren't expressible through the C# abstract members alone — for example, injecting an iterator:
+The `[SpecializeImport]` attribute accepts optional `CS`, `JS`, `JSCtor` and `Decl` snippets that are spliced verbatim into the generated C# or JavaScript proxies and its TypeScript declaration. This lets the imported proxy satisfy JS-side contracts that aren't expressible through the C# abstract members alone — for example, injecting an iterator:
 
 ```csharp
 [SpecializeImport(typeof(ICustomCollection<>),
     JS: "[Symbol.iterator]() { return this.copy()[Symbol.iterator](); }",
     Decl: "[Symbol.iterator](): IterableIterator<T>;")]
 ```
+
+When `Decl` value starts with `export ` — the content will replace the entire TypeScript declaration of the type, instead of splicing it into the bottom of the default type declaration.
+
+::: tip EXAMPLE
+Find a more advanced example of injecting C# and JS constructor code to synthesise property events in the [E2E test project](https://github.com/elringus/bootsharp/tree/main/src/js/test/cs/Test.Library/Specialization.cs).
+:::
 
 ## Unwrapping
 
