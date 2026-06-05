@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1050
+#pragma warning disable CA1050
 // Global namespace required for EventExtensions to be picked by the spliced CS.
 
 using System;
@@ -72,7 +72,7 @@ public static class EventExtensions
     const event = new Event();
     event._id = _id;
     this.subscribe(event.broadcast.bind(event));
-    return event; 
+    return event;
     """,
     Decl:
     """
