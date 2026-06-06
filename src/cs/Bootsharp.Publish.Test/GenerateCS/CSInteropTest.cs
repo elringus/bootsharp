@@ -434,6 +434,23 @@ public class CSInteropTest : GenerateCSTest
     }
 
     [Fact]
+    public void GeneratesNullableGenericValueType ()
+    {
+        AddAssembly(With(
+            """
+            namespace Space;
+
+            public class Class
+            {
+                [Import] public static KeyValuePair<int, string?>? Fun (KeyValuePair<int, string?>? a) =>
+                    Proxies.Get<Func<KeyValuePair<int, string?>?, KeyValuePair<int, string?>?>>("Space.Class.Fun")(a);
+            }
+            """));
+        Execute();
+        Contains("KeyValuePair<global::System.Int32, global::System.String?>? Space_Class_Fun (global::System.Collections.Generic.KeyValuePair<global::System.Int32, global::System.String?>? a) =>");
+    }
+
+    [Fact]
     public void DoesNotSerializeTypesThatShouldNotBeSerialized ()
     {
         AddAssembly(With(

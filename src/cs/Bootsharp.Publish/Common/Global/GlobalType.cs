@@ -130,9 +130,9 @@ internal static class GlobalType
         return sb.ToString();
     }
 
-    public static string BuildSyntax (Type type, Nullity? nul = null, bool forceNil = false)
+    public static string BuildSyntax (Type type, Nullity? nul = null)
     {
-        var nil = (forceNil || IsNullable(nul)) ? "?" : "";
+        var nil = IsNullable(nul) ? "?" : "";
         if (IsVoid(type)) return "void";
         if (type.IsArray) return $"{BuildSyntax(type.GetElementType()!, nul?.ElementType)}[]{nil}";
         if (type.IsGenericType) return BuildGeneric(type, type.GenericTypeArguments);
@@ -140,10 +140,11 @@ internal static class GlobalType
 
         string BuildGeneric (Type type, Type[] args)
         {
-            if (IsNullable(type, out var value)) return BuildSyntax(value, nul, true);
+            if (IsNullable(type, out var value))
+                return BuildSyntax(value, value.IsGenericType ? nul : null) + "?";
             var name = TrimGeneric(ResolveTypeName(type));
             var typeArgs = string.Join(", ", args.Select((a, i) =>
-                BuildSyntax(a, nul?.GenericTypeArguments[i], forceNil)));
+                BuildSyntax(a, nul?.GenericTypeArguments[i])));
             return $"global::{name}<{typeArgs}>";
         }
 
