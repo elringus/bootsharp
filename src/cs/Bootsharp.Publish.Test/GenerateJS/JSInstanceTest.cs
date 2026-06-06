@@ -193,7 +193,7 @@ public class JSInstanceTest : GenerateJSTest
             """
             $i.System_Func_Of_System_Int32_And_System_String = class JS_Export_System_Func_Of_System_Int32_And_System_String {
                 constructor(_id) {
-                    const fn = (arg) => system.Func_Of_Int32_And_String.invoke(_id, arg);
+                    const fn = (arg) => system.Func_Of_System_Int32_And_System_String.invoke(_id, arg);
                     fn._id = _id;
                     return fn;
                 }

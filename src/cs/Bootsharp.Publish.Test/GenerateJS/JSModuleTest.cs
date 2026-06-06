@@ -852,6 +852,27 @@ public class JSModuleTest : GenerateJSTest
     }
 
     [Fact]
+    public void DisambiguatesNodesByFullGenericArgName ()
+    {
+        AddAssembly(With(
+            """
+            namespace A { public record Item; }
+            namespace B { public record Item; }
+
+            public interface IBox<T> { void Set (T item); }
+
+            public class Class
+            {
+                [Export] public static IBox<A.Item> GetA () => default!;
+                [Export] public static IBox<B.Item> GetB () => default!;
+            }
+            """));
+        Execute();
+        Contains("export const IBox_Of_A_Item = {");
+        Contains("export const IBox_Of_B_Item = {");
+    }
+
+    [Fact]
     public void RespectsPrefsInStatics ()
     {
         AddAssembly(With(

@@ -1,5 +1,4 @@
 global using static Bootsharp.Publish.GlobalText;
-using System.Text;
 
 namespace Bootsharp.Publish;
 
@@ -31,16 +30,5 @@ internal static class GlobalText
     {
         if (value.Length == 1) return value.ToUpperInvariant();
         return char.ToUpperInvariant(value[0]) + value[1..];
-    }
-
-    public static string Slugify (string value)
-    {
-        var bld = new StringBuilder(value.Length + 4);
-        for (var i = 0; i < value.Length; i++)
-            if (value[i] == '.') bld.Append('/');
-            else if (char.IsUpper(value[i]) && i > 0 && char.IsLower(value[i - 1]))
-                bld.Append('-').Append(char.ToLowerInvariant(value[i]));
-            else bld.Append(char.ToLowerInvariant(value[i]));
-        return bld.ToString();
     }
 }

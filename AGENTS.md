@@ -41,7 +41,12 @@ We have a strict 100% coverage policy for both the C# and JS codebases.
 - No unreachable code is allowed, except in rare cases where testing is not practical.
 - Treat branch coverage as part of the requirement, not just line coverage.
 
-To check C# coverage, use `reportgenerator` on merged coverlet output. Example workflow reference: `src/cs/.scripts/cover.sh`. Do not run that script verbatim in automation; it is intended for interactive usage.
+To check C# coverage, run following commands under `src/cs`:
+
+- `rm -rf .cover`
+- `dotnet test --collect:"XPlat Code Coverage;Format=opencover;ExcludeByAttribute=GeneratedCodeAttribute" --results-directory .cover`
+- `reportgenerator -reports:'.cover/**/coverage.opencover.xml' -targetdir:.cover/report "-reporttypes:TextSummary;lcov"`
+- Read coverage status from reportgenerator's summary; use the lcov output to find the exact uncovered positions, if any.
 
 To check JS coverage, run `npm run cover` under `src/js`.
 

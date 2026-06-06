@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace Bootsharp.Publish;
 
 /// <summary>
@@ -21,9 +23,32 @@ internal record TypeMeta (Type Clr)
     /// <summary>
     /// The path to the module containing the node that represents the type in JavaScript.
     /// </summary>
-    public string JSModule { get; } = Clr.Namespace is { } ns ? Slugify(ns) : "index";
+    public string JSModule { get; } = BuildModule(Clr);
     /// <summary>
     /// The path to the node inside the module that represents the type in JavaScript.
     /// </summary>
-    public string JSNode { get; } = BuildId(Clr, full: false, separator: '.');
+    public string JSNode { get; } = BuildNode(Clr);
+
+    private static string BuildModule (Type type)
+    {
+        if (type.Namespace is not { } ns) return "index";
+        var bld = new StringBuilder(ns.Length + 4);
+        for (var i = 0; i < ns.Length; i++)
+            if (ns[i] == '.') bld.Append('/');
+            else if (char.IsUpper(ns[i]) && i > 0 && char.IsLower(ns[i - 1]))
+                bld.Append('-').Append(char.ToLowerInvariant(ns[i]));
+            else bld.Append(char.ToLowerInvariant(ns[i]));
+        return bld.ToString();
+    }
+
+    private static string BuildNode (Type type)
+    {
+        var node = BuildSyntax(type).Replace("global::", "");
+        if (node.StartsWith($"{type.Namespace}."))
+            node = node[(type.Namespace!.Length + 1)..];
+        var genericIdx = node.IndexOf('<');
+        if (genericIdx < 0) return node;
+        var args = string.Join("_And_", type.GenericTypeArguments.Select(a => BuildId(a)));
+        return $"{node[..genericIdx]}_Of_{args}";
+    }
 }
