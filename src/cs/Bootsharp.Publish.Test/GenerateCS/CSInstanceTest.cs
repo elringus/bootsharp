@@ -96,7 +96,7 @@ public class CSInstanceTest : GenerateCSTest
     }
 
     [Fact]
-    public void GeneratesSpecializedExportsForInstancesWithEvents ()
+    public void RegistersExportsForInstancesWithEvents ()
     {
         AddAssembly(With(
             """
@@ -114,19 +114,20 @@ public class CSInstanceTest : GenerateCSTest
         Execute();
         Contains(
             """
-                internal static int Export (global::IExported it) => Export(it, static (_id, it) => {
-                    it.Changed += HandleChanged;
-                    return () => {
-                        it.Changed -= HandleChanged;
-                    };
+                    Bootsharp.Instances.RegisterExport(typeof(global::IExported), null, static (_id, obj) => {
+                        var it = (global::IExported)obj;
+                        it.Changed += HandleChanged;
+                        return () => {
+                            it.Changed -= HandleChanged;
+                        };
 
-                    void HandleChanged (global::Record arg1, global::IExported arg2) => Interop.JS_Export_IExported_BroadcastChanged_Serialized(_id, Serializer.Serialize(arg1, SerializerContext.Record), Instances.Export(arg2));
-                });
+                        void HandleChanged (global::Record arg1, global::IExported arg2) => Interop.JS_Export_IExported_BroadcastChanged_Serialized(_id, Serializer.Serialize(arg1, SerializerContext.Record), Instances.Export(arg2));
+                    });
             """);
     }
 
     [Fact]
-    public void DoesNotGenerateDuplicateSpecializedExports ()
+    public void DoesNotDuplicateExportsForInstanceWithEvents ()
     {
         AddAssembly(With(
             """
@@ -143,7 +144,7 @@ public class CSInstanceTest : GenerateCSTest
             }
             """));
         Execute();
-        Once(@"internal static int Export \(global::IBi it\)");
+        Once(@"RegisterExport\(typeof\(global::IBi\)");
     }
 
     [Fact]
@@ -268,14 +269,15 @@ public class CSInstanceTest : GenerateCSTest
             """);
         Contains(
             """
-                internal static int Export (global::Custom it) => Export(new global::CustomExport(it), static (_id, it) => {
-                    it.AddedEvent += HandleAddedEvent;
-                    return () => {
-                        it.AddedEvent -= HandleAddedEvent;
-                    };
+                    Bootsharp.Instances.RegisterExport(typeof(global::Custom), static it => new global::CustomExport((global::Custom)it), static (_id, obj) => {
+                        var it = (global::CustomExport)obj;
+                        it.AddedEvent += HandleAddedEvent;
+                        return () => {
+                            it.AddedEvent -= HandleAddedEvent;
+                        };
 
-                    void HandleAddedEvent () => Interop.JS_Export_Custom_BroadcastAddedEvent_Serialized(_id);
-                });
+                        void HandleAddedEvent () => Interop.JS_Export_Custom_BroadcastAddedEvent_Serialized(_id);
+                    });
             """);
     }
 
@@ -299,7 +301,7 @@ public class CSInstanceTest : GenerateCSTest
             }
             """));
         Execute();
-        Contains("internal static int Export (global::IntEvent it) => Export(new global::EventExport<global::System.Int32>(it));");
+        Contains("Bootsharp.Instances.RegisterExport(typeof(global::IntEvent), static it => new global::EventExport<global::System.Int32>((global::IntEvent)it));");
         Contains("Instances.RegisterImport(typeof(global::IntEvent), static id => new global::Bootsharp.Generated.JS_Import_IntEvent(id));");
         Contains(
             """
@@ -323,10 +325,10 @@ public class CSInstanceTest : GenerateCSTest
             [Export] public static CancellationToken Bar (CancellationToken ct) => default!;
             """));
         Execute();
-        Contains("int Export (global::System.Collections.Generic.ICollection<global::System.Int32> it) => Export(new global::Bootsharp.Specialized.CollectionExport<global::System.Int32>(it)");
-        Contains("int Export (global::System.Collections.Generic.IList<global::System.Int32> it) => Export(new global::Bootsharp.Specialized.ListExport<global::System.Int32>(it)");
-        Contains("int Export (global::System.Collections.Generic.IDictionary<global::System.Int32, global::System.String> it) => Export(new global::Bootsharp.Specialized.DictionaryExport<global::System.Int32, global::System.String>(it)");
-        Contains("int Export (global::System.Threading.CancellationToken it) => Export(new global::Bootsharp.Specialized.CancellationTokenExport(it)");
+        Contains("RegisterExport(typeof(global::System.Collections.Generic.ICollection<global::System.Int32>), static it => new global::Bootsharp.Specialized.CollectionExport<global::System.Int32>((global::System.Collections.Generic.ICollection<global::System.Int32>)it));");
+        Contains("RegisterExport(typeof(global::System.Collections.Generic.IList<global::System.Int32>), static it => new global::Bootsharp.Specialized.ListExport<global::System.Int32>((global::System.Collections.Generic.IList<global::System.Int32>)it));");
+        Contains("RegisterExport(typeof(global::System.Collections.Generic.IDictionary<global::System.Int32, global::System.String>), static it => new global::Bootsharp.Specialized.DictionaryExport<global::System.Int32, global::System.String>((global::System.Collections.Generic.IDictionary<global::System.Int32, global::System.String>)it));");
+        Contains("RegisterExport(typeof(global::System.Threading.CancellationToken), static it => new global::Bootsharp.Specialized.CancellationTokenExport((global::System.Threading.CancellationToken)it), static (_id, obj) => {");
         Contains("class JS_Import_System_Collections_Generic_ICollection_Of_System_Int32 (int id) : global::Bootsharp.Specialized.CollectionImport<global::System.Int32>");
         Contains("class JS_Import_System_Collections_Generic_IList_Of_System_Int32 (int id) : global::Bootsharp.Specialized.ListImport<global::System.Int32>");
         Contains("class JS_Import_System_Collections_Generic_IDictionary_Of_System_Int32_And_System_String (int id) : global::Bootsharp.Specialized.DictionaryImport<global::System.Int32, global::System.String>");

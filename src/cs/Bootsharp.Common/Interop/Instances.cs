@@ -12,15 +12,16 @@ namespace Bootsharp;
 public static class Instances
 {
     /// <summary>
-    /// Invoked on <see cref="Export"/> when registering the instance.
+    /// Invoked on <see cref="Export"/> when registering an exported instance.
     /// </summary>
     /// <param name="id">The unique identifier of the instance.</param>
-    /// <param name="it">The registered instance.</param>
+    /// <param name="it">The registered instance or the specialized wrapper, when applicable.</param>
     /// <returns>The callback to invoke when disposing the instance.</returns>
-    public delegate Action ExportCallback<T> (int id, T it) where T : class;
+    public delegate Action ExportCallback (int id, object it);
 
     private static readonly Dictionary<int, WeakReference> importedById = [];
     private static readonly Dictionary<Type, Func<int, object>> importers = [];
+    private static readonly Dictionary<Type, (Func<object, object>? spec, ExportCallback? cb)> exporters = [];
     private static readonly Dictionary<int, object> exportedById = [];
     private static readonly Dictionary<object, int> idByExported = new(ReferenceEqualityComparer.Instance);
     private static readonly Dictionary<int, Action> onDisposeById = [];
@@ -47,20 +48,22 @@ public static class Instances
     /// <summary>
     /// Registers specified exported (C#) instance and returns the associated unique ID.
     /// Short-circuits already registered exported and imported instances.
+    /// Invokes applicable exporters registered with <see cref="RegisterExport"/>.
     /// </summary>
     /// <param name="it">The instance to register.</param>
-    /// <param name="cb">Callback to invoke when registering and disposing the instance.</param>
     /// <returns>Unique ID associated with the registered instance.</returns>
-    public static int Export<T> (T? it, ExportCallback<T>? cb = null) where T : class
+    public static int Export<T> (T? it)
     {
         if (it is null) return 0;
         if (it is JSProxy js) return js._id;
         if (it is Delegate { Target: JSProxy del }) return del._id;
-        if (it is SpecializedExport { _it: JSProxy ejs }) return ejs._id;
-        if (idByExported.TryGetValue(Key(it), out var id)) return id;
+        if (idByExported.TryGetValue(it, out var id)) return id;
+        exporters.TryGetValue(typeof(T), out var exporter);
+        var stored = exporter.spec is { } specialize ? specialize(it) : it;
+        if (stored is SpecializedExport { _it: JSProxy ejs }) return ejs._id;
         id = idPool.Count > 0 ? idPool.Dequeue() : nextId++;
-        exportedById[idByExported[Key(it)] = id] = it;
-        if (cb != null) onDisposeById[id] = cb(id, it);
+        exportedById[idByExported[Key(stored)] = id] = stored;
+        if (exporter.cb is { } cb) onDisposeById[id] = cb(id, stored);
         return id;
     }
 
@@ -89,6 +92,16 @@ public static class Instances
     public static void RegisterImport (Type type, Func<int, object> factory)
     {
         importers[type] = factory;
+    }
+
+    /// <summary>
+    /// Registers special handling for exported (C#) instances of the specified type.
+    /// Specialized exports register their wrapper factory with the <paramref name="spec"/> function.
+    /// Instances requiring custom callbacks on construction and disposal use <paramref name="cb"/> delegate.
+    /// </summary>
+    public static void RegisterExport (Type type, Func<object, object>? spec, ExportCallback? cb = null)
+    {
+        exporters[type] = (spec, cb);
     }
 
     /// <summary>

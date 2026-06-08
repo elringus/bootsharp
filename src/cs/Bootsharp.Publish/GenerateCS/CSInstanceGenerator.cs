@@ -20,7 +20,7 @@ internal sealed class CSInstanceGenerator
 
           public static partial class Instances
           {
-              internal static int Export<T> (T? it, Bootsharp.Instances.ExportCallback<T>? cb = null) where T : class => Bootsharp.Instances.Export(it, cb);
+              internal static int Export<T> (T? it) => Bootsharp.Instances.Export(it);
               internal static T Exported<T> (int id) where T : class => Bootsharp.Instances.Exported<T>(id);
               internal static T? Resolve<T> (int id) => Bootsharp.Instances.Resolve<T>(id);
 
@@ -36,7 +36,11 @@ internal sealed class CSInstanceGenerator
                   {{Fmt(its.Where(i => i.IK == InteropKind.Import).Select(EmitImporter), 2)}}
               }
 
-              {{Fmt(its.Where(i => i.Exporter != null).Select(EmitExporter), 1, "\n\n")}}
+              [ModuleInitializer]
+              internal static void RegisterExports ()
+              {
+                  {{Fmt(its.Where(i => i.Exporter != null).Select(EmitExporter), 2)}}
+              }
 
               [JSExport] private static void DisposeExported (int id) => Bootsharp.Instances.DisposeExported(id);
               [JSImport("instances.disposeImported", "Bootsharp")] private static partial void NotifyImportedDisposed (int id);
@@ -56,11 +60,13 @@ internal sealed class CSInstanceGenerator
     private static string EmitExporter (InstanceMeta it)
     {
         var evt = it.Members.OfType<EventMeta>().ToArray();
-        var arg = it.Proxy is SpecializedProxy sp ? $"new {sp.Export.Syntax}(it)" : "it";
-        if (evt.Length == 0) return $"internal static int {it.Exporter} ({it.Syntax} it) => Export({arg});";
+        var sp = it.Proxy as SpecializedProxy;
+        var spec = sp != null ? $"static it => new {sp.Export.Syntax}(({it.Syntax})it)" : "null";
+        if (evt.Length == 0) return $"Bootsharp.Instances.RegisterExport(typeof({it.Syntax}), {spec});";
         return
             $$"""
-              internal static int {{it.Exporter}} ({{it.Syntax}} it) => Export({{arg}}, static (_id, it) => {
+              Bootsharp.Instances.RegisterExport(typeof({{it.Syntax}}), {{spec}}, static (_id, obj) => {
+                  var it = ({{sp?.Export.Syntax ?? it.Syntax}})obj;
                   {{Fmt(evt.Select(e => $"it.{e.Name} += Handle{e.Name};"))}}
                   return () => {
                       {{Fmt(evt.Select(e => $"it.{e.Name} -= Handle{e.Name};"), 2)}}

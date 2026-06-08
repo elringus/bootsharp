@@ -61,13 +61,23 @@ public class InstancesTest
     [Fact]
     public void ShortCircuitsSpecializedExportsWrappingImportedProxy ()
     {
-        Assert.Equal(Export(new SpecializedExport(new Proxy(1))), Export(new SpecializedExport(new Proxy(1))));
+        RegisterExport(typeof(Bar), _ => new SpecializedExport(new Proxy(1)));
+        Assert.Equal(Export(new Bar()), Export(new Bar()));
     }
 
     [Fact]
     public void GeneratesUniqueIdsForSpecializedExportsNotWrappingImportedProxy ()
     {
-        Assert.NotEqual(Export(new SpecializedExport(new object())), Export(new SpecializedExport(new object())));
+        RegisterExport(typeof(Foo), it => new SpecializedExport(it));
+        Assert.NotEqual(Export(new Foo()), Export(new Foo()));
+    }
+
+    [Fact]
+    public void ShortCircuitsRegisteredSpecializedExports ()
+    {
+        var exported = new Foo();
+        RegisterExport(typeof(Foo), it => new SpecializedExport(it));
+        Assert.Equal(Export(exported), Export(exported));
     }
 
     [Fact]
@@ -87,10 +97,11 @@ public class InstancesTest
     {
         var exported = false;
         var disposed = false;
-        var id = Export(new object(), (_, _) => {
+        RegisterExport(typeof(Bar), null, (_, _) => {
             exported = true;
             return () => disposed = true;
         });
+        var id = Export(new Bar());
         Assert.True(exported);
         Assert.False(disposed);
         DisposeExported(id);
@@ -154,7 +165,8 @@ public class InstancesTest
     public void UnwrapsResolvedSpecializedExports ()
     {
         var exported = new Foo();
-        Assert.Same(exported, Resolve<IFoo>(Export(new SpecializedExport(exported))));
+        RegisterExport(typeof(Foo), it => new SpecializedExport(it));
+        Assert.Same(exported, Resolve<IFoo>(Export(exported)));
     }
 
     [Fact]
