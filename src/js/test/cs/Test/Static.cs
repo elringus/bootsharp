@@ -34,8 +34,8 @@ public static partial class Static
 
     [Import] public static partial string ImportedProperty { get; set; }
     [Export] public static string ExportedProperty { get; set; } = "initial exported";
-    [Import] public static partial Event<SpecialHandler> ImportedSpecial { get; }
-    [Export] public static Event<SpecialHandler> ExportedSpecial { get; } = new();
+    [Import] public static partial SpecialHandlerEvent ImportedSpecial { get; }
+    [Export] public static SpecialHandlerEvent ExportedSpecial { get; } = new();
 
     [Import] public static partial byte[] EchoImported (byte[] bytes);
     [Export] public static byte[] EchoExported (byte[] bytes) => bytes;

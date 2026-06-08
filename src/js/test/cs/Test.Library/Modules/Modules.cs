@@ -68,7 +68,7 @@ public static partial class Modules
         IBidirectional? eventObserved = null;
         IBidirectional? specialObserved = null;
         Action<IBidirectional?> eventHandler = b => eventObserved = b;
-        SpecialBiHandler specialHandler = b => specialObserved = b;
+        IBidirectional.SpecialHandler specialHandler = b => specialObserved = b;
         js.OnBiChanged += eventHandler;
         js.OnSpecial.Subscribe(specialHandler);
         Assert(js.EchoBi(null) == null);

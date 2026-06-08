@@ -33,32 +33,31 @@ internal sealed class DeclarationGenerator
     }
 
     private string EmitImports (JSModule md) => Fmt([
-        $$"""import type * as $bcl from "{{md.To("bcl/index")}}";""",
+        $"""import type * as $bcl from "{md.To("bcl/index")}";""",
         ..mds.GetImported(md).Select(imp =>
             $"""import type * as {imp.Alias} from "{md.ToMd(imp.Path)}";""")
     ], 0);
 
     private void DeclareNode (JSNode node)
     {
-        var surf = node.Types.FirstOrDefault(s => s is SurfaceMeta and not InstanceMeta);
-        var wrap = surf != null || node.Children.Count > 0;
-        if (wrap)
-        {
-            if (surf != null) doc.Type(surf);
-            bld.Enter($"export namespace {node.Name} {{");
-        }
+        var surfaces = new List<SurfaceMeta>();
         foreach (var type in node.Types)
             // Dedup by CLR to discard the other side of a bidirectional (export+import)
             // instance surface and closed generic variants (all produce same open type).
-            if (declared.Add(type.Clr.IsGenericType ? type.Clr.GetGenericTypeDefinition() : type.Clr))
+            if (declared.Add(OpenGeneric(type.Clr)))
                 if (type is SerializedEnumMeta enu) DeclareEnum(enu);
-                else if (type is SerializedObjectMeta o) DeclareSerialized(o);
-                else if (type is DelegateMeta d) DeclareDelegate(d);
+                else if (type is SerializedObjectMeta ser) DeclareSerialized(ser);
+                else if (type is DelegateMeta del) DeclareDelegate(del);
                 else if (type is InstanceMeta it) DeclareInstance(it);
-                else if (type is SurfaceMeta srf) DeclareSurface(srf);
+                else if (type is SurfaceMeta srf) surfaces.Add(srf);
+        if (surfaces.Count == 0 && node.Children.Count == 0) return;
+        if (surfaces.Count > 0) doc.Type(surfaces[0]);
+        bld.Enter($"export namespace {node.Name} {{");
+        foreach (var surface in surfaces)
+            DeclareSurface(surface);
         foreach (var child in node.Children)
             DeclareNode(child);
-        if (wrap) bld.Exit("}");
+        bld.Exit("}");
     }
 
     private void DeclareEnum (SerializedEnumMeta enu)
@@ -77,7 +76,7 @@ internal sealed class DeclarationGenerator
     private void DeclareSerialized (SerializedObjectMeta obj)
     {
         doc.Type(obj);
-        var ext = spec.Types.HasBase(obj.Clr, out var bs) ? $"{ts.BuildFullName(bs.Clr)} & " : "";
+        var ext = spec.Types.HasBase(obj.Clr, out var bs) ? $"{ts.BuildRef(bs.Clr)} & " : "";
         bld.Enter($$"""export type {{ts.BuildName(obj.Clr)}} = {{ext}}Readonly<{""");
         foreach (var prop in obj.Properties.Where(p => ShouldDeclareOn(obj.Clr, p.Info)))
         {
@@ -98,25 +97,33 @@ internal sealed class DeclarationGenerator
     private void DeclareInstance (InstanceMeta it)
     {
         doc.Type(it);
-        if (it.Proxy is SpecializedProxy { Decl: { } sp } && sp.StartsWith("export "))
-        {
-            bld.Line(sp);
-            return;
-        }
+        if (DeclareSpecialized(out var specialized)) return;
         bld.Enter($$"""export interface {{ts.BuildName(it.Clr)}}{{BuildExtensions()}} {""");
         foreach (var member in it.Members.Where(m => ShouldDeclareOn(it.Clr, m.Info)))
             if (member is EventMeta evt) DeclareEvent(evt);
             else if (member is PropertyMeta prop) DeclareProperty(prop);
             else if (member is MethodMeta method) DeclareMethod(method);
-        if (it.Proxy is SpecializedProxy { Decl: { } decl }) bld.Line(decl);
+        if (specialized != null) bld.Line(specialized);
         bld.Exit("}");
+
+        bool DeclareSpecialized (out string? decl)
+        {
+            if (string.IsNullOrEmpty(decl = (it.Proxy as SpecializedProxy)?.Decl)) return false;
+            decl = Fmt(decl).Replace("$name", ts.BuildName(it.Clr)).Replace("$full", ts.BuildRef(it.Clr));
+            var args = (it.Proxy as SpecializedProxy)!.Import.Clr.GetGenericArguments();
+            for (var i = 0; i < args.Length; i++)
+                decl = decl.Replace($"$T{i}", ts.BuildRef(args[i]));
+            var replaces = decl.StartsWith("export ");
+            if (replaces) bld.Line(decl);
+            return replaces;
+        }
 
         string BuildExtensions ()
         {
             if (it.Proxy is SpecializedProxy) return ""; // specialized surfaces are self-contained
             var ext = it.Clr.GetInterfaces().Where(i => IsUserType(i) && spec.Types.Has(i)).ToList();
             if (spec.Types.HasBase(it.Clr, out var bs)) ext.Insert(0, bs.Clr);
-            return ext.Count == 0 ? "" : $" extends {string.Join(", ", ext.Select(ts.BuildFullName))}";
+            return ext.Count == 0 ? "" : $" extends {string.Join(", ", ext.Select(ts.BuildRef))}";
         }
 
         void DeclareEvent (EventMeta evt)

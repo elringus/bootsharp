@@ -28,8 +28,8 @@ internal static class GlobalType
 
     public static bool IsDelegate (Type type)
     {
-        for (var bs = type.BaseType; bs != null; bs = bs.BaseType)
-            if (bs.FullName == "System.MulticastDelegate")
+        for (var t = type.BaseType; t != null; t = t.BaseType)
+            if (t.FullName == "System.MulticastDelegate")
                 return true;
         return false;
     }
@@ -54,11 +54,11 @@ internal static class GlobalType
 
         static bool IsList (Type type) =>
             type.IsGenericType &&
-            (type.GetGenericTypeDefinition().FullName == typeof(List<>).FullName ||
-             type.GetGenericTypeDefinition().FullName == typeof(IList<>).FullName ||
-             type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyList<>).FullName ||
-             type.GetGenericTypeDefinition().FullName == typeof(ICollection<>).FullName ||
-             type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyCollection<>).FullName);
+            (OpenGeneric(type).FullName == typeof(List<>).FullName ||
+             OpenGeneric(type).FullName == typeof(IList<>).FullName ||
+             OpenGeneric(type).FullName == typeof(IReadOnlyList<>).FullName ||
+             OpenGeneric(type).FullName == typeof(ICollection<>).FullName ||
+             OpenGeneric(type).FullName == typeof(IReadOnlyCollection<>).FullName);
     }
 
     public static bool IsDictionary (Type type, [NotNullWhen(true)] out Type? key, [NotNullWhen(true)] out Type? value)
@@ -73,14 +73,15 @@ internal static class GlobalType
 
         static bool IsDictionary (Type type) =>
             type.IsGenericType &&
-            (type.GetGenericTypeDefinition().FullName == typeof(Dictionary<,>).FullName ||
-             type.GetGenericTypeDefinition().FullName == typeof(IDictionary<,>).FullName ||
-             type.GetGenericTypeDefinition().FullName == typeof(IReadOnlyDictionary<,>).FullName);
+            (OpenGeneric(type).FullName == typeof(Dictionary<,>).FullName ||
+             OpenGeneric(type).FullName == typeof(IDictionary<,>).FullName ||
+             OpenGeneric(type).FullName == typeof(IReadOnlyDictionary<,>).FullName);
     }
 
-    public static bool IsSameType (Type a, Type b) =>
-        (a.IsGenericType ? a.GetGenericTypeDefinition() : a) ==
-        (b.IsGenericType ? b.GetGenericTypeDefinition() : b);
+    public static bool IsSameType (Type a, Type b)
+    {
+        return OpenGeneric(a) == OpenGeneric(b);
+    }
 
     public static Nullity GetNullity (EventInfo evt) => new NullabilityInfoContext().Create(evt);
     public static Nullity GetNullity (EventInfo evt, ParameterInfo param) =>
@@ -158,6 +159,11 @@ internal static class GlobalType
     public static string TrimGeneric (string typeName)
     {
         return Regex.Replace(typeName, @"`\d+(\[\[.*\]\])?", "");
+    }
+
+    public static Type OpenGeneric (Type type)
+    {
+        return type.IsGenericType ? type.GetGenericTypeDefinition() : type;
     }
 
     public static string ExportCS (ArgumentMeta arg) => ExportCS(arg.Value, arg.Name);

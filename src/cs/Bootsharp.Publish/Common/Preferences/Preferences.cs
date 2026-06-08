@@ -48,8 +48,11 @@ internal static class Preferences
     public static bool IsSpecialized (Type type) => IsSpecialized(type, out _);
     public static bool IsSpecialized (Type type, [NotNullWhen(true)] out Specialization? sp)
     {
-        var key = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
-        return (sp = prefs.Specs.GetValueOrDefault(key)) != null;
+        for (var t = type; t != null; t = t.BaseType)
+            if ((sp = prefs.Specs.GetValueOrDefault(OpenGeneric(t))?.For(t)) != null)
+                return true;
+        sp = null;
+        return false;
     }
 
     private static void ResolveRenames (Assembly ass)

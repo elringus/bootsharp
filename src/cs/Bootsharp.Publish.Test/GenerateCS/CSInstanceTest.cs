@@ -280,6 +280,39 @@ public class CSInstanceTest : GenerateCSTest
     }
 
     [Fact]
+    public void GeneratesForCustomSpecializationOfBaseClass ()
+    {
+        AddAssembly(With(
+            """
+            public abstract class Event<T>;
+            public sealed class IntEvent : Event<int>;
+
+            [SpecializeImport(typeof(Event<>), CS: "protected override object Unwrap () => new $full();")]
+            public abstract class EventImport<T> (int id) : SpecializedImport(id);
+
+            [SpecializeExport(typeof(Event<>))]
+            public sealed class EventExport<T> (Event<T> it) : SpecializedExport(it);
+
+            public class Class
+            {
+                [Export] public static IntEvent Foo (IntEvent it) => default!;
+            }
+            """));
+        Execute();
+        Contains("internal static int Export (global::IntEvent it) => Export(new global::EventExport<global::System.Int32>(it));");
+        Contains("Instances.RegisterImport(typeof(global::IntEvent), static id => new global::Bootsharp.Generated.JS_Import_IntEvent(id));");
+        Contains(
+            """
+            public sealed class JS_Import_IntEvent (int id) : global::EventImport<global::System.Int32>(id)
+            {
+                ~JS_Import_IntEvent() => Instances.DisposeImported(_id);
+
+                protected override object Unwrap () => new global::IntEvent();
+            }
+            """);
+    }
+
+    [Fact]
     public void GeneratesForBuiltInSpecializations ()
     {
         AddAssembly(WithClass(

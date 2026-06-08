@@ -7,11 +7,12 @@ namespace Bootsharp;
 /// The exported specialization is expected to be paired with the <see cref="SpecializeImportAttribute"/>
 /// counterpart and contain implementations for all the abstract members defined on the imported specialization.
 /// </summary>
+/// <param name="Clr">
+/// The CLR type to specialize the export for.
+/// When the type is a class, will specialize subclasses as well.
+/// </param>
 [AttributeUsage(AttributeTargets.Class)]
-public sealed class SpecializeExportAttribute (Type clr) : Attribute
+public sealed class SpecializeExportAttribute (Type Clr) : Attribute
 {
-    /// <summary>
-    /// The CLR type to specialize the export for.
-    /// </summary>
-    public Type Clr { get; } = clr;
+    public Type Clr { get; } = Clr;
 }

@@ -46,6 +46,10 @@ const comparer = Program.getComparer();
 comparer.compare("a", "b"); // -1
 ```
 
+::: tip
+When the specialized `Clr` type is a class, it will also affect (specialize) any subclasses discovered on the interop surfaces.
+:::
+
 ## Injecting Code
 
 The `[SpecializeImport]` attribute accepts optional `CS`, `JS`, `JSCtor` and `Decl` snippets that are spliced verbatim into the generated C# or JavaScript proxies and its TypeScript declaration. This lets the imported proxy satisfy JS-side contracts that aren't expressible through the C# abstract members alone — for example, injecting an iterator:
@@ -55,6 +59,10 @@ The `[SpecializeImport]` attribute accepts optional `CS`, `JS`, `JSCtor` and `De
     JS: "[Symbol.iterator]() { return this.copy()[Symbol.iterator](); }",
     Decl: "[Symbol.iterator](): IterableIterator<T>;")]
 ```
+
+The `CS` snippet can contain `$full` markers — they will be replaced with the fully-qualified type name of the specialized instance. This allows referencing the concrete specialized instances in the proxy when the specialization is applied to a base class.
+
+The `Decl` snippet can contain `$full`, `$name` and `$T{I}` markers — first is the same as CS one, but in TypeScript context, name is the short type name and `T` is the fully-qualified name of the generic type argument with the `{I}` inde (if any), for example `$T{0}` is replaced with the first generic argument.
 
 When `Decl` value starts with `export ` — the content will replace the entire TypeScript declaration of the type, instead of splicing it into the bottom of the default type declaration.
 

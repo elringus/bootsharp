@@ -95,7 +95,7 @@ internal sealed class DocumentationBuilder
         {
             if (type.IsArray) return $"{GetArgKey(type.GetElementType()!)}[{new string(',', type.GetArrayRank() - 1)}]";
             if (!type.IsGenericType) return GetXmlKey(type);
-            var definition = type.GetGenericTypeDefinition();
+            var definition = OpenGeneric(type);
             var name = definition.Name.Split('`')[0];
             name = string.IsNullOrEmpty(definition.Namespace) ? name : $"{definition.Namespace}.{name}";
             return $"{name}{{{string.Join(',', type.GetGenericArguments().Select(GetArgKey))}}}";
@@ -112,7 +112,7 @@ internal sealed class DocumentationBuilder
 
     private static string GetXmlKey (Type type)
     {
-        if (type.IsGenericType) type = type.GetGenericTypeDefinition();
+        if (type.IsGenericType) type = OpenGeneric(type);
         if (type.IsNested) return $"{GetXmlKey(type.DeclaringType!)}.{type.Name}";
         return string.IsNullOrEmpty(type.Namespace) ? type.Name : $"{type.Namespace}.{type.Name}";
     }

@@ -72,6 +72,25 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
+    public void TypeNestedUnderInstancedDeclaredUnderNamespace ()
+    {
+        AddAssembly(
+            With("public class Foo { public record Bar; public int Value { get; } }"),
+            WithClass("[Export] public static Foo Get (Foo.Bar b) => default;"));
+        Execute();
+        Contains(
+            """
+            export interface Foo {
+                readonly value: number;
+            }
+            export namespace Foo {
+                export type Bar = Readonly<{
+                }>;
+            }
+            """);
+    }
+
+    [Fact]
     public void CrawledTypeDoesNotOverrideSpecialized ()
     {
         AddAssembly(With(
@@ -359,6 +378,22 @@ public class DeclarationTest : GenerateJSTest
     }
 
     [Fact]
+    public void ExtendsClosedGenericWithClosedArguments ()
+    {
+        AddAssembly(
+            With("public interface IBar<T> { T Get (); }"),
+            With("public class Foo : IBar<int> { public int Get () => 0; }"),
+            WithClass("[Export] public static Foo UseFoo (IBar<int> bar) => default;"));
+        Execute();
+        Contains(
+            """
+            export interface Foo extends IBar<number> {
+                get(): number;
+            }
+            """);
+    }
+
+    [Fact]
     public void GeneratedForSpecializedTypes ()
     {
         AddAssembly(With(
@@ -398,6 +433,34 @@ public class DeclarationTest : GenerateJSTest
         Execute();
         Contains("export type Foo = () => void;");
         DoesNotContain("export interface Foo");
+    }
+
+    [Fact]
+    public void SpecializedDeclarationSubstitutesTemplates ()
+    {
+        AddAssembly(With(
+            """
+            public delegate void Handler (string arg);
+            public abstract class Event<T> where T : System.Delegate;
+            public class Host { public sealed class HandlerEvent : Event<Handler>; }
+            [SpecializeImport(typeof(Event<>), Decl: "export interface $name {\n    broadcast: $T0;\n}")]
+            public abstract class EventImport<T> (int id) : SpecializedImport(id) where T : System.Delegate
+            {
+                public abstract void Subscribe (T handler);
+            }
+            [SpecializeExport(typeof(Event<>))]
+            public sealed class EventExport<T> (Event<T> it) : SpecializedExport(it) where T : System.Delegate;
+            public class Class { [Export] public static Host.HandlerEvent Get () => default; }
+            """));
+        Execute();
+        Contains(
+            """
+            export namespace Host {
+                export interface HandlerEvent {
+                    broadcast: Handler;
+                }
+            }
+            """);
     }
 
     [Fact]

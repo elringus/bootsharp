@@ -5,7 +5,7 @@ namespace Test.Library;
 public class BidirectionalCS : IBidirectional
 {
     public event Action<IBidirectional?>? OnBiChanged;
-    public Event<SpecialBiHandler> OnSpecial { get; } = new();
+    public IBidirectional.SpecialEvent OnSpecial { get; } = new();
 
     public IBidirectional? Bi { get; set => NotifyChanged(field = value); } = null!;
 

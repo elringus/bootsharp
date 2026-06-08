@@ -9,10 +9,13 @@ internal sealed record Specialization
     public string? JSCtor { get; init; }
     public string? Decl { get; init; }
 
-    public Type For (Type specialized, InteropKind ik)
-    {
-        var specializer = ik == InteropKind.Import ? Import : Export;
-        if (!specializer.IsGenericTypeDefinition) return specializer;
-        return specializer.MakeGenericType(specialized.GenericTypeArguments);
-    }
+    public Specialization For (Type specialized) => this with {
+        Import = Close(Import, specialized),
+        Export = Close(Export, specialized)
+    };
+
+    private static Type Close (Type specializer, Type specialized) =>
+        specializer.IsGenericTypeDefinition && specialized.IsConstructedGenericType
+            ? specializer.MakeGenericType(specialized.GenericTypeArguments)
+            : specializer;
 }

@@ -61,7 +61,7 @@ internal sealed class TypeInspector
     {
         if (!inspectedModuleTypes.Add(type) || IsStatic(type) ||
             (ik == InteropKind.Import && !type.IsInterface)) return null;
-        var proxy = BuildProxy(type, BuildId(type), ik);
+        var proxy = BuildProxy(BuildId(type), ik);
         var md = new ModuleMeta(type) { IK = ik, Proxy = proxy, Members = new List<MemberMeta>() };
         return InspectMembers(md, ik, null);
     }
@@ -78,7 +78,7 @@ internal sealed class TypeInspector
             return InspectInstance(type, InteropKind.Export, nul)!; // likely passing back an exported instance
         return InspectMembers(its[key] = new(type) {
             IK = ik,
-            Proxy = BuildProxy(type, id, ik, sp),
+            Proxy = BuildProxy(id, ik, sp),
             Members = new List<MemberMeta>(),
             Exporter = ResolveExporter(),
             Importer = ResolveImporter(),
@@ -103,7 +103,7 @@ internal sealed class TypeInspector
         string? ResolveImporter ()
         {
             if (ik != InteropKind.Import) return null;
-            if ((sp?.For(type, ik) ?? type).GetEvents().Length > 0) return $"import_{id}";
+            if ((sp?.Import ?? type).GetEvents().Length > 0) return $"import_{id}";
             return null;
         }
     }
@@ -111,7 +111,7 @@ internal sealed class TypeInspector
     private DelegateMeta InspectDelegate (Type type, InteropKind ik, Nullity? nul)
     {
         var members = new List<MemberMeta>();
-        var proxy = BuildProxy(type, BuildId(type), ik);
+        var proxy = BuildProxy(BuildId(type), ik);
         var del = new DelegateMeta(type) { IK = ik, Proxy = proxy, Members = members };
         members.Add(InspectMethod(type.GetMethod("Invoke")!, ik, del, nul));
         return del;
@@ -200,7 +200,7 @@ internal sealed class TypeInspector
         return InspectInstance(type, ik, nul) ?? srd.Inspect(type, ik, nul) ?? new TypeMeta(type);
     }
 
-    private SurfaceProxy BuildProxy (Type type, string typeId, InteropKind ik, Specialization? sp = null)
+    private SurfaceProxy BuildProxy (string typeId, InteropKind ik, Specialization? sp = null)
     {
         var id = "JS_" + (ik == InteropKind.Export ? "Export_" : "Import_") + typeId;
         var stx = $"global::Bootsharp.Generated.{id}";
@@ -208,8 +208,8 @@ internal sealed class TypeInspector
         return new SpecializedProxy {
             Id = id,
             Syntax = stx,
-            Import = new(sp.For(type, InteropKind.Import)),
-            Export = new(sp.For(type, InteropKind.Export)),
+            Import = new(sp.Import),
+            Export = new(sp.Export),
             CS = sp.CS,
             JS = sp.JS,
             JSCtor = sp.JSCtor,

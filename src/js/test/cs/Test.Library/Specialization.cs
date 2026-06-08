@@ -19,11 +19,12 @@ public class ComparerExport<T> (IComparer<T> cmp) : SpecializedExport(cmp)
     public int Compare (T? x, T? y) => cmp.Compare(x, y);
 }
 
-public sealed class Event<T> where T : Delegate
+public abstract class Event<T> where T : Delegate
 {
-    public List<T> Handlers { get; } = [];
+    protected List<T> Handlers { get; } = [];
     public void Subscribe (T handler) => Handlers.Add(handler);
     public void Unsubscribe (T handler) => Handlers.Remove(handler);
+    public abstract void Replay (T handler);
 }
 
 /// <summary>
@@ -34,26 +35,36 @@ public sealed class Event<T> where T : Delegate
 /// <param name="opt">Opt parameter doc.</param>
 public delegate void SpecialHandler (string? nul, string str, int? opt = null);
 
-public delegate void SpecialBiHandler (IBidirectional? bi);
+public sealed class SpecialHandlerEvent : Event<SpecialHandler>
+{
+    public (string? nul, string str, int? opt)? Last { get; private set; }
+
+    public void Broadcast (string? nul, string str, int? opt = null)
+    {
+        Last = (nul, str, opt);
+        foreach (var handler in Handlers)
+            handler(nul, str, opt);
+    }
+
+    public override void Replay (SpecialHandler handler)
+    {
+        if (Last is { } last)
+            handler(last.nul, last.str, last.opt);
+    }
+}
 
 public static class EventExtensions
 {
-    extension (Event<SpecialHandler> @event)
+    extension (Event<SpecialHandler> evt)
     {
-        public void Broadcast (string? nul, string str, int? opt = null)
-        {
-            foreach (var handler in @event.Handlers)
-                handler(nul, str, opt);
-        }
+        public void Broadcast (string? nul, string str, int? opt = null) =>
+            ((SpecialHandlerEvent)evt).Broadcast(nul, str, opt);
     }
 
-    extension (Event<SpecialBiHandler> @event)
+    extension (Event<IBidirectional.SpecialHandler> evt)
     {
-        public void Broadcast (IBidirectional? bi)
-        {
-            foreach (var handler in @event.Handlers)
-                handler(bi);
-        }
+        public void Broadcast (IBidirectional? bi) =>
+            ((IBidirectional.SpecialEvent)evt).Broadcast(bi);
     }
 }
 
@@ -62,7 +73,7 @@ public static class EventExtensions
     """
     protected override object Unwrap () {
         if (Event != null) return Event;
-        ImportedByEvent.Add(Event = new(), this);
+        ImportedByEvent.Add(Event = new $full(), this);
         Subscribe(Event.Broadcast);
         return Event;
     }
@@ -76,11 +87,11 @@ public static class EventExtensions
     """,
     Decl:
     """
-    export interface Event<T extends (...args: never[]) => void> {
-        readonly last?: Parameters<T>;
-        subscribe(handler: T): string;
-        unsubscribe(handler: T): void;
-        broadcast: T;
+    export interface $name {
+        readonly last?: Parameters<$T0>;
+        subscribe(handler: $T0): string;
+        unsubscribe(handler: $T0): void;
+        broadcast: $T0;
     }
     """)]
 public abstract class EventImport<T> (int id) : SpecializedImport(id) where T : Delegate
@@ -94,7 +105,11 @@ public abstract class EventImport<T> (int id) : SpecializedImport(id) where T : 
 [SpecializeExport(typeof(Event<>))]
 public sealed class EventExport<T> (Event<T> evt) : SpecializedExport(Resolve(evt)) where T : Delegate
 {
-    public void Subscribe (T handler) => evt.Subscribe(handler);
+    public void Subscribe (T handler)
+    {
+        evt.Subscribe(handler);
+        evt.Replay(handler);
+    }
 
     private static object Resolve (Event<T> evt) =>
         EventImport<T>.ImportedByEvent.TryGetValue(evt, out var imported) ? imported : evt;

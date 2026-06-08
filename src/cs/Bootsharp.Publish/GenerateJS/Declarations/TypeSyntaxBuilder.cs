@@ -16,21 +16,20 @@ internal sealed class TypeSyntaxBuilder (JSModules mds)
 
     public string BuildName (Type type)
     {
-        var full = BuildFullName(type);
+        var full = BuildRef(OpenGeneric(type));
         var dotIdx = full.LastIndexOf('.');
         return dotIdx > 0 ? full[(dotIdx + 1)..] : full;
     }
 
-    public string BuildFullName (Type type)
+    public string BuildRef (Type type)
     {
-        if (type.IsGenericType) type = type.GetGenericTypeDefinition();
         return Build(type, null);
     }
 
     public string BuildArg (ParameterInfo param)
     {
         if (param.Member.DeclaringType!.IsGenericType)
-            param = param.Member.DeclaringType.GetGenericTypeDefinition()
+            param = OpenGeneric(param.Member.DeclaringType)
                 .GetMethod(param.Member.Name)!.GetParameters()[param.Position];
         var nul = GetNullity(param);
         if (param.HasDefaultValue) return $"?: {Build(param.ParameterType, nul)}";
@@ -48,7 +47,7 @@ internal sealed class TypeSyntaxBuilder (JSModules mds)
     public string BuildReturn (MethodInfo method)
     {
         if (method.DeclaringType!.IsGenericType)
-            method = method.DeclaringType.GetGenericTypeDefinition().GetMethod(method.Name)!;
+            method = OpenGeneric(method.DeclaringType).GetMethod(method.Name)!;
         var nul = GetNullity(method.ReturnParameter);
         var post = IsNullable(method.ReturnType, nul) ? " | null" : "";
         return Build(method.ReturnType, nul) + post;
@@ -57,7 +56,7 @@ internal sealed class TypeSyntaxBuilder (JSModules mds)
     public string BuildProperty (PropertyInfo prop)
     {
         if (prop.DeclaringType!.IsGenericType)
-            prop = prop.DeclaringType.GetGenericTypeDefinition().GetProperty(prop.Name)!;
+            prop = OpenGeneric(prop.DeclaringType).GetProperty(prop.Name)!;
         var nul = GetNullity(prop);
         var pre = IsNullable(prop.PropertyType, nul) ? "?: " : ": ";
         return pre + Build(prop.PropertyType, nul);
